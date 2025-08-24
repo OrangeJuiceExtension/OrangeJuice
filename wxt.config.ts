@@ -1,0 +1,27 @@
+import { defineConfig, defineWebExtConfig } from 'wxt';
+
+// See https://wxt.dev/api/config.html
+export default defineConfig({
+	modules: ['@wxt-dev/module-react'],
+	srcDir: 'src',
+	webExt: defineWebExtConfig({
+		openDevtools: true,
+		openConsole: true,
+		startUrls: ['https://news.ycombinator.com/'],
+		chromiumArgs: ['--user-data-dir=./.wxt/chrome-data'],
+	}),
+	manifest: {
+		icons: {
+			16: '/icon/orange_juice_icon_16x16.png',
+			24: '/icon/orange_juice_icon_32x32.png',
+			48: '/icon/orange_juice_icon_48x48.png',
+			96: '/icon/orange_juice_icon_96x96.png',
+			128: '/icon/orange_juice_icon_128x128.png',
+		},
+	},
+	imports: {
+		eslintrc: {
+			enabled: 9,
+		},
+	},
+});
