@@ -1,7 +1,6 @@
 // noinspection JSCheckFunctionSignatures
 
 import eslint from '@eslint/js';
-import pluginRouter from '@tanstack/eslint-plugin-router';
 import { globalIgnores } from 'eslint/config';
 import configPrettier from 'eslint-config-prettier';
 import pluginImport from 'eslint-plugin-import';
@@ -19,10 +18,9 @@ export default tseslint.config(
 	autoImports,
 	globalIgnores(['node_modules/', '.output/', '.wxt/', '*.d.ts', 'types/', '**/*.d.ts']),
 	eslint.configs.recommended,
-	tseslint.configs.strictTypeChecked,
+	tseslint.configs.recommended,
 	tseslint.configs.stylisticTypeChecked,
 	reactHooks.configs['recommended-latest'],
-	...pluginRouter.configs['flat/recommended'],
 	reactRefresh.configs.vite,
 	{
 		files: ['**/*.{ts,tsx,js}'],
@@ -43,7 +41,6 @@ export default tseslint.config(
 			import: pluginImport,
 			promise: pluginPromise,
 			react: pluginReact,
-			router: pluginRouter,
 		},
 		rules: {
 			// React hooks rules

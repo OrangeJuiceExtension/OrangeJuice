@@ -1,3 +1,6 @@
+/// <reference types="vitest/config" />
+
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig, defineWebExtConfig } from 'wxt';
 
 // See https://wxt.dev/api/config.html
@@ -24,4 +27,7 @@ export default defineConfig({
 			enabled: 9,
 		},
 	},
+	vite: () => ({
+		plugins: [tailwindcss()],
+	}),
 });
