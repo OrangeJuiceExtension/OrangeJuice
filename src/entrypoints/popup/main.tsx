@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import App from './App.tsx';
+import { App } from './app.tsx';
 import './style.css';
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-const root = document.getElementById('root')!;
+// biome-ignore lint/style/noNonNullAssertion: none
+const root = document.querySelector('#root')!;
 
 ReactDOM.createRoot(root).render(
 	<React.StrictMode>
 		<App />
-	</React.StrictMode>,
+	</React.StrictMode>
 );

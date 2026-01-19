@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 
 import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
 import { defineConfig, defineWebExtConfig } from 'wxt';
 
 // See https://wxt.dev/api/config.html
@@ -11,7 +12,7 @@ export default defineConfig({
 		openDevtools: true,
 		openConsole: true,
 		startUrls: ['https://news.ycombinator.com/'],
-		chromiumArgs: ['--user-data-dir=./.wxt/chrome-data'],
+		chromiumArgs: ['--user-data-dir=./.wxt/chrome-data', '--hide-crash-restore-bubble'],
 	}),
 	manifest: {
 		icons: {
@@ -22,12 +23,7 @@ export default defineConfig({
 			128: '/icon/orange_juice_icon_128x128.png',
 		},
 	},
-	imports: {
-		eslintrc: {
-			enabled: 9,
-		},
-	},
 	vite: () => ({
-		plugins: [tailwindcss()],
+		plugins: [react(), tailwindcss()],
 	}),
 });

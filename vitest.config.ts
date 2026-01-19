@@ -6,10 +6,12 @@ import { WxtVitest } from 'wxt/testing';
 export default defineConfig({
 	// Configure test behavior however you like
 	test: {
-		mockReset: true,
+		globals: true,
+		environment: 'jsdom',
 		restoreMocks: true,
+		mockReset: true,
+		setupFiles: ['vitest-localstorage-mock'],
 	},
-
 	// This is the line that matters!
 	plugins: [WxtVitest()],
 });

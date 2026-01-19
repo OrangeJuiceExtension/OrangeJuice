@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>testuser's favorites | Hacker News</title>
+	</head>
+	<body>
+		<table id="hnmain">
+			<tr>
+				<td>
+					<table>
+						<tr class="athing comtr">
+							<td>
+								<div><span class="comhead">
+									<a href="user?id=someuser">someuser</a>
+									<span class="age"><a href="item?id=12345">5 days ago</a></span>
+									<span class="navs">
+										<a href="fave?id=12345&auth=abc123def456">un-favorite</a>
+									</span>
+								</span></div>
+								<div class="comment">This is a favorited comment</div>
+							</td>
+						</tr>
+						<tr class="athing comtr">
+							<td>
+								<div><span class="comhead">
+									<a href="user?id=anotheruser">anotheruser</a>
+									<span class="age"><a href="item?id=67890">2 days ago</a></span>
+									<span class="navs">
+										<a href="fave?id=67890&auth=xyz789ghi012">un-favorite</a>
+									</span>
+								</span></div>
+								<div class="comment">Another favorited comment</div>
+							</td>
+						</tr>
+						<tr class="athing comtr">
+							<td>
+								<div><span class="comhead">
+									<a href="user?id=thirduser">thirduser</a>
+									<span class="age"><a href="item?id=11111">1 day ago</a></span>
+									<span class="navs">
+										<a href="fave?id=11111&auth=token111222">un-favorite</a>
+									</span>
+								</span></div>
+								<div class="comment">Third favorited comment</div>
+							</td>
+						</tr>
+					</table>
+					<table>
+						<tr>
+							<td>
+								<a href="/favorites?id=testuser&comments=t&p=2" class="morelink"
+									>More</a
+								>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>
