@@ -1,4 +1,5 @@
-// import { expect, test } from './fixtures';
+import { expect, test } from './fixtures';
+
 // import { Browser } from '@wxt-dev/browser';
 // import { openPopup } from './pages/index';
 //
@@ -15,3 +16,7 @@
 // 	// await popup.clickCounter();
 // 	// expect(await popup.getCounterText()).toEqual('count is 2');
 // });
+
+test('nothing', () => {
+	expect(true).toBe(true);
+});

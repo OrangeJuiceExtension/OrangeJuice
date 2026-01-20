@@ -33,8 +33,8 @@ describe('handleReplyClick', () => {
 		const textbox = getByRole(document.body, 'textbox') as HTMLTextAreaElement;
 		expect(textbox).toBeTruthy();
 		expect(textbox.name).toBe('text');
-		expect(textbox.rows).toBe(8);
-		expect(textbox.cols).toBe(80);
+		expect(`${textbox.rows}`).toBe('8');
+		expect(`${textbox.cols}`).toBe('80');
 
 		const form = textbox.closest('form');
 		expect(form).toBeTruthy();
