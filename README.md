@@ -1,15 +1,25 @@
 # Orange Juice is an extension to make HackerNews sweeter.
 
-I've been part of the HN community since 2009, and over the years I've collected plenty of ideas for improving the experience. I've used HNES, Refined Hacker News, other extensions, and saved countless interesting ideas along the way. Many of those projects were promising but ended up abandoned. That may happen here too, but this is something I've wanted to explore on my own for a long time. With AI now making experimentation easier, I feel like this is the right moment to finally execute on those ideas.
+## Motivation
 
-One important lesson: the goal isn't to redesign Hacker News. Its minimal UX works, and nobody wants to relearn an interface that already does the job. Instead, the plan is to make small, thoughtful tweaks; adding features, polishing the UI; just enough to make HN a bit more pleasant to use without changing its essence.
+I’ve been part of the Hacker News community since 2009, and over the years I’ve accumulated many ideas for improving the experience. I’ve used HNES, Refined Hacker News, and other extensions, and saved countless ideas along the way. Many promising projects were eventually abandoned. That may happen here too, but this is something I’ve wanted to explore personally for a long time. With AI making experimentation easier, now feels like the right time to do it.
 
-I'm also very interested in exploring more social features. To me, HN is already a giant social network, but it feels disconnected inside the app. There are opportunities to build tools that make interactions richer. The extension should offer features valuable enough that people want it for what they can't get elsewhere, not through obvious things like live chat (which is ripe for abuse), but through more creative, viral ideas I'll be experimenting with. A big part of doing this extension open source is to ensure that people can trust it. The last thing I want is for it to become a source of pain.
+The goal isn’t to redesign Hacker News. Its minimal UX works, and no one wants to relearn an interface that already does the job. Instead, this project focuses on small, thoughtful improvements—adding features and polish that make HN more pleasant to use without changing its core.
 
-I'm not a browser extension expert. The code will start out messy, but with experimentation and feedback, it will improve. A big part of this is just learning to work within our extension framework (wxt), while also committing to writing solid unit and end-to-end tests so the extension becomes something reliable people can depend on over time.
+I’m also interested in exploring social features. HN is already a massive social network, but interactions feel fragmented. There’s room for tools that make engagement richer, not through obvious features like live chat, but through more creative, viral ideas I plan to experiment with. Keeping the extension open source is critical for trust; the last thing I want is for it to become a liability.
 
-The ultimate goal: make the extension useful enough that it runs smoothly across all major browsers.
+I’m not a browser extension expert. The code will start rough, but through experimentation, feedback, and strong unit and end-to-end tests, it should mature into something reliable. A big part of this is learning the extension framework (wxt) and building toward stability.
+
+The ultimate goal is a genuinely useful extension that runs smoothly across all major browsers.
+
+# Features
+
+## Inline Reply
+Clicking a "reply" link now opens an inline reply form directly on the page, eliminating the need to navigate to a separate comment page. The form includes support for quoting selected text.
+
+## Favorite Items
+Add a "favorite" button to comments and stories across various pages of HN, allowing you to save items for later reference. The button updates in place without redirecting you to a new page.
 
 # Running E2E tests
 
-Make sure to run `bunx playwright install` before running test.
+Make sure to run `bunx playwright install` before running tests.
