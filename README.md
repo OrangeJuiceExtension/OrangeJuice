@@ -20,6 +20,9 @@ Clicking a "reply" link now opens an inline reply form directly on the page, eli
 ## Favorite Items
 Add a "favorite" button to comments and stories across various pages of HN, allowing you to save items for later reference. The button updates in place without redirecting you to a new page.
 
+## Character Count for Story Submissions
+When submitting a new story, a character counter appears below the title input field showing how many characters remain until you reach the 80-character limit.
+
 # Running E2E tests
 
 Make sure to run `bunx playwright install` before running tests.
