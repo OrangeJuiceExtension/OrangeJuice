@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<title>Hacker News | Comments</title>
+	</head>
+	<body>
+		<table id="hnmain">
+			<tr>
+				<td>
+					<table>
+						<tr>
+							<td>
+								<span class="pagetop">
+									<b class="hnname"><a href="news">Hacker News</a></b>
+								</span>
+							</td>
+							<td style="text-align:right;">
+								<span class="pagetop">
+									<a href="user?id=opauthor" id="me">opauthor</a> (1234) | <a href="logout">logout</a>
+								</span>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<table class="comment-tree">
+						<!-- Top-level comment by OP -->
+						<tr class="athing comtr" id="comment1">
+							<td>
+								<table>
+									<tr>
+										<td class="ind"><img src="s.gif" height="1" width="0"></td>
+										<td valign="top" class="votelinks">
+											<center><a href="vote?id=comment1&how=up&goto=item%3Fid%3D12345"><div class="votearrow" title="upvote"></div></a></center>
+										</td>
+										<td class="default">
+											<div style="margin-top:2px; margin-bottom:-10px;">
+												<span class="comhead">
+													<a href="user?id=opauthor" class="hnuser">opauthor</a>
+													<span class="age" title="2024-01-20T10:30:00">
+														<a href="item?id=comment1">2 hours ago</a>
+													</span>
+													<span class="par"></span>
+													<a class="togg" href="javascript:void(0)">[-]</a>
+												</span>
+											</div>
+											<div class="comment">
+												<span class="commtext c00">
+													This is a comment by the original poster. It should be highlighted.
+													<p><pre><code>const example = "code block";</code></pre></p>
+												</span>
+											</div>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+						<!-- First-level nested comment -->
+						<tr class="athing comtr" id="comment2">
+							<td>
+								<table>
+									<tr>
+										<td class="ind"><img src="s.gif" height="1" width="40"></td>
+										<td valign="top" class="votelinks">
+											<center><a href="vote?id=comment2&how=up&goto=item%3Fid%3D12345"><div class="votearrow" title="upvote"></div></a></center>
+										</td>
+										<td class="default">
+											<div style="margin-top:2px; margin-bottom:-10px;">
+												<span class="comhead">
+													<a href="user?id=commenter1" class="hnuser">commenter1</a>
+													<span class="age" title="2024-01-20T10:45:00">
+														<a href="item?id=comment2">1 hour ago</a>
+													</span>
+													<span class="par"></span>
+													<a class="togg" href="javascript:void(0)">[-]</a>
+												</span>
+											</div>
+											<div class="comment">
+												<span class="commtext c00">
+													This is a reply to the OP's comment. It has inline <code>code</code> formatting.
+												</span>
+											</div>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+						<!-- Second-level nested comment -->
+						<tr class="athing comtr" id="comment3">
+							<td>
+								<table>
+									<tr>
+										<td class="ind"><img src="s.gif" height="1" width="80"></td>
+										<td valign="top" class="votelinks">
+											<center><a href="vote?id=comment3&how=up&goto=item%3Fid%3D12345"><div class="votearrow" title="upvote"></div></a></center>
+										</td>
+										<td class="default">
+											<div style="margin-top:2px; margin-bottom:-10px;">
+												<span class="comhead">
+													<a href="user?id=commenter2" class="hnuser">commenter2</a>
+													<span class="age" title="2024-01-20T11:00:00">
+														<a href="item?id=comment3">45 minutes ago</a>
+													</span>
+													<span class="par"></span>
+													<a class="togg" href="javascript:void(0)">[-]</a>
+												</span>
+											</div>
+											<div class="comment">
+												<span class="commtext c00">
+													Deeply nested reply with <code>inline code</code> and a <pre>code block
+with multiple lines</pre>
+												</span>
+											</div>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+						<!-- Comment without author element (deleted user) -->
+						<tr class="athing comtr" id="comment4">
+							<td>
+								<table>
+									<tr>
+										<td class="ind"><img src="s.gif" height="1" width="0"></td>
+										<td valign="top" class="votelinks"></td>
+										<td class="default">
+											<div class="comment">
+												<span class="commtext c00">
+													This comment has no author (deleted user case).
+												</span>
+											</div>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

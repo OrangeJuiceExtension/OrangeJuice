@@ -6,3 +6,4 @@ Always follow these directions:
 * Block statements are preferred: if (!stored) { return []; }
 * Number.parseInt instead of parseInt
 * Wrap tests in a top level describe()
+* Infer the correct type for document.querySelector based on the selector

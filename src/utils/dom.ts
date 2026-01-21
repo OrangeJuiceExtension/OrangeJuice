@@ -46,7 +46,12 @@ const getUsername = (doc: Document): string | undefined => {
 	return userLink?.textContent || undefined;
 };
 
+const getAllComments = (doc: Document) => {
+	return [...doc.querySelectorAll('tr.comtr')];
+};
+
 export const dom = {
+	getAllComments,
 	createHiddenInput,
 	getHiddenInputValue,
 	getReplyIdFromLink,
