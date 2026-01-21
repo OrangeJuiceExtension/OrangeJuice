@@ -16,6 +16,7 @@ export const createCheckbox = () => {
 
 	const label = document.createElement('label');
 	label.style.cursor = 'pointer';
+	label.style.userSelect = 'none';
 
 	const checkbox = document.createElement('input');
 	checkbox.type = 'checkbox';
