@@ -365,9 +365,7 @@ describe('hide_read_stories', () => {
 		it('should handle errors in main handler', async () => {
 			const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-			mockGetVisits.mockImplementation(() => {
-				throw new Error('Unexpected error');
-			});
+			mockGetVisits.mockRejectedValueOnce(new Error('Unexpected error'));
 
 			const sendResponse = vi.fn();
 
