@@ -26,7 +26,7 @@
 		"@playwright/test": "^1.57.0",
 		"@tailwindcss/vite": "^4.1.18",
 		"@testing-library/dom": "^10.4.1",
-		"@types/react": "^19.2.8",
+		"@types/react": "^19.2.9",
 		"@types/react-dom": "^19.2.3",
 		"@wxt-dev/browser": "^0.1.32",
 		"@wxt-dev/module-react": "^1.1.5",
@@ -34,7 +34,7 @@
 		"happy-dom": "^20.3.4",
 		"playwright": "^1.57.0",
 		"typescript": "^5.9.3",
-		"ultracite": "7.0.11",
+		"ultracite": "7.0.12",
 		"vitest": "^4.0.17",
 		"vitest-localstorage-mock": "^0.1.2",
 		"wxt": "^0.20.13"
