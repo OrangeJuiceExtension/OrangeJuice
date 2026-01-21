@@ -26,6 +26,14 @@ When submitting a new story, a character counter appears next to the title input
 ## Hide read stories
 There is a checkbox displayed at the top of story pages that hides any stories you've already read. It uses the browser's history API to determine if a link has been visited before.
 
+## Enhanced Comment UX
+Improves the comment reading experience with several visual enhancements:
+- **Custom indent width**: Comment indentation is adjusted to 40px width, making deeply nested threads easier to follow.
+- **Visual indent guides**: A subtle shadow appears on the left edge of indented comments, providing a visual guide to thread structure.
+- **OP highlighting**: The original poster's username is marked with an `[op]` label and displayed in orange, making it easy to identify their comments throughout the thread.
+- **Enhanced code formatting**: Code blocks and inline code snippets get improved styling with a light gray background and rounded corners for better readability.
+
+
 # Tests
 
 ## Why Testing Matters
