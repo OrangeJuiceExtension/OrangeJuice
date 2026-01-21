@@ -26,6 +26,14 @@ When submitting a new story, a character counter appears next to the title input
 ## Hide read stories
 There is a checkbox displayed at the top of story pages that hides any stories you've already read. It uses the browser's history API to determine if a link has been visited before.
 
-# Running E2E tests
+# Tests
+
+## Why Testing Matters
+
+Testing is crucial for maintaining code quality and preventing regressions as the extension evolves. Unit tests help ensure individual components work correctly and make refactoring safer. They provide confidence when adding new features or making changes to existing code. All code contributions should come with tests. Fact is that AI makes this a lot easier now, so you might as well take advantage of it.
+
+## E2E
+
+We haven't implemented end-to-end testing yet because it doesn't seem necessary at this stage. The extension's features are relatively straightforward, and manual testing has been enough for catching integration issues. As the project grows in complexity, we may revisit this decision.
 
 Make sure to run `bunx playwright install` before running tests.
