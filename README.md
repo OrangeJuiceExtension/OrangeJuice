@@ -21,7 +21,10 @@ Clicking a "reply" link now opens an inline reply form directly on the page, eli
 Add a "favorite" button to comments and stories across various pages of HN, allowing you to save items for later reference. The button updates in place without redirecting you to a new page.
 
 ## Character Count for Story Submissions
-When submitting a new story, a character counter appears below the title input field showing how many characters remain until you reach the 80-character limit.
+When submitting a new story, a character counter appears next to the title input field showing how many characters remain until you reach the 80-character limit.
+
+## Hide read stories
+There is a checkbox displayed at the top of story pages that hides any stories you've already read. It uses the browser's history API to determine if a link has been visited before.
 
 # Running E2E tests
 
