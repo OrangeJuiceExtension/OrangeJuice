@@ -81,23 +81,21 @@ export const handleHideReadStories = async (
 ) => {
 	try {
 		if (message.id === 'getVisits') {
-			const storiesWithVisits = await Promise.all(
-				message.stories.map(async (story) => {
-					try {
-						const visits = await browser.history.getVisits({ url: story.url });
+			const visitPromises = message.stories.map((story) =>
+				browser.history.getVisits({ url: story.url })
+					.then((visits) => {
 						if (visits.length > 0) {
-							return {
-								...story,
-								latestVisit: visits[0],
-							};
+							story.latestVisit = visits[0];
 						}
 						return story;
-					} catch (e) {
+					})
+					.catch((e) => {
 						console.error('Error fetching visit history for story:', story, e);
 						return story;
-					}
-				})
+					})
 			);
+
+			const storiesWithVisits = await Promise.all(visitPromises);
 
 			return sendResponse({
 				id: 'handleHideReadStories',
