@@ -4,13 +4,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { browser } from 'wxt/browser';
 import type { HNStory } from '@/utils/types.ts';
-import {
-	createCheckbox,
-	handleHideReadStories,
-	hideStories,
-	setupCheckbox,
-	showStories,
-} from './index.ts';
+import { createCheckbox, handleHideReadStories, hideStories, setupCheckbox, showStories, } from './index.ts';
 
 const STORY_LIST_HTML_REGEX = /class="itemlist"/;
 const homepageHtml = readFileSync(
@@ -121,6 +115,7 @@ describe('hide_read_stories', () => {
 			const label = row.querySelector('label');
 			expect(label).not.toBeNull();
 			expect(label?.style.cursor).toBe('pointer');
+			expect(label?.style.userSelect).toBe('none');
 			expect(label?.textContent).toBe('Hide read stories');
 		});
 
