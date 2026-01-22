@@ -1,3 +1,5 @@
+import { paths } from '@/utils/paths';
+
 const createHiddenInput = (name: string, value: string) => {
 	const input = document.createElement('input');
 	input.type = 'hidden';
@@ -24,7 +26,11 @@ const getPageDom = async (
 		return;
 	}
 
-	const response = await fetch(url, { cache });
+	let fixedUrl: string = url;
+	if (!(url.startsWith('http') && url.startsWith('/'))) {
+		fixedUrl = `${paths.base}/${url}`;
+	}
+	const response = await fetch(fixedUrl, { cache });
 	const html = await response.text();
 
 	const div = document.createElement('div');
