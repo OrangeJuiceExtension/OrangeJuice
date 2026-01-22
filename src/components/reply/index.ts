@@ -61,13 +61,7 @@ export const handleReplyClick = (link: HTMLAnchorElement, itemId: string, hmacVa
 	submitButton.name = 'submit_comment';
 	submitButton.value = 'add comment';
 
-	const submitButton2 = document.createElement('input');
-	submitButton2.type = 'submit';
-	submitButton2.name = 'rewrite';
-	submitButton2.value = 'fluff comment with ai';
-
 	buttonContainer.appendChild(submitButton);
-	buttonContainer.appendChild(submitButton2);
 	form.appendChild(buttonContainer);
 
 	// Insert form after the parent element
