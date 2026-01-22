@@ -16,10 +16,11 @@ I’m not a browser extension expert. The code will start rough, but through exp
 The ultimate goal is a genuinely useful extension that runs smoothly across all major browsers.
 
 # Features
-<details>
-<summary>Click to expand</summary>
 
 I’m intentionally not adding screenshots. Things are still changing, and I don’t want to constantly update feature visuals that will quickly be out of date. More importantly, the extension isn’t meant to be loud or attention-grabbing. Ideally, you shouldn’t really notice it at all. The features should feel subtle but natural: visible, useful, and aligned with what most users would expect the site to have supported in the first place. As we grow the feature set, it should always be with respect to the original design.
+
+<details>
+<summary>Click to expand detailed summaries</summary>
 
 ## Inline Reply
 Clicking a "reply" link now opens an inline reply form directly on the page, eliminating the need to navigate to a separate comment page. The form includes support for quoting selected text.
