@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { getByRole, getByTestId } from '@testing-library/dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { dom } from '@/utils/dom.ts';
 import { handleReplyClick } from './index.ts';
 
 const fixtureHtml = readFileSync(join(__dirname, '__fixtures__', 'hn-item.html'), 'utf-8');
@@ -12,22 +13,13 @@ describe('handleReplyClick', () => {
 	beforeEach(() => {
 		document.body.innerHTML = fixtureHtml;
 
-		for (const link of document.querySelectorAll('a')) {
-			const text = link.textContent?.trim();
-			if (text === 'reply') {
-				link.addEventListener('click', (e) => {
-					e.preventDefault();
-					e.stopPropagation();
-					handleReplyClick(link, itemId, hmacValue);
-				});
-			}
-		}
+		vi.spyOn(dom, 'fetchHmacFromPage').mockResolvedValue(hmacValue);
 	});
 
-	it('should create a form with textarea when clicking reply link', () => {
+	it('should create a form with textarea when clicking reply link', async () => {
 		// Execute
-		const link1 = getByTestId(document.body, 'test-a-1');
-		link1.click();
+		const link1 = getByTestId<HTMLAnchorElement>(document.body, 'test-a-1');
+		await handleReplyClick(link1, itemId);
 
 		// Assert
 		const textbox = getByRole(document.body, 'textbox') as HTMLTextAreaElement;
@@ -56,21 +48,21 @@ describe('handleReplyClick', () => {
 		expect(link1.textContent).toBe('hide reply');
 	});
 
-	it('should remove form and restore link text when clicking hide reply', () => {
-		const link1 = getByTestId(document.body, 'test-a-1');
+	it('should remove form and restore link text when clicking hide reply', async () => {
+		const link1 = getByTestId<HTMLAnchorElement>(document.body, 'test-a-1');
 
 		// First click to create form
-		link1.click();
+		await handleReplyClick(link1, itemId);
 		expect(getByRole(document.body, 'textbox')).toBeTruthy();
 		expect(link1.textContent).toBe('hide reply');
 
 		// Second click to remove form
-		link1.click();
+		await handleReplyClick(link1, itemId);
 		expect(document.body.querySelector('textarea[name="text"]')).toBeNull();
 		expect(link1.textContent).toBe('reply');
 	});
 
-	it('should populate textarea with selected text as quoted', () => {
+	it('should populate textarea with selected text as quoted', async () => {
 		// Mock window.getSelection
 		const mockSelection = {
 			toString: () => 'Line 1\nLine 2\n\nLine 3',
@@ -78,22 +70,22 @@ describe('handleReplyClick', () => {
 		vi.stubGlobal('getSelection', () => mockSelection);
 
 		// Execute
-		const link1 = getByTestId(document.body, 'test-a-1');
-		link1.click();
+		const link1 = getByTestId<HTMLAnchorElement>(document.body, 'test-a-1');
+		await handleReplyClick(link1, itemId);
 
 		// Assert
 		const textarea = getByRole(document.body, 'textbox') as HTMLTextAreaElement;
 		expect(textarea.value).toBe('> Line 1\n\n> Line 2\n\n> Line 3');
 	});
 
-	it('should handle multiple reply links independently', () => {
+	it('should handle multiple reply links independently', async () => {
 		// Execute - click first link
-		const link1 = getByTestId(document.body, 'test-a-1');
-		link1.click();
+		const link1 = getByTestId<HTMLAnchorElement>(document.body, 'test-a-1');
+		await handleReplyClick(link1, itemId);
 
 		// Execute - click second link
-		const link2 = getByTestId(document.body, 'test-a-2');
-		link2.click();
+		const link2 = getByTestId<HTMLAnchorElement>(document.body, 'test-a-2');
+		await handleReplyClick(link2, itemId);
 
 		// Assert - both forms should exist
 		const textareas = document.body.querySelectorAll('textarea[name="text"]');
@@ -108,10 +100,10 @@ describe('handleReplyClick', () => {
 		expect(parent2Input?.value).toBe('46671273');
 	});
 
-	it('should focus the textarea when form is created', () => {
+	it('should focus the textarea when form is created', async () => {
 		// Execute
-		const link1 = getByTestId(document.body, 'test-a-1');
-		link1.click();
+		const link1 = getByTestId<HTMLAnchorElement>(document.body, 'test-a-1');
+		await handleReplyClick(link1, itemId);
 
 		// Assert
 		const textarea = getByRole(document.body, 'textbox') as HTMLTextAreaElement;

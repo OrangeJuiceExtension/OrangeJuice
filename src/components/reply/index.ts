@@ -9,7 +9,12 @@ import type { ComponentFeature } from '@/utils/types.ts';
  * into a class or something.
  */
 
-export const handleReplyClick = (link: HTMLAnchorElement, itemId: string, hmacValue: string) => {
+export const handleReplyClick = async (link: HTMLAnchorElement, itemId: string) => {
+	const href = link.getAttribute('href');
+	if (!href) {
+		return;
+	}
+
 	// Check if form already exists, which toggles the display and the link
 	const existingForm = link.parentElement?.nextElementSibling;
 	if (existingForm?.tagName === 'FORM') {
@@ -18,6 +23,7 @@ export const handleReplyClick = (link: HTMLAnchorElement, itemId: string, hmacVa
 		return;
 	}
 
+	const hmacValue = await dom.fetchHmacFromPage(href);
 	const replyId = dom.getReplyIdFromLink(link);
 
 	// Create form
@@ -84,15 +90,13 @@ export const inlineReply: ComponentFeature = {
 		const listeners = new Map<HTMLAnchorElement, (e: Event) => void>();
 
 		// Attach listeners to all reply links
-		for (const link of document.querySelectorAll('a')) {
+		for (const link of document.querySelectorAll<HTMLAnchorElement>('a')) {
 			const text = link.textContent?.trim();
 			if (text === 'reply') {
-				const handler = async (e: Event) => {
+				const handler = (e: Event) => {
 					e.preventDefault();
 					e.stopPropagation();
-					const href = link.getAttribute('href') || '';
-					const hmacValue = await dom.fetchHmacFromPage(href);
-					handleReplyClick(link, itemId, hmacValue);
+					return handleReplyClick(link, itemId);
 				};
 				link.addEventListener('click', handler);
 				listeners.set(link, handler);
