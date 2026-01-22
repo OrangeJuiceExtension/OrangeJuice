@@ -50,6 +50,11 @@ const getAllComments = (doc: Document) => {
 	return [...doc.querySelectorAll('tr.comtr')];
 };
 
+const getItemIdFromLocation = (): string | null => {
+	const url = new URL(window.location.href);
+	return url.searchParams.get('id');
+};
+
 export const dom = {
 	getAllComments,
 	createHiddenInput,
@@ -58,4 +63,5 @@ export const dom = {
 	getPageDom,
 	fetchHmacFromPage,
 	getUsername,
+	getItemIdFromLocation,
 };

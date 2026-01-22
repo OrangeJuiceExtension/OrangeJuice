@@ -1,7 +1,12 @@
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 import { saved } from '@/utils/saved.ts';
-import { type ComponentFeature, type OJContext, type SavedItem, SavedItemType, } from '@/utils/types.ts';
+import {
+	type ComponentFeature,
+	type OJContext,
+	type SavedItem,
+	SavedItemType,
+} from '@/utils/types.ts';
 
 const authMatchPattern = /auth=([^&]+)/;
 const unvePrefixPattern = /^unv_/;
@@ -29,9 +34,9 @@ const idExtractors = new Map<
 
 const getAuthToken = async (
 	commentId: string,
-	favorites?: Map<string, SavedItem>
+	favorites?: StoredData
 ): Promise<string | undefined> => {
-	const savedItem = favorites?.get(commentId);
+	const savedItem = favorites?.items.get(commentId);
 	if (savedItem?.auth) {
 		return savedItem.auth;
 	}
@@ -113,7 +118,7 @@ const initFavoritesWithSelector = (
 			continue;
 		}
 
-		let savedData = ojCtx.favorites?.get(commentId);
+		let savedData = ojCtx.favorites?.items.get(commentId);
 		const favoriteButton = doc.createElement('button');
 		favoriteButton.textContent = savedData ? 'un-favorite' : 'favorite';
 		favoriteButton.className = 'oj-link-button';

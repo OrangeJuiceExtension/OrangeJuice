@@ -2,8 +2,7 @@ import { SavedItemType, SavedItemTypes } from '@/utils/types.ts';
 import { dom } from './dom';
 import { paths } from './paths';
 
-const STORAGE_KEY_SAVED = 'oj_saved';
-const STORAGE_KEY_LAST_SYNC = 'oj_saved_last_sync';
+const STORAGE_KEY_SAVED = 'oj_saved_items';
 const SYNC_INTERVAL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const idMatchPattern = /id=(\d+)/;
 const authMatchPattern = /auth=([^&]+)/;
@@ -108,6 +107,43 @@ const hasMorePages = (doc: HTMLElement): boolean => {
 	return !!doc.querySelector<HTMLAnchorElement>('a.morelink[href*="p="]');
 };
 
+const processConcurrent = <T, R>(
+	items: T[],
+	maxConcurrency: number,
+	processor: (item: T) => Promise<R>
+): Promise<R[]> => {
+	const results: R[] = [];
+	const queue = [...items];
+	let activeWorkers = 0;
+
+	return new Promise((resolve) => {
+		const processNext = (): void => {
+			while (activeWorkers < maxConcurrency && queue.length > 0) {
+				const item = queue.shift();
+				if (item === undefined) {
+					break;
+				}
+
+				activeWorkers++;
+				processor(item)
+					.then((result) => {
+						results.push(result);
+					})
+					.finally(() => {
+						activeWorkers--;
+						if (activeWorkers === 0 && queue.length === 0) {
+							resolve(results);
+						} else {
+							processNext();
+						}
+					});
+			}
+		};
+
+		processNext();
+	});
+};
+
 /**
  * Fetches all favorites for a user with pagination support
  */
@@ -117,10 +153,7 @@ const fetchAllByType = async (
 	cache: RequestCache | undefined = 'force-cache'
 ): Promise<Map<string, SavedItem>> => {
 	const items = new Map<string, SavedItem>();
-	const MAX_WORKERS = 5;
-	const queue: number[] = [];
-	let activeWorkers = 0;
-	let resolve: (() => void) | null = null;
+	const pagesToProcess: number[] = [1];
 
 	const processPage = async (page: number): Promise<void> => {
 		const url = urlFromType(username, type, page);
@@ -138,96 +171,90 @@ const fetchAllByType = async (
 		}
 
 		if (hasMorePages(doc)) {
-			queue.push(page + 1);
-			processQueue();
+			pagesToProcess.push(page + 1);
 		}
 	};
 
-	const processQueue = (): void => {
-		while (activeWorkers < MAX_WORKERS && queue.length > 0) {
-			const page = queue.shift();
-			if (page === undefined) {
-				break;
-			}
-
-			activeWorkers++;
-			processPage(page).finally(() => {
-				activeWorkers--;
-				if (activeWorkers === 0 && queue.length === 0 && resolve) {
-					resolve();
-				} else {
-					processQueue();
-				}
-			});
-		}
-	};
-
-	await processPage(1);
-
-	if (queue.length > 0 || activeWorkers > 0) {
-		await new Promise<void>((res) => {
-			resolve = res;
-			processQueue();
-		});
+	while (pagesToProcess.length > 0) {
+		const currentBatch = pagesToProcess.splice(0, pagesToProcess.length);
+		// don't be too concurrent, we don't want to piss them off
+		await processConcurrent(currentBatch, 2, processPage);
 	}
 
 	return items;
 };
 
+export interface StoredData {
+	items: Map<string, SavedItem>;
+	lastSync: number;
+}
+
 /**
  * Loads saved from local storage
  */
-const loadSavedFromStorage = (): Map<string, SavedItem> => {
+const loadSavedFromStorage = (): StoredData => {
 	const stored = localStorage.getItem(STORAGE_KEY_SAVED);
 	if (!stored) {
-		return new Map();
+		return {
+			items: new Map<string, SavedItem>(),
+			lastSync: 0,
+		};
 	}
 
 	try {
-		const items: SavedItem[] = JSON.parse(stored);
-		return new Map(items.map((item) => [item.id, item]));
-	} catch {
-		return new Map();
+		const parsed = JSON.parse(stored);
+		return {
+			items: new Map(Object.entries(parsed.items || {})),
+			lastSync: parsed.lastSync || 0,
+		};
+	} catch (_e) {
+		return {
+			items: new Map<string, SavedItem>(),
+			lastSync: 0,
+		};
 	}
 };
 
 /**
  * Saves saved to local storage
  */
-const saveToStorage = (data: Map<string, SavedItem>): void => {
-	const items = Array.from(data.values());
-	localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(items));
+const saveToStorage = (data: StoredData): void => {
+	const serializable = {
+		items: Object.fromEntries(data.items),
+		lastSync: data.lastSync,
+	};
+	localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(serializable));
 };
 
 /**
- * Re-syncs storage with latest from website
+ * Re-syncs storage with the latest from website
  */
-const syncSaved = async (username: string): Promise<Map<string, SavedItem>> => {
-	const lastSync = localStorage.getItem(STORAGE_KEY_LAST_SYNC);
-	const now = Date.now();
-	let reload = false;
+const syncSaved = async (username: string): Promise<StoredData> => {
+	const storedData = loadSavedFromStorage();
 
-	if (lastSync) {
-		const lastSyncTime = Number.parseInt(lastSync, 10);
-		reload = now - lastSyncTime < SYNC_INTERVAL_MS;
-		if (reload) {
-			return loadSavedFromStorage();
-		}
+	const now = Date.now();
+	const reload = now - storedData.lastSync < SYNC_INTERVAL_MS;
+	if (reload) {
+		return loadSavedFromStorage();
 	}
 
-	const localItems = loadSavedFromStorage();
-
-	const fetchedItems = await SavedItemTypes.reduce(async (accPromise, type) => {
-		const acc = await accPromise;
-		const items = await fetchAllByType(username, type, reload ? 'default' : 'force-cache');
-		return new Map([...acc, ...items]);
-	}, Promise.resolve(new Map<string, SavedItem>()));
-
-	// Merge: fetched items override local
-	const savedItems = new Map([...localItems, ...fetchedItems]);
+	// Merge: fetched items override local. kind of hard to read, but most efficient
+	// don't be too concurrent, we don't want to piss them off
+	const savedItems = {
+		items: await processConcurrent(SavedItemTypes, 2, (type) =>
+			fetchAllByType(username, type, 'force-cache')
+		).then((maps) =>
+			maps.reduce((acc, m) => {
+				for (const [k, v] of m) {
+					acc.set(k, v);
+				}
+				return acc;
+			}, new Map(storedData.items))
+		),
+		lastSync: now,
+	};
 
 	saveToStorage(savedItems);
-	localStorage.setItem(STORAGE_KEY_LAST_SYNC, now.toString());
 	return savedItems;
 };
 
@@ -235,12 +262,12 @@ const syncSaved = async (username: string): Promise<Map<string, SavedItem>> => {
  * Adds a saved item to storage
  */
 const addToStorage = (itemId: string, auth: string, type: SavedItemType): SavedItem | undefined => {
-	const savedItems = loadSavedFromStorage();
+	const storedData = loadSavedFromStorage();
 
-	if (!savedItems.has(itemId)) {
+	if (!storedData.items.has(itemId)) {
 		const newItem: SavedItem = { id: itemId, auth, type };
-		savedItems.set(itemId, newItem);
-		saveToStorage(savedItems);
+		storedData.items.set(itemId, newItem);
+		saveToStorage(storedData);
 		return newItem;
 	}
 };
@@ -250,7 +277,7 @@ const addToStorage = (itemId: string, auth: string, type: SavedItemType): SavedI
  */
 const removeFromStorage = (itemId: string): void => {
 	const saved = loadSavedFromStorage();
-	saved.delete(itemId);
+	saved.items.delete(itemId);
 	saveToStorage(saved);
 };
 
@@ -259,7 +286,7 @@ const removeFromStorage = (itemId: string): void => {
  */
 const getAuthForItem = (itemId: string): string | undefined => {
 	const saved = loadSavedFromStorage();
-	return saved.get(itemId)?.auth;
+	return saved.items.get(itemId)?.auth;
 };
 
 /**
@@ -267,9 +294,9 @@ const getAuthForItem = (itemId: string): string | undefined => {
  */
 const updateItem = (itemId: string, updates: Partial<Omit<SavedItem, 'id'>>): void => {
 	const saved = loadSavedFromStorage();
-	const item = saved.get(itemId);
+	const item = saved.items.get(itemId);
 	if (item) {
-		saved.set(itemId, { ...item, ...updates });
+		saved.items.set(itemId, { ...item, ...updates });
 		saveToStorage(saved);
 	}
 };

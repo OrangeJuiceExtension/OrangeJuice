@@ -26,6 +26,9 @@ When submitting a new story, a character counter appears next to the title input
 ## Hide read stories
 There is a checkbox displayed at the top of story pages that hides any stories you've already read. It uses the browser's history API to determine if a link has been visited before.
 
+## Highlight Unread Comments
+Tracks comments you've read and highlights new ones with an orange left border. When you revisit a thread within 3 days, new comments added since your last visit are clearly marked. The highlight becomes brighter on hover for easy identification.
+
 ## Enhanced Comment UX
 Improves the comment reading experience with several visual enhancements:
 - **Custom indent width**: Comment indentation is adjusted to 40px width, making deeply nested threads easier to follow.

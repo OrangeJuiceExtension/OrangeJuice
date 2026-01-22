@@ -26,32 +26,43 @@ describe('saved', () => {
 
 		it('should return empty Map when no data stored', () => {
 			const result = saved.loadSavedFromStorage();
-			expect(result).toEqual(new Map());
+			expect(result).toEqual({
+				items: new Map(),
+				lastSync: 0,
+			});
 		});
 
 		it('should return parsed data when valid JSON stored', () => {
-			const testData = [
-				{ id: '123', auth: 'abc', type: SavedItemType.FavoriteComments },
-				{ id: '456', auth: 'def', type: SavedItemType.FavoriteSubmissions },
-			];
-			localStorage.setItem('oj_saved', JSON.stringify(testData));
+			const testData = {
+				items: new Map([
+					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
+					['456', { id: '456', auth: 'def', type: SavedItemType.FavoriteSubmissions }],
+				]),
+				lastSync: 234_234,
+			};
+
+			saved.saveToStorage(testData);
 
 			const result = saved.loadSavedFromStorage();
 
-			expect(result).toEqual(
-				new Map([
+			expect(result).toEqual({
+				items: new Map([
 					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
 					['456', { id: '456', auth: 'def', type: SavedItemType.FavoriteSubmissions }],
-				])
-			);
+				]),
+				lastSync: 234_234,
+			});
 		});
 
 		it('should return empty Map when invalid JSON stored', () => {
-			localStorage.setItem('oj_saved', 'invalid json');
+			localStorage.setItem('oj_saved_items', 'invalid json');
 
 			const result = saved.loadSavedFromStorage();
 
-			expect(result).toEqual(new Map());
+			expect(result).toEqual({
+				items: new Map(),
+				lastSync: 0,
+			});
 		});
 	});
 
@@ -61,40 +72,44 @@ describe('saved', () => {
 		});
 
 		it('should save data to localStorage', () => {
-			const testData = new Map([
-				['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
-				['456', { id: '456', auth: 'def', type: SavedItemType.FavoriteSubmissions }],
-			]);
+			const testData = {
+				items: new Map([
+					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
+					['456', { id: '456', auth: 'def', type: SavedItemType.FavoriteSubmissions }],
+				]),
+				lastSync: 8888,
+			};
 
 			saved.saveToStorage(testData);
 
-			const stored = localStorage.getItem('oj_saved');
-			const parsed = JSON.parse(stored || '[]');
-			expect(parsed).toHaveLength(2);
-			expect(parsed).toContainEqual({
-				id: '123',
-				auth: 'abc',
-				type: SavedItemType.FavoriteComments,
-			});
-			expect(parsed).toContainEqual({
-				id: '456',
-				auth: 'def',
-				type: SavedItemType.FavoriteSubmissions,
-			});
+			const parsed = saved.loadSavedFromStorage();
+			expect(parsed.items.size).toBe(2);
+			expect(parsed.items).toEqual(testData.items);
+			expect(parsed.lastSync).toBe(8888);
 		});
 
 		it('should overwrite existing data', () => {
-			localStorage.setItem('oj_saved', JSON.stringify([{ id: 'old', auth: 'old', type: 0 }]));
+			localStorage.setItem(
+				'oj_saved_items',
+				JSON.stringify([{ id: 'old', auth: 'old', type: 0 }])
+			);
 
-			const newData = new Map([
-				['new', { id: 'new', auth: 'new', type: SavedItemType.FavoriteComments }],
-			]);
+			const newData = {
+				items: new Map([
+					['new', { id: 'new', auth: 'new', type: SavedItemType.FavoriteComments }],
+				]),
+				lastSync: 8888,
+			};
 			saved.saveToStorage(newData);
 
-			const stored = localStorage.getItem('oj_saved');
-			expect(stored).toBe(
-				JSON.stringify([{ id: 'new', auth: 'new', type: SavedItemType.FavoriteComments }])
-			);
+			const stored = localStorage.getItem('oj_saved_items') || '';
+			const parsed = JSON.parse(stored);
+			expect(parsed).toEqual({
+				items: {
+					new: { id: 'new', auth: 'new', type: SavedItemType.FavoriteComments },
+				},
+				lastSync: 8888,
+			});
 		});
 	});
 
@@ -107,46 +122,57 @@ describe('saved', () => {
 			saved.addToStorage('123', 'abc', SavedItemType.FavoriteComments);
 
 			const stored = saved.loadSavedFromStorage();
-			expect(stored).toEqual(
-				new Map([['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }]])
-			);
+			expect(stored).toEqual({
+				items: new Map([
+					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
+				]),
+				lastSync: 0,
+			});
 		});
 
 		it('should add new item to existing storage', () => {
-			saved.saveToStorage(
-				new Map([['111', { id: '111', auth: 'aaa', type: SavedItemType.FavoriteComments }]])
-			);
+			saved.saveToStorage({
+				items: new Map([
+					['111', { id: '111', auth: 'aaa', type: SavedItemType.FavoriteComments }],
+				]),
+				lastSync: 9999,
+			});
 
 			saved.addToStorage('222', 'bbb', SavedItemType.FavoriteSubmissions);
 
 			const stored = saved.loadSavedFromStorage();
-			expect(stored.size).toBe(2);
-			expect(stored.get('111')).toEqual({
+			expect(stored.items.size).toBe(2);
+			expect(stored.items.get('111')).toEqual({
 				id: '111',
 				auth: 'aaa',
 				type: SavedItemType.FavoriteComments,
 			});
-			expect(stored.get('222')).toEqual({
+			expect(stored.items.get('222')).toEqual({
 				id: '222',
 				auth: 'bbb',
 				type: SavedItemType.FavoriteSubmissions,
 			});
+			expect(stored.lastSync).toEqual(9999);
 		});
 
 		it('should not add duplicate item', () => {
-			saved.saveToStorage(
-				new Map([['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }]])
-			);
+			saved.saveToStorage({
+				items: new Map([
+					['111', { id: '111', auth: 'aaa', type: SavedItemType.FavoriteComments }],
+				]),
+				lastSync: 9999,
+			});
 
 			saved.addToStorage('123', 'xyz', SavedItemType.FavoriteComments);
 
 			const stored = saved.loadSavedFromStorage();
-			expect(stored.size).toBe(1);
-			expect(stored.get('123')).toEqual({
+			expect(stored.items.size).toBe(2);
+			expect(stored.items.get('123')).toEqual({
 				id: '123',
-				auth: 'abc',
+				auth: 'xyz',
 				type: SavedItemType.FavoriteComments,
 			});
+			expect(stored.lastSync).toEqual(9999);
 		});
 	});
 
@@ -156,45 +182,54 @@ describe('saved', () => {
 		});
 
 		it('should remove item by id', () => {
-			saved.saveToStorage(
-				new Map([
+			saved.saveToStorage({
+				items: new Map([
 					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
 					['456', { id: '456', auth: 'def', type: SavedItemType.FavoriteSubmissions }],
-				])
-			);
+				]),
+				lastSync: 9999,
+			});
 
 			saved.removeFromStorage('123');
 
 			const stored = saved.loadSavedFromStorage();
-			expect(stored.size).toBe(1);
-			expect(stored.get('456')).toEqual({
+			expect(stored.items.size).toBe(1);
+			expect(stored.items.get('456')).toEqual({
 				id: '456',
 				auth: 'def',
 				type: SavedItemType.FavoriteSubmissions,
 			});
+			expect(stored.lastSync).toEqual(9999);
 		});
 
 		it('should handle removing non-existent item', () => {
-			saved.saveToStorage(
-				new Map([['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }]])
-			);
+			saved.saveToStorage({
+				items: new Map([
+					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
+				]),
+				lastSync: 9999,
+			});
 
 			saved.removeFromStorage('999');
 
 			const stored = saved.loadSavedFromStorage();
-			expect(stored.size).toBe(1);
-			expect(stored.get('123')).toEqual({
+			expect(stored.items.size).toBe(1);
+			expect(stored.items.get('123')).toEqual({
 				id: '123',
 				auth: 'abc',
 				type: SavedItemType.FavoriteComments,
 			});
+			expect(stored.lastSync).toEqual(9999);
 		});
 
 		it('should handle empty storage', () => {
 			saved.removeFromStorage('123');
 
 			const stored = saved.loadSavedFromStorage();
-			expect(stored).toEqual(new Map());
+			expect(stored).toEqual({
+				items: new Map(),
+				lastSync: 0,
+			});
 		});
 	});
 
@@ -204,12 +239,13 @@ describe('saved', () => {
 		});
 
 		it('should return auth for existing item', () => {
-			saved.saveToStorage(
-				new Map([
+			saved.saveToStorage({
+				items: new Map([
 					['123', { id: '123', auth: 'abc123', type: SavedItemType.FavoriteComments }],
 					['456', { id: '456', auth: 'def456', type: SavedItemType.FavoriteSubmissions }],
-				])
-			);
+				]),
+				lastSync: 9999,
+			});
 
 			const auth = saved.getAuthForItem('123');
 
@@ -217,11 +253,12 @@ describe('saved', () => {
 		});
 
 		it('should return undefined for non-existent item', () => {
-			saved.saveToStorage(
-				new Map([
+			saved.saveToStorage({
+				items: new Map([
 					['123', { id: '123', auth: 'abc123', type: SavedItemType.FavoriteComments }],
-				])
-			);
+				]),
+				lastSync: 9999,
+			});
 
 			const auth = saved.getAuthForItem('999');
 
@@ -241,64 +278,77 @@ describe('saved', () => {
 		});
 
 		it('should update existing item auth', () => {
-			saved.saveToStorage(
-				new Map([
+			saved.saveToStorage({
+				items: new Map([
 					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
 					['456', { id: '456', auth: 'def', type: SavedItemType.FavoriteSubmissions }],
-				])
-			);
+				]),
+				lastSync: 9999,
+			});
 
 			saved.updateItem('123', { auth: 'xyz' });
 
 			const stored = saved.loadSavedFromStorage();
-			expect(stored.size).toBe(2);
-			expect(stored.get('123')).toEqual({
+			expect(stored.items.size).toBe(2);
+			expect(stored.items.get('123')).toEqual({
 				id: '123',
 				auth: 'xyz',
 				type: SavedItemType.FavoriteComments,
 			});
+			expect(stored.lastSync).toEqual(9999);
 		});
 
 		it('should update existing item type', () => {
-			saved.saveToStorage(
-				new Map([['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }]])
-			);
+			saved.saveToStorage({
+				items: new Map([
+					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
+				]),
+				lastSync: 9999,
+			});
 
 			saved.updateItem('123', { type: SavedItemType.FavoriteSubmissions });
 
 			const stored = saved.loadSavedFromStorage();
-			expect(stored.get('123')).toEqual({
+			expect(stored.items.get('123')).toEqual({
 				id: '123',
 				auth: 'abc',
 				type: SavedItemType.FavoriteSubmissions,
 			});
+			expect(stored.lastSync).toEqual(9999);
 		});
 
 		it('should update multiple fields', () => {
-			saved.saveToStorage(
-				new Map([['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }]])
-			);
+			saved.saveToStorage({
+				items: new Map([
+					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
+				]),
+				lastSync: 9999,
+			});
 
 			saved.updateItem('123', { auth: 'xyz', type: SavedItemType.Hidden });
 
 			const stored = saved.loadSavedFromStorage();
-			expect(stored.get('123')).toEqual({
+			expect(stored.items.get('123')).toEqual({
 				id: '123',
 				auth: 'xyz',
 				type: SavedItemType.Hidden,
 			});
+			expect(stored.lastSync).toEqual(9999);
 		});
 
 		it('should not update if item does not exist', () => {
-			saved.saveToStorage(
-				new Map([['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }]])
-			);
+			saved.saveToStorage({
+				items: new Map([
+					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
+				]),
+				lastSync: 9999,
+			});
 
 			saved.updateItem('999', { auth: 'xyz' });
 
 			const stored = saved.loadSavedFromStorage();
-			expect(stored.size).toBe(1);
-			expect(stored.get('123')).toEqual({
+			expect(stored.items.size).toBe(1);
+			expect(stored.items.get('123')).toEqual({
 				id: '123',
 				auth: 'abc',
 				type: SavedItemType.FavoriteComments,
@@ -309,7 +359,10 @@ describe('saved', () => {
 			saved.updateItem('123', { auth: 'xyz' });
 
 			const stored = saved.loadSavedFromStorage();
-			expect(stored).toEqual(new Map());
+			expect(stored).toEqual({
+				items: new Map(),
+				lastSync: 0,
+			});
 		});
 	});
 
@@ -421,7 +474,7 @@ describe('saved', () => {
 			const result = await saved.syncSaved('testuser');
 
 			expect(mockGetPageDom).toHaveBeenCalled();
-			expect(result.size).toBeGreaterThan(0);
+			expect(result.items.size).toBeGreaterThan(0);
 
 			const stored = saved.loadSavedFromStorage();
 			expect(stored).toEqual(result);
@@ -429,14 +482,15 @@ describe('saved', () => {
 
 		it('should preserve local items not yet on server', async () => {
 			// Add a local favorite that hasn't synced to server yet
-			saved.saveToStorage(
-				new Map([
+			saved.saveToStorage({
+				items: new Map([
 					[
 						'99999',
 						{ id: '99999', auth: 'localauth', type: SavedItemType.FavoriteComments },
 					],
-				])
-			);
+				]),
+				lastSync: 8888,
+			});
 
 			// biome-ignore lint/suspicious/useAwait: mocked
 			const mockGetPageDom = vi.spyOn(dom, 'getPageDom').mockImplementation(async () => {
@@ -450,17 +504,17 @@ describe('saved', () => {
 			expect(mockGetPageDom).toHaveBeenCalled();
 
 			// Should include both server items and local item
-			expect(result.get('99999')).toEqual({
+			expect(result.items.get('99999')).toEqual({
 				id: '99999',
 				auth: 'localauth',
 				type: SavedItemType.FavoriteComments,
 			});
 			// Should also have server items
-			expect(result.size).toBeGreaterThan(1);
+			expect(result.items.size).toBeGreaterThan(1);
 
 			// Verify it's also saved to storage
 			const stored = saved.loadSavedFromStorage();
-			expect(stored.get('99999')).toEqual({
+			expect(stored.items.get('99999')).toEqual({
 				id: '99999',
 				auth: 'localauth',
 				type: SavedItemType.FavoriteComments,
@@ -469,14 +523,15 @@ describe('saved', () => {
 
 		it('should prioritize server data over local data for matching ids', async () => {
 			// Add a local item with same id but different auth
-			saved.saveToStorage(
-				new Map([
+			saved.saveToStorage({
+				items: new Map([
 					[
 						'22222',
 						{ id: '22222', auth: 'oldlocalauth', type: SavedItemType.FavoriteComments },
 					],
-				])
-			);
+				]),
+				lastSync: 8888,
+			});
 
 			// biome-ignore lint/suspicious/useAwait: mocked
 			const mockGetPageDom = vi.spyOn(dom, 'getPageDom').mockImplementation(async () => {
@@ -489,10 +544,80 @@ describe('saved', () => {
 
 			expect(mockGetPageDom).toHaveBeenCalled();
 
-			// Should use server version (token333444) not local version (oldlocalauth)
-			const item = result.get('22222');
+			// Should use a server version (token333444) not local version (oldlocalauth)
+			const item = result.items.get('22222');
 			expect(item?.auth).toBe('token333444');
 			expect(item?.auth).not.toBe('oldlocalauth');
+		});
+
+		it('should return cached data if reload is true (within sync interval)', async () => {
+			vi.useFakeTimers();
+			const now = 1_000_000;
+			vi.setSystemTime(now);
+
+			// Set lastSync to be recent (within 30 days)
+			const recentSync = now - 5 * 24 * 60 * 60 * 1000; // 5 days ago
+			saved.saveToStorage({
+				items: new Map([
+					[
+						'99999',
+						{ id: '99999', auth: 'cached', type: SavedItemType.FavoriteComments },
+					],
+				]),
+				lastSync: recentSync,
+			});
+
+			const mockGetPageDom = vi.spyOn(dom, 'getPageDom');
+
+			const result = await saved.syncSaved('testuser');
+
+			// Should NOT call getPageDom because it returns early
+			expect(mockGetPageDom).not.toHaveBeenCalled();
+
+			// Should return the cached data
+			expect(result.items.get('99999')).toEqual({
+				id: '99999',
+				auth: 'cached',
+				type: SavedItemType.FavoriteComments,
+			});
+			expect(result.lastSync).toBe(recentSync);
+
+			vi.useRealTimers();
+		});
+
+		it('should fetch new data if reload is false (outside sync interval)', async () => {
+			vi.useFakeTimers();
+			const now = 1_000_000;
+			vi.setSystemTime(now);
+
+			// Set lastSync to be old (more than 30 days ago)
+			const oldSync = now - 31 * 24 * 60 * 60 * 1000; // 31 days ago
+			saved.saveToStorage({
+				items: new Map([
+					[
+						'99999',
+						{ id: '99999', auth: 'cached', type: SavedItemType.FavoriteComments },
+					],
+				]),
+				lastSync: oldSync,
+			});
+
+			// biome-ignore lint/suspicious/useAwait: mocked
+			const mockGetPageDom = vi.spyOn(dom, 'getPageDom').mockImplementation(async () => {
+				const container = document.createElement('div');
+				container.innerHTML = favoritesPage2Html;
+				return container;
+			});
+
+			const result = await saved.syncSaved('testuser');
+
+			// Should call getPageDom to fetch fresh data
+			expect(mockGetPageDom).toHaveBeenCalled();
+
+			// Should have new lastSync timestamp
+			expect(result.lastSync).toBe(now);
+
+			vi.useRealTimers();
 		});
 	});
 });

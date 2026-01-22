@@ -1,18 +1,21 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { initCommentUX } from './index.ts';
+import { dom } from '@/utils/dom.ts';
+import { initCommentUX } from './init-comment-ux.ts';
 
 const commentsHtml = readFileSync(join(__dirname, '__fixtures__', 'hn-comments.html'), 'utf-8');
 
 describe('initCommentUX', () => {
+	let comments: Element[];
 	beforeEach(() => {
 		document.body.innerHTML = commentsHtml;
+		comments = dom.getAllComments(document);
 	});
 
 	describe('style injection', () => {
 		it('should inject custom styles into document head', () => {
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const styleElement = document.head.querySelector('style');
 			expect(styleElement).toBeTruthy();
@@ -21,21 +24,21 @@ describe('initCommentUX', () => {
 		});
 
 		it('should add comment indent styling rules', () => {
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const styleElement = document.head.querySelector('style');
 			expect(styleElement?.textContent).toContain('box-shadow: inset -1px 0 #ccc');
 		});
 
 		it('should add OP styling rules', () => {
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const styleElement = document.head.querySelector('style');
 			expect(styleElement?.textContent).toContain('color: #ff6000 !important');
 		});
 
 		it('should add code block styling rules', () => {
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const styleElement = document.head.querySelector('style');
 			expect(styleElement?.textContent).toContain('.comment .commtext pre');
@@ -44,7 +47,7 @@ describe('initCommentUX', () => {
 		});
 
 		it('should add inline code styling rules', () => {
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const styleElement = document.head.querySelector('style');
 			expect(styleElement?.textContent).toContain('.comment .commtext *:not(pre) code');
@@ -53,7 +56,7 @@ describe('initCommentUX', () => {
 
 	describe('comment indent styling', () => {
 		it('should add indent class to all comment indent cells', () => {
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const indentCells = document.querySelectorAll('td.ind');
 			for (const cell of indentCells) {
@@ -62,16 +65,16 @@ describe('initCommentUX', () => {
 		});
 
 		it('should process all comments', () => {
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
-			const comments = document.querySelectorAll('tr.comtr');
-			expect(comments.length).toBe(4);
+			const c = document.querySelectorAll('tr.comtr');
+			expect(c.length).toBe(4);
 		});
 	});
 
 	describe('custom indent width', () => {
 		it('should adjust indent width for top-level comments', () => {
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const topLevelComment = document.querySelector('#comment1');
 			const indentImage = topLevelComment?.querySelector<HTMLImageElement>('td.ind img');
@@ -82,7 +85,7 @@ describe('initCommentUX', () => {
 
 		it('should adjust indent width for first-level nested comments', () => {
 			const customWidth = 40;
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const nestedComment = document.querySelector('#comment2');
 			const indentImage = nestedComment?.querySelector<HTMLImageElement>('td.ind img');
@@ -93,7 +96,7 @@ describe('initCommentUX', () => {
 
 		it('should adjust indent width for deeply nested comments', () => {
 			const customWidth = 40;
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const deeplyNestedComment = document.querySelector('#comment3');
 			const indentImage = deeplyNestedComment?.querySelector<HTMLImageElement>('td.ind img');
@@ -103,7 +106,7 @@ describe('initCommentUX', () => {
 		});
 
 		it('should calculate indent level correctly', () => {
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const comment1 = document.querySelector<HTMLImageElement>('#comment1 td.ind img');
 			const comment2 = document.querySelector<HTMLImageElement>('#comment2 td.ind img');
@@ -117,7 +120,7 @@ describe('initCommentUX', () => {
 
 	describe('OP highlighting', () => {
 		it('should highlight OP username', () => {
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const opComment = document.querySelector('#comment1');
 			const authorLink = opComment?.querySelector<HTMLAnchorElement>('a.hnuser');
@@ -127,7 +130,7 @@ describe('initCommentUX', () => {
 		});
 
 		it('should not highlight non-OP usernames', () => {
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const nonOpComment = document.querySelector('#comment2');
 			const authorLink = nonOpComment?.querySelector<HTMLAnchorElement>('a.hnuser');
@@ -137,7 +140,7 @@ describe('initCommentUX', () => {
 		});
 
 		it('should handle multiple OP comments', () => {
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const opComments = document.querySelectorAll('a.hnuser.oj_op');
 			expect(opComments.length).toBe(1);
@@ -145,7 +148,7 @@ describe('initCommentUX', () => {
 		});
 
 		it('should skip comments without author element', () => {
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const commentWithoutAuthor = document.querySelector('#comment4');
 			expect(commentWithoutAuthor).toBeTruthy();
@@ -159,13 +162,13 @@ describe('initCommentUX', () => {
 		it('should handle empty document', () => {
 			document.body.innerHTML = '';
 
-			expect(() => initCommentUX(document)).not.toThrow();
+			expect(() => initCommentUX(document, comments)).not.toThrow();
 		});
 
 		it('should handle document without comments', () => {
 			document.body.innerHTML = '<div>No comments here</div>';
 
-			expect(() => initCommentUX(document)).not.toThrow();
+			expect(() => initCommentUX(document, comments)).not.toThrow();
 
 			const styleElement = document.head.querySelector('style');
 			expect(styleElement).toBeTruthy();
@@ -187,7 +190,7 @@ describe('initCommentUX', () => {
 				</tr>
 			`;
 
-			expect(() => initCommentUX(document)).not.toThrow();
+			expect(() => initCommentUX(document, comments)).not.toThrow();
 		});
 
 		it('should handle logged out state (no OP)', () => {
@@ -197,7 +200,7 @@ describe('initCommentUX', () => {
 						<td>
 							<table>
 								<tr>
-									<td class="ind"><img src="s.gif" height="1" width="0"></td>
+									<td class="ind"><img src="s.gif" height="1" width="0" alt=""></td>
 									<td class="default">
 										<a href="user?id=someuser" class="hnuser">someuser</a>
 									</td>
@@ -208,7 +211,7 @@ describe('initCommentUX', () => {
 				</table>
 			`;
 
-			initCommentUX(document);
+			initCommentUX(document, comments);
 
 			const authorLink = document.querySelector<HTMLAnchorElement>('a.hnuser');
 			expect(authorLink?.classList.contains('oj_op')).toBe(false);
