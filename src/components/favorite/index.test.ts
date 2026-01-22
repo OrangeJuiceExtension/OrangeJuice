@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { dom } from '@/utils/dom';
 import { saved } from '@/utils/saved';
-import type { OJContext, SavedItem } from '@/utils/types';
+import type { OJContext } from '@/utils/types';
 import { SavedItemType } from '@/utils/types';
 import { initFavorites } from './index';
 
@@ -21,7 +21,7 @@ const frontpageFixtureHtml = readFileSync(
 describe('favorite', () => {
 	describe('initFavorites', () => {
 		let mockOjContext: OJContext;
-		let mockFavorites: Map<string, SavedItem>;
+		let mockFavorites: StoredData;
 
 		beforeEach(() => {
 			document.body.innerHTML = fixtureHtml;
@@ -30,24 +30,27 @@ describe('favorite', () => {
 				writable: true,
 			});
 
-			mockFavorites = new Map([
-				[
-					'46671233',
-					{
-						id: '46671233',
-						auth: 'test-auth-token-1',
-						type: SavedItemType.FavoriteComments,
-					},
-				],
-				[
-					'46671239',
-					{
-						id: '46671239',
-						auth: 'test-auth-token-2',
-						type: SavedItemType.FavoriteComments,
-					},
-				],
-			]);
+			mockFavorites = {
+				items: new Map([
+					[
+						'46671233',
+						{
+							id: '46671233',
+							auth: 'test-auth-token-1',
+							type: SavedItemType.FavoriteComments,
+						},
+					],
+					[
+						'46671239',
+						{
+							id: '46671239',
+							auth: 'test-auth-token-2',
+							type: SavedItemType.FavoriteComments,
+						},
+					],
+				]),
+				lastSync: 10_000,
+			};
 
 			mockOjContext = {
 				user: {
@@ -77,7 +80,7 @@ describe('favorite', () => {
 		});
 
 		it('should display "favorite" for non-favorited items', () => {
-			mockOjContext.favorites = new Map();
+			mockOjContext.favorites = { items: new Map(), lastSync: 1000 };
 			initFavorites(document, mockOjContext);
 
 			const buttons = document.querySelectorAll('.oj-link-button');
@@ -115,7 +118,7 @@ describe('favorite', () => {
 		});
 
 		it('should toggle button text from "favorite" to "un-favorite" after successful favorite', async () => {
-			mockOjContext.favorites = new Map();
+			mockOjContext.favorites = { items: new Map(), lastSync: 1000 };
 
 			// Mock getPageDom to return auth token
 			vi.spyOn(dom, 'getPageDom').mockResolvedValue({
@@ -236,7 +239,7 @@ describe('favorite', () => {
 		});
 
 		it('should make correct API call to favorite', async () => {
-			mockOjContext.favorites = new Map();
+			mockOjContext.favorites = { items: new Map(), lastSync: 1000 };
 
 			vi.spyOn(dom, 'getPageDom').mockResolvedValue({
 				querySelector: vi.fn().mockReturnValue({
@@ -273,7 +276,7 @@ describe('favorite', () => {
 
 	describe('initFavorites with .subline (frontpage posts)', () => {
 		let mockOjContext: OJContext;
-		let mockFavorites: Map<string, SavedItem>;
+		let mockFavorites: StoredData;
 
 		beforeEach(() => {
 			document.body.innerHTML = frontpageFixtureHtml;
@@ -282,16 +285,19 @@ describe('favorite', () => {
 				writable: true,
 			});
 
-			mockFavorites = new Map([
-				[
-					'12345678',
-					{
-						id: '12345678',
-						auth: 'test-auth-token-1',
-						type: SavedItemType.FavoriteComments,
-					},
-				],
-			]);
+			mockFavorites = {
+				items: new Map([
+					[
+						'12345678',
+						{
+							id: '12345678',
+							auth: 'test-auth-token-1',
+							type: SavedItemType.FavoriteComments,
+						},
+					],
+				]),
+				lastSync: 10_000,
+			};
 
 			mockOjContext = {
 				user: {
