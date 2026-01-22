@@ -38,6 +38,30 @@ Improves the comment reading experience with several visual enhancements:
 - **OP highlighting**: The original poster's username is marked with an `[op]` label and displayed in orange, making it easy to identify their comments throughout the thread.
 - **Enhanced code formatting**: Code blocks and inline code snippets get improved styling with a light gray background and rounded corners for better readability.
 
+## Installation
+
+1. **Install Bun**
+   Follow the instructions at https://bun.sh
+
+2. **Clone the repository**
+   ```bash
+   git clone https://github.com/OrangeJuiceExtension/OrangeJuice.git
+   cd OrangeJuice
+   ```
+
+3. **Install dependencies**
+   ```bash
+   bun install
+   ```
+
+4. **Run the extension in development mode**
+   ```bash
+   bun run dev
+   ```
+
+This should automatically open a Chrome window with the extension loaded. If you'd like to add it to your own browser, `bun run build`, then drop the .output/chrome-mv3 folder onto the Extensions tab of your browser.
+
+**Note on releases:** For now, there are no official releases. The project is still evolving quickly, and I'm actively changing data structures. Locking in backwards compatibility would slow things down more than it helps at this stage.
 
 # Tests
 
