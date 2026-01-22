@@ -1,7 +1,7 @@
 <meta name="google-site-verification" content="hdHpuNQq_ujr4eHU5wdi7yjcxFPPmoLAg3CQuxAJP4E" />
 <img src="assets/image.png"  alt="OrangeJuice" width="50%"/>
 
-# Orange Juice is an extension to make HackerNews sweeter.
+# Orange Juice makes HackerNews sweeter
 
 ## Motivation
 
@@ -15,8 +15,9 @@ I’m not a browser extension expert. The code will start rough, but through exp
 
 The ultimate goal is a genuinely useful extension that runs smoothly across all major browsers.
 
+# Features
 <details>
-<summary>Features - click to expand</summary>
+<summary>Click to expand</summary>
 
 I’m intentionally not adding screenshots. Things are still changing, and I don’t want to constantly update feature visuals that will quickly be out of date. More importantly, the extension isn’t meant to be loud or attention-grabbing. Ideally, you shouldn’t really notice it at all. The features should feel subtle but natural: visible, useful, and aligned with what most users would expect the site to have supported in the first place. As we grow the feature set, it should always be with respect to the original design.
 
