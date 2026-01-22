@@ -135,7 +135,11 @@ jobs:
 
           # Save to file for multiline output
           echo "$CHANGELOG" > changelog.txt
+          cat changelog.txt
           echo "generated=true" >> $GITHUB_OUTPUT
+
+      - name: Run zip
+        run: bun run zip
 
       - name: Create GitHub Release
         env:
