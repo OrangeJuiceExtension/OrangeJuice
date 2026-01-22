@@ -1,6 +1,6 @@
 {
 	"name": "orangejuice",
-	"description": "A modern HackerNews extension.",
+	"description": "Orange Juice makes HackerNews sweeter",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",

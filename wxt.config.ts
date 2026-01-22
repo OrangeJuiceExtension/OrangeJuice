@@ -15,6 +15,7 @@ export default defineConfig({
 		chromiumArgs: ['--user-data-dir=./.wxt/chrome-data', '--hide-crash-restore-bubble'],
 	}),
 	manifest: {
+		name: 'Orange Juice',
 		icons: {
 			16: '/icon/orange_juice_icon_16x16.png',
 			24: '/icon/orange_juice_icon_32x32.png',
