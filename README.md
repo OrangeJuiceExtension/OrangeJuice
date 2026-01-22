@@ -14,7 +14,8 @@ I’m not a browser extension expert. The code will start rough, but through exp
 
 The ultimate goal is a genuinely useful extension that runs smoothly across all major browsers.
 
-# Features
+<details>
+<summary>Features - click to expand</summary>
 
 I’m intentionally not adding screenshots. Things are still changing, and I don’t want to constantly update feature visuals that will quickly be out of date. More importantly, the extension isn’t meant to be loud or attention-grabbing. Ideally, you shouldn’t really notice it at all. The features should feel subtle but natural: visible, useful, and aligned with what most users would expect the site to have supported in the first place. As we grow the feature set, it should always be with respect to the original design.
 
@@ -30,17 +31,18 @@ When submitting a new story, a character counter appears next to the title input
 ## Hide read stories
 There is a checkbox displayed at the top of story pages that hides any stories you've already read. It uses the browser's history API to determine if a link has been visited before.
 
-## Highlight Unread Comments
-Tracks comments you've read and highlights new ones with an orange left border. When you revisit a thread within 3 days, new comments added since your last visit are clearly marked. The highlight becomes brighter on hover for easy identification.
-
 ## Enhanced Comment UX
 Improves the comment reading experience with several visual enhancements:
+- **Highlight Unread Comments**: Tracks comments you've read and highlights new ones with an orange left border. When you revisit a thread within 3 days, new comments added since your last visit are clearly marked. The highlight becomes brighter on hover for easy identification.
 - **Custom indent width**: Comment indentation is adjusted to 40px width, making deeply nested threads easier to follow.
 - **Visual indent guides**: A subtle shadow appears on the left edge of indented comments, providing a visual guide to thread structure.
 - **OP highlighting**: The original poster's username is marked with an `[op]` label and displayed in orange, making it easy to identify their comments throughout the thread.
 - **Enhanced code formatting**: Code blocks and inline code snippets get improved styling with a light gray background and rounded corners for better readability.
 
-## Installation
+</details>
+
+
+# Installation
 
 1. **Install Bun**
    Follow the instructions at https://bun.sh
