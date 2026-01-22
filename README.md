@@ -1,3 +1,5 @@
+<img src="assets/image.png"  alt="OrangeJuice"/>
+
 # Orange Juice is an extension to make HackerNews sweeter.
 
 ## Motivation
