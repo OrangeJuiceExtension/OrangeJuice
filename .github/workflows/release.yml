@@ -1,0 +1,147 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["Test"]
+    types:
+      - completed
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Determine version bump
+        id: version
+        run: |
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%s")
+          else
+            COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"%s")
+          fi
+
+          # Determine bump type from commit messages
+          BUMP="patch"
+          if echo "$COMMITS" | grep -qiE "^(feat|feature)(\(.*\))?!:|^[a-z]+(\(.*\))?!:|(breaking change|BREAKING CHANGE):"; then
+            BUMP="major"
+          elif echo "$COMMITS" | grep -qiE "^(feat|feature)(\(.*\))?:"; then
+            BUMP="minor"
+          fi
+
+          echo "bump=$BUMP" >> $GITHUB_OUTPUT
+          echo "Detected bump type: $BUMP"
+
+      - name: Bump version
+        id: bump
+        run: |
+          CURRENT_VERSION=$(bun --print "require('./package.json').version")
+          BUMP_TYPE="${{ steps.version.outputs.bump }}"
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+
+          case $BUMP_TYPE in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $NEW_VERSION"
+
+          # Update package.json
+          bun --eval "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '$NEW_VERSION';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, '\t') + '\n');
+          "
+
+      - name: Commit version bump
+        run: |
+          git add package.json
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.new_version }}"
+          git tag "v${{ steps.bump.outputs.new_version }}"
+          git push origin main
+          git push origin "v${{ steps.bump.outputs.new_version }}"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s (%h)" HEAD)
+          else
+            COMMITS=$(git log ${LAST_TAG}..HEAD^ --pretty=format:"- %s (%h)")
+          fi
+
+          # Generate changelog sections
+          FEATURES=$(echo "$COMMITS" | grep -iE "^- (feat|feature)(\(.*\))?:" || true)
+          FIXES=$(echo "$COMMITS" | grep -iE "^- fix(\(.*\))?:" || true)
+          CHORES=$(echo "$COMMITS" | grep -iE "^- (chore|docs|style|refactor|perf|test)(\(.*\))?:" || true)
+
+          CHANGELOG="## What's Changed"$'\n'
+
+          if [ -n "$FEATURES" ]; then
+            CHANGELOG+=$'\n'"### ✨ Features"$'\n'"$FEATURES"$'\n'
+          fi
+
+          if [ -n "$FIXES" ]; then
+            CHANGELOG+=$'\n'"### 🐛 Bug Fixes"$'\n'"$FIXES"$'\n'
+          fi
+
+          if [ -n "$CHORES" ]; then
+            CHANGELOG+=$'\n'"### 🔧 Maintenance"$'\n'"$CHORES"$'\n'
+          fi
+
+          if [ -z "$FEATURES" ] && [ -z "$FIXES" ] && [ -z "$CHORES" ]; then
+            CHANGELOG+=$'\n'"- Initial release"
+          fi
+
+          # Save to file for multiline output
+          echo "$CHANGELOG" > changelog.txt
+          echo "generated=true" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.bump.outputs.new_version }}" \
+            --title "v${{ steps.bump.outputs.new_version }}" \
+            --notes-file changelog.txt \
+            .output/orangejuice-*.zip
