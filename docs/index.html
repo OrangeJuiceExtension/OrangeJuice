@@ -1,1 +1,529 @@
-Coming soon
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta
+			name="description"
+			content="Orange Juice - A browser extension that makes Hacker News sweeter with thoughtful improvements to the reading and posting experience."
+		>
+		<title>Orange Juice - Make Hacker News Sweeter</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+			rel="stylesheet"
+		>
+		<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		:root {
+			--primary: #ff6000;
+			--primary-dark: #e55600;
+			--bg: #ffffff;
+			--bg-alt: #fafafa;
+			--text: #1a1a1a;
+			--text-light: #6b6b6b;
+			--border: #e5e5e5;
+			--shadow: rgba(0, 0, 0, 0.1);
+		}
+
+		body {
+			font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+			line-height: 1.6;
+			color: var(--text);
+			background: var(--bg);
+		}
+
+		.container {
+			max-width: 1000px;
+			margin: 0 auto;
+			padding: 0 1.5rem;
+		}
+
+		header {
+			text-align: center;
+			padding: 4rem 0 3rem;
+			position: relative;
+			overflow: hidden;
+		}
+
+		.logo {
+			font-size: 4rem;
+			font-weight: 700;
+			color: var(--primary);
+			margin-bottom: 1rem;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 1rem;
+		}
+
+		.logo img {
+			width: 80px;
+			height: 80px;
+			object-fit: contain;
+		}
+
+		.tagline {
+			font-size: 1.5rem;
+			color: var(--text-light);
+			font-weight: 500;
+			margin-bottom: 2rem;
+		}
+
+		.cta-group {
+			display: flex;
+			gap: 1rem;
+			justify-content: center;
+			flex-wrap: wrap;
+		}
+
+		.btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 1rem 2rem;
+			border-radius: 8px;
+			font-size: 1rem;
+			font-weight: 600;
+			text-decoration: none;
+			transition: all 0.2s ease;
+			cursor: pointer;
+			border: none;
+		}
+
+		.btn-primary {
+			background: var(--primary);
+			color: white;
+		}
+
+		.btn-primary:hover {
+			background: var(--primary-dark);
+			transform: translateY(-2px);
+			box-shadow: 0 8px 24px rgba(255, 96, 0, 0.2);
+		}
+
+		.btn-secondary {
+			background: var(--bg-alt);
+			color: var(--text);
+			border: 2px solid var(--border);
+		}
+
+		.btn-secondary:hover {
+			border-color: var(--primary);
+			color: var(--primary);
+			transform: translateY(-2px);
+		}
+
+		.hero-image {
+			max-width: 100%;
+			border-radius: 16px;
+			margin-bottom: 4rem;
+			box-shadow: 0 4px 20px var(--shadow);
+		}
+
+		.section-title {
+			font-size: 2.25rem;
+			font-weight: 700;
+			text-align: center;
+			margin-bottom: 3rem;
+			color: var(--text);
+		}
+
+		.features {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 2rem;
+			margin-bottom: 4rem;
+		}
+
+		.feature-card {
+			background: var(--bg-alt);
+			padding: 2rem;
+			border-radius: 12px;
+			border: 1px solid var(--border);
+			transition: all 0.2s ease;
+		}
+
+		.feature-card:hover {
+			transform: translateY(-4px);
+			box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+			border-color: var(--primary);
+		}
+
+		.feature-icon {
+			width: 48px;
+			height: 48px;
+			background: var(--primary);
+			border-radius: 12px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-bottom: 1.5rem;
+			font-size: 1.5rem;
+			color: white;
+			font-weight: 700;
+		}
+
+		.feature-title {
+			font-size: 1.25rem;
+			font-weight: 600;
+			margin-bottom: 0.75rem;
+			color: var(--text);
+		}
+
+		.feature-desc {
+			color: var(--text-light);
+			line-height: 1.7;
+		}
+
+		.installation {
+			background: linear-gradient(135deg, var(--bg-alt) 0%, var(--bg) 100%);
+			border-radius: 16px;
+			padding: 3rem;
+			margin-bottom: 4rem;
+		}
+
+		.install-steps {
+			display: flex;
+			flex-direction: column;
+			gap: 1.5rem;
+			max-width: 600px;
+			margin: 0 auto;
+		}
+
+		.step {
+			display: flex;
+			gap: 1rem;
+			align-items: flex-start;
+		}
+
+		.step-number {
+			width: 36px;
+			height: 36px;
+			background: var(--primary);
+			color: white;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: 700;
+			font-size: 1.125rem;
+			flex-shrink: 0;
+		}
+
+		.step-content {
+			flex: 1;
+		}
+
+		.step-title {
+			font-weight: 600;
+			font-size: 1.1rem;
+			margin-bottom: 0.5rem;
+			color: var(--text);
+		}
+
+		.step-code {
+			background: var(--bg);
+			padding: 1rem 1.25rem;
+			border-radius: 8px;
+			font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
+			font-size: 0.9rem;
+			border: 1px solid var(--border);
+			overflow-x: auto;
+			white-space: nowrap;
+			color: var(--text);
+		}
+
+		.note {
+			background: #fff3cd;
+			border-left: 4px solid #ffc107;
+			padding: 1rem 1.25rem;
+			border-radius: 8px;
+			margin-top: 2rem;
+			font-size: 0.95rem;
+			color: #664d03;
+		}
+
+		.philosophy {
+			background: var(--bg-alt);
+			border-radius: 16px;
+			padding: 3rem;
+			text-align: center;
+		}
+
+		.philosophy p {
+			font-size: 1.15rem;
+			color: var(--text-light);
+			max-width: 700px;
+			margin: 1rem auto;
+		}
+
+		footer {
+			text-align: center;
+			padding: 3rem 0;
+			border-top: 1px solid var(--border);
+			margin-top: 4rem;
+		}
+
+		.footer-links {
+			display: flex;
+			gap: 2rem;
+			justify-content: center;
+			flex-wrap: wrap;
+			margin-bottom: 1rem;
+		}
+
+		.footer-links a {
+			color: var(--text-light);
+			text-decoration: none;
+			font-size: 0.95rem;
+			transition: color 0.2s ease;
+		}
+
+		.footer-links a:hover {
+			color: var(--primary);
+		}
+
+		.footer-note {
+			color: var(--text-light);
+			font-size: 0.9rem;
+		}
+
+		@media (max-width: 768px) {
+			header {
+				padding: 3rem 0 2rem;
+			}
+
+			.logo {
+				font-size: 3rem;
+			}
+
+			.tagline {
+				font-size: 1.25rem;
+			}
+
+			.features {
+				grid-template-columns: 1fr;
+			}
+
+			.install-steps {
+				gap: 1.25rem;
+			}
+
+			.step {
+				flex-direction: column;
+			}
+
+			.step-number {
+				width: 32px;
+				height: 32px;
+			}
+
+			.footer-links {
+				flex-direction: column;
+				gap: 1rem;
+			}
+		}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<header>
+				<div class="logo">
+					<img src="assets/image-512.png" alt="🍊 Orange Juice" width="80" height="80">
+					<span>Orange Juice</span>
+				</div>
+				<p class="tagline">
+					Make Hacker News sweeter with thoughtful, invisible improvements
+				</p>
+				<div class="cta-group">
+					<a
+						href="https://github.com/OrangeJuiceExtension/OrangeJuice"
+						class="btn btn-primary"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						View on GitHub
+					</a>
+					<a href="#installation" class="btn btn-secondary"> Install </a>
+				</div>
+			</header>
+
+			<main>
+				<section class="section">
+					<h2 class="section-title">Subtle by Design</h2>
+					<div class="features">
+						<div class="feature-card">
+							<div class="feature-icon">💬</div>
+							<h3 class="feature-title">Inline Reply</h3>
+							<p class="feature-desc">
+								Reply directly from the comment thread without navigating away.
+								Select text to quote it in your response.
+							</p>
+						</div>
+
+						<div class="feature-card">
+							<div class="feature-icon">⭐</div>
+							<h3 class="feature-title">Favorite Items</h3>
+							<p class="feature-desc">
+								Save comments and stories for later reference with a single click.
+								Your favorites stay local and private.
+							</p>
+						</div>
+
+						<div class="feature-card">
+							<div class="feature-icon">📊</div>
+							<h3 class="feature-title">Character Count</h3>
+							<p class="feature-desc">
+								See how many characters remain when submitting stories. Never get
+								cut off mid-title again.
+							</p>
+						</div>
+
+						<div class="feature-card">
+							<div class="feature-icon">👁️</div>
+							<h3 class="feature-title">Hide Read Stories</h3>
+							<p class="feature-desc">
+								Focus on new content by hiding stories you've already visited.
+								Toggle it on or off anytime.
+							</p>
+						</div>
+
+						<div class="feature-card">
+							<div class="feature-icon">✨</div>
+							<h3 class="feature-title">Highlight Unread Comments</h3>
+							<p class="feature-desc">
+								See at a glance which comments are new in threads you've visited
+								before. Comments stay tracked for 3 days.
+							</p>
+						</div>
+
+						<div class="feature-card">
+							<div class="feature-icon">🎨</div>
+							<h3 class="feature-title">Enhanced Comment UX</h3>
+							<p class="feature-desc">
+								Better indentation, OP highlighting, visual guides, and improved
+								code formatting make threads easier to read.
+							</p>
+						</div>
+					</div>
+				</section>
+
+				<section class="philosophy">
+					<h2 class="section-title">Built to Respect, Not Redesign</h2>
+					<p>
+						Hacker News works. We're not trying to change that. Orange Juice adds the
+						thoughtful, quality-of-life improvements that most users would expect to be
+						there in the first place. The features feel natural, stay subtle, and always
+						honor the original design.
+					</p>
+				</section>
+
+				<section class="installation">
+					<h2 class="section-title"><a id="installation">Installation</a></h2>
+					<div class="install-steps">
+						<div class="step">
+							<div class="step-number">1</div>
+							<div class="step-content">
+								<p class="step-title">Install Bun</p>
+								<p>
+									Follow the instructions at
+									<a
+										href="https://bun.sh"
+										target="_blank"
+										rel="noopener noreferrer"
+										style="color: var(--primary);"
+										>bun.sh</a
+									>
+								</p>
+							</div>
+						</div>
+
+						<div class="step">
+							<div class="step-number">2</div>
+							<div class="step-content">
+								<p class="step-title">Clone the Repository</p>
+								<div class="step-code">
+									git clone
+									https://github.com/OrangeJuiceExtension/OrangeJuice.git
+									<br>
+									cd OrangeJuice
+								</div>
+							</div>
+						</div>
+
+						<div class="step">
+							<div class="step-number">3</div>
+							<div class="step-content">
+								<p class="step-title">Install Dependencies</p>
+								<div class="step-code">bun install</div>
+							</div>
+						</div>
+
+						<div class="step">
+							<div class="step-number">4</div>
+							<div class="step-content">
+								<p class="step-title">Run Development Mode</p>
+								<div class="step-code">bun run dev</div>
+								<p
+									style="margin-top: 0.5rem; color: var(--text-light); font-size: 0.95rem;"
+								>
+									This opens a Chrome window with the extension loaded.
+								</p>
+							</div>
+						</div>
+
+						<div class="note">
+							<strong>To add to your own browser:</strong> Run
+							<code
+								style="background: var(--bg); padding: 0.25rem 0.5rem; border-radius: 4px;"
+							>
+								bun run build
+							</code>
+							, then drop the
+							<code
+								style="background: var(--bg); padding: 0.25rem 0.5rem; border-radius: 4px;"
+							>
+								.output/chrome-mv3
+							</code>
+							folder onto the Extensions tab of your browser.
+						</div>
+
+						<div class="note">
+							<strong>Note on releases:</strong> No official releases yet. The project
+							is evolving quickly with active data structure changes. Backwards
+							compatibility isn't being maintained at this stage.
+						</div>
+					</div>
+				</section>
+			</main>
+
+			<footer>
+				<div class="footer-links">
+					<a
+						href="https://github.com/OrangeJuiceExtension/OrangeJuice"
+						target="_blank"
+						rel="noopener noreferrer"
+						>GitHub</a
+					>
+					<a href="privacy.html" rel="noopener noreferrer">Privacy Policy</a>
+					<a
+						href="https://github.com/OrangeJuiceExtension/OrangeJuice/issues"
+						target="_blank"
+						rel="noopener noreferrer"
+						>Report an Issue</a
+					>
+				</div>
+				<p class="footer-note">
+					Orange Juice extension · Open source · Privacy-focused · Built for Hacker News
+				</p>
+			</footer>
+		</div>
+	</body>
+</html>
