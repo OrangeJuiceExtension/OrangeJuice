@@ -1,4 +1,5 @@
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import { changeDeadCommentsColor } from '@/components/comments/change-dead-comments-color.ts';
 import { indentToggle } from '@/components/comments/indent-toggle.ts';
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
@@ -17,6 +18,7 @@ export const comments: ComponentFeature = {
 			Promise.resolve().then(() => initCommentUX(document, comments)),
 			Promise.resolve().then(() => highlightUnreadComments(document, comments)),
 			Promise.resolve().then(() => indentToggle(document, comments)),
+			Promise.resolve().then(() => changeDeadCommentsColor(document, comments)),
 		]);
 	},
 };
