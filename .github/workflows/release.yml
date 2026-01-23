@@ -138,8 +138,11 @@ jobs:
           cat changelog.txt
           echo "generated=true" >> $GITHUB_OUTPUT
 
-      - name: Run zip
+      - name: Run zip chrome
         run: bun run zip
+
+      - name: Run zip firefox
+        run: bun run zip:firefox
 
       - name: Create GitHub Release
         env:

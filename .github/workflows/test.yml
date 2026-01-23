@@ -24,5 +24,8 @@ jobs:
       - name: Run tests
         run: bun run test
 
-      - name: Run zip
+      - name: Run zip chrome
         run: bun run zip
+
+      - name: Run zip firefox
+        run: bun run zip:firefox
