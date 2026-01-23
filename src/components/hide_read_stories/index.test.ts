@@ -4,7 +4,13 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { browser } from 'wxt/browser';
 import type { HNStory } from '@/utils/types.ts';
-import { createCheckbox, handleHideReadStories, hideStories, setupCheckbox, showStories, } from './index.ts';
+import {
+	createCheckbox,
+	createReadStoriesService,
+	hideStories,
+	setupCheckbox,
+	showStories,
+} from './index.ts';
 
 const STORY_LIST_HTML_REGEX = /class="itemlist"/;
 const homepageHtml = readFileSync(
@@ -178,7 +184,7 @@ describe('hide_read_stories', () => {
 		});
 	});
 
-	describe('handleHideReadStories', () => {
+	describe('createReadStoriesService', () => {
 		const mockGetVisits = vi.fn();
 
 		beforeEach(() => {
@@ -213,16 +219,8 @@ describe('hide_read_stories', () => {
 			mockGetVisits.mockResolvedValueOnce([{ visitTime: 1_234_567_890, transition: 'link' }]);
 			mockGetVisits.mockResolvedValueOnce([]);
 
-			const sendResponse = vi.fn();
-
-			await handleHideReadStories(
-				{
-					id: 'getVisits',
-					stories,
-				},
-				{},
-				sendResponse
-			);
+			const service = createReadStoriesService();
+			await service.getVisits(stories);
 
 			expect(mockGetVisits).toHaveBeenCalledTimes(2);
 			expect(mockGetVisits).toHaveBeenCalledWith({
@@ -250,26 +248,15 @@ describe('hide_read_stories', () => {
 			const visitData = { visitTime: 1_234_567_890, transition: 'link' };
 			mockGetVisits.mockResolvedValueOnce([visitData]);
 
-			const sendResponse = vi.fn();
+			const service = createReadStoriesService();
+			const result = await service.getVisits(stories);
 
-			await handleHideReadStories(
+			expect(result).toEqual([
 				{
-					id: 'getVisits',
-					stories,
+					...stories[0],
+					latestVisit: visitData,
 				},
-				{},
-				sendResponse
-			);
-
-			expect(sendResponse).toHaveBeenCalledWith({
-				id: 'handleHideReadStories',
-				stories: [
-					{
-						...stories[0],
-						latestVisit: visitData,
-					},
-				],
-			});
+			]);
 		});
 
 		it('should return story without visit if no history exists', async () => {
@@ -288,21 +275,10 @@ describe('hide_read_stories', () => {
 
 			mockGetVisits.mockResolvedValueOnce([]);
 
-			const sendResponse = vi.fn();
+			const service = createReadStoriesService();
+			const result = await service.getVisits(stories);
 
-			await handleHideReadStories(
-				{
-					id: 'getVisits',
-					stories,
-				},
-				{},
-				sendResponse
-			);
-
-			expect(sendResponse).toHaveBeenCalledWith({
-				id: 'handleHideReadStories',
-				stories: [stories[0]],
-			});
+			expect(result).toEqual([stories[0]]);
 		});
 
 		it('should handle errors when fetching visit history', async () => {
@@ -323,71 +299,37 @@ describe('hide_read_stories', () => {
 
 			mockGetVisits.mockRejectedValueOnce(new Error('Permission denied'));
 
-			const sendResponse = vi.fn();
-
-			await handleHideReadStories(
-				{
-					id: 'getVisits',
-					stories,
-				},
-				{},
-				sendResponse
-			);
+			const service = createReadStoriesService();
+			const result = await service.getVisits(stories);
 
 			expect(consoleErrorSpy).toHaveBeenCalledWith(
 				'Error fetching visit history for story:',
 				stories[0],
 				expect.any(Error)
 			);
-			expect(sendResponse).toHaveBeenCalledWith({
-				id: 'handleHideReadStories',
-				stories: [stories[0]],
-			});
+			expect(result).toEqual([stories[0]]);
 
 			consoleErrorSpy.mockRestore();
 		});
 
-		it('should not respond for non-getVisits messages', async () => {
-			const sendResponse = vi.fn();
-
-			await handleHideReadStories(
-				{
-					id: 'handleHideReadStories',
-					stories: [],
-				},
-				{},
-				sendResponse
-			);
-
-			expect(sendResponse).not.toHaveBeenCalled();
-		});
-
-		it('should handle errors in main handler', async () => {
+		it('should handle errors in getVisits', async () => {
 			const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
 			mockGetVisits.mockRejectedValueOnce(new Error('Unexpected error'));
 
-			const sendResponse = vi.fn();
-
-			await handleHideReadStories(
+			const service = createReadStoriesService();
+			await service.getVisits([
 				{
-					id: 'getVisits',
-					stories: [
-						{
-							id: '12345678',
-							position: 1,
-							title: 'Test',
-							url: 'https://example.com',
-							points: 42,
-							author: 'test',
-							postedDate: '2024-01-19T12:00:00',
-							commentsCount: 15,
-						},
-					],
+					id: '12345678',
+					position: 1,
+					title: 'Test',
+					url: 'https://example.com',
+					points: 42,
+					author: 'test',
+					postedDate: '2024-01-19T12:00:00',
+					commentsCount: 15,
 				},
-				{},
-				sendResponse
-			);
+			]);
 
 			expect(consoleErrorSpy).toHaveBeenCalledWith(
 				'Error fetching visit history for story:',
@@ -439,25 +381,14 @@ describe('hide_read_stories', () => {
 			mockGetVisits.mockResolvedValueOnce([]);
 			mockGetVisits.mockResolvedValueOnce([visit3]);
 
-			const sendResponse = vi.fn();
+			const service = createReadStoriesService();
+			const result = await service.getVisits(stories);
 
-			await handleHideReadStories(
-				{
-					id: 'getVisits',
-					stories,
-				},
-				{},
-				sendResponse
-			);
-
-			expect(sendResponse).toHaveBeenCalledWith({
-				id: 'handleHideReadStories',
-				stories: [
-					{ ...stories[0], latestVisit: visit1 },
-					stories[1],
-					{ ...stories[2], latestVisit: visit3 },
-				],
-			});
+			expect(result).toEqual([
+				{ ...stories[0], latestVisit: visit1 },
+				stories[1],
+				{ ...stories[2], latestVisit: visit3 },
+			]);
 		});
 	});
 

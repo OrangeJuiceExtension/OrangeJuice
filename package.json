@@ -18,6 +18,7 @@
 		"test": "vitest"
 	},
 	"dependencies": {
+		"@webext-core/proxy-service": "^2.0.0",
 		"react": "^19.2.3",
 		"react-dom": "^19.2.3",
 		"tailwindcss": "^4.1.18",

@@ -1,7 +1,9 @@
-import { type Browser, browser } from 'wxt/browser';
+import { createProxyService } from '@webext-core/proxy-service';
+import { browser } from 'wxt/browser';
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { parseHNStoriesPage } from '@/utils/hn-parser.ts';
 import { paths } from '@/utils/paths.ts';
+import { READ_STORIES_SERVICE_KEY } from '@/utils/proxy-service-keys.ts';
 import type { ComponentFeature } from '@/utils/types.ts';
 
 const allowedPaths = ['/', '/ask', '/newest', '/news', '/show', '/jobs', '/front'];
@@ -73,44 +75,37 @@ export const showStories = (storyIds: string[]): void => {
 	}
 };
 
-// This is called from the background/index.ts file, but kept here to keep background cleaner
-export const handleHideReadStories = async (
-	message: GetHistoryMessage,
-	_sender: Browser.runtime.MessageSender,
-	sendResponse: (msg: GetHistoryMessage) => void
-) => {
-	try {
-		if (message.id === 'getVisits') {
-			const visitPromises = message.stories.map((story) =>
-				browser.history.getVisits({ url: story.url })
-					.then((visits) => {
-						if (visits.length > 0) {
-							story.latestVisit = visits[0];
-						}
-						return story;
-					})
-					.catch((e) => {
-						console.error('Error fetching visit history for story:', story, e);
-						return story;
-					})
-			);
-
-			const storiesWithVisits = await Promise.all(visitPromises);
-
-			return sendResponse({
-				id: 'handleHideReadStories',
-				stories: storiesWithVisits,
-			} as GetHistoryMessage);
-		}
-	} catch (e) {
-		console.error('Error in handleHideReadStories:', e);
-	}
-};
-
-interface GetHistoryMessage {
-	id: 'getVisits' | 'handleHideReadStories';
-	stories: HNStory[];
+export interface ReadStoriesService {
+	getVisits(stories: HNStory[]): Promise<HNStory[]> | undefined;
 }
+
+export const createReadStoriesService = () => {
+	return {
+		getVisits(stories: HNStory[]): Promise<HNStory[]> | undefined {
+			try {
+				const visitPromises = stories.map((story) =>
+					browser.history
+						.getVisits({ url: story.url })
+						.then((visits) => {
+							if (visits.length > 0) {
+								story.latestVisit = visits[0];
+							}
+							return story;
+						})
+						.catch((e) => {
+							console.error('Error fetching visit history for story:', story, e);
+							return story;
+						})
+				);
+
+				return Promise.all(visitPromises);
+			} catch (e) {
+				console.error('Error in handleHideReadStories:', e);
+				return undefined;
+			}
+		},
+	};
+};
 
 export const setupCheckbox = (bigbox: Element): HTMLInputElement | null => {
 	if (!bigbox.parentElement) {
@@ -131,16 +126,12 @@ export const setupCheckbox = (bigbox: Element): HTMLInputElement | null => {
 };
 
 const getVisitedStoryIds = async (hnStories: HNStory[]): Promise<string[] | undefined> => {
-	const response = await browser.runtime.sendMessage({
-		id: 'getVisits',
-		stories: hnStories,
-	} as GetHistoryMessage);
-	if (!response || response.id !== 'handleHideReadStories') {
+	const todosRepo = createProxyService(READ_STORIES_SERVICE_KEY);
+	const response = await todosRepo.getVisits(hnStories);
+	if (!response) {
 		return;
 	}
-	return response.stories
-		.filter((story: HNStory) => story.latestVisit)
-		.map((story: HNStory) => story.id);
+	return response.filter((story: HNStory) => story.latestVisit).map((story: HNStory) => story.id);
 };
 
 export const hideReadStories: ComponentFeature = {
