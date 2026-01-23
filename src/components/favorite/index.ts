@@ -181,21 +181,7 @@ const allowedPaths = new Map<string, string>([
 export const initFavorites = (doc: Document, ojCtx: OJContext) => {
 	const cleanupHandlers: (() => void)[] = [];
 
-	const style = doc.createElement('style');
-	style.textContent = `
-		.oj-link-button {
-			background: none;
-			border: none;
-			padding: 0;
-			color: inherit;
-			text-decoration: none;
-			cursor: pointer;
-			font: inherit;
-		}
-		.oj-link-button:hover {
-			text-decoration: underline;
-	}`;
-	doc.head.appendChild(style);
+	dom.injectLinkButtonStyle(doc);
 
 	const selector = allowedPaths.get(window.location.pathname);
 	if (selector) {

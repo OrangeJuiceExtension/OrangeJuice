@@ -27,7 +27,7 @@ const getPageDom = async (
 	}
 
 	let fixedUrl: string = url;
-	if (!(url.startsWith('http') && url.startsWith('/'))) {
+	if (!(url.startsWith('http') || url.startsWith('/'))) {
 		fixedUrl = `${paths.base}/${url}`;
 	}
 	const response = await fetch(fixedUrl, { cache });
@@ -61,7 +61,53 @@ const getItemIdFromLocation = (): string | null => {
 	return url.searchParams.get('id');
 };
 
+const injectLinkButtonStyle = (doc: Document) => {
+	const style = doc.createElement('style');
+	style.textContent = `
+		.oj-link-button {
+			background: none;
+			border: none;
+			padding: 0;
+			color: inherit;
+			text-decoration: none;
+			cursor: pointer;
+			font: inherit;
+		}
+		.oj-link-button:hover {
+			text-decoration: underline;
+	}`;
+	doc.head.appendChild(style);
+};
+
+export interface FetchRemoteService {
+	getPageDom(url: string): Promise<HTMLElement | undefined> | undefined;
+	fetchJson<T>(url: string): Promise<T | undefined>;
+}
+
+export const createFetchRemoteService = () => {
+	return {
+		getPageDom(url: string): Promise<HTMLElement | undefined> | undefined {
+			try {
+				return dom.getPageDom(url);
+			} catch (e) {
+				console.error('Error in FetchRemoteService:', e);
+			}
+			return undefined;
+		},
+		async fetchJson<T>(url: string): Promise<T | undefined> {
+			try {
+				const response = await fetch(url, { cache: 'force-cache' });
+				return response.json();
+			} catch (e) {
+				console.error('Error in FetchRemoteService:', e);
+			}
+			return undefined;
+		},
+	};
+};
+
 export const dom = {
+	injectLinkButtonStyle,
 	getAllComments,
 	createHiddenInput,
 	getHiddenInputValue,

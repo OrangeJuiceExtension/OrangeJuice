@@ -31,6 +31,9 @@ Add a "favorite" button to comments and stories across various pages of HN, allo
 ## Character Count for Story Submissions
 When submitting a new story, a character counter appears next to the title input field showing how many characters remain until you reach the 80-character limit.
 
+## Fetch Title Button
+A "fetch title" button appears next to the URL input field on the story submission form. Click it to automatically retrieve and populate the title from the provided URL, saving time when submitting links.
+
 ## Hide read stories
 There is a checkbox displayed at the top of story pages that hides any stories you've already read. It uses the browser's history API to determine if a link has been visited before.
 

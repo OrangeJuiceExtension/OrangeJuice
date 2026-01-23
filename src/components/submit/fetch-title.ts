@@ -1,0 +1,67 @@
+import { createProxyService } from '@webext-core/proxy-service';
+import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import { dom } from '@/utils/dom.ts';
+import { FETCH_REMOTE_SERVICE_KEY } from '@/utils/proxy-service-keys.ts';
+
+interface Title {
+	title: string;
+}
+
+export const fetchTitle = (doc: Document, ctx: ContentScriptContext) => {
+	const titleInput = document.querySelector<HTMLInputElement>('input[name="title"]');
+	if (!titleInput) {
+		return;
+	}
+
+	const urlInput = doc.querySelector<HTMLInputElement>('input[name="url"]');
+	if (!urlInput) {
+		return;
+	}
+	dom.injectLinkButtonStyle(doc);
+
+	const urlInputParent = urlInput.parentElement;
+	if (!urlInputParent) {
+		return;
+	}
+
+	const fetchTitleBtn = doc.createElement('button');
+	fetchTitleBtn.style.paddingLeft = '10px';
+	fetchTitleBtn.classList.add('oj-link-button');
+	fetchTitleBtn.innerText = 'fetch title';
+
+	const fetchTitleHandler = async (e: Event) => {
+		e.stopPropagation();
+		e.preventDefault();
+		fetchTitleBtn.disabled = true;
+
+		try {
+			let { value } = urlInput;
+			value = value.trim();
+			if (!(value.length && value.startsWith('http'))) {
+				return;
+			}
+
+			const service = createProxyService(FETCH_REMOTE_SERVICE_KEY);
+			// Source for the extension is here: https://github.com/OrangeJuiceExtension/orange-juice-worker
+			const url = `https://orange-juice-worker.orangejuiceextension.workers.dev/title?url=${encodeURIComponent(value)}`;
+			const result = await service.fetchJson(url);
+			if (!result) {
+				return;
+			}
+
+			const title = result as Title;
+			titleInput.value = title.title;
+		} catch (e) {
+			console.error('Error fetching title:', e);
+		} finally {
+			fetchTitleBtn.disabled = false;
+		}
+	};
+	fetchTitleBtn.addEventListener('click', fetchTitleHandler);
+
+	urlInputParent.append(fetchTitleBtn);
+
+	ctx.onInvalidated(() => {
+		fetchTitleBtn.removeEventListener('click', fetchTitleHandler);
+	});
+};

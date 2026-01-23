@@ -5,8 +5,9 @@ import { favorite } from '@/components/favorite/index.ts';
 import { hideReadStories } from '@/components/hide_read_stories/index.ts';
 import { remaining } from '@/components/remaining/index.ts';
 import { inlineReply } from '@/components/reply/index.ts';
+import { submit } from '@/components/submit/index.ts';
 
-const components = [inlineReply, favorite, remaining, hideReadStories, comments];
+const components = [inlineReply, favorite, remaining, hideReadStories, comments, submit];
 
 const urlMatchesPattern = (url: string, pattern: string): boolean => {
 	// Convert glob pattern to regex
