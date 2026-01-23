@@ -1,11 +1,10 @@
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import { indentToggle } from '@/components/comments/indent-toggle.ts';
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 import type { ComponentFeature } from '@/utils/types.ts';
 import { highlightUnreadComments } from './highlight-unread-comments.ts';
 import { initCommentUX } from './init-comment-ux.ts';
-
-export { initCommentUX };
 
 export const comments: ComponentFeature = {
 	id: 'comments',
@@ -17,6 +16,7 @@ export const comments: ComponentFeature = {
 		return Promise.all([
 			Promise.resolve().then(() => initCommentUX(document, comments)),
 			Promise.resolve().then(() => highlightUnreadComments(document, comments)),
+			Promise.resolve().then(() => indentToggle(document, comments)),
 		]);
 	},
 };

@@ -39,6 +39,7 @@ Improves the comment reading experience with several visual enhancements:
 - **Highlight Unread Comments**: Tracks comments you've read and highlights new ones with an orange left border. When you revisit a thread within 3 days, new comments added since your last visit are clearly marked. The highlight becomes brighter on hover for easy identification.
 - **Custom indent width**: Comment indentation is adjusted to 40px width, making deeply nested threads easier to follow.
 - **Visual indent guides**: A subtle shadow appears on the left edge of indented comments, providing a visual guide to thread structure.
+- **Clickable indent to collapse**: Click on the indent area to collapse or expand comment threads, providing the same functionality as the collapse/expand toggle button.
 - **OP highlighting**: The original poster's username is marked with an `[op]` label and displayed in orange, making it easy to identify their comments throughout the thread.
 - **Enhanced code formatting**: Code blocks and inline code snippets get improved styling with a light gray background and rounded corners for better readability.
 
