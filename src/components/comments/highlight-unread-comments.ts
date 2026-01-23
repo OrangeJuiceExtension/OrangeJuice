@@ -1,5 +1,6 @@
-import { browser } from 'wxt/browser';
+import { createProxyService } from '@webext-core/proxy-service';
 import { dom } from '@/utils/dom.ts';
+import { HIGHLIGHT_UNREAD_COMMENTS_KEY } from '@/utils/proxy-service-keys.ts';
 
 const THREE_DAYS_IN_MS = 3 * 24 * 60 * 60 * 1000;
 
@@ -14,26 +15,28 @@ interface ReadCommentsList {
 
 const ojReadCommentsKey = 'oj_read_comments';
 
-export const expireOldComments = (readCommentsList: ReadCommentsList) => {
-	const currentMilliseconds = Date.now();
-	let hasChanges = false;
+export interface HighlightUnReadCommentsService {
+	expireOldComments: (readCommentsList: ReadCommentsList) => void;
+}
 
-	for (const [id, itemObj] of Object.entries(readCommentsList)) {
-		if (itemObj.expiry <= currentMilliseconds) {
-			delete readCommentsList[id];
-			hasChanges = true;
-		}
-	}
+export const createHighlightUnreadCommentsService = () => {
+	return {
+		expireOldComments: (readCommentsList: ReadCommentsList) => {
+			const currentMilliseconds = Date.now();
+			let hasChanges = false;
 
-	if (hasChanges) {
-		localStorage.setItem(ojReadCommentsKey, JSON.stringify(readCommentsList));
-	}
-};
+			for (const [id, itemObj] of Object.entries(readCommentsList)) {
+				if (itemObj.expiry <= currentMilliseconds) {
+					delete readCommentsList[id];
+					hasChanges = true;
+				}
+			}
 
-export const handleExpireComments = (message: { type: string; data: ReadCommentsList }) => {
-	if (message.type === 'expireComments') {
-		expireOldComments(message.data);
-	}
+			if (hasChanges) {
+				localStorage.setItem(ojReadCommentsKey, JSON.stringify(readCommentsList));
+			}
+		},
+	};
 };
 
 export const highlightUnreadComments = (doc: Document, comments: Element[]) => {
@@ -57,7 +60,8 @@ export const highlightUnreadComments = (doc: Document, comments: Element[]) => {
 	}
 
 	// offload to background, we shouldn't need the expired data to be updated
-	browser.runtime.sendMessage({ type: 'expireComments', data: readCommentsList });
+	const service = createProxyService(HIGHLIGHT_UNREAD_COMMENTS_KEY);
+	service.expireOldComments(readCommentsList);
 
 	// If the item is so old that one cannot reply, there is no point in storing comments
 	const replyForm = doc.querySelector<HTMLFormElement>('table.fatitem form');

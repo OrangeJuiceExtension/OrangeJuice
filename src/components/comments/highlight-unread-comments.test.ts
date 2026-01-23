@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { registerService } from '@webext-core/proxy-service';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { browser } from 'wxt/browser';
 import { dom } from '@/utils/dom.ts';
+import { HIGHLIGHT_UNREAD_COMMENTS_KEY } from '@/utils/proxy-service-keys.ts';
 import {
-	expireOldComments,
-	handleExpireComments,
+	createHighlightUnreadCommentsService,
 	highlightUnreadComments,
 } from './highlight-unread-comments.ts';
 
@@ -28,7 +28,7 @@ describe('highlight-unread-comments', () => {
 		vi.useFakeTimers();
 	});
 
-	describe('expireOldComments', () => {
+	describe('createHighlightUnreadCommentsService', () => {
 		it('should remove expired items from the list and update localStorage', () => {
 			const now = Date.now();
 			const readCommentsList = {
@@ -36,7 +36,8 @@ describe('highlight-unread-comments', () => {
 				item2: { expiry: now + 1000, comments: ['c2'] },
 			};
 
-			expireOldComments(readCommentsList);
+			const service = createHighlightUnreadCommentsService();
+			service.expireOldComments(readCommentsList);
 
 			expect(readCommentsList).toEqual({
 				item2: { expiry: now + 1000, comments: ['c2'] },
@@ -52,7 +53,8 @@ describe('highlight-unread-comments', () => {
 				item1: { expiry: now + 1000, comments: ['c1'] },
 			};
 
-			expireOldComments(readCommentsList);
+			const service = createHighlightUnreadCommentsService();
+			service.expireOldComments(readCommentsList);
 
 			expect(setItemSpy).not.toHaveBeenCalled();
 		});
@@ -61,7 +63,8 @@ describe('highlight-unread-comments', () => {
 			const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
 			const readCommentsList = {};
 
-			expireOldComments(readCommentsList);
+			const service = createHighlightUnreadCommentsService();
+			service.expireOldComments(readCommentsList);
 
 			expect(readCommentsList).toEqual({});
 			expect(setItemSpy).not.toHaveBeenCalled();
@@ -76,7 +79,8 @@ describe('highlight-unread-comments', () => {
 				item4: { expiry: now + 1000, comments: ['c4'] },
 			};
 
-			expireOldComments(readCommentsList);
+			const service = createHighlightUnreadCommentsService();
+			service.expireOldComments(readCommentsList);
 
 			expect(readCommentsList).toEqual({
 				item4: { expiry: now + 1000, comments: ['c4'] },
@@ -90,7 +94,8 @@ describe('highlight-unread-comments', () => {
 				item2: { expiry: now - 2000, comments: ['c2'] },
 			};
 
-			expireOldComments(readCommentsList);
+			const service = createHighlightUnreadCommentsService();
+			service.expireOldComments(readCommentsList);
 
 			expect(readCommentsList).toEqual({});
 			const stored = JSON.parse(localStorage.getItem(ojReadCommentsKey) || '{}');
@@ -104,32 +109,12 @@ describe('highlight-unread-comments', () => {
 				item2: { expiry: now + 1, comments: ['c2'] },
 			};
 
-			expireOldComments(readCommentsList);
+			const service = createHighlightUnreadCommentsService();
+			service.expireOldComments(readCommentsList);
 
 			expect(readCommentsList).toEqual({
 				item2: { expiry: now + 1, comments: ['c2'] },
 			});
-		});
-	});
-
-	describe('handleExpireComments', () => {
-		it('should call expireOldComments if message type is expireComments', () => {
-			const now = Date.now();
-			const data = {
-				item1: { expiry: now - 1000, comments: ['c1'] },
-			};
-
-			handleExpireComments({ type: 'expireComments', data });
-
-			expect(localStorage.getItem(ojReadCommentsKey)).toBeDefined();
-			const stored = JSON.parse(localStorage.getItem(ojReadCommentsKey) || '{}');
-			expect(stored.item1).toBeUndefined();
-		});
-
-		it('should do nothing for other message types', () => {
-			const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
-			handleExpireComments({ type: 'other', data: {} as any });
-			expect(setItemSpy).not.toHaveBeenCalled();
 		});
 	});
 
@@ -153,6 +138,8 @@ describe('highlight-unread-comments', () => {
 			`;
 			// Mock window.location.href via dom.getItemIdFromLocation
 			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('12345');
+
+			registerService(HIGHLIGHT_UNREAD_COMMENTS_KEY, createHighlightUnreadCommentsService());
 		});
 
 		it('should bail out if reply form is missing', () => {
@@ -237,24 +224,6 @@ describe('highlight-unread-comments', () => {
 
 			const highlighted = doc.querySelectorAll('.oj_new_comment_indent');
 			expect(highlighted.length).toBe(0);
-		});
-
-		it('should send expireComments message to background', () => {
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			vi.useFakeTimers();
-			vi.setSystemTime(1);
-			highlightUnreadComments(doc, comments);
-
-			expect(browser.runtime.sendMessage).toHaveBeenCalledWith({
-				type: 'expireComments',
-				data: {
-					'12345': {
-						comments: ['comment1', 'comment2', 'comment3', 'comment4'],
-						expiry: 1 + 3 * 24 * 60 * 60 * 1000, // 3 days in MS
-					},
-				},
-			});
-			vi.useRealTimers();
 		});
 
 		it('should use existing expiry if available', () => {
@@ -392,25 +361,6 @@ describe('highlight-unread-comments', () => {
 
 			const stored = JSON.parse(localStorage.getItem(ojReadCommentsKey) || '{}');
 			expect(stored['12345'].comments).toEqual([]);
-		});
-
-		it('should send message with existing data from localStorage', () => {
-			const now = Date.now();
-			const existingData = {
-				'12345': {
-					expiry: now + 100_000,
-					comments: ['comment1', 'comment2', 'comment3', 'comment4'],
-				},
-			};
-			localStorage.setItem(ojReadCommentsKey, JSON.stringify(existingData));
-
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			highlightUnreadComments(doc, comments);
-
-			expect(browser.runtime.sendMessage).toHaveBeenCalledWith({
-				type: 'expireComments',
-				data: existingData,
-			});
 		});
 
 		it('should only add class to td.ind elements', () => {

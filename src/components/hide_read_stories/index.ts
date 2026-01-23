@@ -126,8 +126,8 @@ export const setupCheckbox = (bigbox: Element): HTMLInputElement | null => {
 };
 
 const getVisitedStoryIds = async (hnStories: HNStory[]): Promise<string[] | undefined> => {
-	const todosRepo = createProxyService(READ_STORIES_SERVICE_KEY);
-	const response = await todosRepo.getVisits(hnStories);
+	const service = createProxyService(READ_STORIES_SERVICE_KEY);
+	const response = await service.getVisits(hnStories);
 	if (!response) {
 		return;
 	}
