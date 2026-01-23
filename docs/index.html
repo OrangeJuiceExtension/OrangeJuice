@@ -431,16 +431,17 @@
 						<div class="step">
 							<div class="step-number">1</div>
 							<div class="step-content">
-								<p class="step-title">Install Bun</p>
+								<p class="step-title">Download the latest release</p>
 								<p>
-									Follow the instructions at
+									Visit the
 									<a
-										href="https://bun.sh"
+										href="https://github.com/OrangeJuiceExtension/OrangeJuice/releases/latest"
 										target="_blank"
 										rel="noopener noreferrer"
 										style="color: var(--primary);"
-										>bun.sh</a
+										>releases page</a
 									>
+									and download the <code style="background: var(--bg); padding: 0.25rem 0.5rem; border-radius: 4px;">.zip</code> file for your browser.
 								</p>
 							</div>
 						</div>
@@ -448,57 +449,30 @@
 						<div class="step">
 							<div class="step-number">2</div>
 							<div class="step-content">
-								<p class="step-title">Clone the Repository</p>
-								<div class="step-code">
-									git clone
-									https://github.com/OrangeJuiceExtension/OrangeJuice.git
-									<br>
-									cd OrangeJuice
-								</div>
+								<p class="step-title">Install in Chrome</p>
+								<ul style="margin-left: 1.25rem; color: var(--text-light);">
+									<li>Open Chrome and navigate to <code style="background: var(--bg); padding: 0.25rem 0.5rem; border-radius: 4px;">chrome://extensions/</code></li>
+									<li>Enable "Developer mode" using the toggle in the top right</li>
+									<li>Click "Load unpacked" and select the extracted folder from the <code style="background: var(--bg); padding: 0.25rem 0.5rem; border-radius: 4px;">.zip</code> file</li>
+									<li>The extension should now be active</li>
+								</ul>
 							</div>
 						</div>
 
 						<div class="step">
 							<div class="step-number">3</div>
 							<div class="step-content">
-								<p class="step-title">Install Dependencies</p>
-								<div class="step-code">bun install</div>
+								<p class="step-title">Install in Firefox</p>
+								<ul style="margin-left: 1.25rem; color: var(--text-light);">
+									<li>Open Firefox and navigate to <code style="background: var(--bg); padding: 0.25rem 0.5rem; border-radius: 4px;">about:debugging#/runtime/this-firefox</code></li>
+									<li>Click "Load Temporary Add-on..."</li>
+									<li>Navigate to the extracted folder and select the <code style="background: var(--bg); padding: 0.25rem 0.5rem; border-radius: 4px;">manifest.json</code> file</li>
+									<li>The extension should now be active</li>
+								</ul>
+								<div class="note" style="margin-top: 1rem;">
+									<strong>Note:</strong> Temporary extensions in Firefox are removed when you restart the browser. For a permanent installation, you'll need to install from Firefox Add-ons once the extension is published there.
+								</div>
 							</div>
-						</div>
-
-						<div class="step">
-							<div class="step-number">4</div>
-							<div class="step-content">
-								<p class="step-title">Run Development Mode</p>
-								<div class="step-code">bun run dev</div>
-								<p
-									style="margin-top: 0.5rem; color: var(--text-light); font-size: 0.95rem;"
-								>
-									This opens a Chrome window with the extension loaded.
-								</p>
-							</div>
-						</div>
-
-						<div class="note">
-							<strong>To add to your own browser:</strong> Run
-							<code
-								style="background: var(--bg); padding: 0.25rem 0.5rem; border-radius: 4px;"
-							>
-								bun run build
-							</code>
-							, then drop the
-							<code
-								style="background: var(--bg); padding: 0.25rem 0.5rem; border-radius: 4px;"
-							>
-								.output/chrome-mv3
-							</code>
-							folder onto the Extensions tab of your browser.
-						</div>
-
-						<div class="note">
-							<strong>Note on releases:</strong> No official releases yet. The project
-							is evolving quickly with active data structure changes. Backwards
-							compatibility isn't being maintained at this stage.
 						</div>
 					</div>
 				</section>

@@ -44,8 +44,30 @@ Improves the comment reading experience with several visual enhancements:
 
 </details>
 
-
 # Installation
+
+1. **Download the latest release**
+
+   Visit the [releases page](https://github.com/OrangeJuiceExtension/OrangeJuice/releases/latest) and download the `.zip` file for your browser. Double-click on the `.zip` file to extract it into a folder.
+
+
+2. **Install in Chrome**
+
+   - Open Chrome and navigate to `chrome://extensions/`
+   - Enable "Developer mode" using the toggle in the top right
+   - Click "Load unpacked" and select the extracted folder from the `.zip` file
+   - The extension should now be active
+
+3. **Install in Firefox**
+
+   - Open Firefox and navigate to `about:debugging#/runtime/this-firefox`
+   - Click "Load Temporary Add-on..."
+   - Navigate to the extracted folder and select the `manifest.json` file
+   - The extension should now be active
+
+Note: Temporary extensions in Firefox are removed when you restart the browser. For a permanent installation, you'll need to install from Firefox Add-ons once the extension is published there.
+
+# Development
 
 1. **Install Bun**
    Follow the instructions at https://bun.sh
