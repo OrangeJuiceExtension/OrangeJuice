@@ -106,6 +106,12 @@ export const createFetchRemoteService = () => {
 	};
 };
 
+export function isClickModified(event: MouseEvent) {
+	return (
+		Boolean(event.button) || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+	);
+}
+
 export const dom = {
 	injectLinkButtonStyle,
 	getAllComments,
@@ -116,4 +122,5 @@ export const dom = {
 	fetchHmacFromPage,
 	getUsername,
 	getItemIdFromLocation,
+	isClickModified,
 };
