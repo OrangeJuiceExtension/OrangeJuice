@@ -24,7 +24,10 @@ export default defineConfig({
 			128: '/icon/orange_juice_icon_128x128.png',
 		},
 		permissions: ['history'],
-		host_permissions: ['https://orange-juice-worker.orangejuiceextension.workers.dev/*'],
+		host_permissions: [
+			'https://orange-juice-worker.orangejuiceextension.workers.dev/*',
+			'https://hacker-news.firebaseio.com/*',
+		],
 	},
 	vite: () => ({
 		plugins: [react(), tailwindcss()],

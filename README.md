@@ -37,6 +37,9 @@ A "fetch title" button appears next to the URL input field on the story submissi
 ## Hide read stories
 There is a checkbox displayed at the top of story pages that hides any stories you've already read. It uses the browser's history API to determine if a link has been visited before.
 
+## User Info on Hover
+Hover over any username to see a popup with user details including account creation date, karma, number of submissions, and their about section. New users (less than 1 month old) are highlighted in green. The popup stays open when you move your mouse over it, making it easy to click links in the about section.
+
 ## Enhanced Comment UX
 Improves the comment reading experience with several visual enhancements:
 - **Highlight Unread Comments**: Tracks comments you've read and highlights new ones with an orange left border. When you revisit a thread within 3 days, new comments added since your last visit are clearly marked. The highlight becomes brighter on hover for easy identification.
