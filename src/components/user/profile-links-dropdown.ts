@@ -82,7 +82,6 @@ export const profileLinksDropdown = (doc: Document, ctx: ContentScriptContext) =
 	const dropdownEl = doc.createElement('div') as HTMLDivElement;
 	dropdownEl.style.display = 'none';
 	dropdownEl.classList.add('oj_profile_dropdown');
-	// dropdownEl.style.background = metadata.topcolor;
 
 	let openState = 0;
 
