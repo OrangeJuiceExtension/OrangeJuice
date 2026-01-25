@@ -1,7 +1,7 @@
 <meta name="google-site-verification" content="hdHpuNQq_ujr4eHU5wdi7yjcxFPPmoLAg3CQuxAJP4E" />
 <img src="assets/image.png"  alt="OrangeJuice" width="50%"/>
 
-# Orange Juice makes HackerNews sweeter
+# Orange Juice makes Hacker News sweeter
 
 ## Motivation
 
@@ -9,11 +9,7 @@ I’ve been part of the Hacker News community since 2009, and over the years I�
 
 The goal isn’t to redesign Hacker News. Its minimal UX works, and no one wants to relearn an interface that already does the job. Instead, this project focuses on small, thoughtful improvements—adding features and polish that make HN more pleasant to use without changing its core.
 
-I’m also interested in exploring social features. HN is already a massive social network, but interactions feel fragmented. There’s room for tools that make engagement richer, not through obvious features like live chat, but through more creative, viral ideas I plan to experiment with. Keeping the extension open source is critical for trust; the last thing I want is for it to become a liability.
-
-I’m not a browser extension expert. The code will start rough, but through experimentation, feedback, and strong unit and end-to-end tests, it should mature into something reliable. A big part of this is learning the extension framework (wxt) and building toward stability.
-
-The ultimate goal is a genuinely useful extension that runs smoothly across all major browsers.
+I’m also interested in exploring social features. HN is already a massive social network, but interactions feel fragmented. There’s room for tools that make engagement richer, not through obvious features like live chat, but through more creative, viral ideas I plan to experiment with. Keeping the extension open source is critical for trust; the last thing I want is for it to become a liability to the community.
 
 # Features
 
@@ -42,6 +38,9 @@ Hover over any username to see a popup with user details including account creat
 
 ## Profile Links Dropdown
 Click on your username in the top navigation to reveal a dropdown menu with quick access to your profile, submissions, comments, hidden items, upvoted items, and favorites. The menu allows you to navigate to any of your profile pages without leaving the current page.
+
+## Past Page Date Picker
+Navigate historical front pages with an interactive date picker on the `/front` page. Select any year since 2007, month, and day to view what was on the front page on that date. The picker defaults to yesterday and automatically prevents selecting future dates, dynamically adjusting available months and days based on today's date.
 
 ## Enhanced Comment UX
 Improves the comment reading experience with several visual enhancements:

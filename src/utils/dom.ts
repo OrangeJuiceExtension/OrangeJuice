@@ -112,6 +112,20 @@ export function isClickModified(event: MouseEvent) {
 	);
 }
 
+export const createOptions = (start: number, end: number, step: number, selectedValue: number) => {
+	const options: HTMLOptionElement[] = [];
+	for (let i = start; step > 0 ? i <= end : i >= end; i += step) {
+		const option = document.createElement('option');
+		if (i === selectedValue) {
+			option.selected = true;
+		}
+		option.value = `${i}`;
+		option.textContent = String(i).padStart(2, '0');
+		options.push(option);
+	}
+	return options;
+};
+
 export const dom = {
 	injectLinkButtonStyle,
 	getAllComments,
@@ -123,4 +137,5 @@ export const dom = {
 	getUsername,
 	getItemIdFromLocation,
 	isClickModified,
+	createOptions,
 };

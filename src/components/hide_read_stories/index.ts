@@ -6,7 +6,17 @@ import { paths } from '@/utils/paths.ts';
 import { READ_STORIES_SERVICE_KEY } from '@/utils/proxy-service-keys.ts';
 import type { ComponentFeature } from '@/utils/types.ts';
 
-const allowedPaths = ['/', '/ask', '/newest', '/news', '/show', '/jobs', '/front'];
+const allowedPaths = [
+	'/',
+	'/ask',
+	'/newest',
+	'/news',
+	'/show',
+	'/jobs',
+	'/front',
+	'/active',
+	'/past',
+];
 const CHECKBOX_ID = 'oj-hide-read-stories';
 const STORAGE_KEY = 'oj_hide_read_stories';
 

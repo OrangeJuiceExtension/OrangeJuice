@@ -3,12 +3,22 @@ import { defineContentScript } from 'wxt/utils/define-content-script';
 import { comments } from '@/components/comments/index.ts';
 import { favorite } from '@/components/favorite/index.ts';
 import { hideReadStories } from '@/components/hide_read_stories/index.ts';
+import { past } from '@/components/past/index.ts';
 import { remaining } from '@/components/remaining/index.ts';
 import { inlineReply } from '@/components/reply/index.ts';
 import { submit } from '@/components/submit/index.ts';
 import { user } from '@/components/user/index.ts';
 
-const components = [inlineReply, favorite, remaining, hideReadStories, comments, submit, user];
+const components = [
+	inlineReply,
+	favorite,
+	remaining,
+	hideReadStories,
+	comments,
+	submit,
+	user,
+	past,
+];
 
 const urlMatchesPattern = (url: string, pattern: string): boolean => {
 	// Convert glob pattern to regex

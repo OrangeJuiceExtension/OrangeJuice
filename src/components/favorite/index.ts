@@ -166,18 +166,6 @@ const initFavoritesWithSelector = (
 	}
 };
 
-const allowedPaths = new Map<string, string>([
-	['/', '.subline'],
-	['/news', '.subline'],
-	['/newest', '.subline'],
-	['/front', '.subline'],
-	['/item', '.comhead'],
-	['/show', '.subline'],
-	['/jobs', '.subtext'],
-	['/ask', '.subline'],
-	['/threads', '.comhead'],
-]);
-
 export const initFavorites = (doc: Document, ojCtx: OJContext) => {
 	const cleanupHandlers: (() => void)[] = [];
 
@@ -194,6 +182,19 @@ export const initFavorites = (doc: Document, ojCtx: OJContext) => {
 		}
 	};
 };
+
+const allowedPaths = new Map<string, string>([
+	['/', '.subline'],
+	['/news', '.subline'],
+	['/newest', '.subline'],
+	['/front', '.subline'],
+	['/item', '.comhead'],
+	['/show', '.subline'],
+	['/jobs', '.subtext'],
+	['/ask', '.subline'],
+	['/active', '.subline'],
+	['/threads', '.comhead'],
+]);
 
 export const favorite: ComponentFeature = {
 	id: 'favorite',
