@@ -1,6 +1,6 @@
 import type { ProxyServiceKey } from '@webext-core/proxy-service';
 import type { HighlightUnReadCommentsService } from '@/components/comments/highlight-unread-comments.ts';
-import type { ReadStoriesService } from '@/components/hide_read_stories/index.ts';
+import type { ReadStoriesService } from '@/components/story/index.ts';
 import type { FetchRemoteService } from '@/utils/dom.ts';
 
 export const READ_STORIES_SERVICE_KEY =

@@ -2,11 +2,11 @@ import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { defineContentScript } from 'wxt/utils/define-content-script';
 import { comments } from '@/components/comments/index.ts';
 import { favorite } from '@/components/favorite/index.ts';
-import { hideReadStories } from '@/components/hide_read_stories/index.ts';
 import { navbar } from '@/components/navbar/index.ts';
 import { past } from '@/components/past/index.ts';
 import { remaining } from '@/components/remaining/index.ts';
 import { inlineReply } from '@/components/reply/index.ts';
+import { hideReadStories } from '@/components/story/index.ts';
 import { submit } from '@/components/submit/index.ts';
 import { user } from '@/components/user/index.ts';
 
