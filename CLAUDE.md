@@ -7,3 +7,4 @@ Always follow these directions:
 * Number.parseInt instead of parseInt
 * Wrap tests in a top level describe()
 * Infer the correct type for document.querySelector based on the selector
+* In tests, always generate valid HTML, especially for tables. Invalid: <div><td></td></div>. Valid: <div><table><tbody><tr><td></td></tr></tbody></table></div>

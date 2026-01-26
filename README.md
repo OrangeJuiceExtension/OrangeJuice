@@ -30,10 +30,12 @@ There is a checkbox displayed at the top of story pages that hides any stories y
 ## Past Page Date Picker
 Navigate historical front pages with an interactive date picker on the `/front` page. Select any year since 2007, month, and day to view what was on the front page on that date. The picker defaults to yesterday and automatically prevents selecting future dates, dynamically adjusting available months and days based on today's date.
 
+## Hidden page links
+There are a number of urls which are not exposed in the regular HN ux. Add a 'more links' dropdown to the navbar to show those links.
+
 ## Enchanced Submission UX
 - **Character Count for Story Submissions**: When submitting a new story, a character counter appears next to the title input field showing how many characters remain until you reach the 80-character limit.
 - **Fetch Title Button**: A "fetch title" button appears next to the URL input field on the story submission form. Click it to automatically retrieve and populate the title from the provided URL, saving time when submitting links.
-
 
 ## Enhanced User/Profile UX
 - **User Info on Hover**: Hover over any username to see a popup with user details including account creation date, karma, number of submissions, and their about section. New users (less than 1 month old) are highlighted in green. The popup stays open when you move your mouse over it, making it easy to click links in the about section.
