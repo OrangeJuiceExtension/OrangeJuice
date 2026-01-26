@@ -1,4 +1,4 @@
-const backtickRegex = /`([\s\S]*?)`/g;
+const backtickRegex = /(?<!\\)`([\s\S]*?)(?<!\\)`/g;
 
 export const backticksToCode = (_doc: Document, comments: Element[]): void => {
 	for (const comment of comments) {

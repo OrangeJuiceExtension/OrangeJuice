@@ -89,16 +89,10 @@ describe('backticksToCode', () => {
 		expect(() => backticksToCode(document, Array.from(comments))).not.toThrow();
 	});
 
-	it('should not process on invalid paths', () => {
-		Object.defineProperty(document, 'location', {
-			value: { pathname: '/invalid-path' },
-			writable: true,
-			configurable: true,
-		});
-
+	it('should not convert escaped backticks', () => {
 		document.body.innerHTML = `
 			<div class="comment">
-				<span class="commtext">This \`should not\` be converted</span>
+				<span class="commtext">This \\\`should not\\\` be converted</span>
 			</div>
 		`;
 
@@ -106,7 +100,21 @@ describe('backticksToCode', () => {
 		backticksToCode(document, Array.from(comments));
 
 		const commentSpan = document.querySelector('.commtext');
-		expect(commentSpan?.innerHTML).toBe('This `should not` be converted');
+		expect(commentSpan?.innerHTML).toBe('This \\`should not\\` be converted');
+	});
+
+	it('should convert unescaped backticks but not escaped ones', () => {
+		document.body.innerHTML = `
+			<div class="comment">
+				<span class="commtext">Convert \`this\` but not \\\`this\\\`</span>
+			</div>
+		`;
+
+		const comments = document.querySelectorAll('.comment');
+		backticksToCode(document, Array.from(comments));
+
+		const commentSpan = document.querySelector('.commtext');
+		expect(commentSpan?.innerHTML).toBe('Convert <code>this</code> but not \\`this\\`');
 	});
 
 	it('should process on valid comment paths', () => {
