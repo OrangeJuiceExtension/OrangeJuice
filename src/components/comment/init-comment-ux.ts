@@ -23,7 +23,7 @@ export const initCommentUX = (doc: Document, comments: Element[]): void => {
 		.comment .commtext *:not(pre) code {
 			background: #e4e4e4;
 			border-radius: 6px;
-			padding: 5px 5px 5px 0px;
+			padding: 5px 5px 5px 5px;
 			display: inline-block;
 		}
 	`;
