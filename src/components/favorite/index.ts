@@ -193,6 +193,10 @@ const allowedPaths = new Map<string, string>([
 	['/jobs', '.subtext'],
 	['/ask', '.subline'],
 	['/active', '.subline'],
+	['/bestcomments', '.comhead'],
+	['/noobcomments', '.comhead'],
+	['/noobstories', '.subline'],
+	['/pool', '.subline'],
 	['/threads', '.comhead'],
 ]);
 

@@ -16,6 +16,9 @@ const allowedPaths = [
 	'/front',
 	'/active',
 	'/past',
+	'/noobstories',
+	'/pool',
+	'/best',
 ];
 const CHECKBOX_ID = 'oj-hide-read-stories';
 const STORAGE_KEY = 'oj_hide_read_stories';
