@@ -38,7 +38,8 @@ Navigate historical front pages with an interactive date picker on the `/front` 
 ## Enhanced User/Profile UX
 - **User Info on Hover**: Hover over any username to see a popup with user details including account creation date, karma, number of submissions, and their about section. New users (less than 1 month old) are highlighted in green. The popup stays open when you move your mouse over it, making it easy to click links in the about section.
 - **Profile Links Dropdown**: Click on your username in the top navigation to reveal a dropdown menu with quick access to your profile, submissions, comments, hidden items, upvoted items, and favorites. The menu allows you to navigate to any of your profile pages without leaving the current page.
- **Profile about clickable links**: In the about section for a user, if they have put links in, make them clickable.
+- **Profile about clickable links**: In the about section for a user, if they have put links in, make them clickable.
+- **Load top leaders karma**: On the /leaders page, show the karma for the top 10
 
 ## Enhanced Comment UX
 Improves the comment reading experience with several visual enhancements:
