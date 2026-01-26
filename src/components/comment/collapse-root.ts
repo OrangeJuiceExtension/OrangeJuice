@@ -27,8 +27,8 @@ export const collapseRoot = (
 		// @ts-expect-error
 		const instCurrentRootComment = currentRootComment;
 		const toggle = doc.createElement('a');
-
-		toggle.innerText = ' [collapse root]';
+		toggle.innerText = '[collapse root]';
+		toggle.style.cursor = 'pointer';
 
 		const clickHandler = () => {
 			const togg = instCurrentRootComment.querySelector<HTMLAnchorElement>('a.togg');
@@ -43,6 +43,15 @@ export const collapseRoot = (
 		const comhead = comment.querySelector('span.comhead');
 		if (comhead) {
 			comhead.append(toggle);
+
+			// Add a bit of space to the right of the navs element to give the [collapse root] button some breathing room
+			const navs = comhead.getElementsByClassName(
+				'navs'
+			) as HTMLCollectionOf<HTMLSpanElement>;
+
+			if (navs.length) {
+				navs[0].style.marginRight = '4px';
+			}
 		}
 
 		ctx.onInvalidated(() => {
