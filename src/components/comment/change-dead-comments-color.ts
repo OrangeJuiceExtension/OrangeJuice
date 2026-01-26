@@ -1,4 +1,4 @@
-export const changeDeadCommentsColor = (doc: Document, comments: Element[]): void => {
+export const changeDeadCommentsColor = (doc: Document, comments: HTMLElement[]): void => {
 	const style = doc.createElement('style');
 	style.textContent = `
 		.oj_dead_comment {

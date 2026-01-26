@@ -7,7 +7,7 @@ import { initCommentUX } from './init-comment-ux.ts';
 const commentsHtml = readFileSync(join(__dirname, '__fixtures__', 'hn-comments.html'), 'utf-8');
 
 describe('initCommentUX', () => {
-	let comments: Element[];
+	let comments: HTMLElement[];
 	beforeEach(() => {
 		document.body.innerHTML = commentsHtml;
 		comments = dom.getAllComments(document);

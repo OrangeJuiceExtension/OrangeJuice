@@ -39,7 +39,7 @@ export const createHighlightUnreadCommentsService = () => {
 	};
 };
 
-export const highlightUnreadComments = (doc: Document, comments: Element[]) => {
+export const highlightUnreadComments = (doc: Document, comments: HTMLElement[]) => {
 	const style = doc.createElement('style');
 	style.textContent = `
 		.oj_new_comment_indent {

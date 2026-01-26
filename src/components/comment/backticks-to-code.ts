@@ -1,6 +1,6 @@
 const backtickRegex = /(?<!\\)`([\s\S]*?)(?<!\\)`/g;
 
-export const backticksToCode = (_doc: Document, comments: Element[]): void => {
+export const backticksToCode = (_doc: Document, comments: HTMLElement[]): void => {
 	for (const comment of comments) {
 		const commentSpan = comment.querySelector('.commtext');
 		if (!commentSpan) {

@@ -1,4 +1,4 @@
-export const indentToggle = (doc: Document, comments: Element[]): void => {
+export const indentToggle = (doc: Document, comments: HTMLElement[]): void => {
 	const style = doc.createElement('style');
 	style.textContent = `
 		.oj_clickable_indent {

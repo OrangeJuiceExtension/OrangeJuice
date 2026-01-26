@@ -3,7 +3,7 @@ import { dom } from '@/utils/dom.ts';
 // TODO: make this configurable in a popup menu
 const customWidth = 40;
 
-export const initCommentUX = (doc: Document, comments: Element[]): void => {
+export const initCommentUX = (doc: Document, comments: HTMLElement[]): void => {
 	const style = doc.createElement('style');
 	style.textContent = `
 		.oj_comment_indent {
