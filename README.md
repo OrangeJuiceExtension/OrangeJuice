@@ -3,6 +3,14 @@
 
 # Orange Juice makes Hacker News sweeter
 
+## Table of Contents
+
+- [Motivation](#motivation)
+- [Features](#features)
+- [Installation](#installation)
+- [Development](#development)
+- [Tests](#tests)
+
 ## Motivation
 
 I’ve been part of the Hacker News community since 2009, and over the years I’ve accumulated many ideas for improving the experience. I’ve used HNES, Refined Hacker News, and other extensions, and saved countless ideas along the way. Many promising projects were eventually abandoned. That may happen here too, but this is something I’ve wanted to explore personally for a long time. With AI making experimentation easier, now feels like the right time to do it.
