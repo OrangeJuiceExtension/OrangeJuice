@@ -45,12 +45,12 @@ describe('navbar', () => {
 		expect(styles.length).toBeGreaterThan(0);
 	});
 
-	it('should append "more links" button and separator to navbar', () => {
+	it('should append "more" button and separator to navbar', () => {
 		navbar.main(mockContext);
 		const navbarEl = document.querySelector('span.pagetop');
 		const button = navbarEl?.querySelector('.oj_navbar_links_button');
 		expect(button).toBeTruthy();
-		expect(button?.textContent).toBe('more links ▾');
+		expect(button?.textContent).toBe('more ▾');
 	});
 
 	it('should create dropdown element with links', () => {
@@ -85,11 +85,11 @@ describe('navbar', () => {
 
 		button.click();
 		expect(dropdown.style.display).toBe('block');
-		expect(button.textContent).toBe('more links ▴');
+		expect(button.textContent).toBe('more ▴');
 
 		button.click();
 		expect(dropdown.style.display).toBe('none');
-		expect(button.textContent).toBe('more links ▾');
+		expect(button.textContent).toBe('more ▾');
 	});
 
 	it('should not toggle dropdown on modified click', () => {
@@ -158,7 +158,7 @@ describe('navbar', () => {
 
 		button.click();
 		expect(dropdown.style.display).toBe('block');
-		expect(button.textContent).toBe('more links ▴');
+		expect(button.textContent).toBe('more ▴');
 
 		document.body.click();
 		expect(dropdown.style.display).toBe('none');

@@ -183,6 +183,7 @@ export const initFavorites = (doc: Document, ojCtx: OJContext) => {
 	};
 };
 
+// TODO: should we just query for the selectors and forget the hard coded stuff here?
 const allowedPaths = new Map<string, string>([
 	['/', '.subline'],
 	['/news', '.subline'],
@@ -190,9 +191,13 @@ const allowedPaths = new Map<string, string>([
 	['/front', '.subline'],
 	['/item', '.comhead'],
 	['/show', '.subline'],
+	['/shownew', '.subline'],
+	['/classic', '.subline'],
+	['/launches', '.subline'],
 	['/jobs', '.subtext'],
 	['/ask', '.subline'],
 	['/active', '.subline'],
+	['/best', '.subline'],
 	['/bestcomments', '.comhead'],
 	['/noobcomments', '.comhead'],
 	['/noobstories', '.subline'],

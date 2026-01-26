@@ -10,7 +10,7 @@ const linkDetails = [
 	},
 	{
 		title: 'best',
-		description: 'Highest-voted recent links',
+		description: 'Highest-voted recent stories',
 	},
 	{
 		title: 'pool',
@@ -23,6 +23,18 @@ const linkDetails = [
 	{
 		title: 'newpoll',
 		description: 'Create a new poll',
+	},
+	{
+		title: 'shownew',
+		description: 'Show HN new stories',
+	},
+	{
+		title: 'launches',
+		description: 'Show Launch HN stories',
+	},
+	{
+		title: 'classic',
+		description: 'Classic stories',
 	},
 	{
 		title: 'bestcomments',
@@ -94,7 +106,7 @@ export const navbar: ComponentFeature = {
 
 		const moreLinksBtn = document.createElement('a');
 		moreLinksBtn.classList.add('oj_navbar_links_button');
-		moreLinksBtn.innerHTML = 'more links ▾';
+		moreLinksBtn.innerHTML = 'more ▾';
 
 		const dropdownEl = document.createElement('div') as HTMLDivElement;
 		dropdownEl.style.display = 'none';
@@ -129,7 +141,7 @@ export const navbar: ComponentFeature = {
 			dropdownEl.style.left = `${moreLinksBtn.getBoundingClientRect().left}px`;
 			const display = dropdownEl.style.display;
 			dropdownEl.style.display = display === 'none' ? 'block' : 'none';
-			moreLinksBtn.innerHTML = `more links ${openState ? '▾' : '▴'}`;
+			moreLinksBtn.innerHTML = `more ${openState ? '▾' : '▴'}`;
 			openState = 1 - openState;
 		};
 
