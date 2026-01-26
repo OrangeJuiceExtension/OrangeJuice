@@ -1,6 +1,6 @@
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { defineContentScript } from 'wxt/utils/define-content-script';
-import { comments } from '@/components/comments/index.ts';
+import { comments } from '@/components/comment/index.ts';
 import { favorite } from '@/components/favorite/index.ts';
 import { navbar } from '@/components/navbar/index.ts';
 import { past } from '@/components/past/index.ts';

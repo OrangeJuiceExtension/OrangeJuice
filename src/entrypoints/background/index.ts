@@ -1,6 +1,6 @@
 import { registerService } from '@webext-core/proxy-service';
 import { defineBackground } from 'wxt/utils/define-background';
-import { createHighlightUnreadCommentsService } from '@/components/comments/highlight-unread-comments.ts';
+import { createHighlightUnreadCommentsService } from '@/components/comment/highlight-unread-comments.ts';
 import { createReadStoriesService } from '@/components/story/index.ts';
 import { createFetchRemoteService } from '@/utils/dom.ts';
 import {

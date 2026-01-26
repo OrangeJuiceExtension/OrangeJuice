@@ -1,6 +1,6 @@
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
-import { changeDeadCommentsColor } from '@/components/comments/change-dead-comments-color.ts';
-import { indentToggle } from '@/components/comments/indent-toggle.ts';
+import { changeDeadCommentsColor } from '@/components/comment/change-dead-comments-color.ts';
+import { indentToggle } from '@/components/comment/indent-toggle.ts';
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 import type { ComponentFeature } from '@/utils/types.ts';

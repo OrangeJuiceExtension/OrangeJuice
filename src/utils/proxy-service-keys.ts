@@ -1,5 +1,5 @@
 import type { ProxyServiceKey } from '@webext-core/proxy-service';
-import type { HighlightUnReadCommentsService } from '@/components/comments/highlight-unread-comments.ts';
+import type { HighlightUnReadCommentsService } from '@/components/comment/highlight-unread-comments.ts';
 import type { ReadStoriesService } from '@/components/story/index.ts';
 import type { FetchRemoteService } from '@/utils/dom.ts';
 
