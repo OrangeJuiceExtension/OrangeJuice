@@ -61,6 +61,9 @@ Improves the comment reading experience with several visual enhancements:
 - **Enhanced code formatting**: Code blocks and inline code snippets get improved styling with a light gray background and rounded corners for better readability.
 - **Dead comment styling**: Comments marked as `[dead]` by moderators are displayed in a distinct muted color (#d89899), making it clear when a comment has been removed or flagged.
 - **Backticks to code**: Converts all backticks in comments to HTML code elements
+- **Collapse root button**: Adds a "collapse root" button to thread pages that allows you to collapse all top-level comments at once, making it easier to navigate long comment threads and focus on specific sub-discussions.
+
+
 </details>
 
 # Installation

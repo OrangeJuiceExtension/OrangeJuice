@@ -126,4 +126,84 @@ describe('dom', () => {
 			expect(result[0].selected).toBe(true);
 		});
 	});
+
+	describe('elementPosition', () => {
+		it('should calculate element position relative to body', () => {
+			document.body.innerHTML = '<div id="test"></div>';
+			const element = document.querySelector<HTMLElement>('#test');
+
+			if (!element) {
+				throw new Error('Element not found');
+			}
+
+			element.getBoundingClientRect = vi.fn(() => ({
+				top: 250,
+				left: 100,
+				right: 300,
+				bottom: 350,
+				width: 200,
+				height: 100,
+				x: 100,
+				y: 250,
+				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
+				toJSON: () => {},
+			}));
+
+			document.body.getBoundingClientRect = vi.fn(() => ({
+				top: 50,
+				left: 0,
+				right: 1000,
+				bottom: 1000,
+				width: 1000,
+				height: 950,
+				x: 0,
+				y: 50,
+				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
+				toJSON: () => {},
+			}));
+
+			const position = dom.elementPosition(document, element);
+
+			expect(position).toEqual({ x: 100, y: 200 });
+		});
+
+		it('should handle elements at the top of the page', () => {
+			document.body.innerHTML = '<div id="test"></div>';
+			const element = document.querySelector<HTMLElement>('#test');
+
+			if (!element) {
+				throw new Error('Element not found');
+			}
+
+			element.getBoundingClientRect = vi.fn(() => ({
+				top: 0,
+				left: 50,
+				right: 150,
+				bottom: 100,
+				width: 100,
+				height: 100,
+				x: 50,
+				y: 0,
+				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
+				toJSON: () => {},
+			}));
+
+			document.body.getBoundingClientRect = vi.fn(() => ({
+				top: 0,
+				left: 0,
+				right: 1000,
+				bottom: 1000,
+				width: 1000,
+				height: 1000,
+				x: 0,
+				y: 0,
+				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
+				toJSON: () => {},
+			}));
+
+			const position = dom.elementPosition(document, element);
+
+			expect(position).toEqual({ x: 50, y: 0 });
+		});
+	});
 });

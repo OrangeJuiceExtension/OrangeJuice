@@ -1,6 +1,7 @@
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { backticksToCode } from '@/components/comment/backticks-to-code.ts';
 import { changeDeadCommentsColor } from '@/components/comment/change-dead-comments-color.ts';
+import { collapseRoot } from '@/components/comment/collapse-root.ts';
 import { indentToggle } from '@/components/comment/indent-toggle.ts';
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
@@ -27,6 +28,7 @@ export const comments: ComponentFeature = {
 			Promise.resolve().then(() => indentToggle(document, comments)),
 			Promise.resolve().then(() => changeDeadCommentsColor(document, comments)),
 			Promise.resolve().then(() => backticksToCode(document, comments)),
+			Promise.resolve().then(() => collapseRoot(document, comments, _ctx)),
 		]);
 	},
 };

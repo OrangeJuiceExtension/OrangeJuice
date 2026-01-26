@@ -52,8 +52,8 @@ const getUsername = (doc: Document): string | undefined => {
 	return userLink?.textContent || undefined;
 };
 
-const getAllComments = (doc: Document) => {
-	return [...doc.querySelectorAll('tr.comtr')];
+const getAllComments = (doc: Document): HTMLElement[] => {
+	return [...doc.querySelectorAll<HTMLElement>('tr.comtr')];
 };
 
 const getItemIdFromLocation = (): string | null => {
@@ -126,6 +126,13 @@ export const createOptions = (start: number, end: number, step: number, selected
 	return options;
 };
 
+export const elementPosition = (doc: Document, el: HTMLElement) => {
+	const bodyRect = doc.body.getBoundingClientRect();
+	const rect = el.getBoundingClientRect();
+	const top = rect.top - bodyRect.top;
+	return { x: rect.left, y: top };
+};
+
 export const dom = {
 	injectLinkButtonStyle,
 	getAllComments,
@@ -138,4 +145,5 @@ export const dom = {
 	getItemIdFromLocation,
 	isClickModified,
 	createOptions,
+	elementPosition,
 };
