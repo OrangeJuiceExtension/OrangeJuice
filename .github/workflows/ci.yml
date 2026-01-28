@@ -47,6 +47,10 @@ jobs:
       github.actor != 'github-actions[bot]' &&
       !contains(github.event.head_commit.message, 'chore: bump version') &&
       !contains(github.event.head_commit.message, '[skip ci]')
+    permissions:
+      actions: read
+      packages: read
+      security-events: write
     uses: ./.github/workflows/codeql.yml
 
   release:
