@@ -21,6 +21,7 @@
 	"dependencies": {
 		"@wxt-dev/storage": "^1.2.6",
 		"comctx": "^1.5.2",
+		"dompurify": "^3.3.1",
 		"linkify-html": "^4.3.2",
 		"linkifyjs": "^4.3.2",
 		"react": "^19.2.4",

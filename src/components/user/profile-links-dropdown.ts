@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { createDropdown, createDropdownStyle } from '@/components/common/dropdown';
 
@@ -5,35 +6,35 @@ const getLinks = (user: string) => {
 	return [
 		{
 			title: 'profile',
-			path: `user?id=${user}`,
+			path: `/user?id=${user}`,
 		},
 		{
 			title: 'submissions',
-			path: `submitted?id=${user}`,
+			path: `/submitted?id=${user}`,
 		},
 		{
 			title: 'comments',
-			path: `threads?id=${user}`,
+			path: `/threads?id=${user}`,
 		},
 		{
 			title: 'hidden',
-			path: 'hidden',
+			path: '/hidden',
 		},
 		{
 			title: 'upvoted submissions',
-			path: `upvoted?id=${user}`,
+			path: `/upvoted?id=${user}`,
 		},
 		{
 			title: 'upvoted comments',
-			path: `upvoted?id=${user}&comments=t`,
+			path: `/upvoted?id=${user}&comments=t`,
 		},
 		{
 			title: 'favorite submissions',
-			path: `favorites?id=${user}`,
+			path: `/favorites?id=${user}`,
 		},
 		{
 			title: 'favorite comments',
-			path: `favorites?id=${user}&comments=t`,
+			path: `/favorites?id=${user}&comments=t`,
 		},
 	];
 };
@@ -55,7 +56,7 @@ export const profileLinksDropdown = (doc: Document, ctx: ContentScriptContext) =
 		return false;
 	}
 
-	const userName = userLink.innerText;
+	const userName = DOMPurify.sanitize(userLink.innerText);
 
 	const style = doc.createElement('style');
 	style.innerHTML = createDropdownStyle(COMPONENT_NAME);

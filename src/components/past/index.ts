@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { parseDate } from '@/utils/date.ts';
 import { dom } from '@/utils/dom.ts';
@@ -72,7 +73,10 @@ export const chooseDate = (doc: Document, ctx: ContentScriptContext) => {
 	};
 
 	const dayChangeHandler = () => {
-		window.location.href = `/front?day=${yearSelect.value}-${monthSelect.value}-${daySelect.value}`;
+		const day = DOMPurify.sanitize(
+			`${yearSelect.value}-${monthSelect.value}-${daySelect.value}`
+		);
+		window.location.href = `/front?day=${day}`;
 	};
 
 	yearSelect.addEventListener('change', yearChangeHandler);
