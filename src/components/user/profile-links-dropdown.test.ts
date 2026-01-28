@@ -279,4 +279,102 @@ describe('profileLinksDropdown', () => {
 		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
 		expect(dropdown?.style.display).toBe('none');
 	});
+
+	it('should close dropdown when clicking outside', () => {
+		const doc = document.implementation.createHTMLDocument();
+		createPageTop(doc, 'testuser');
+		createPageTop(doc, 'testuser');
+
+		profileLinksDropdown(doc, MOCK_CONTEXT);
+
+		const pagetops = doc.querySelectorAll('span.pagetop');
+		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
+		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
+
+		vi.spyOn(userLink as HTMLAnchorElement, 'getBoundingClientRect').mockReturnValue({
+			left: 100,
+		} as DOMRect);
+
+		const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+		Object.defineProperty(clickEvent, 'preventDefault', { value: vi.fn() });
+		Object.defineProperty(clickEvent, 'stopPropagation', { value: vi.fn() });
+
+		userLink?.dispatchEvent(clickEvent);
+
+		expect(dropdown?.style.display).toBe('block');
+		expect(userLink?.innerHTML).toContain('▴');
+
+		const outsideElement = doc.createElement('div');
+		doc.body.appendChild(outsideElement);
+		const outsideClickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+		Object.defineProperty(outsideClickEvent, 'target', { value: outsideElement });
+
+		doc.dispatchEvent(outsideClickEvent);
+
+		expect(dropdown?.style.display).toBe('none');
+		expect(userLink?.innerHTML).toContain('▾');
+	});
+
+	it('should not close dropdown when clicking inside dropdown', () => {
+		const doc = document.implementation.createHTMLDocument();
+		createPageTop(doc, 'testuser');
+		createPageTop(doc, 'testuser');
+
+		profileLinksDropdown(doc, MOCK_CONTEXT);
+
+		const pagetops = doc.querySelectorAll('span.pagetop');
+		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
+		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
+
+		vi.spyOn(userLink as HTMLAnchorElement, 'getBoundingClientRect').mockReturnValue({
+			left: 100,
+		} as DOMRect);
+
+		const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+		Object.defineProperty(clickEvent, 'preventDefault', { value: vi.fn() });
+		Object.defineProperty(clickEvent, 'stopPropagation', { value: vi.fn() });
+
+		userLink?.dispatchEvent(clickEvent);
+
+		expect(dropdown?.style.display).toBe('block');
+
+		const dropdownLink = dropdown?.querySelector('a');
+		const insideClickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+		Object.defineProperty(insideClickEvent, 'target', { value: dropdownLink });
+
+		doc.dispatchEvent(insideClickEvent);
+
+		expect(dropdown?.style.display).toBe('block');
+	});
+
+	it('should not close dropdown when clicking on user link', () => {
+		const doc = document.implementation.createHTMLDocument();
+		createPageTop(doc, 'testuser');
+		createPageTop(doc, 'testuser');
+
+		profileLinksDropdown(doc, MOCK_CONTEXT);
+
+		const pagetops = doc.querySelectorAll('span.pagetop');
+		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
+		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
+
+		vi.spyOn(userLink as HTMLAnchorElement, 'getBoundingClientRect').mockReturnValue({
+			left: 100,
+		} as DOMRect);
+
+		const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+		Object.defineProperty(clickEvent, 'preventDefault', { value: vi.fn() });
+		Object.defineProperty(clickEvent, 'stopPropagation', { value: vi.fn() });
+
+		userLink?.dispatchEvent(clickEvent);
+
+		expect(dropdown?.style.display).toBe('block');
+
+		const userLinkClickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+		Object.defineProperty(userLinkClickEvent, 'target', { value: userLink });
+
+		doc.dispatchEvent(userLinkClickEvent);
+
+		expect(dropdown?.style.display).toBe('block');
+	});
 });

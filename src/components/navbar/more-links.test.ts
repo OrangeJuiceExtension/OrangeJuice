@@ -156,6 +156,7 @@ describe('navbar more-links', () => {
 
 		document.body.click();
 		expect(dropdown.style.display).toBe('none');
+		expect(button.textContent).toBe('more ▾');
 	});
 
 	it('should not close dropdown when clicking inside dropdown', () => {

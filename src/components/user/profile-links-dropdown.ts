@@ -85,6 +85,10 @@ export const profileLinksDropdown = (doc: Document, ctx: ContentScriptContext) =
 
 	let openState = 0;
 
+	const updateUserLinkText = () => {
+		userLink.innerHTML = `${userName} ${openState ? '▴' : '▾'}`;
+	};
+
 	for (const link of getLinks(userName)) {
 		const anchorEl = doc.createElement('a') as HTMLAnchorElement;
 		anchorEl.href = link.path;
@@ -94,7 +98,7 @@ export const profileLinksDropdown = (doc: Document, ctx: ContentScriptContext) =
 
 	pageTop[1].closest('table')?.parentElement?.append(dropdownEl);
 
-	userLink.innerHTML += ' ▾';
+	updateUserLinkText();
 
 	const clickHandler = (event: MouseEvent) => {
 		if (isClickModified(event)) {
@@ -107,11 +111,25 @@ export const profileLinksDropdown = (doc: Document, ctx: ContentScriptContext) =
 		dropdownEl.style.left = `${userLink.getBoundingClientRect().left}px`;
 		const display = dropdownEl.style.display;
 		dropdownEl.style.display = display === 'none' ? 'block' : 'none';
-		userLink.innerHTML = `${userName} ${openState ? '▾' : '▴'}`;
 		openState = 1 - openState;
+		updateUserLinkText();
 	};
 
 	userLink.addEventListener('click', clickHandler);
+
+	const outsideClickHandler = (event: MouseEvent) => {
+		if (openState === 0) {
+			return;
+		}
+
+		const target = event.target as Node;
+		if (!(dropdownEl.contains(target) || userLink.contains(target))) {
+			dropdownEl.style.display = 'none';
+			openState = 1 - openState;
+			updateUserLinkText();
+		}
+	};
+	doc.addEventListener('click', outsideClickHandler);
 
 	const resizeHandler = (_e: Event) => {
 		if (openState > 0) {
@@ -122,6 +140,7 @@ export const profileLinksDropdown = (doc: Document, ctx: ContentScriptContext) =
 
 	ctx.onInvalidated(() => {
 		userLink.removeEventListener('click', clickHandler);
+		doc.removeEventListener('click', outsideClickHandler);
 		window.removeEventListener('resize', resizeHandler);
 	});
 };

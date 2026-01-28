@@ -123,6 +123,10 @@ export const moreLinks = (ctx: ContentScriptContext, doc: Document) => {
 
 	let openState = 0;
 
+	const updateButtonText = () => {
+		moreLinksBtn.innerHTML = `more ${openState ? '▴' : '▾'}`;
+	};
+
 	const moreLinksBtnHandler = (event: MouseEvent) => {
 		event.stopPropagation();
 		event.preventDefault();
@@ -134,8 +138,8 @@ export const moreLinks = (ctx: ContentScriptContext, doc: Document) => {
 		dropdownEl.style.left = `${moreLinksBtn.getBoundingClientRect().left}px`;
 		const display = dropdownEl.style.display;
 		dropdownEl.style.display = display === 'none' ? 'block' : 'none';
-		moreLinksBtn.innerHTML = `more ${openState ? '▾' : '▴'}`;
 		openState = 1 - openState;
+		updateButtonText();
 	};
 
 	moreLinksBtn.addEventListener('click', moreLinksBtnHandler);
@@ -156,6 +160,7 @@ export const moreLinks = (ctx: ContentScriptContext, doc: Document) => {
 		if (!(dropdownEl.contains(target) || moreLinksBtn.contains(target))) {
 			dropdownEl.style.display = 'none';
 			openState = 1 - openState;
+			updateButtonText();
 		}
 	};
 	doc.addEventListener('click', outsideClickHandler);
