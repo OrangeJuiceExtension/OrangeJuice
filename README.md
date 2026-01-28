@@ -68,10 +68,19 @@ Improves the comment reading experience with several visual enhancements:
 
 # Installation
 
+## From the Chrome webstore
+
+https://chromewebstore.google.com/detail/orange-juice/jojpnpkbdjfpjjgjhdccgpbifipacaii
+
+## From the Firefox webstore
+
+Coming soon.
+
+## From latest github release
+
 1. **Download the latest release**
 
    Visit the [releases page](https://github.com/OrangeJuiceExtension/OrangeJuice/releases/latest) and download the `.zip` file for your browser. Double-click on the `.zip` file to extract it into a folder.
-
 
 2. **Install in Chrome**
 
