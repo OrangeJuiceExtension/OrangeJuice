@@ -38,11 +38,19 @@ jobs:
       - name: Run CI
         run: bun run ci
 
-      - name: Run CodeQL
-        uses: ./.github/workflows/codeql.yml
+  codeql:
+    needs: test
+    # Only run on push to main, and not on the bump commit (and not if CI was intentionally skipped)
+    if: >
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      github.actor != 'github-actions[bot]' &&
+      !contains(github.event.head_commit.message, 'chore: bump version') &&
+      !contains(github.event.head_commit.message, '[skip ci]')
+    uses: ./.github/workflows/codeql.yml
 
   release:
-    needs: test
+    needs: codeql
     # Only run on push to main, and not on the bump commit (and not if CI was intentionally skipped)
     if: >
       github.event_name == 'push' &&
