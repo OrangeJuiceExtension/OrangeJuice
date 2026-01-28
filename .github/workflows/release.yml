@@ -5,8 +5,6 @@ on:
     workflows: ["Test"]
     types:
       - completed
-    branches:
-      - main
 
 permissions:
   id-token: write
