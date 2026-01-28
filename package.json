@@ -15,7 +15,8 @@
 		"zip:firefox": "wxt zip -b firefox",
 		"compile": "tsc --noEmit",
 		"postinstall": "wxt prepare",
-		"test": "vitest"
+		"test": "vitest",
+		"ci": "bun run test && bun run build && bun run zip && bun run zip:firefox"
 	},
 	"dependencies": {
 		"@wxt-dev/storage": "^1.2.6",

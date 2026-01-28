@@ -3,14 +3,14 @@ name: Trigger org Pages deploy
 on:
   workflow_run:
     workflows: ["Release"]
-    types:
-      - completed
+    types: [completed]
 
 permissions:
   contents: read
 
 jobs:
   trigger:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Trigger pages workflow in orangejuiceextension.github.io
