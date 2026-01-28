@@ -38,6 +38,9 @@ jobs:
       - name: Run CI
         run: bun run ci
 
+      - name: Run CodeQL
+        uses: ./.github/workflows/codeql.yml
+
   release:
     needs: test
     # Only run on push to main, and not on the bump commit (and not if CI was intentionally skipped)
