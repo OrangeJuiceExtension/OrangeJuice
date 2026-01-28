@@ -60,3 +60,10 @@ export interface HNStory {
 	commentsCount: number | null;
 	latestVisit?: VisitItem;
 }
+
+export interface ItemData {
+	items: HTMLElement[];
+	index: number;
+	activeItem: HTMLElement | undefined;
+	commentList: boolean;
+}

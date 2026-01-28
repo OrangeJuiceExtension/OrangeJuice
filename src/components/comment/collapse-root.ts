@@ -1,14 +1,6 @@
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { dom } from '@/utils/dom';
 
-export function getCommentIndentation(element: HTMLElement) {
-	const res = element.querySelector<HTMLImageElement>('.ind img');
-	if (res) {
-		const indentation = res.width / 40;
-		return indentation;
-	}
-}
-
 export const collapseRoot = (
 	doc: Document,
 	comments: HTMLElement[],
@@ -17,9 +9,9 @@ export const collapseRoot = (
 	let currentRootComment: HTMLElement;
 
 	for (const comment of comments) {
-		const indentLevel = getCommentIndentation(comment);
+		const { width: indentLevel } = dom.getCommentIndentation(comment);
 
-		if (indentLevel === 0) {
+		if (!indentLevel || indentLevel === 0) {
 			currentRootComment = comment;
 			continue;
 		}

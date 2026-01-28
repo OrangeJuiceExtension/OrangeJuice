@@ -6,15 +6,16 @@ import { navbar } from '@/components/navbar/index.ts';
 import { past } from '@/components/past/index.ts';
 import { remaining } from '@/components/remaining/index.ts';
 import { inlineReply } from '@/components/reply/index.ts';
-import { hideReadStories } from '@/components/story/index.ts';
+import { hideReadStoriesContent } from '@/components/story/index.ts';
 import { submit } from '@/components/submit/index.ts';
 import { user } from '@/components/user/index.ts';
+import './global.css';
 
 const components = [
 	inlineReply,
 	favorite,
 	remaining,
-	hideReadStories,
+	hideReadStoriesContent,
 	comments,
 	submit,
 	user,

@@ -1,3 +1,4 @@
+import lStorage from '@/utils/localStorage.ts';
 import { SavedItemType, SavedItemTypes } from '@/utils/types.ts';
 import { dom } from './dom';
 import { paths } from './paths';
@@ -189,48 +190,46 @@ export interface StoredData {
 	lastSync: number;
 }
 
+interface StoredDataSaved {
+	items: Record<string, SavedItem>;
+	lastSync: number;
+}
+
 /**
  * Loads saved from local storage
  */
-const loadSavedFromStorage = (): StoredData => {
-	const stored = localStorage.getItem(STORAGE_KEY_SAVED);
-	if (!stored) {
-		return {
-			items: new Map<string, SavedItem>(),
-			lastSync: 0,
-		};
-	}
+const loadSavedFromStorage = async (): Promise<StoredData> => {
+	const fallback = {
+		items: new Map<string, SavedItem>(),
+		lastSync: 0,
+	} as StoredData;
 
-	try {
-		const parsed = JSON.parse(stored);
-		return {
-			items: new Map(Object.entries(parsed.items || {})),
-			lastSync: parsed.lastSync || 0,
-		};
-	} catch (_e) {
-		return {
-			items: new Map<string, SavedItem>(),
-			lastSync: 0,
-		};
+	const stored = await lStorage.getItem<StoredDataSaved>(STORAGE_KEY_SAVED);
+	if (!stored) {
+		return fallback;
 	}
+	return {
+		items: new Map(Object.entries(stored.items || {})),
+		lastSync: stored.lastSync || 0,
+	} as StoredData;
 };
 
 /**
  * Saves saved to local storage
  */
-const saveToStorage = (data: StoredData): void => {
+const saveToStorage = async (data: StoredData): Promise<void> => {
 	const serializable = {
 		items: Object.fromEntries(data.items),
 		lastSync: data.lastSync,
-	};
-	localStorage.setItem(STORAGE_KEY_SAVED, JSON.stringify(serializable));
+	} as StoredDataSaved;
+	await lStorage.setItem<StoredDataSaved>(STORAGE_KEY_SAVED, serializable);
 };
 
 /**
  * Re-syncs storage with the latest from website
  */
 const syncSaved = async (username: string): Promise<StoredData> => {
-	const storedData = loadSavedFromStorage();
+	const storedData = await loadSavedFromStorage();
 
 	const now = Date.now();
 	const reload = now - storedData.lastSync < SYNC_INTERVAL_MS;
@@ -261,8 +260,12 @@ const syncSaved = async (username: string): Promise<StoredData> => {
 /**
  * Adds a saved item to storage
  */
-const addToStorage = (itemId: string, auth: string, type: SavedItemType): SavedItem | undefined => {
-	const storedData = loadSavedFromStorage();
+const addToStorage = async (
+	itemId: string,
+	auth: string,
+	type: SavedItemType
+): Promise<SavedItem | undefined> => {
+	const storedData = await loadSavedFromStorage();
 
 	if (!storedData.items.has(itemId)) {
 		const newItem: SavedItem = { id: itemId, auth, type };
@@ -275,8 +278,8 @@ const addToStorage = (itemId: string, auth: string, type: SavedItemType): SavedI
 /**
  * Removes a saved item from storage
  */
-const removeFromStorage = (itemId: string): void => {
-	const saved = loadSavedFromStorage();
+const removeFromStorage = async (itemId: string): Promise<void> => {
+	const saved = await loadSavedFromStorage();
 	saved.items.delete(itemId);
 	saveToStorage(saved);
 };
@@ -284,16 +287,19 @@ const removeFromStorage = (itemId: string): void => {
 /**
  * Gets auth token for a specific item
  */
-const getAuthForItem = (itemId: string): string | undefined => {
-	const saved = loadSavedFromStorage();
+const getAuthForItem = async (itemId: string): Promise<string | undefined> => {
+	const saved = await loadSavedFromStorage();
 	return saved.items.get(itemId)?.auth;
 };
 
 /**
  * Updates a single saved item in storage
  */
-const updateItem = (itemId: string, updates: Partial<Omit<SavedItem, 'id'>>): void => {
-	const saved = loadSavedFromStorage();
+const updateItem = async (
+	itemId: string,
+	updates: Partial<Omit<SavedItem, 'id'>>
+): Promise<void> => {
+	const saved = await loadSavedFromStorage();
 	const item = saved.items.get(itemId);
 	if (item) {
 		saved.items.set(itemId, { ...item, ...updates });

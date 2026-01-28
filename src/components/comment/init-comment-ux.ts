@@ -33,8 +33,8 @@ export const initCommentUX = (doc: Document, comments: HTMLElement[]): void => {
 		comment.querySelector('td.ind')?.classList.add('oj_comment_indent');
 
 		// Custom indent width
-		const indentImage = comment.querySelector<HTMLImageElement>('td.ind img');
-		if (indentImage) {
+		const { element: indentImage, width: indentLevel } = dom.getCommentIndentation(comment);
+		if (indentImage && indentLevel !== undefined) {
 			const indentLevel = indentImage.width / 40;
 			indentImage.width = indentLevel * customWidth;
 			indentImage.dataset.indentLevel = `${indentLevel}`;

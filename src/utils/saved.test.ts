@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import lStorage from '@/utils/localStorage.ts';
 import { SavedItemType } from '@/utils/types.ts';
 import { dom } from './dom.ts';
 import { saved } from './saved.ts';
@@ -21,18 +22,18 @@ const favoritesEmptyHtml = readFileSync(
 describe('saved', () => {
 	describe('loadSavedFromStorage', () => {
 		beforeEach(() => {
-			localStorage.clear();
+			lStorage.clear();
 		});
 
-		it('should return empty Map when no data stored', () => {
-			const result = saved.loadSavedFromStorage();
+		it('should return empty Map when no data stored', async () => {
+			const result = await saved.loadSavedFromStorage();
 			expect(result).toEqual({
 				items: new Map(),
 				lastSync: 0,
 			});
 		});
 
-		it('should return parsed data when valid JSON stored', () => {
+		it('should return parsed data when valid JSON stored', async () => {
 			const testData = {
 				items: new Map([
 					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
@@ -41,9 +42,9 @@ describe('saved', () => {
 				lastSync: 234_234,
 			};
 
-			saved.saveToStorage(testData);
+			await saved.saveToStorage(testData);
 
-			const result = saved.loadSavedFromStorage();
+			const result = await saved.loadSavedFromStorage();
 
 			expect(result).toEqual({
 				items: new Map([
@@ -54,10 +55,10 @@ describe('saved', () => {
 			});
 		});
 
-		it('should return empty Map when invalid JSON stored', () => {
-			localStorage.setItem('oj_saved_items', 'invalid json');
+		it('should return empty Map when invalid JSON stored', async () => {
+			lStorage.setItem('oj_saved_items', 'invalid json');
 
-			const result = saved.loadSavedFromStorage();
+			const result = await saved.loadSavedFromStorage();
 
 			expect(result).toEqual({
 				items: new Map(),
@@ -68,10 +69,10 @@ describe('saved', () => {
 
 	describe('saveToStorage', () => {
 		beforeEach(() => {
-			localStorage.clear();
+			lStorage.clear();
 		});
 
-		it('should save data to localStorage', () => {
+		it('should save data to localStorage', async () => {
 			const testData = {
 				items: new Map([
 					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
@@ -80,16 +81,16 @@ describe('saved', () => {
 				lastSync: 8888,
 			};
 
-			saved.saveToStorage(testData);
+			await saved.saveToStorage(testData);
 
-			const parsed = saved.loadSavedFromStorage();
+			const parsed = await saved.loadSavedFromStorage();
 			expect(parsed.items.size).toBe(2);
 			expect(parsed.items).toEqual(testData.items);
 			expect(parsed.lastSync).toBe(8888);
 		});
 
-		it('should overwrite existing data', () => {
-			localStorage.setItem(
+		it('should overwrite existing data', async () => {
+			lStorage.setItem(
 				'oj_saved_items',
 				JSON.stringify([{ id: 'old', auth: 'old', type: 0 }])
 			);
@@ -100,11 +101,10 @@ describe('saved', () => {
 				]),
 				lastSync: 8888,
 			};
-			saved.saveToStorage(newData);
+			await saved.saveToStorage(newData);
 
-			const stored = localStorage.getItem('oj_saved_items') || '';
-			const parsed = JSON.parse(stored);
-			expect(parsed).toEqual({
+			const stored = (await lStorage.getItem('oj_saved_items')) || '';
+			expect(stored).toEqual({
 				items: {
 					new: { id: 'new', auth: 'new', type: SavedItemType.FavoriteComments },
 				},
@@ -115,13 +115,13 @@ describe('saved', () => {
 
 	describe('addToStorage', () => {
 		beforeEach(() => {
-			localStorage.clear();
+			lStorage.clear();
 		});
 
-		it('should add new item to empty storage', () => {
-			saved.addToStorage('123', 'abc', SavedItemType.FavoriteComments);
+		it('should add new item to empty storage', async () => {
+			await saved.addToStorage('123', 'abc', SavedItemType.FavoriteComments);
 
-			const stored = saved.loadSavedFromStorage();
+			const stored = await saved.loadSavedFromStorage();
 			expect(stored).toEqual({
 				items: new Map([
 					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
@@ -130,17 +130,17 @@ describe('saved', () => {
 			});
 		});
 
-		it('should add new item to existing storage', () => {
-			saved.saveToStorage({
+		it('should add new item to existing storage', async () => {
+			await saved.saveToStorage({
 				items: new Map([
 					['111', { id: '111', auth: 'aaa', type: SavedItemType.FavoriteComments }],
 				]),
 				lastSync: 9999,
 			});
 
-			saved.addToStorage('222', 'bbb', SavedItemType.FavoriteSubmissions);
+			await saved.addToStorage('222', 'bbb', SavedItemType.FavoriteSubmissions);
 
-			const stored = saved.loadSavedFromStorage();
+			const stored = await saved.loadSavedFromStorage();
 			expect(stored.items.size).toBe(2);
 			expect(stored.items.get('111')).toEqual({
 				id: '111',
@@ -155,17 +155,17 @@ describe('saved', () => {
 			expect(stored.lastSync).toEqual(9999);
 		});
 
-		it('should not add duplicate item', () => {
-			saved.saveToStorage({
+		it('should not add duplicate item', async () => {
+			await saved.saveToStorage({
 				items: new Map([
 					['111', { id: '111', auth: 'aaa', type: SavedItemType.FavoriteComments }],
 				]),
 				lastSync: 9999,
 			});
 
-			saved.addToStorage('123', 'xyz', SavedItemType.FavoriteComments);
+			await saved.addToStorage('123', 'xyz', SavedItemType.FavoriteComments);
 
-			const stored = saved.loadSavedFromStorage();
+			const stored = await saved.loadSavedFromStorage();
 			expect(stored.items.size).toBe(2);
 			expect(stored.items.get('123')).toEqual({
 				id: '123',
@@ -178,11 +178,11 @@ describe('saved', () => {
 
 	describe('removeFromStorage', () => {
 		beforeEach(() => {
-			localStorage.clear();
+			lStorage.clear();
 		});
 
-		it('should remove item by id', () => {
-			saved.saveToStorage({
+		it('should remove item by id', async () => {
+			await saved.saveToStorage({
 				items: new Map([
 					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
 					['456', { id: '456', auth: 'def', type: SavedItemType.FavoriteSubmissions }],
@@ -190,9 +190,9 @@ describe('saved', () => {
 				lastSync: 9999,
 			});
 
-			saved.removeFromStorage('123');
+			await saved.removeFromStorage('123');
 
-			const stored = saved.loadSavedFromStorage();
+			const stored = await saved.loadSavedFromStorage();
 			expect(stored.items.size).toBe(1);
 			expect(stored.items.get('456')).toEqual({
 				id: '456',
@@ -202,17 +202,17 @@ describe('saved', () => {
 			expect(stored.lastSync).toEqual(9999);
 		});
 
-		it('should handle removing non-existent item', () => {
-			saved.saveToStorage({
+		it('should handle removing non-existent item', async () => {
+			await saved.saveToStorage({
 				items: new Map([
 					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
 				]),
 				lastSync: 9999,
 			});
 
-			saved.removeFromStorage('999');
+			await saved.removeFromStorage('999');
 
-			const stored = saved.loadSavedFromStorage();
+			const stored = await saved.loadSavedFromStorage();
 			expect(stored.items.size).toBe(1);
 			expect(stored.items.get('123')).toEqual({
 				id: '123',
@@ -222,10 +222,10 @@ describe('saved', () => {
 			expect(stored.lastSync).toEqual(9999);
 		});
 
-		it('should handle empty storage', () => {
-			saved.removeFromStorage('123');
+		it('should handle empty storage', async () => {
+			await saved.removeFromStorage('123');
 
-			const stored = saved.loadSavedFromStorage();
+			const stored = await saved.loadSavedFromStorage();
 			expect(stored).toEqual({
 				items: new Map(),
 				lastSync: 0,
@@ -235,11 +235,11 @@ describe('saved', () => {
 
 	describe('getAuthForItem', () => {
 		beforeEach(() => {
-			localStorage.clear();
+			lStorage.clear();
 		});
 
-		it('should return auth for existing item', () => {
-			saved.saveToStorage({
+		it('should return auth for existing item', async () => {
+			await saved.saveToStorage({
 				items: new Map([
 					['123', { id: '123', auth: 'abc123', type: SavedItemType.FavoriteComments }],
 					['456', { id: '456', auth: 'def456', type: SavedItemType.FavoriteSubmissions }],
@@ -247,26 +247,26 @@ describe('saved', () => {
 				lastSync: 9999,
 			});
 
-			const auth = saved.getAuthForItem('123');
+			const auth = await saved.getAuthForItem('123');
 
 			expect(auth).toBe('abc123');
 		});
 
-		it('should return undefined for non-existent item', () => {
-			saved.saveToStorage({
+		it('should return undefined for non-existent item', async () => {
+			await saved.saveToStorage({
 				items: new Map([
 					['123', { id: '123', auth: 'abc123', type: SavedItemType.FavoriteComments }],
 				]),
 				lastSync: 9999,
 			});
 
-			const auth = saved.getAuthForItem('999');
+			const auth = await saved.getAuthForItem('999');
 
 			expect(auth).toBeUndefined();
 		});
 
-		it('should return undefined for empty storage', () => {
-			const auth = saved.getAuthForItem('123');
+		it('should return undefined for empty storage', async () => {
+			const auth = await saved.getAuthForItem('123');
 
 			expect(auth).toBeUndefined();
 		});
@@ -274,11 +274,11 @@ describe('saved', () => {
 
 	describe('updateItem', () => {
 		beforeEach(() => {
-			localStorage.clear();
+			lStorage.clear();
 		});
 
-		it('should update existing item auth', () => {
-			saved.saveToStorage({
+		it('should update existing item auth', async () => {
+			await saved.saveToStorage({
 				items: new Map([
 					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
 					['456', { id: '456', auth: 'def', type: SavedItemType.FavoriteSubmissions }],
@@ -286,9 +286,9 @@ describe('saved', () => {
 				lastSync: 9999,
 			});
 
-			saved.updateItem('123', { auth: 'xyz' });
+			await saved.updateItem('123', { auth: 'xyz' });
 
-			const stored = saved.loadSavedFromStorage();
+			const stored = await saved.loadSavedFromStorage();
 			expect(stored.items.size).toBe(2);
 			expect(stored.items.get('123')).toEqual({
 				id: '123',
@@ -298,17 +298,17 @@ describe('saved', () => {
 			expect(stored.lastSync).toEqual(9999);
 		});
 
-		it('should update existing item type', () => {
-			saved.saveToStorage({
+		it('should update existing item type', async () => {
+			await saved.saveToStorage({
 				items: new Map([
 					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
 				]),
 				lastSync: 9999,
 			});
 
-			saved.updateItem('123', { type: SavedItemType.FavoriteSubmissions });
+			await saved.updateItem('123', { type: SavedItemType.FavoriteSubmissions });
 
-			const stored = saved.loadSavedFromStorage();
+			const stored = await saved.loadSavedFromStorage();
 			expect(stored.items.get('123')).toEqual({
 				id: '123',
 				auth: 'abc',
@@ -317,17 +317,17 @@ describe('saved', () => {
 			expect(stored.lastSync).toEqual(9999);
 		});
 
-		it('should update multiple fields', () => {
-			saved.saveToStorage({
+		it('should update multiple fields', async () => {
+			await saved.saveToStorage({
 				items: new Map([
 					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
 				]),
 				lastSync: 9999,
 			});
 
-			saved.updateItem('123', { auth: 'xyz', type: SavedItemType.Hidden });
+			await saved.updateItem('123', { auth: 'xyz', type: SavedItemType.Hidden });
 
-			const stored = saved.loadSavedFromStorage();
+			const stored = await saved.loadSavedFromStorage();
 			expect(stored.items.get('123')).toEqual({
 				id: '123',
 				auth: 'xyz',
@@ -336,17 +336,17 @@ describe('saved', () => {
 			expect(stored.lastSync).toEqual(9999);
 		});
 
-		it('should not update if item does not exist', () => {
-			saved.saveToStorage({
+		it('should not update if item does not exist', async () => {
+			await saved.saveToStorage({
 				items: new Map([
 					['123', { id: '123', auth: 'abc', type: SavedItemType.FavoriteComments }],
 				]),
 				lastSync: 9999,
 			});
 
-			saved.updateItem('999', { auth: 'xyz' });
+			await saved.updateItem('999', { auth: 'xyz' });
 
-			const stored = saved.loadSavedFromStorage();
+			const stored = await saved.loadSavedFromStorage();
 			expect(stored.items.size).toBe(1);
 			expect(stored.items.get('123')).toEqual({
 				id: '123',
@@ -355,10 +355,10 @@ describe('saved', () => {
 			});
 		});
 
-		it('should handle empty storage', () => {
-			saved.updateItem('123', { auth: 'xyz' });
+		it('should handle empty storage', async () => {
+			await saved.updateItem('123', { auth: 'xyz' });
 
-			const stored = saved.loadSavedFromStorage();
+			const stored = await saved.loadSavedFromStorage();
 			expect(stored).toEqual({
 				items: new Map(),
 				lastSync: 0,
@@ -459,7 +459,7 @@ describe('saved', () => {
 
 	describe('syncSaved', () => {
 		beforeEach(() => {
-			localStorage.clear();
+			lStorage.clear();
 			vi.clearAllMocks();
 		});
 
@@ -476,7 +476,7 @@ describe('saved', () => {
 			expect(mockGetPageDom).toHaveBeenCalled();
 			expect(result.items.size).toBeGreaterThan(0);
 
-			const stored = saved.loadSavedFromStorage();
+			const stored = await saved.loadSavedFromStorage();
 			expect(stored).toEqual(result);
 		});
 
@@ -513,7 +513,7 @@ describe('saved', () => {
 			expect(result.items.size).toBeGreaterThan(1);
 
 			// Verify it's also saved to storage
-			const stored = saved.loadSavedFromStorage();
+			const stored = await saved.loadSavedFromStorage();
 			expect(stored.items.get('99999')).toEqual({
 				id: '99999',
 				auth: 'localauth',

@@ -206,4 +206,279 @@ describe('dom', () => {
 			expect(position).toEqual({ x: 50, y: 0 });
 		});
 	});
+
+	describe('elementInScrollView', () => {
+		it('should return true when element is fully visible in viewport', () => {
+			document.body.innerHTML = '<div id="test"></div>';
+			const element = document.querySelector<HTMLElement>('#test');
+			if (!element) {
+				throw new Error('Element not found');
+			}
+
+			element.getBoundingClientRect = vi.fn(() => ({
+				top: 100,
+				left: 0,
+				right: 200,
+				bottom: 300,
+				width: 200,
+				height: 200,
+				x: 0,
+				y: 100,
+				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
+				toJSON: () => {},
+			}));
+
+			Object.defineProperty(window, 'innerHeight', {
+				writable: true,
+				configurable: true,
+				value: 800,
+			});
+
+			const result = dom.elementInScrollView(element);
+
+			expect(result).toBe(true);
+		});
+
+		it('should return false when element is above viewport', () => {
+			document.body.innerHTML = '<div id="test"></div>';
+			const element = document.querySelector<HTMLElement>('#test');
+			if (!element) {
+				throw new Error('Element not found');
+			}
+
+			element.getBoundingClientRect = vi.fn(() => ({
+				top: -100,
+				left: 0,
+				right: 200,
+				bottom: -10,
+				width: 200,
+				height: 90,
+				x: 0,
+				y: -100,
+				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
+				toJSON: () => {},
+			}));
+
+			Object.defineProperty(window, 'innerHeight', {
+				writable: true,
+				configurable: true,
+				value: 800,
+			});
+
+			const result = dom.elementInScrollView(element);
+
+			expect(result).toBe(false);
+		});
+
+		it('should return false when element is below viewport', () => {
+			document.body.innerHTML = '<div id="test"></div>';
+			const element = document.querySelector<HTMLElement>('#test');
+			if (!element) {
+				throw new Error('Element not found');
+			}
+
+			element.getBoundingClientRect = vi.fn(() => ({
+				top: 900,
+				left: 0,
+				right: 200,
+				bottom: 1100,
+				width: 200,
+				height: 200,
+				x: 0,
+				y: 900,
+				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
+				toJSON: () => {},
+			}));
+
+			Object.defineProperty(window, 'innerHeight', {
+				writable: true,
+				configurable: true,
+				value: 800,
+			});
+
+			const result = dom.elementInScrollView(element);
+
+			expect(result).toBe(false);
+		});
+
+		it('should return true when element is at the top edge of viewport', () => {
+			document.body.innerHTML = '<div id="test"></div>';
+			const element = document.querySelector<HTMLElement>('#test');
+			if (!element) {
+				throw new Error('Element not found');
+			}
+
+			element.getBoundingClientRect = vi.fn(() => ({
+				top: 0,
+				left: 0,
+				right: 200,
+				bottom: 100,
+				width: 200,
+				height: 100,
+				x: 0,
+				y: 0,
+				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
+				toJSON: () => {},
+			}));
+
+			Object.defineProperty(window, 'innerHeight', {
+				writable: true,
+				configurable: true,
+				value: 800,
+			});
+
+			const result = dom.elementInScrollView(element);
+
+			expect(result).toBe(true);
+		});
+
+		it('should return true when element bottom is at the bottom edge of viewport', () => {
+			document.body.innerHTML = '<div id="test"></div>';
+			const element = document.querySelector<HTMLElement>('#test');
+			if (!element) {
+				throw new Error('Element not found');
+			}
+
+			element.getBoundingClientRect = vi.fn(() => ({
+				top: 600,
+				left: 0,
+				right: 200,
+				bottom: 800,
+				width: 200,
+				height: 200,
+				x: 0,
+				y: 600,
+				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
+				toJSON: () => {},
+			}));
+
+			Object.defineProperty(window, 'innerHeight', {
+				writable: true,
+				configurable: true,
+				value: 800,
+			});
+
+			const result = dom.elementInScrollView(element);
+
+			expect(result).toBe(true);
+		});
+
+		it('should return false when element is partially cut off at bottom', () => {
+			document.body.innerHTML = '<div id="test"></div>';
+			const element = document.querySelector<HTMLElement>('#test');
+			if (!element) {
+				throw new Error('Element not found');
+			}
+
+			element.getBoundingClientRect = vi.fn(() => ({
+				top: 700,
+				left: 0,
+				right: 200,
+				bottom: 900,
+				width: 200,
+				height: 200,
+				x: 0,
+				y: 700,
+				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
+				toJSON: () => {},
+			}));
+
+			Object.defineProperty(window, 'innerHeight', {
+				writable: true,
+				configurable: true,
+				value: 800,
+			});
+
+			const result = dom.elementInScrollView(element);
+
+			expect(result).toBe(false);
+		});
+	});
+
+	describe('getCommentIndentation', () => {
+		it('should return indentation level based on image width', () => {
+			const comment = document.createElement('div');
+			comment.innerHTML = '<div class="ind"><img width="80" /></div>';
+
+			const { element, width } = dom.getCommentIndentation(comment);
+
+			expect(element).toBeDefined();
+			expect(width).toBe(2);
+		});
+
+		it('should return indentation of 0 for root comments', () => {
+			const comment = document.createElement('div');
+			comment.innerHTML = '<div class="ind"><img width="0" /></div>';
+
+			const { element, width } = dom.getCommentIndentation(comment);
+
+			expect(element).toBeDefined();
+			expect(width).toBe(0);
+		});
+
+		it('should return undefined when no indentation image exists', () => {
+			const comment = document.createElement('div');
+			comment.innerHTML = '<div class="ind"></div>';
+
+			const { element, width } = dom.getCommentIndentation(comment);
+
+			expect(element).toBeUndefined();
+			expect(width).toBeUndefined();
+		});
+	});
+
+	describe('isComboKey', () => {
+		it('should return true when ctrl key is pressed', () => {
+			const event = new KeyboardEvent('keydown', { ctrlKey: true });
+
+			const result = dom.isComboKey(event);
+
+			expect(result).toBe(true);
+		});
+
+		it('should return true when meta key is pressed', () => {
+			const event = new KeyboardEvent('keydown', { metaKey: true });
+
+			const result = dom.isComboKey(event);
+
+			expect(result).toBe(true);
+		});
+
+		it('should return true when shift key is pressed', () => {
+			const event = new KeyboardEvent('keydown', { shiftKey: true });
+
+			const result = dom.isComboKey(event);
+
+			expect(result).toBe(true);
+		});
+
+		it('should return true when alt key is pressed', () => {
+			const event = new KeyboardEvent('keydown', { altKey: true });
+
+			const result = dom.isComboKey(event);
+
+			expect(result).toBe(true);
+		});
+
+		it('should return false when no modifier keys are pressed', () => {
+			const event = new KeyboardEvent('keydown', {
+				ctrlKey: false,
+				metaKey: false,
+				shiftKey: false,
+				altKey: false,
+			});
+
+			const result = dom.isComboKey(event);
+
+			expect(result).toBe(false);
+		});
+
+		it('should return true when multiple modifier keys are pressed', () => {
+			const event = new KeyboardEvent('keydown', { ctrlKey: true, shiftKey: true });
+
+			const result = dom.isComboKey(event);
+
+			expect(result).toBe(true);
+		});
+	});
 });

@@ -1,7 +1,6 @@
 import linkifyHtml from 'linkify-html';
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { getUserInfo } from '@/utils/api.ts';
-import { months } from '@/utils/date.ts';
 
 const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -12,7 +11,6 @@ export const showUserInfoOnHover = (
 ) => {
 	const style = doc.createElement('style');
 	style.textContent = `
-		/* Hover info popup box: */
 		.oj_user_info_hover {
 			position: absolute;
 			background: #f6f6ef;
@@ -22,8 +20,14 @@ export const showUserInfoOnHover = (
 			max-width: 500px;
 			max-height: 400px;
 			overflow-y: auto;
+			display: none;
 		}
 		
+		.oj_user_info_hover.active {
+			display: block;
+			margin-top: 2px;
+		}
+
 		.oj_user_info_hover td {
 			font-size: 10px !important;
 			vertical-align: top;
@@ -37,68 +41,36 @@ export const showUserInfoOnHover = (
 			color: #000 !important;
 			text-decoration: none !important;
 		}
-		
-		a.hnuser:hover ~ .oj_user_info_hover, 
-		.oj_user_info_hover:hover {
-			display: block;
-		}
 	`;
 	doc.head.appendChild(style);
 
-	for (const user of allUsers) {
-		let hideTimeout: ReturnType<typeof setTimeout> | null = null;
+	// Globals
+	const cachedData = new Map<string, HTMLDivElement>();
+	let activeTrigger: HTMLAnchorElement | null = null;
+	let popover: HTMLDivElement | null = null;
 
-		const hideUserInfo = () => {
-			hideTimeout = setTimeout(() => {
-				const obj =
-					user.parentElement?.querySelector<HTMLDivElement>('.oj_user_info_hover');
-				if (obj) {
-					obj.style.display = 'none';
-				}
-			}, 100);
-		};
+	const populateUserDiv = async (user: HTMLAnchorElement, userDivBox: HTMLDivElement) => {
+		const userName = user.innerText.trim();
+		if (cachedData.has(userName)) {
+			userDivBox.innerHTML = cachedData.get(userName)?.innerHTML || '';
+			return;
+		}
 
-		const createUserDiv = () => {
-			const userDiv = doc.createElement('div') as HTMLDivElement;
-			userDiv.classList.add('oj_user_info_hover');
-			userDiv.style.display = 'none';
+		const userInfo = await getUserInfo(userName);
+		if (!userInfo) {
+			return;
+		}
 
-			user.parentElement?.append(userDiv);
-			user.dataset.infoShown = '0';
+		const userDate = new Date(userInfo.created * 1000);
+		const renderedDate = Intl.DateTimeFormat().format(userDate);
+		const isNewUser = Date.now() - userDate.getTime() < ONE_MONTH_MS;
 
-			userDiv.addEventListener('mouseenter', () => {
-				if (hideTimeout) {
-					clearTimeout(hideTimeout);
-					hideTimeout = null;
-				}
-			});
-
-			userDiv.addEventListener('mouseleave', hideUserInfo);
-
-			return userDiv;
-		};
-
-		const populateUserDiv = async (userDiv: HTMLDivElement) => {
-			// prevent FOUS when user hovers over the div
-			userDiv.style.display = 'none';
-			const userInfo = await getUserInfo(user.innerText?.split(' ')[0]);
-			if (!userInfo) {
-				return;
-			}
-			userDiv.style.display = 'block';
-
-			const userDate = new Date(userInfo.created * 1000);
-			const renderedDate = `${months[userDate.getMonth()]} ${userDate.getDate()}, ${userDate.getFullYear()}`;
-
-			const isNewUser = Date.now() - userDate.getTime() < ONE_MONTH_MS;
-			const tableColor = isNewUser ? ' color="#3c963c"' : '';
-
-			const table = `
+		const table = `
 				<table>
 					<tbody>
 						<tr>
 							<td>user:</td>
-							<td><font${tableColor}>${userInfo.id}</font></td>
+							<td><font${isNewUser ? ' color="#3c963c"' : ''}>${userInfo.id}</font></td>
 						</tr>
 						<tr>
 							<td>created:</td>
@@ -121,42 +93,97 @@ export const showUserInfoOnHover = (
 				</table>
 			`;
 
-			userDiv.innerHTML = linkifyHtml(table, { attributes: { rel: 'noopener' } });
-			userDiv.style.display = 'block';
-		};
+		userDivBox.innerHTML = linkifyHtml(table, { attributes: { rel: 'noopener' } });
+		cachedData.set(userName, userDivBox);
+	};
 
-		const userHandler = async () => {
-			if (hideTimeout) {
-				clearTimeout(hideTimeout);
-				hideTimeout = null;
+	const createUserDiv = (_user: HTMLAnchorElement) => {
+		const userDiv = doc.createElement('div') as HTMLDivElement;
+		userDiv.classList.add('oj_user_info_hover');
+		return userDiv;
+	};
+
+	async function showPopover(trigger: HTMLAnchorElement): Promise<void> {
+		if (!popover) {
+			popover = createUserDiv(trigger);
+		}
+
+		popover?.classList.add('active');
+
+		const loader = doc.createElement('div');
+		loader.style.margin = '20px';
+		loader.classList.add('loader1');
+
+		popover.append(loader);
+		trigger.parentElement?.append(popover);
+		activeTrigger = trigger;
+
+		await populateUserDiv(trigger, popover);
+	}
+
+	function hidePopover(): void {
+		popover?.remove();
+		popover = null;
+		activeTrigger = null;
+	}
+
+	const onMouseOver = async (e: MouseEvent): Promise<void> => {
+		const trigger = (e.target as HTMLAnchorElement) || null;
+
+		if (!trigger || activeTrigger === trigger) {
+			return;
+		}
+		await showPopover(trigger);
+	};
+
+	const onMouseMove = (e: MouseEvent): void => {
+		if (!activeTrigger) {
+			return;
+		}
+
+		const target = e.target as Node | null;
+		if (activeTrigger.contains(target) || popover?.contains(target)) {
+			return;
+		}
+
+		const triggerRect = activeTrigger.getBoundingClientRect();
+		const popoverRect = popover?.getBoundingClientRect();
+
+		if (popoverRect) {
+			const PADDING = 10;
+
+			// Horizontal corridor spanning trigger + popover
+			const corridorLeft = Math.min(triggerRect.left, popoverRect.left) - PADDING;
+			const corridorRight = Math.max(triggerRect.right, popoverRect.right) + PADDING;
+
+			// Vertical corridor between trigger and popover
+			const corridorTop = triggerRect.top;
+			const corridorBottom = popoverRect.top + PADDING;
+
+			const isMouseInSafeCorridor =
+				e.clientX >= corridorLeft &&
+				e.clientX <= corridorRight &&
+				e.clientY >= corridorTop &&
+				e.clientY <= corridorBottom;
+
+			if (isMouseInSafeCorridor) {
+				return;
 			}
+		}
 
-			let userDiv = user.parentElement?.querySelector(
-				'.oj_user_info_hover'
-			) as HTMLDivElement;
+		hidePopover();
+	};
 
-			if (!userDiv) {
-				userDiv = createUserDiv();
-			}
+	document.addEventListener('mousemove', onMouseMove);
 
-			userDiv.style.display = 'block';
-			userDiv.style.left = `${user.getBoundingClientRect().left}px`;
+	ctx.onInvalidated(() => {
+		for (const user of allUsers) {
+			user.removeEventListener('mouseover', onMouseOver);
+		}
+		document.removeEventListener('mousemove', onMouseMove);
+	});
 
-			if (user.dataset.infoShown === '0') {
-				user.dataset.infoShown = '1';
-				await populateUserDiv(userDiv);
-			}
-		};
-
-		user.addEventListener('mouseenter', userHandler);
-		user.addEventListener('mouseleave', hideUserInfo);
-
-		ctx.onInvalidated(() => {
-			user.removeEventListener('mouseenter', userHandler);
-			user.removeEventListener('mouseleave', hideUserInfo);
-			if (hideTimeout) {
-				clearTimeout(hideTimeout);
-			}
-		});
+	for (const user of allUsers) {
+		user.addEventListener('mouseover', onMouseOver);
 	}
 };

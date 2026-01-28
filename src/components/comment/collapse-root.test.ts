@@ -1,36 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { dom } from '@/utils/dom';
-import { collapseRoot, getCommentIndentation } from './collapse-root';
-
-describe('getCommentIndentation', () => {
-	it('should return indentation level based on image width', () => {
-		const comment = document.createElement('div');
-		comment.innerHTML = '<div class="ind"><img width="80" /></div>';
-
-		const indentation = getCommentIndentation(comment);
-
-		expect(indentation).toBe(2);
-	});
-
-	it('should return indentation of 0 for root comments', () => {
-		const comment = document.createElement('div');
-		comment.innerHTML = '<div class="ind"><img width="0" /></div>';
-
-		const indentation = getCommentIndentation(comment);
-
-		expect(indentation).toBe(0);
-	});
-
-	it('should return undefined when no indentation image exists', () => {
-		const comment = document.createElement('div');
-		comment.innerHTML = '<div class="ind"></div>';
-
-		const indentation = getCommentIndentation(comment);
-
-		expect(indentation).toBeUndefined();
-	});
-});
+import { collapseRoot } from './collapse-root';
 
 describe('collapseRoot', () => {
 	let mockCtx: ContentScriptContext;
@@ -97,7 +68,7 @@ describe('collapseRoot', () => {
 		const collapseLink = comhead?.querySelector('a');
 
 		expect(collapseLink).toBeTruthy();
-		expect(collapseLink?.textContent).toBe(' [collapse root]');
+		expect(collapseLink?.textContent).toBe('[collapse root]');
 	});
 
 	it('should click root toggle and scroll to root when collapse link is clicked', () => {
@@ -156,8 +127,8 @@ describe('collapseRoot', () => {
 		const link1 = child1.querySelector('span.comhead a');
 		const link2 = child2.querySelector('span.comhead a');
 
-		expect(link1?.textContent).toBe(' [collapse root]');
-		expect(link2?.textContent).toBe(' [collapse root]');
+		expect(link1?.textContent).toBe('[collapse root]');
+		expect(link2?.textContent).toBe('[collapse root]');
 	});
 
 	it('should register cleanup handlers for all added links', () => {

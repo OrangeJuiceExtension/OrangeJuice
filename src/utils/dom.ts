@@ -79,37 +79,14 @@ const injectLinkButtonStyle = (doc: Document) => {
 	doc.head.appendChild(style);
 };
 
-export interface FetchRemoteService {
-	getPageDom(url: string): Promise<HTMLElement | undefined> | undefined;
-	fetchJson<T>(url: string): Promise<T | undefined>;
-}
-
-export const createFetchRemoteService = () => {
-	return {
-		getPageDom(url: string): Promise<HTMLElement | undefined> | undefined {
-			try {
-				return dom.getPageDom(url);
-			} catch (e) {
-				console.error('Error in FetchRemoteService:', e);
-			}
-			return undefined;
-		},
-		async fetchJson<T>(url: string): Promise<T | undefined> {
-			try {
-				const response = await fetch(url, { cache: 'force-cache' });
-				return response.json();
-			} catch (e) {
-				console.error('Error in FetchRemoteService:', e);
-			}
-			return undefined;
-		},
-	};
-};
-
 export function isClickModified(event: MouseEvent) {
 	return (
 		Boolean(event.button) || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
 	);
+}
+
+export function isComboKey(event: KeyboardEvent) {
+	return event.ctrlKey || event.metaKey || event.shiftKey || event.altKey;
 }
 
 export const createOptions = (start: number, end: number, step: number, selectedValue: number) => {
@@ -133,6 +110,31 @@ export const elementPosition = (doc: Document, el: HTMLElement) => {
 	return { x: rect.left, y: top };
 };
 
+// From: https://stackoverflow.com/a/22480938
+export function elementInScrollView(el: HTMLElement) {
+	const rect = el.getBoundingClientRect();
+	const elemTop = rect.top;
+	const elemBottom = rect.bottom;
+
+	return elemTop >= 0 && elemBottom <= window.innerHeight;
+}
+
+export function getCommentIndentation(element: HTMLElement): {
+	element?: HTMLImageElement;
+	width?: number;
+} {
+	const img = element?.querySelector('.ind img') as HTMLImageElement | undefined;
+	return img
+		? {
+				element: img,
+				width: img.width / 40,
+			}
+		: {
+				element: undefined,
+				width: undefined,
+			};
+}
+
 export const dom = {
 	injectLinkButtonStyle,
 	getAllComments,
@@ -144,6 +146,9 @@ export const dom = {
 	getUsername,
 	getItemIdFromLocation,
 	isClickModified,
+	isComboKey,
 	createOptions,
 	elementPosition,
+	elementInScrollView,
+	getCommentIndentation,
 };

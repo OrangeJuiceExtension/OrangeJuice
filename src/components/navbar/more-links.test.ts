@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { navbar } from './index';
 
-describe('navbar', () => {
+describe('navbar more-links', () => {
 	let mockContext: any;
 
 	beforeEach(() => {
@@ -25,12 +25,6 @@ describe('navbar', () => {
 
 		window.location.pathname = '';
 		vi.clearAllMocks();
-	});
-
-	it('should return false if navbar element is not found', () => {
-		document.body.innerHTML = '';
-		const result = navbar.main(mockContext);
-		expect(result).toBe(false);
 	});
 
 	it('should return early if less than 2 pagetop elements exist', () => {

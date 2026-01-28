@@ -1,319 +1,408 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getUserInfo } from '@/utils/api.ts';
-import { showUserInfoOnHover } from './show-user-info-hover.ts';
+import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import { getUserInfo } from '@/utils/api';
+import { showUserInfoOnHover } from './show-user-info-hover';
 
-vi.mock('@/utils/api.ts', () => ({
+vi.mock('@/utils/api', () => ({
 	getUserInfo: vi.fn(),
 }));
 
-const MOCK_CONTEXT = {
-	onInvalidated: vi.fn(),
-} as any;
-
-const createUserAnchor = (doc: Document, username: string): HTMLAnchorElement => {
-	const anchor = doc.createElement('a');
-	anchor.className = 'hnuser';
-	anchor.textContent = username;
-	const container = doc.createElement('div');
-	container.appendChild(anchor);
-	doc.body.appendChild(container);
-	return anchor;
-};
+vi.mock('linkify-html', () => ({
+	default: (html: string) => html,
+}));
 
 describe('showUserInfoOnHover', () => {
+	let mockCtx: ContentScriptContext;
+	let cleanupFunctions: Array<() => void>;
+
 	beforeEach(() => {
+		document.body.innerHTML = '';
+		document.head.innerHTML = '';
+		cleanupFunctions = [];
+
+		mockCtx = {
+			onInvalidated: vi.fn((callback: () => void) => {
+				cleanupFunctions.push(callback);
+			}),
+		} as unknown as ContentScriptContext;
+
 		vi.clearAllMocks();
 	});
 
-	it('should add style element to document head', () => {
-		const doc = document.implementation.createHTMLDocument();
-		const users = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+	const createUserLink = (userName: string): HTMLAnchorElement => {
+		const link = document.createElement('a');
+		link.href = `user?id=${userName}`;
+		link.textContent = userName;
+		link.className = 'hnuser';
+		const parent = document.createElement('div');
+		parent.appendChild(link);
+		document.body.appendChild(parent);
+		return link;
+	};
 
-		showUserInfoOnHover(doc, MOCK_CONTEXT, users);
+	const mockUserInfo = (userName: string, overrides = {}) => {
+		vi.mocked(getUserInfo).mockResolvedValueOnce({
+			id: userName,
+			created: Math.floor(Date.now() / 1000) - 365 * 24 * 60 * 60, // 1 year ago
+			karma: 1000,
+			about: 'Test user bio',
+			submitted: Array.from({ length: 50 }),
+			...overrides,
+		});
+	};
 
-		const styleElement = doc.head.querySelector('style');
-		expect(styleElement).not.toBeNull();
-		expect(styleElement?.textContent).toContain('.oj_user_info_hover');
+	it('should inject styles into the document head', () => {
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
+
+		const style = document.querySelector('style');
+		expect(style).toBeTruthy();
+		expect(style?.textContent).toContain('.oj_user_info_hover');
+		expect(style?.textContent).toContain('position: absolute');
 	});
 
-	it('should create hover div on mouseenter', async () => {
-		const doc = document.implementation.createHTMLDocument();
-		const user = createUserAnchor(doc, 'testuser');
-		const users = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+	it('should show popover on mouseover', async () => {
+		const userLink = createUserLink('testuser');
+		mockUserInfo('testuser');
 
-		vi.mocked(getUserInfo).mockResolvedValue({
-			id: 'testuser',
-			created: 1_609_459_200,
-			karma: 100,
-			submitted: [1, 2, 3],
-		});
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
 
-		showUserInfoOnHover(doc, MOCK_CONTEXT, users);
-
-		const event = new Event('mouseenter');
-		user.dispatchEvent(event);
+		const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true });
+		userLink.dispatchEvent(mouseoverEvent);
 
 		await vi.waitFor(() => {
-			const hoverDiv = user.parentElement?.querySelector('.oj_user_info_hover');
-			expect(hoverDiv).not.toBeNull();
-		});
-	});
-
-	it('should populate user info on first hover', async () => {
-		const doc = document.implementation.createHTMLDocument();
-		const user = createUserAnchor(doc, 'testuser');
-		const users = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser');
-
-		vi.mocked(getUserInfo).mockResolvedValue({
-			id: 'testuser',
-			created: 1_609_459_200,
-			karma: 100,
-			submitted: [1, 2, 3],
-		});
-
-		showUserInfoOnHover(doc, MOCK_CONTEXT, users);
-
-		const event = new Event('mouseenter');
-		user.dispatchEvent(event);
-
-		await vi.waitFor(() => {
-			const hoverDiv = user.parentElement?.querySelector('.oj_user_info_hover');
-			expect(hoverDiv?.innerHTML).toContain('testuser');
-			expect(hoverDiv?.innerHTML).toContain('100');
-			expect(hoverDiv?.innerHTML).toContain('3');
+			const popover = document.querySelector('.oj_user_info_hover.active');
+			expect(popover).toBeTruthy();
 		});
 	});
 
-	it('should not fetch user info on subsequent hovers', async () => {
-		const doc = document.implementation.createHTMLDocument();
-		const user = createUserAnchor(doc, 'testuser');
-		const users = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser');
-
-		const getUserInfoSpy = vi.mocked(getUserInfo).mockResolvedValue({
-			id: 'testuser',
-			created: 1_609_459_200,
-			karma: 100,
-			submitted: [1, 2, 3],
+	it('should display user information in popover', async () => {
+		const userLink = createUserLink('testuser');
+		mockUserInfo('testuser', {
+			karma: 5000,
+			submitted: Array.from({ length: 100 }),
 		});
 
-		showUserInfoOnHover(doc, MOCK_CONTEXT, users);
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
 
-		user.dispatchEvent(new Event('mouseenter'));
-		await vi.waitFor(() => {
-			expect(getUserInfoSpy).toHaveBeenCalledTimes(1);
-		});
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
-		user.dispatchEvent(new Event('mouseleave'));
-		user.dispatchEvent(new Event('mouseenter'));
 		await vi.waitFor(() => {
-			expect(getUserInfoSpy).toHaveBeenCalledTimes(1);
+			const popover = document.querySelector('.oj_user_info_hover');
+			expect(popover?.textContent).toContain('testuser');
+			expect(popover?.textContent).toContain('5000');
+			expect(popover?.textContent).toContain('100');
 		});
 	});
 
-	it('should show green color for users less than a month old', async () => {
-		const doc = document.implementation.createHTMLDocument();
-		const user = createUserAnchor(doc, 'newuser');
-		const users = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+	it('should display about section when user has about text', async () => {
+		const userLink = createUserLink('testuser');
+		mockUserInfo('testuser', { about: 'I love programming' });
 
-		const recentTimestamp = Math.floor((Date.now() - 10 * 24 * 60 * 60 * 1000) / 1000);
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
 
-		vi.mocked(getUserInfo).mockResolvedValue({
-			id: 'newuser',
-			created: recentTimestamp,
-			karma: 50,
-			submitted: [1],
-		});
-
-		showUserInfoOnHover(doc, MOCK_CONTEXT, users);
-
-		user.dispatchEvent(new Event('mouseenter'));
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
 		await vi.waitFor(() => {
-			const hoverDiv = user.parentElement?.querySelector('.oj_user_info_hover');
-			expect(hoverDiv?.innerHTML).toContain('#3c963c');
+			const popover = document.querySelector('.oj_user_info_hover');
+			expect(popover?.textContent).toContain('I love programming');
 		});
 	});
 
-	it('should not show green color for users older than a month', async () => {
-		const doc = document.implementation.createHTMLDocument();
-		const user = createUserAnchor(doc, 'olduser');
-		const users = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+	it('should not display about section when user has no about text', async () => {
+		const userLink = createUserLink('testuser');
+		mockUserInfo('testuser', { about: undefined });
 
-		const oldTimestamp = Math.floor((Date.now() - 60 * 24 * 60 * 60 * 1000) / 1000);
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
 
-		vi.mocked(getUserInfo).mockResolvedValue({
-			id: 'olduser',
-			created: oldTimestamp,
-			karma: 500,
-			submitted: [1, 2, 3, 4, 5],
-		});
-
-		showUserInfoOnHover(doc, MOCK_CONTEXT, users);
-
-		user.dispatchEvent(new Event('mouseenter'));
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
 		await vi.waitFor(() => {
-			const hoverDiv = user.parentElement?.querySelector('.oj_user_info_hover');
-			expect(hoverDiv?.innerHTML).not.toContain('#3c963c');
+			const popover = document.querySelector('.oj_user_info_hover');
+			const aboutRows = popover?.querySelectorAll('tr');
+			const hasAbout = Array.from(aboutRows || []).some(
+				(row) => row.textContent?.includes('about:')
+			);
+			expect(hasAbout).toBe(false);
 		});
 	});
 
-	it('should include about section when present', async () => {
-		const doc = document.implementation.createHTMLDocument();
-		const user = createUserAnchor(doc, 'testuser');
-		const users = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+	it('should highlight new users in green', async () => {
+		const userLink = createUserLink('newuser');
+		const thirtyDaysAgo = Math.floor(Date.now() / 1000) - 15 * 24 * 60 * 60;
+		mockUserInfo('newuser', { created: thirtyDaysAgo });
 
-		vi.mocked(getUserInfo).mockResolvedValue({
-			id: 'testuser',
-			created: 1_609_459_200,
-			karma: 100,
-			submitted: [1, 2, 3],
-			about: 'Test about section',
-		});
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
 
-		showUserInfoOnHover(doc, MOCK_CONTEXT, users);
-
-		user.dispatchEvent(new Event('mouseenter'));
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
 		await vi.waitFor(() => {
-			const hoverDiv = user.parentElement?.querySelector('.oj_user_info_hover');
-			expect(hoverDiv?.innerHTML).toContain('about:');
-			expect(hoverDiv?.innerHTML).toContain('Test about section');
+			const popover = document.querySelector('.oj_user_info_hover');
+			const userFont = popover?.querySelector('font[color="#3c963c"]');
+			expect(userFont).toBeTruthy();
+			expect(userFont?.textContent).toBe('newuser');
 		});
 	});
 
-	it('should not include about section when absent', async () => {
-		const doc = document.implementation.createHTMLDocument();
-		const user = createUserAnchor(doc, 'testuser');
-		const users = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+	it('should not highlight old users', async () => {
+		const userLink = createUserLink('olduser');
+		const oneYearAgo = Math.floor(Date.now() / 1000) - 365 * 24 * 60 * 60;
+		mockUserInfo('olduser', { created: oneYearAgo });
 
-		vi.mocked(getUserInfo).mockResolvedValue({
-			id: 'testuser',
-			created: 1_609_459_200,
-			karma: 100,
-			submitted: [1, 2, 3],
-		});
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
 
-		showUserInfoOnHover(doc, MOCK_CONTEXT, users);
-
-		user.dispatchEvent(new Event('mouseenter'));
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
 		await vi.waitFor(() => {
-			const hoverDiv = user.parentElement?.querySelector('.oj_user_info_hover');
-			expect(hoverDiv?.innerHTML).not.toContain('about:');
+			const popover = document.querySelector('.oj_user_info_hover');
+			const userFont = popover?.querySelector('font[color="#3c963c"]');
+			expect(userFont).toBeFalsy();
 		});
 	});
 
-	it('should hide hover div after mouseleave with delay', async () => {
-		const doc = document.implementation.createHTMLDocument();
-		const user = createUserAnchor(doc, 'testuser');
-		const users = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+	it('should cache user data after first fetch', async () => {
+		const userLink = createUserLink('testuser');
+		mockUserInfo('testuser');
 
-		vi.mocked(getUserInfo).mockResolvedValue({
-			id: 'testuser',
-			created: 1_609_459_200,
-			karma: 100,
-			submitted: [1, 2, 3],
-		});
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
 
-		showUserInfoOnHover(doc, MOCK_CONTEXT, users);
-
-		user.dispatchEvent(new Event('mouseenter'));
-
+		// First mouseover
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 		await vi.waitFor(() => {
-			const hoverDiv =
-				user.parentElement?.querySelector<HTMLDivElement>('.oj_user_info_hover');
-			expect(hoverDiv?.style.display).toBe('block');
+			expect(document.querySelector('.oj_user_info_hover')).toBeTruthy();
 		});
 
-		user.dispatchEvent(new Event('mouseleave'));
-
-		await vi.waitFor(() => {
-			const hoverDiv =
-				user.parentElement?.querySelector<HTMLDivElement>('.oj_user_info_hover');
-			expect(hoverDiv?.style.display).toBe('none');
-		});
-	});
-
-	it('should register cleanup on context invalidation', () => {
-		const doc = document.implementation.createHTMLDocument();
-		createUserAnchor(doc, 'testuser');
-		const users = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser');
-
-		showUserInfoOnHover(doc, MOCK_CONTEXT, users);
-
-		expect(MOCK_CONTEXT.onInvalidated).toHaveBeenCalled();
-	});
-
-	it('should handle multiple users', async () => {
-		const doc = document.implementation.createHTMLDocument();
-		const user1 = createUserAnchor(doc, 'user1');
-		const user2 = createUserAnchor(doc, 'user2');
-		const users = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser');
-
-		vi.mocked(getUserInfo).mockImplementation(async (username) => ({
-			id: username || '',
-			created: 1_609_459_200,
-			karma: 100,
-			submitted: [1, 2, 3],
+		// Hide popover by moving mouse away
+		document.dispatchEvent(new MouseEvent('mousemove', {
+			bubbles: true,
+			clientX: 9999,
+			clientY: 9999,
 		}));
 
-		showUserInfoOnHover(doc, MOCK_CONTEXT, users);
+		await vi.waitFor(() => {
+			expect(document.querySelector('.oj_user_info_hover.active')).toBeFalsy();
+		});
 
-		user1.dispatchEvent(new Event('mouseenter'));
-		user2.dispatchEvent(new Event('mouseenter'));
+		// Second mouseover should use cached data
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+		await vi.waitFor(() => {
+			expect(document.querySelector('.oj_user_info_hover.active')).toBeTruthy();
+		});
+
+		// getUserInfo should only be called once
+		expect(getUserInfo).toHaveBeenCalledTimes(1);
+	});
+
+	it('should hide popover when mouse moves away', async () => {
+		const userLink = createUserLink('testuser');
+		mockUserInfo('testuser');
+
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
+
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
 		await vi.waitFor(() => {
-			const hoverDiv1 = user1.parentElement?.querySelector('.oj_user_info_hover');
-			const hoverDiv2 = user2.parentElement?.querySelector('.oj_user_info_hover');
-			expect(hoverDiv1?.innerHTML).toContain('user1');
-			expect(hoverDiv2?.innerHTML).toContain('user2');
+			expect(document.querySelector('.oj_user_info_hover.active')).toBeTruthy();
+		});
+
+		document.dispatchEvent(new MouseEvent('mousemove', {
+			bubbles: true,
+			clientX: 9999,
+			clientY: 9999,
+		}));
+
+		await vi.waitFor(() => {
+			expect(document.querySelector('.oj_user_info_hover.active')).toBeFalsy();
 		});
 	});
 
-	it('should handle null getUserInfo response', async () => {
-		const doc = document.implementation.createHTMLDocument();
-		const user = createUserAnchor(doc, 'testuser');
-		const users = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+	it('should not hide popover when mouse is over trigger or popover', async () => {
+		const userLink = createUserLink('testuser');
+		mockUserInfo('testuser');
 
-		vi.mocked(getUserInfo).mockResolvedValue(null);
+		userLink.getBoundingClientRect = vi.fn(() => ({
+			left: 100,
+			right: 200,
+			top: 100,
+			bottom: 120,
+			width: 100,
+			height: 20,
+			x: 100,
+			y: 100,
+			toJSON: () => ({}),
+		}));
 
-		showUserInfoOnHover(doc, MOCK_CONTEXT, users);
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
 
-		user.dispatchEvent(new Event('mouseenter'));
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
 		await vi.waitFor(() => {
-			const hoverDiv = user.parentElement?.querySelector('.oj_user_info_hover');
-			expect(hoverDiv?.innerHTML).toBe('');
+			expect(document.querySelector('.oj_user_info_hover.active')).toBeTruthy();
+		});
+
+		// Mouse moves over the trigger
+		const mouseMoveEvent = new MouseEvent('mousemove', {
+			bubbles: true,
+			clientX: 150,
+			clientY: 110,
+		});
+
+		Object.defineProperty(mouseMoveEvent, 'target', {
+			value: userLink,
+			enumerable: true,
+		});
+
+		document.dispatchEvent(mouseMoveEvent);
+
+		// Popover should still be visible
+		await new Promise(resolve => setTimeout(resolve, 50));
+		expect(document.querySelector('.oj_user_info_hover.active')).toBeTruthy();
+	});
+
+	it('should not show popover when getUserInfo returns null', async () => {
+		const userLink = createUserLink('testuser');
+		vi.mocked(getUserInfo).mockResolvedValueOnce(null);
+
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
+
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+		await new Promise(resolve => setTimeout(resolve, 50));
+		const popover = document.querySelector('.oj_user_info_hover');
+		const table = popover?.querySelector('table');
+		expect(table).toBeFalsy();
+	});
+
+	it('should handle multiple user links independently', async () => {
+		const user1Link = createUserLink('user1');
+		const user2Link = createUserLink('user2');
+
+		mockUserInfo('user1', { karma: 1000 });
+		mockUserInfo('user2', { karma: 2000 });
+
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
+
+		user1Link.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+		await vi.waitFor(() => {
+			const popover = document.querySelector('.oj_user_info_hover');
+			expect(popover?.textContent).toContain('1000');
+		});
+
+		document.dispatchEvent(new MouseEvent('mousemove', {
+			bubbles: true,
+			clientX: 9999,
+			clientY: 9999,
+		}));
+
+		await vi.waitFor(() => {
+			expect(document.querySelector('.oj_user_info_hover.active')).toBeFalsy();
+		});
+
+		user2Link.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+		await vi.waitFor(() => {
+			const popover = document.querySelector('.oj_user_info_hover');
+			expect(popover?.textContent).toContain('2000');
 		});
 	});
 
-	it('should prevent FOUS by hiding div during fetch', async () => {
-		const doc = document.implementation.createHTMLDocument();
-		const user = createUserAnchor(doc, 'testuser');
-		const users = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+	it('should not trigger on same user link twice without hiding first', async () => {
+		const userLink = createUserLink('testuser');
+		mockUserInfo('testuser');
 
-		let getUserInfoCalled = false;
-		// biome-ignore lint/suspicious/useAwait: mocks
-		vi.mocked(getUserInfo).mockImplementation(async () => {
-			getUserInfoCalled = true;
-			return {
-				id: 'testuser',
-				created: 1_609_459_200,
-				karma: 100,
-				submitted: [1, 2, 3],
-			};
-		});
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
 
-		showUserInfoOnHover(doc, MOCK_CONTEXT, users);
-		user.dispatchEvent(new Event('mouseenter'));
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
 		await vi.waitFor(() => {
-			expect(getUserInfoCalled).toBe(true);
+			expect(getUserInfo).toHaveBeenCalledTimes(1);
 		});
 
-		const hoverDiv = user.parentElement?.querySelector<HTMLDivElement>('.oj_user_info_hover');
-		expect(hoverDiv?.style.display).toBe('block');
-		expect(hoverDiv?.innerHTML).toContain('testuser');
+		// Second mouseover on same link should be ignored
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+		await new Promise(resolve => setTimeout(resolve, 50));
+		expect(getUserInfo).toHaveBeenCalledTimes(1);
+	});
+
+	it('should show loader while fetching user data', async () => {
+		const userLink = createUserLink('testuser');
+
+		// Delay the response
+		vi.mocked(getUserInfo).mockImplementationOnce(() => {
+			return new Promise((resolve) => {
+				setTimeout(() => {
+					resolve({
+						id: 'testuser',
+						created: Math.floor(Date.now() / 1000),
+						karma: 1000,
+						about: '',
+						submitted: [],
+					});
+				}, 100);
+			});
+		});
+
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
+
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+		// Loader should appear immediately
+		await vi.waitFor(() => {
+			const loader = document.querySelector('.loader1');
+			expect(loader).toBeTruthy();
+		});
+	});
+
+	it('should remove event listeners when context is invalidated', async () => {
+		const userLink = createUserLink('testuser');
+		mockUserInfo('testuser');
+
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
+
+		expect(mockCtx.onInvalidated).toHaveBeenCalledTimes(1);
+
+		// Trigger invalidation
+		for (const cleanup of cleanupFunctions) {
+			cleanup();
+		}
+
+		// After cleanup, events should not trigger popover
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+		await new Promise(resolve => setTimeout(resolve, 50));
+		expect(getUserInfo).not.toHaveBeenCalled();
+	});
+
+	it('should format date using locale formatting', async () => {
+		const userLink = createUserLink('testuser');
+		const testDate = new Date('2023-01-15T00:00:00Z');
+		mockUserInfo('testuser', { created: Math.floor(testDate.getTime() / 1000) });
+
+		const userLinks = document.querySelectorAll<HTMLAnchorElement>('a.hnuser');
+		showUserInfoOnHover(document, mockCtx, userLinks);
+
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+		await vi.waitFor(() => {
+			const popover = document.querySelector('.oj_user_info_hover');
+			const expectedDate = Intl.DateTimeFormat().format(testDate);
+			expect(popover?.textContent).toContain(expectedDate);
+		});
 	});
 });

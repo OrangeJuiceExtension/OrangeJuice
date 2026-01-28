@@ -1,7 +1,6 @@
-import { createProxyService } from '@webext-core/proxy-service';
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import { createServicesManager } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
-import { FETCH_REMOTE_SERVICE_KEY } from '@/utils/proxy-service-keys.ts';
 
 interface Title {
 	title: string;
@@ -41,7 +40,8 @@ export const fetchTitle = (doc: Document, ctx: ContentScriptContext) => {
 				return;
 			}
 
-			const service = createProxyService(FETCH_REMOTE_SERVICE_KEY);
+			const service = createServicesManager().getFetchRemoteService();
+
 			// Source for the extension is here: https://github.com/OrangeJuiceExtension/orange-juice-worker
 			const url = `https://orange-juice-worker.orangejuiceextension.workers.dev/title?url=${encodeURIComponent(value)}`;
 			const result = await service.fetchJson(url);

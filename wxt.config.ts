@@ -23,7 +23,7 @@ export default defineConfig({
 			96: '/icon/orange_juice_icon_96x96.png',
 			128: '/icon/orange_juice_icon_128x128.png',
 		},
-		permissions: ['history'],
+		permissions: ['history', 'storage', 'tabs', 'scripting'],
 		host_permissions: [
 			'https://orange-juice-worker.orangejuiceextension.workers.dev/*',
 			'https://hacker-news.firebaseio.com/*',

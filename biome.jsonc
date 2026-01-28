@@ -27,7 +27,17 @@
 				"noImgElement": "off"
 			},
 			"style": {
-				"noMagicNumbers": "off"
+				"noMagicNumbers": "off",
+				"useBlockStatements": {
+					"fix": "safe",
+					"level": "on"
+				}
+			},
+			"complexity": {
+				"useOptionalChain": {
+					"fix": "safe",
+					"level": "on"
+				}
 			},
 			"a11y": {
 				"noNoninteractiveElementInteractions": "off",

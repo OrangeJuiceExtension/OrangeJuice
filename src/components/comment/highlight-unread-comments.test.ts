@@ -1,408 +1,464 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { registerService } from '@webext-core/proxy-service';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { dom } from '@/utils/dom.ts';
-import { HIGHLIGHT_UNREAD_COMMENTS_KEY } from '@/utils/proxy-service-keys.ts';
 import {
-	createHighlightUnreadCommentsService,
-	highlightUnreadComments,
-} from './highlight-unread-comments.ts';
+	HighlightUnreadCommentsService,
+	ojReadCommentsKey,
+} from '@/services/highlight-unread-comments-service.ts';
+import {
+	createServicesManager,
+	HIGHLIGHT_NAMESPACE,
+	type ServicesManager,
+} from '@/services/manager.ts';
+import { dom } from '@/utils/dom.ts';
+import lStorage from '@/utils/localStorage.ts';
+import type { ReadCommentsList } from './highlight-unread-comments.ts';
+import { highlightUnreadComments } from './highlight-unread-comments.ts';
 
-vi.mock('wxt/browser', () => ({
-	browser: {
-		runtime: {
-			sendMessage: vi.fn(),
-		},
-	},
-}));
-
-const hnCommentsHtml = readFileSync(join(__dirname, '__fixtures__', 'hn-comments.html'), 'utf-8');
-
-describe('highlight-unread-comments', () => {
-	const ojReadCommentsKey = 'oj_read_comments';
+describe('highlightUnreadComments', () => {
+	let mockDoc: Document;
+	let manager: ServicesManager;
+	let service: HighlightUnreadCommentsService;
 
 	beforeEach(() => {
-		localStorage.clear();
+		mockDoc = document.implementation.createHTMLDocument('test');
+		lStorage.clear();
 		vi.clearAllMocks();
-		vi.useFakeTimers();
+		manager = createServicesManager();
+		service = new HighlightUnreadCommentsService();
+		manager.started.set(HIGHLIGHT_NAMESPACE, service);
 	});
 
-	describe('createHighlightUnreadCommentsService', () => {
-		it('should remove expired items from the list and update localStorage', () => {
-			const now = Date.now();
-			const readCommentsList = {
-				item1: { expiry: now - 1000, comments: ['c1'] },
-				item2: { expiry: now + 1000, comments: ['c2'] },
-			};
+	describe('style injection', () => {
+		it('should inject custom styles into document head', async () => {
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
 
-			const service = createHighlightUnreadCommentsService();
-			service.expireOldComments(readCommentsList);
+			await highlightUnreadComments(mockDoc, [], manager);
 
-			expect(readCommentsList).toEqual({
-				item2: { expiry: now + 1000, comments: ['c2'] },
-			});
-			const stored = JSON.parse(localStorage.getItem(ojReadCommentsKey) || '{}');
-			expect(stored).toEqual(readCommentsList);
+			const styleElement = mockDoc.head.querySelector('style');
+			expect(styleElement).toBeTruthy();
+			expect(styleElement?.textContent).toContain('oj_new_comment_indent');
 		});
 
-		it('should not update localStorage if no changes', () => {
-			const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
-			const now = Date.now();
-			const readCommentsList = {
-				item1: { expiry: now + 1000, comments: ['c1'] },
-			};
+		it('should add hover styles for new comment indent', async () => {
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
 
-			const service = createHighlightUnreadCommentsService();
-			service.expireOldComments(readCommentsList);
+			await highlightUnreadComments(mockDoc, [], manager);
 
-			expect(setItemSpy).not.toHaveBeenCalled();
+			const styleElement = mockDoc.head.querySelector('style');
+			expect(styleElement?.textContent).toContain('.oj_new_comment_indent:hover');
+			expect(styleElement?.textContent).toContain('box-shadow: inset -3px 0 #f6b391');
+			expect(styleElement?.textContent).toContain('box-shadow: inset -3px 0 #ff6000');
 		});
 
-		it('should handle empty list', () => {
-			const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
-			const readCommentsList = {};
+		it('should add collapsed comment indent styles', async () => {
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
 
-			const service = createHighlightUnreadCommentsService();
-			service.expireOldComments(readCommentsList);
+			await highlightUnreadComments(mockDoc, [], manager);
 
-			expect(readCommentsList).toEqual({});
-			expect(setItemSpy).not.toHaveBeenCalled();
-		});
-
-		it('should remove multiple expired items in one pass', () => {
-			const now = Date.now();
-			const readCommentsList = {
-				item1: { expiry: now - 5000, comments: ['c1'] },
-				item2: { expiry: now - 3000, comments: ['c2'] },
-				item3: { expiry: now - 1000, comments: ['c3'] },
-				item4: { expiry: now + 1000, comments: ['c4'] },
-			};
-
-			const service = createHighlightUnreadCommentsService();
-			service.expireOldComments(readCommentsList);
-
-			expect(readCommentsList).toEqual({
-				item4: { expiry: now + 1000, comments: ['c4'] },
-			});
-		});
-
-		it('should remove all items if all are expired', () => {
-			const now = Date.now();
-			const readCommentsList = {
-				item1: { expiry: now - 1000, comments: ['c1'] },
-				item2: { expiry: now - 2000, comments: ['c2'] },
-			};
-
-			const service = createHighlightUnreadCommentsService();
-			service.expireOldComments(readCommentsList);
-
-			expect(readCommentsList).toEqual({});
-			const stored = JSON.parse(localStorage.getItem(ojReadCommentsKey) || '{}');
-			expect(stored).toEqual({});
-		});
-
-		it('should handle items expiring exactly at current time', () => {
-			const now = Date.now();
-			const readCommentsList = {
-				item1: { expiry: now, comments: ['c1'] },
-				item2: { expiry: now + 1, comments: ['c2'] },
-			};
-
-			const service = createHighlightUnreadCommentsService();
-			service.expireOldComments(readCommentsList);
-
-			expect(readCommentsList).toEqual({
-				item2: { expiry: now + 1, comments: ['c2'] },
-			});
+			const styleElement = mockDoc.head.querySelector('style');
+			expect(styleElement?.textContent).toContain('.coll .oj_new_clickable_indent');
 		});
 	});
 
-	describe('highlightUnreadComments', () => {
-		let doc: Document;
+	describe('early returns', () => {
+		it('should return early if readCommentsList is null', async () => {
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(null);
 
-		beforeEach(() => {
-			doc = document.implementation.createHTMLDocument();
-			doc.body.innerHTML = `
-				<table class="fatitem">
-					<tr>
-						<td>
-							<form action="comment" method="post">
-								<textarea name="text"></textarea>
-								<input type="submit" value="add comment">
-							</form>
-						</td>
-					</tr>
-				</table>
-				${hnCommentsHtml}
-			`;
-			// Mock window.location.href via dom.getItemIdFromLocation
-			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('12345');
+			const comments = [createComment(mockDoc, 'comment1')];
+			await highlightUnreadComments(mockDoc, comments, manager);
 
-			registerService(HIGHLIGHT_UNREAD_COMMENTS_KEY, createHighlightUnreadCommentsService());
+			const commentElement = mockDoc.getElementById('comment1');
+			const indentCell = commentElement?.querySelector('td.ind');
+			expect(indentCell?.classList.contains('oj_new_comment_indent')).toBe(false);
 		});
 
-		it('should bail out if reply form is missing', () => {
-			const form = doc.querySelector('table.fatitem form');
-			form?.remove();
+		it('should return early if reply form is not present', async () => {
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue({});
 
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			highlightUnreadComments(doc, comments);
+			const comments = [createComment(mockDoc, 'comment1')];
+			await highlightUnreadComments(mockDoc, comments, manager);
 
-			expect(localStorage.getItem(ojReadCommentsKey)).toBeNull();
+			const commentElement = mockDoc.getElementById('comment1');
+			const indentCell = commentElement?.querySelector('td.ind');
+			expect(indentCell?.classList.contains('oj_new_comment_indent')).toBe(false);
 		});
 
-		it('should bail out if itemId is missing', () => {
+		it('should return early if itemId is not found', async () => {
 			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue(null);
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue({});
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
 
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			highlightUnreadComments(doc, comments);
+			const comments = [createComment(mockDoc, 'comment1')];
+			await highlightUnreadComments(mockDoc, comments, manager);
 
-			expect(localStorage.getItem(ojReadCommentsKey)).toBeNull();
+			const commentElement = mockDoc.getElementById('comment1');
+			const indentCell = commentElement?.querySelector('td.ind');
+			expect(indentCell?.classList.contains('oj_new_comment_indent')).toBe(false);
+		});
+	});
+
+	describe('highlight new comments', () => {
+		it('should highlight new comments that were not previously read', async () => {
+			const THREE_DAYS_IN_MS = 3 * 24 * 60 * 60 * 1000;
+			const readCommentsList: ReadCommentsList = {
+				'123': {
+					expiry: Date.now() + THREE_DAYS_IN_MS,
+					comments: ['comment1'],
+				},
+			};
+
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(readCommentsList);
+			vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
+
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
+			const comments = [
+				createComment(mockDoc, 'comment1'),
+				createComment(mockDoc, 'comment2'),
+			];
+
+			await highlightUnreadComments(mockDoc, comments, manager);
+
+			const comment1 = mockDoc.getElementById('comment1');
+			const comment2 = mockDoc.getElementById('comment2');
+
+			expect(
+				comment1?.querySelector('td.ind')?.classList.contains('oj_new_comment_indent')
+			).toBe(false);
+			expect(
+				comment2?.querySelector('td.ind')?.classList.contains('oj_new_comment_indent')
+			).toBe(true);
 		});
 
-		it('should highlight nothing and save comments on first visit', () => {
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			highlightUnreadComments(doc, comments);
+		it('should not highlight comments if no read comments exist', async () => {
+			const readCommentsList: ReadCommentsList = {
+				'123': {
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
+					comments: [],
+				},
+			};
 
-			const highlighted = doc.querySelectorAll('.oj_new_comment_indent');
-			expect(highlighted.length).toBe(0);
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(readCommentsList);
+			vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
 
-			const stored = JSON.parse(localStorage.getItem(ojReadCommentsKey) || '{}');
-			expect(stored['12345']).toBeDefined();
-			expect(stored['12345'].comments).toContain('comment1');
-			expect(stored['12345'].comments).toContain('comment2');
-			expect(stored['12345'].comments).toContain('comment3');
-			expect(stored['12345'].comments).toContain('comment4');
+			mockDoc.body.innerHTML = '<table class="fatitem"><form></form></table>';
+			const comments = [createComment(mockDoc, 'comment1')];
+
+			await highlightUnreadComments(mockDoc, comments, manager);
+
+			const comment1 = mockDoc.getElementById('comment1');
+			expect(
+				comment1?.querySelector('td.ind')?.classList.contains('oj_new_comment_indent')
+			).toBe(false);
 		});
 
-		it('should highlight new comments on subsequent visit', () => {
-			const now = Date.now();
-			const initialData = {
-				'12345': {
-					expiry: now + 100_000,
+		it('should handle multiple new comments', async () => {
+			const readCommentsList: ReadCommentsList = {
+				'123': {
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
+					comments: ['comment1'],
+				},
+			};
+
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(readCommentsList);
+			vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
+
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
+			const comments = [
+				createComment(mockDoc, 'comment1'),
+				createComment(mockDoc, 'comment2'),
+				createComment(mockDoc, 'comment3'),
+			];
+
+			await highlightUnreadComments(mockDoc, comments, manager);
+
+			const comment1 = mockDoc.getElementById('comment1');
+			const comment2 = mockDoc.getElementById('comment2');
+			const comment3 = mockDoc.getElementById('comment3');
+
+			expect(
+				comment1?.querySelector('td.ind')?.classList.contains('oj_new_comment_indent')
+			).toBe(false);
+			expect(
+				comment2?.querySelector('td.ind')?.classList.contains('oj_new_comment_indent')
+			).toBe(true);
+			expect(
+				comment3?.querySelector('td.ind')?.classList.contains('oj_new_comment_indent')
+			).toBe(true);
+		});
+
+		it('should handle comment element not found in DOM', async () => {
+			const readCommentsList: ReadCommentsList = {
+				'123': {
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
+					comments: ['comment1'],
+				},
+			};
+
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(readCommentsList);
+			vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
+
+			mockDoc.body.innerHTML = '<table class="fatitem"><form></form></table>';
+
+			// Create comment object but don't add to document
+			const comment = mockDoc.createElement('tr');
+			comment.id = 'comment2';
+
+			await highlightUnreadComments(mockDoc, [comment], manager);
+
+			// Should not throw error
+			expect(mockDoc.getElementById('comment2')).toBeNull();
+		});
+	});
+
+	describe('storage updates', () => {
+		it('should save current comments to storage', async () => {
+			const readCommentsList: ReadCommentsList = {};
+			const setItemSpy = vi.spyOn(lStorage, 'setItem');
+
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(readCommentsList);
+			vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
+
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
+			const comments = [
+				createComment(mockDoc, 'comment1'),
+				createComment(mockDoc, 'comment2'),
+			];
+
+			await highlightUnreadComments(mockDoc, comments, manager);
+
+			expect(setItemSpy).toHaveBeenCalledWith(
+				ojReadCommentsKey,
+				expect.objectContaining({
+					'123': expect.objectContaining({
+						comments: expect.arrayContaining(['comment1', 'comment2']),
+					}),
+				})
+			);
+		});
+
+		it('should merge new comments with existing read comments', async () => {
+			const readCommentsList: ReadCommentsList = {
+				'123': {
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
+					comments: ['comment1'],
+				},
+			};
+			const setItemSpy = vi.spyOn(lStorage, 'setItem');
+
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(readCommentsList);
+			vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
+
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
+			const comments = [
+				createComment(mockDoc, 'comment1'),
+				createComment(mockDoc, 'comment2'),
+			];
+
+			await highlightUnreadComments(mockDoc, comments, manager);
+
+			expect(setItemSpy).toHaveBeenCalledWith(
+				ojReadCommentsKey,
+				expect.objectContaining({
+					'123': expect.objectContaining({
+						comments: expect.arrayContaining(['comment1', 'comment2']),
+					}),
+				})
+			);
+		});
+
+		it('should deduplicate comments in storage', async () => {
+			const readCommentsList: ReadCommentsList = {
+				'123': {
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 					comments: ['comment1', 'comment2'],
 				},
 			};
-			localStorage.setItem(ojReadCommentsKey, JSON.stringify(initialData));
+			const setItemSpy = vi.spyOn(lStorage, 'setItem');
 
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			highlightUnreadComments(doc, comments);
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(readCommentsList);
+			vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
 
-			// comment3 and comment4 are new
-			const highlighted = doc.querySelectorAll('.oj_new_comment_indent');
-			expect(highlighted.length).toBe(2);
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
+			const comments = [
+				createComment(mockDoc, 'comment1'),
+				createComment(mockDoc, 'comment2'),
+			];
 
-			const comment3Row = doc.getElementById('comment3');
-			expect(
-				comment3Row?.querySelector('td.ind')?.classList.contains('oj_new_comment_indent')
-			).toBe(true);
+			await highlightUnreadComments(mockDoc, comments, manager);
 
-			const comment4Row = doc.getElementById('comment4');
-			expect(
-				comment4Row?.querySelector('td.ind')?.classList.contains('oj_new_comment_indent')
-			).toBe(true);
+			const savedData = setItemSpy.mock.calls[0][1] as ReadCommentsList;
+			const savedComments = savedData['123'].comments;
 
-			const stored = JSON.parse(localStorage.getItem(ojReadCommentsKey) || '{}');
-			expect(stored['12345'].comments).toEqual(
-				expect.arrayContaining(['comment1', 'comment2', 'comment3', 'comment4'])
-			);
+			// Should not have duplicates
+			expect(savedComments.length).toBe(2);
+			expect(new Set(savedComments).size).toBe(2);
 		});
 
-		it('should not highlight anything if all comments are already seen', () => {
-			const now = Date.now();
-			const initialData = {
-				'12345': {
-					expiry: now + 100_000,
-					comments: ['comment1', 'comment2', 'comment3', 'comment4'],
-				},
-			};
-			localStorage.setItem(ojReadCommentsKey, JSON.stringify(initialData));
-
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			highlightUnreadComments(doc, comments);
-
-			const highlighted = doc.querySelectorAll('.oj_new_comment_indent');
-			expect(highlighted.length).toBe(0);
-		});
-
-		it('should use existing expiry if available', () => {
-			const expiry = Date.now() + 5000;
-			const initialData = {
-				'12345': {
-					expiry,
+		it('should preserve expiry from existing item data', async () => {
+			const existingExpiry = Date.now() + 3 * 24 * 60 * 60 * 1000;
+			const readCommentsList: ReadCommentsList = {
+				'123': {
+					expiry: existingExpiry,
 					comments: ['comment1'],
 				},
 			};
-			localStorage.setItem(ojReadCommentsKey, JSON.stringify(initialData));
+			const setItemSpy = vi.spyOn(lStorage, 'setItem');
 
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			highlightUnreadComments(doc, comments);
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(readCommentsList);
+			vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
 
-			const stored = JSON.parse(localStorage.getItem(ojReadCommentsKey) || '{}');
-			expect(stored['12345'].expiry).toBe(expiry);
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
+			const comments = [createComment(mockDoc, 'comment1')];
+
+			await highlightUnreadComments(mockDoc, comments, manager);
+
+			const savedData = setItemSpy.mock.calls[0][1] as ReadCommentsList;
+			expect(savedData['123'].expiry).toBe(existingExpiry);
 		});
 
-		it('should create new expiry 3 days in future for new items', () => {
+		it('should create new expiry for new items', async () => {
+			vi.useFakeTimers();
 			const now = 1_000_000;
 			vi.setSystemTime(now);
 
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			highlightUnreadComments(doc, comments);
+			const THREE_DAYS_IN_MS = 3 * 24 * 60 * 60 * 1000;
+			const readCommentsList: ReadCommentsList = {};
+			const setItemSpy = vi.spyOn(lStorage, 'setItem');
 
-			const stored = JSON.parse(localStorage.getItem(ojReadCommentsKey) || '{}');
-			const threeDaysInMs = 3 * 24 * 60 * 60 * 1000;
-			expect(stored['12345'].expiry).toBe(now + threeDaysInMs);
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(readCommentsList);
+			vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
+
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
+			const comments = [createComment(mockDoc, 'comment1')];
+
+			await highlightUnreadComments(mockDoc, comments, manager);
+
+			const savedData = setItemSpy.mock.calls[0][1] as ReadCommentsList;
+			expect(savedData['123'].expiry).toBe(now + THREE_DAYS_IN_MS);
+
+			vi.useRealTimers();
 		});
+	});
 
-		it('should inject style element into document head', () => {
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			highlightUnreadComments(doc, comments);
-
-			const styleElement = doc.querySelector('style');
-			expect(styleElement).not.toBeNull();
-			expect(styleElement?.textContent).toContain('.oj_new_comment_indent');
-			expect(styleElement?.textContent).toContain('box-shadow: inset -3px 0 #f6b391');
-			expect(styleElement?.textContent).toContain('.oj_new_comment_indent:hover');
-		});
-
-		it('should handle comments with missing ind element', () => {
-			const now = Date.now();
-			const initialData = {
-				'12345': {
-					expiry: now + 100_000,
-					comments: ['comment1'],
+	describe('service integration', () => {
+		it('should call expireOldComments service', async () => {
+			const readCommentsList: ReadCommentsList = {
+				'123': {
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
+					comments: [],
 				},
 			};
-			localStorage.setItem(ojReadCommentsKey, JSON.stringify(initialData));
+			const expireSpy = vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
 
-			// Create a comment without an ind element
-			const commentWithoutInd = doc.createElement('tr');
-			commentWithoutInd.className = 'athing comtr';
-			commentWithoutInd.id = 'comment5';
-			commentWithoutInd.innerHTML =
-				'<td><table><tr><td class="default">No indent cell</td></tr></table></td>';
-			doc.body.appendChild(commentWithoutInd);
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(readCommentsList);
 
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			highlightUnreadComments(doc, comments);
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
+			await highlightUnreadComments(mockDoc, [], manager);
 
-			// Should not throw error, just skip highlighting for comment5
-			const highlighted = doc.querySelectorAll('.oj_new_comment_indent');
-			expect(highlighted.length).toBe(3); // comment2, comment3, comment4
+			expect(expireSpy).toHaveBeenCalledWith(readCommentsList);
 		});
+	});
 
-		it('should merge new comments with existing comments without duplicates', () => {
-			const now = Date.now();
-			const initialData = {
-				'12345': {
-					expiry: now + 100_000,
-					comments: ['comment1', 'comment2', 'comment3'],
+	describe('edge cases', () => {
+		it('should handle empty comments array', async () => {
+			const readCommentsList: ReadCommentsList = {
+				'123': {
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
+					comments: [],
 				},
 			};
-			localStorage.setItem(ojReadCommentsKey, JSON.stringify(initialData));
+			const setItemSpy = vi.spyOn(lStorage, 'setItem');
 
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			highlightUnreadComments(doc, comments);
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(readCommentsList);
+			vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
 
-			const stored = JSON.parse(localStorage.getItem(ojReadCommentsKey) || '{}');
-			// Should have all 4 unique comments
-			expect(stored['12345'].comments.length).toBe(4);
-			expect(stored['12345'].comments).toEqual(
-				expect.arrayContaining(['comment1', 'comment2', 'comment3', 'comment4'])
-			);
-			// Ensure no duplicates
-			const uniqueComments = new Set(stored['12345'].comments);
-			expect(uniqueComments.size).toBe(4);
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
+
+			await highlightUnreadComments(mockDoc, [], manager);
+
+			expect(setItemSpy).toHaveBeenCalled();
 		});
 
-		it('should handle multiple items in localStorage', () => {
-			const now = Date.now();
-			const initialData = {
-				'12345': {
-					expiry: now + 100_000,
-					comments: ['comment1'],
-				},
-				'67890': {
-					expiry: now + 200_000,
-					comments: ['other_comment'],
+		it('should handle comments without indent cell', async () => {
+			const readCommentsList: ReadCommentsList = {
+				'123': {
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
+					comments: [],
 				},
 			};
-			localStorage.setItem(ojReadCommentsKey, JSON.stringify(initialData));
 
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			highlightUnreadComments(doc, comments);
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(readCommentsList);
+			vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
 
-			const stored = JSON.parse(localStorage.getItem(ojReadCommentsKey) || '{}');
-			// Should preserve other items
-			expect(stored['67890']).toEqual({
-				expiry: now + 200_000,
-				comments: ['other_comment'],
-			});
-			// Should update current item
-			expect(stored['12345'].comments).toEqual(
-				expect.arrayContaining(['comment1', 'comment2', 'comment3', 'comment4'])
-			);
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
+			const comment = mockDoc.createElement('tr');
+			comment.id = 'comment1';
+			mockDoc.body.appendChild(comment);
+
+			await expect(
+				highlightUnreadComments(mockDoc, [comment], manager)
+			).resolves.not.toThrow();
 		});
 
-		it('should handle corrupt localStorage data gracefully', () => {
-			localStorage.setItem(ojReadCommentsKey, 'invalid json');
+		it('should handle item without existing data', async () => {
+			const readCommentsList: ReadCommentsList = {};
+			const setItemSpy = vi.spyOn(lStorage, 'setItem');
 
-			const comments = [...doc.querySelectorAll('tr.comtr')];
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(readCommentsList);
+			vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
 
-			// Should throw during JSON.parse but we're testing current behavior
-			expect(() => {
-				highlightUnreadComments(doc, comments);
-			}).toThrow();
-		});
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
+			const comments = [createComment(mockDoc, 'comment1')];
 
-		it('should handle empty comments array', () => {
-			highlightUnreadComments(doc, []);
+			await highlightUnreadComments(mockDoc, comments, manager);
 
-			const stored = JSON.parse(localStorage.getItem(ojReadCommentsKey) || '{}');
-			expect(stored['12345'].comments).toEqual([]);
-		});
-
-		it('should only add class to td.ind elements', () => {
-			const now = Date.now();
-			const initialData = {
-				'12345': {
-					expiry: now + 100_000,
-					comments: ['comment1'],
-				},
-			};
-			localStorage.setItem(ojReadCommentsKey, JSON.stringify(initialData));
-
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			highlightUnreadComments(doc, comments);
-
-			// Verify only td.ind elements have the class
-			const highlighted = doc.querySelectorAll('.oj_new_comment_indent');
-			for (const element of highlighted) {
-				expect(element.tagName).toBe('TD');
-				expect(element.classList.contains('ind')).toBe(true);
-			}
-		});
-
-		it('should preserve order of comments in storage', () => {
-			const now = Date.now();
-			const initialData = {
-				'12345': {
-					expiry: now + 100_000,
-					comments: ['comment4', 'comment3'],
-				},
-			};
-			localStorage.setItem(ojReadCommentsKey, JSON.stringify(initialData));
-
-			const comments = [...doc.querySelectorAll('tr.comtr')];
-			highlightUnreadComments(doc, comments);
-
-			const stored = JSON.parse(localStorage.getItem(ojReadCommentsKey) || '{}');
-			// Should contain all comments (order may vary due to Set usage)
-			expect(stored['12345'].comments).toHaveLength(4);
-			expect(stored['12345'].comments).toEqual(
-				expect.arrayContaining(['comment1', 'comment2', 'comment3', 'comment4'])
-			);
+			const savedData = setItemSpy.mock.calls[0][1] as ReadCommentsList;
+			expect(savedData['123']).toBeTruthy();
+			expect(savedData['123'].comments).toEqual(['comment1']);
 		});
 	});
 });
+
+function createComment(doc: Document, id: string): HTMLElement {
+	const indentCell = doc.createElement('td');
+	indentCell.className = 'ind';
+
+	const comment = doc.createElement('tr');
+	comment.id = id;
+	comment.appendChild(indentCell);
+
+	doc.body.appendChild(comment);
+
+	return comment;
+}

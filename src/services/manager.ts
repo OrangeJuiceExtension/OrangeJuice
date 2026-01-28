@@ -1,0 +1,79 @@
+import { defineProxy } from 'comctx';
+import { FetchRemoteService } from '@/services/fetch-remote-service.ts';
+import { HighlightUnreadCommentsService } from '@/services/highlight-unread-comments-service.ts';
+import { ReadStoriesService } from '@/services/read-stories-service.ts';
+import { InjectAdapter, ProvideAdapter } from '@/utils/browser-runtime.ts';
+
+type Service = HighlightUnreadCommentsService | ReadStoriesService | FetchRemoteService;
+
+// Service registry configuration - add new services here
+const SERVICE_REGISTRY = {
+	Highlight: {
+		namespace: 'oj_highlight_unread',
+		class: HighlightUnreadCommentsService,
+	},
+	ReadStories: {
+		namespace: 'oj_read_stories',
+		class: ReadStoriesService,
+	},
+	FetchRemote: {
+		namespace: 'oj_fetch_remote',
+		class: FetchRemoteService,
+	},
+} as const;
+
+// Export namespace constants for testing
+export const HIGHLIGHT_NAMESPACE = SERVICE_REGISTRY.Highlight.namespace;
+export const READ_STORIES_NAMESPACE = SERVICE_REGISTRY.ReadStories.namespace;
+export const FETCH_REMOTE_NAMESPACE = SERVICE_REGISTRY.FetchRemote.namespace;
+
+type ServiceKey = keyof typeof SERVICE_REGISTRY;
+type ServiceMap = {
+	[K in ServiceKey]: InstanceType<(typeof SERVICE_REGISTRY)[K]['class']>;
+};
+
+type ServiceGetter<K extends ServiceKey> = () => ServiceMap[K];
+
+export type ServicesManager = {
+	started: Map<string, Service>;
+} & {
+	[K in ServiceKey as `get${K}Service`]: ServiceGetter<K>;
+};
+
+let cachedManager: ServicesManager | undefined;
+
+export const createServicesManager = (): ServicesManager => {
+	if (cachedManager) {
+		return cachedManager;
+	}
+
+	const started = new Map<string, Service>();
+	const adapter = new InjectAdapter('content');
+
+	for (const config of Object.values(SERVICE_REGISTRY)) {
+		const [, injectService] = defineProxy(() => ({}) as InstanceType<typeof config.class>, {
+			namespace: config.namespace,
+		});
+		started.set(config.namespace, injectService(adapter));
+	}
+
+	const manager: Record<string, unknown> = { started };
+
+	for (const [key, config] of Object.entries(SERVICE_REGISTRY)) {
+		manager[`get${key}Service`] = () => started.get(config.namespace);
+	}
+
+	cachedManager = manager as ServicesManager;
+	return cachedManager;
+};
+
+export const initBackgroundServices = (): void => {
+	const adapter = new ProvideAdapter();
+
+	for (const config of Object.values(SERVICE_REGISTRY)) {
+		const [provideService] = defineProxy(() => new config.class(), {
+			namespace: config.namespace,
+		});
+		provideService(adapter);
+	}
+};

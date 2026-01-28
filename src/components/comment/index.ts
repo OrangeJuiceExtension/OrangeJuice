@@ -3,6 +3,8 @@ import { backticksToCode } from '@/components/comment/backticks-to-code.ts';
 import { changeDeadCommentsColor } from '@/components/comment/change-dead-comments-color.ts';
 import { collapseRoot } from '@/components/comment/collapse-root.ts';
 import { indentToggle } from '@/components/comment/indent-toggle.ts';
+import { keyboardNavigation } from '@/components/comment/keyboard-navigation.ts';
+import { createServicesManager } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 import type { ComponentFeature } from '@/utils/types.ts';
@@ -21,14 +23,17 @@ export const comments: ComponentFeature = {
 			return;
 		}
 
+		const manager = createServicesManager();
+
 		const comments = dom.getAllComments(document);
 		return Promise.all([
 			Promise.resolve().then(() => initCommentUX(document, comments)),
-			Promise.resolve().then(() => highlightUnreadComments(document, comments)),
+			Promise.resolve().then(() => highlightUnreadComments(document, comments, manager)),
 			Promise.resolve().then(() => indentToggle(document, comments)),
 			Promise.resolve().then(() => changeDeadCommentsColor(document, comments)),
 			Promise.resolve().then(() => backticksToCode(document, comments)),
 			Promise.resolve().then(() => collapseRoot(document, comments, _ctx)),
+			Promise.resolve().then(() => keyboardNavigation(document, comments, _ctx)),
 		]);
 	},
 };

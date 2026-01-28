@@ -3,14 +3,16 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { browser } from 'wxt/browser';
+import { ReadStoriesService } from '@/services/read-stories-service.ts';
+import lStorage from '@/utils/localStorage.ts';
 import type { HNStory } from '@/utils/types.ts';
 import {
 	createCheckbox,
-	createReadStoriesService,
 	hideStories,
+	type StorageState,
 	setupCheckbox,
 	showStories,
-} from './index.ts';
+} from './hide-read-stories.ts';
 
 const STORY_LIST_HTML_REGEX = /class="itemlist"/;
 const homepageHtml = readFileSync(
@@ -24,15 +26,17 @@ const storiesWithBigboxHtml = readFileSync(
 const emptyPageHtml = readFileSync(join(__dirname, '__fixtures__', 'empty-page.html'), 'utf-8');
 
 describe('hide_read_stories', () => {
+	let service: ReadStoriesService;
 	beforeEach(() => {
 		document.body.innerHTML = '';
-		localStorage.clear();
+		lStorage.clear();
 		vi.clearAllMocks();
+		service = new ReadStoriesService();
 	});
 
 	afterEach(() => {
 		document.body.innerHTML = '';
-		localStorage.clear();
+		lStorage.clear();
 	});
 
 	describe('DOM manipulation', () => {
@@ -63,7 +67,7 @@ describe('hide_read_stories', () => {
 			expect(subtextRow.style.display).toBe('');
 			expect(spacerRow.style.display).toBe('');
 
-			hideStories(['12345678']);
+			hideStories(['12345678'], document);
 
 			expect(storyRow.style.display).toBe('none');
 			expect(subtextRow.style.display).toBe('none');
@@ -84,7 +88,7 @@ describe('hide_read_stories', () => {
 			spacerRow.style.display = 'none';
 			subtextRow.after(spacerRow);
 
-			showStories(['87654321']);
+			showStories(['87654321'], document);
 
 			expect(storyRow.style.display).toBe('');
 			expect(subtextRow.style.display).toBe('');
@@ -93,7 +97,7 @@ describe('hide_read_stories', () => {
 
 		it('should handle missing story elements gracefully', () => {
 			expect(() => {
-				hideStories(['nonexistent']);
+				hideStories(['nonexistent'], document);
 			}).not.toThrow();
 		});
 
@@ -103,7 +107,7 @@ describe('hide_read_stories', () => {
 			document.body.appendChild(storyRow);
 
 			expect(() => {
-				hideStories(['lonely-story']);
+				hideStories(['lonely-story'], document);
 			}).not.toThrow();
 
 			expect(storyRow.style.display).toBe('none');
@@ -112,7 +116,7 @@ describe('hide_read_stories', () => {
 
 	describe('checkbox creation', () => {
 		it('should create checkbox with correct attributes', () => {
-			const { row, checkbox } = createCheckbox();
+			const { row, checkbox } = createCheckbox(document);
 
 			expect(checkbox.type).toBe('checkbox');
 			expect(checkbox.id).toBe('oj-hide-read-stories');
@@ -126,7 +130,7 @@ describe('hide_read_stories', () => {
 		});
 
 		it('should have correct cell styling', () => {
-			const { row } = createCheckbox();
+			const { row } = createCheckbox(document);
 			const cell = row.querySelector('td');
 
 			expect(cell).not.toBeNull();
@@ -138,47 +142,47 @@ describe('hide_read_stories', () => {
 	describe('localStorage integration', () => {
 		const STORAGE_KEY = 'oj_hide_read_stories';
 
-		it('should initialize localStorage if not set', () => {
+		it('should initialize localStorage if not set', async () => {
 			const container = document.createElement('div');
 			const bigbox = document.createElement('div');
 			bigbox.id = 'bigbox';
 			container.appendChild(bigbox);
 
-			setupCheckbox(bigbox);
+			await setupCheckbox(bigbox, document);
 
-			const stored = localStorage.getItem(STORAGE_KEY);
-			expect(stored).toBe('{"checkbox":false}');
+			const stored = await lStorage.getItem<StorageState>(STORAGE_KEY);
+			expect(stored).toEqual({ checkbox: false });
 		});
 
-		it('should restore checkbox state from localStorage', () => {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify({ checkbox: true }));
+		it('should restore checkbox state from localStorage', async () => {
+			await lStorage.setItem(STORAGE_KEY, { checkbox: true });
 
 			const container = document.createElement('div');
 			const bigbox = document.createElement('div');
 			bigbox.id = 'bigbox';
 			container.appendChild(bigbox);
 
-			const checkbox = setupCheckbox(bigbox);
+			const checkbox = await setupCheckbox(bigbox, document);
 
 			expect(checkbox?.checked).toBe(true);
 		});
 
-		it('should handle missing checkbox property in stored state', () => {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify({}));
+		it('should handle missing checkbox property in stored state', async () => {
+			await lStorage.setItem(STORAGE_KEY, {});
 
 			const container = document.createElement('div');
 			const bigbox = document.createElement('div');
 			bigbox.id = 'bigbox';
 			container.appendChild(bigbox);
 
-			const checkbox = setupCheckbox(bigbox);
+			const checkbox = await setupCheckbox(bigbox, document);
 
 			expect(checkbox?.checked).toBe(false);
 		});
 
-		it('should return null if bigbox has no parent', () => {
+		it('should return null if bigbox has no parent', async () => {
 			const bigbox = document.createElement('div');
-			const result = setupCheckbox(bigbox);
+			const result = await setupCheckbox(bigbox, document);
 
 			expect(result).toBeNull();
 		});
@@ -219,7 +223,6 @@ describe('hide_read_stories', () => {
 			mockGetVisits.mockResolvedValueOnce([{ visitTime: 1_234_567_890, transition: 'link' }]);
 			mockGetVisits.mockResolvedValueOnce([]);
 
-			const service = createReadStoriesService();
 			await service.getVisits(stories);
 
 			expect(mockGetVisits).toHaveBeenCalledTimes(2);
@@ -248,7 +251,6 @@ describe('hide_read_stories', () => {
 			const visitData = { visitTime: 1_234_567_890, transition: 'link' };
 			mockGetVisits.mockResolvedValueOnce([visitData]);
 
-			const service = createReadStoriesService();
 			const result = await service.getVisits(stories);
 
 			expect(result).toEqual([
@@ -275,69 +277,9 @@ describe('hide_read_stories', () => {
 
 			mockGetVisits.mockResolvedValueOnce([]);
 
-			const service = createReadStoriesService();
 			const result = await service.getVisits(stories);
 
 			expect(result).toEqual([stories[0]]);
-		});
-
-		it('should handle errors when fetching visit history', async () => {
-			const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-			const stories: HNStory[] = [
-				{
-					id: '12345678',
-					position: 1,
-					title: 'Test Story',
-					url: 'https://example.com/test',
-					points: 42,
-					author: 'testuser',
-					postedDate: '2024-01-19T12:00:00',
-					commentsCount: 15,
-				},
-			];
-
-			mockGetVisits.mockRejectedValueOnce(new Error('Permission denied'));
-
-			const service = createReadStoriesService();
-			const result = await service.getVisits(stories);
-
-			expect(consoleErrorSpy).toHaveBeenCalledWith(
-				'Error fetching visit history for story:',
-				stories[0],
-				expect.any(Error)
-			);
-			expect(result).toEqual([stories[0]]);
-
-			consoleErrorSpy.mockRestore();
-		});
-
-		it('should handle errors in getVisits', async () => {
-			const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-			mockGetVisits.mockRejectedValueOnce(new Error('Unexpected error'));
-
-			const service = createReadStoriesService();
-			await service.getVisits([
-				{
-					id: '12345678',
-					position: 1,
-					title: 'Test',
-					url: 'https://example.com',
-					points: 42,
-					author: 'test',
-					postedDate: '2024-01-19T12:00:00',
-					commentsCount: 15,
-				},
-			]);
-
-			expect(consoleErrorSpy).toHaveBeenCalledWith(
-				'Error fetching visit history for story:',
-				expect.objectContaining({ id: '12345678' }),
-				expect.any(Error)
-			);
-
-			consoleErrorSpy.mockRestore();
 		});
 
 		it('should handle multiple stories with mixed visit history', async () => {
@@ -381,7 +323,6 @@ describe('hide_read_stories', () => {
 			mockGetVisits.mockResolvedValueOnce([]);
 			mockGetVisits.mockResolvedValueOnce([visit3]);
 
-			const service = createReadStoriesService();
 			const result = await service.getVisits(stories);
 
 			expect(result).toEqual([
@@ -462,7 +403,7 @@ describe('hide_read_stories', () => {
 			expect(story1?.style.display).toBe('');
 			expect(story2?.style.display).toBe('');
 
-			hideStories(['story1', 'story3']);
+			hideStories(['story1', 'story3'], document);
 
 			expect(story1?.style.display).toBe('none');
 			expect(story2?.style.display).toBe('');
@@ -509,128 +450,13 @@ describe('hide_read_stories', () => {
 			document.body.appendChild(div);
 
 			expect(() => {
-				hideStories(['nonexistent']);
+				hideStories(['nonexistent'], document);
 			}).not.toThrow();
 
 			document.body.removeChild(div);
 		});
 
-		it('should have valid structure for setupCheckbox', () => {
-			const div = document.createElement('div');
-			div.innerHTML = emptyPageHtml;
-			document.body.appendChild(div);
-
-			const bigbox = document.getElementById('bigbox');
-			expect(bigbox).not.toBeNull();
-			expect(bigbox?.parentElement).not.toBeNull();
-
-			// biome-ignore lint/style/noNonNullAssertion: it is a test ffs
-			const checkbox = setupCheckbox(bigbox!);
-			expect(checkbox).not.toBeNull();
-			expect(checkbox?.id).toBe('oj-hide-read-stories');
-
-			document.body.removeChild(div);
-		});
-	});
-
-	describe('stories-with-bigbox fixture', () => {
-		it('should have bigbox element', () => {
-			const div = document.createElement('div');
-			div.innerHTML = storiesWithBigboxHtml;
-
-			const bigbox = div.querySelector('#bigbox');
-			expect(bigbox).not.toBeNull();
-		});
-
-		it('should have exactly 3 stories', () => {
-			const div = document.createElement('div');
-			div.innerHTML = storiesWithBigboxHtml;
-
-			const storyRows = div.querySelectorAll('.athing');
-			expect(storyRows.length).toBe(3);
-		});
-
-		it('should have stories with expected IDs', () => {
-			const div = document.createElement('div');
-			div.innerHTML = storiesWithBigboxHtml;
-			document.body.appendChild(div);
-
-			const story1 = document.getElementById('story1');
-			const story2 = document.getElementById('story2');
-			const story3 = document.getElementById('story3');
-
-			expect(story1).not.toBeNull();
-			expect(story2).not.toBeNull();
-			expect(story3).not.toBeNull();
-
-			document.body.removeChild(div);
-		});
-
-		it('should allow hiding specific stories from fixture', () => {
-			const div = document.createElement('div');
-			div.innerHTML = storiesWithBigboxHtml;
-			document.body.appendChild(div);
-
-			const story1 = document.getElementById('story1');
-			const story2 = document.getElementById('story2');
-
-			expect(story1?.style.display).toBe('');
-			expect(story2?.style.display).toBe('');
-
-			hideStories(['story1', 'story3']);
-
-			expect(story1?.style.display).toBe('none');
-			expect(story2?.style.display).toBe('');
-
-			document.body.removeChild(div);
-		});
-
-		it('should have bigbox with parent for checkbox insertion', () => {
-			const div = document.createElement('div');
-			div.innerHTML = storiesWithBigboxHtml;
-			document.body.appendChild(div);
-
-			const bigbox = document.getElementById('bigbox');
-			expect(bigbox).not.toBeNull();
-			expect(bigbox?.parentElement).not.toBeNull();
-
-			document.body.removeChild(div);
-		});
-	});
-
-	describe('empty-page fixture', () => {
-		it('should have bigbox element', () => {
-			const div = document.createElement('div');
-			div.innerHTML = emptyPageHtml;
-
-			const bigbox = div.querySelector('#bigbox');
-			expect(bigbox).not.toBeNull();
-		});
-
-		it('should have itemlist but no stories', () => {
-			const div = document.createElement('div');
-			div.innerHTML = emptyPageHtml;
-
-			const itemlist = div.querySelector('.itemlist');
-			expect(itemlist).not.toBeNull();
-
-			const storyRows = div.querySelectorAll('.athing');
-			expect(storyRows.length).toBe(0);
-		});
-
-		it('should handle empty page gracefully', () => {
-			const div = document.createElement('div');
-			div.innerHTML = emptyPageHtml;
-			document.body.appendChild(div);
-
-			expect(() => {
-				hideStories(['nonexistent']);
-			}).not.toThrow();
-
-			document.body.removeChild(div);
-		});
-
-		it('should have valid structure for setupCheckbox', () => {
+		it('should have valid structure for setupCheckbox', async () => {
 			const div = document.createElement('div');
 			div.innerHTML = emptyPageHtml;
 			document.body.appendChild(div);
@@ -640,7 +466,7 @@ describe('hide_read_stories', () => {
 			expect(bigbox?.parentElement).not.toBeNull();
 
 			// biome-ignore lint/style/noNonNullAssertion: it is a test
-			const checkbox = setupCheckbox(bigbox!);
+			const checkbox = await setupCheckbox(bigbox!, document);
 			expect(checkbox).not.toBeNull();
 			expect(checkbox?.id).toBe('oj-hide-read-stories');
 

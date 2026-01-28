@@ -8,7 +8,7 @@ export const submit: ComponentFeature = {
 	loginRequired: true,
 	matches: [`${paths.base}/submit`],
 	runAt: 'document_end',
-	main(_ctx: ContentScriptContext) {
-		return Promise.all([Promise.resolve().then(() => fetchTitle(document, _ctx))]);
+	main(ctx: ContentScriptContext) {
+		return Promise.all([Promise.resolve().then(() => fetchTitle(document, ctx))]);
 	},
 };

@@ -1,6 +1,7 @@
-import { createProxyService } from '@webext-core/proxy-service';
+import { ojReadCommentsKey } from '@/services/highlight-unread-comments-service.ts';
+import type { ServicesManager } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
-import { HIGHLIGHT_UNREAD_COMMENTS_KEY } from '@/utils/proxy-service-keys.ts';
+import lStorage from '@/utils/localStorage.ts';
 
 const THREE_DAYS_IN_MS = 3 * 24 * 60 * 60 * 1000;
 
@@ -9,59 +10,39 @@ interface ReadCommentItem {
 	comments: string[];
 }
 
-interface ReadCommentsList {
+export interface ReadCommentsList {
 	[itemId: string]: ReadCommentItem;
 }
 
-const ojReadCommentsKey = 'oj_read_comments';
-
-export interface HighlightUnReadCommentsService {
-	expireOldComments: (readCommentsList: ReadCommentsList) => void;
-}
-
-export const createHighlightUnreadCommentsService = () => {
-	return {
-		expireOldComments: (readCommentsList: ReadCommentsList) => {
-			const currentMilliseconds = Date.now();
-			let hasChanges = false;
-
-			for (const [id, itemObj] of Object.entries(readCommentsList)) {
-				if (itemObj.expiry <= currentMilliseconds) {
-					delete readCommentsList[id];
-					hasChanges = true;
-				}
-			}
-
-			if (hasChanges) {
-				localStorage.setItem(ojReadCommentsKey, JSON.stringify(readCommentsList));
-			}
-		},
-	};
-};
-
-export const highlightUnreadComments = (doc: Document, comments: HTMLElement[]) => {
+export const highlightUnreadComments = async (
+	doc: Document,
+	comments: HTMLElement[],
+	manager: ServicesManager
+) => {
 	const style = doc.createElement('style');
 	style.textContent = `
 		.oj_new_comment_indent {
-			box-shadow: inset -3px 0 #f6b391;
+			box-shadow: inset -3px 0 #f6b391 !important;
 		}
 		
 		.oj_new_comment_indent:hover {
-			box-shadow: inset -3px 0 #ff6000;
+			box-shadow: inset -3px 0 #ff6000 !important;
+		}
+
+		.coll .oj_new_clickable_indent {
+			box-shadow: inset -3px 0 #ff6000 !important;
 		}
 	`;
 	doc.head.appendChild(style);
 
-	const storageData = localStorage.getItem(ojReadCommentsKey);
-	let readCommentsList: ReadCommentsList = {};
-
-	if (storageData) {
-		readCommentsList = JSON.parse(storageData) as ReadCommentsList;
+	const readCommentsList = await lStorage.getItem<ReadCommentsList>(ojReadCommentsKey, {
+		fallback: {},
+	});
+	if (!readCommentsList) {
+		return;
 	}
 
-	// offload to background, we shouldn't need the expired data to be updated
-	const service = createProxyService(HIGHLIGHT_UNREAD_COMMENTS_KEY);
-	service.expireOldComments(readCommentsList);
+	await manager.getHighlightService().expireOldComments(readCommentsList);
 
 	// If the item is so old that one cannot reply, there is no point in storing comments
 	const replyForm = doc.querySelector<HTMLFormElement>('table.fatitem form');
@@ -99,5 +80,5 @@ export const highlightUnreadComments = (doc: Document, comments: HTMLElement[]) 
 		comments: [...new Set([...currentComments, ...readComments])],
 	} as ReadCommentItem;
 
-	localStorage.setItem(ojReadCommentsKey, JSON.stringify(readCommentsList));
+	await lStorage.setItem<ReadCommentsList>(ojReadCommentsKey, readCommentsList);
 };

@@ -3,7 +3,7 @@ import { indentToggle } from './indent-toggle.ts';
 
 describe('indentToggle', () => {
 	let mockDoc: Document;
-	let mockComments: Element[];
+	let mockComments: HTMLElement[];
 
 	beforeEach(() => {
 		mockDoc = document.implementation.createHTMLDocument('test');
@@ -25,7 +25,7 @@ describe('indentToggle', () => {
 			const styleElement = mockDoc.head.querySelector('style');
 			expect(styleElement?.textContent).toContain('cursor: pointer');
 			expect(styleElement?.textContent).toContain('.oj_clickable_indent:hover');
-			expect(styleElement?.textContent).toContain('box-shadow: inset -2px 0 #888');
+			expect(styleElement?.textContent).toContain('box-shadow: inset -3px 0 #888');
 		});
 	});
 
@@ -186,7 +186,7 @@ describe('indentToggle', () => {
 	});
 });
 
-function createCommentWithIndent(doc: Document): Element {
+function createCommentWithIndent(doc: Document): HTMLElement {
 	const indentCell = doc.createElement('td');
 	indentCell.className = 'ind';
 
