@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.ACTIONS_PAT }}
+          token: ${{ secrets.OJ_ACTON_PAT }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -153,7 +153,7 @@ jobs:
 
       - name: Create GitHub Release
         env:
-          GH_TOKEN: ${{ secrets.ACTIONS_PAT }}
+          GH_TOKEN: ${{ secrets.OJ_ACTON_PAT }}
         run: |
           gh release create "v${{ steps.bump.outputs.new_version }}" \
             --title "v${{ steps.bump.outputs.new_version }}" \
