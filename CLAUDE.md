@@ -1,4 +1,5 @@
 Always follow these directions:
+* Use bun instead of npm in terminal command exection
 * Prefer for...of instead of forEach
 * Clean up any resources that might leak when the context is invalidated
 * Extract inline regex to a const
