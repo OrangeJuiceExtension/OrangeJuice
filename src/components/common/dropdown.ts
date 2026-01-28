@@ -1,0 +1,100 @@
+import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import { isClickModified } from '@/utils/dom';
+
+export interface DropdownOptions {
+	triggerElement: HTMLElement;
+	dropdownElement: HTMLDivElement;
+	doc: Document;
+	ctx: ContentScriptContext;
+	onToggle?: (isOpen: boolean) => void;
+}
+
+export const createDropdown = (options: DropdownOptions) => {
+	const { triggerElement, dropdownElement, doc, ctx, onToggle } = options;
+
+	let openState = 0;
+
+	const updateOpenState = (newState: number) => {
+		openState = newState;
+		onToggle?.(openState === 1);
+	};
+
+	const clickHandler = (event: MouseEvent) => {
+		if (isClickModified(event)) {
+			return;
+		}
+
+		event.preventDefault();
+		event.stopPropagation();
+
+		dropdownElement.style.left = `${triggerElement.getBoundingClientRect().left}px`;
+		dropdownElement.classList.toggle('active');
+		updateOpenState(1 - openState);
+	};
+
+	triggerElement.addEventListener('click', clickHandler);
+
+	const outsideClickHandler = (event: MouseEvent) => {
+		if (openState === 0) {
+			return;
+		}
+
+		const target = event.target as Node;
+		if (!(dropdownElement.contains(target) || triggerElement.contains(target))) {
+			dropdownElement.classList.remove('active');
+			updateOpenState(1 - openState);
+		}
+	};
+	doc.addEventListener('click', outsideClickHandler);
+
+	const resizeHandler = (_e: Event) => {
+		if (openState > 0) {
+			dropdownElement.style.left = `${triggerElement.getBoundingClientRect().left}px`;
+		}
+	};
+	window.addEventListener('resize', resizeHandler);
+
+	ctx.onInvalidated(() => {
+		triggerElement.removeEventListener('click', clickHandler);
+		doc.removeEventListener('click', outsideClickHandler);
+		window.removeEventListener('resize', resizeHandler);
+	});
+
+	return {
+		isOpen: () => openState === 1,
+	};
+};
+
+export const createDropdownStyle = (className: string) => {
+	return `
+	.${className} {
+		display: none;
+		border: 1px solid #000;
+		margin-top: 0px;
+		position: absolute;
+		background-color: #fff;
+		white-space: nowrap;
+	}
+
+	.${className}_button {
+		user-select: none;
+	}
+
+	.${className}_button:hover {
+		cursor: pointer;
+	}
+
+	.${className}.active {
+		display: block;
+	}
+
+	.${className} a, .${className} a:visited {
+		display: block;
+		text-align: left;
+		text-decoration: underline;
+		height: 20px;
+		padding: 0 5px;
+		color: #000;
+	}
+`;
+};

@@ -1,24 +1,5 @@
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
-import { isClickModified } from '@/utils/dom.ts';
-
-const pageStyle = `
-	.oj_profile_dropdown {
-		border: 1px solid #000;
-		margin-top: 0px;
-		position: absolute;
-		background-color: #fff;
-		white-space: nowrap;
-	}
-	
-	.oj_profile_dropdown a,	.oj_profile_dropdown a:visited {
-		display: block;
-		text-align: left;
-		text-decoration: underline;
-		height: 20px;
-		padding: 0 5px;
-		color: #000;
-	}
-`;
+import { createDropdown, createDropdownStyle } from '@/components/common/dropdown';
 
 const getLinks = (user: string) => {
 	return [
@@ -57,6 +38,7 @@ const getLinks = (user: string) => {
 	];
 };
 
+const COMPONENT_NAME = 'oj_profile_dropdown';
 export const profileLinksDropdown = (doc: Document, ctx: ContentScriptContext) => {
 	if (window.location.pathname.startsWith('/user')) {
 		return;
@@ -73,21 +55,20 @@ export const profileLinksDropdown = (doc: Document, ctx: ContentScriptContext) =
 		return false;
 	}
 
-	const style = doc.createElement('style');
-	style.innerHTML = pageStyle;
-	doc.head.appendChild(style);
-
 	const userName = userLink.innerText;
 
+	const style = doc.createElement('style');
+	style.innerHTML = createDropdownStyle(COMPONENT_NAME);
+	doc.head.appendChild(style);
+
 	const dropdownEl = doc.createElement('div') as HTMLDivElement;
-	dropdownEl.style.display = 'none';
-	dropdownEl.classList.add('oj_profile_dropdown');
+	dropdownEl.classList.add(COMPONENT_NAME);
 
-	let openState = 0;
-
-	const updateUserLinkText = () => {
-		userLink.innerHTML = `${userName} ${openState ? '▴' : '▾'}`;
+	const updateUserLinkText = (isOpen: boolean) => {
+		userLink.innerHTML = `${userName} ${isOpen ? '▴' : '▾'}`;
 	};
+
+	userLink.classList.add(`${COMPONENT_NAME}_button`);
 
 	for (const link of getLinks(userName)) {
 		const anchorEl = doc.createElement('a') as HTMLAnchorElement;
@@ -98,49 +79,13 @@ export const profileLinksDropdown = (doc: Document, ctx: ContentScriptContext) =
 
 	pageTop[1].closest('table')?.parentElement?.append(dropdownEl);
 
-	updateUserLinkText();
+	updateUserLinkText(false);
 
-	const clickHandler = (event: MouseEvent) => {
-		if (isClickModified(event)) {
-			return;
-		}
-
-		event.preventDefault();
-		event.stopPropagation();
-
-		dropdownEl.style.left = `${userLink.getBoundingClientRect().left}px`;
-		const display = dropdownEl.style.display;
-		dropdownEl.style.display = display === 'none' ? 'block' : 'none';
-		openState = 1 - openState;
-		updateUserLinkText();
-	};
-
-	userLink.addEventListener('click', clickHandler);
-
-	const outsideClickHandler = (event: MouseEvent) => {
-		if (openState === 0) {
-			return;
-		}
-
-		const target = event.target as Node;
-		if (!(dropdownEl.contains(target) || userLink.contains(target))) {
-			dropdownEl.style.display = 'none';
-			openState = 1 - openState;
-			updateUserLinkText();
-		}
-	};
-	doc.addEventListener('click', outsideClickHandler);
-
-	const resizeHandler = (_e: Event) => {
-		if (openState > 0) {
-			dropdownEl.style.left = `${userLink.getBoundingClientRect().left}px`;
-		}
-	};
-	window.addEventListener('resize', resizeHandler);
-
-	ctx.onInvalidated(() => {
-		userLink.removeEventListener('click', clickHandler);
-		doc.removeEventListener('click', outsideClickHandler);
-		window.removeEventListener('resize', resizeHandler);
+	createDropdown({
+		triggerElement: userLink,
+		dropdownElement: dropdownEl,
+		doc,
+		ctx,
+		onToggle: updateUserLinkText,
 	});
 };

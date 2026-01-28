@@ -143,7 +143,7 @@ describe('profileLinksDropdown', () => {
 		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
 		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
 
-		expect(dropdown?.style.display).toBe('none');
+		expect(dropdown?.classList.contains('active')).toBe(false);
 
 		const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
 		Object.defineProperty(clickEvent, 'preventDefault', { value: vi.fn() });
@@ -154,12 +154,12 @@ describe('profileLinksDropdown', () => {
 
 		userLink?.dispatchEvent(clickEvent);
 
-		expect(dropdown?.style.display).toBe('block');
+		expect(dropdown?.classList.contains('active')).toBe(true);
 		expect(userLink?.innerHTML).toContain('▴');
 
 		userLink?.dispatchEvent(clickEvent);
 
-		expect(dropdown?.style.display).toBe('none');
+		expect(dropdown?.classList.contains('active')).toBe(false);
 		expect(userLink?.innerHTML).toContain('▾');
 	});
 
@@ -174,7 +174,7 @@ describe('profileLinksDropdown', () => {
 		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
 		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
 
-		expect(dropdown?.style.display).toBe('none');
+		expect(dropdown?.classList.contains('active')).toBe(false);
 
 		const clickEvent = new MouseEvent('click', {
 			bubbles: true,
@@ -184,7 +184,7 @@ describe('profileLinksDropdown', () => {
 
 		userLink?.dispatchEvent(clickEvent);
 
-		expect(dropdown?.style.display).toBe('none');
+		expect(dropdown?.classList.contains('active')).toBe(false);
 	});
 
 	it('should update dropdown position on resize', () => {
@@ -277,7 +277,7 @@ describe('profileLinksDropdown', () => {
 		profileLinksDropdown(doc, MOCK_CONTEXT);
 
 		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
-		expect(dropdown?.style.display).toBe('none');
+		expect(dropdown?.classList.contains('active')).toBe(false);
 	});
 
 	it('should close dropdown when clicking outside', () => {
@@ -301,7 +301,7 @@ describe('profileLinksDropdown', () => {
 
 		userLink?.dispatchEvent(clickEvent);
 
-		expect(dropdown?.style.display).toBe('block');
+		expect(dropdown?.classList.contains('active')).toBe(true);
 		expect(userLink?.innerHTML).toContain('▴');
 
 		const outsideElement = doc.createElement('div');
@@ -311,7 +311,7 @@ describe('profileLinksDropdown', () => {
 
 		doc.dispatchEvent(outsideClickEvent);
 
-		expect(dropdown?.style.display).toBe('none');
+		expect(dropdown?.classList.contains('active')).toBe(false);
 		expect(userLink?.innerHTML).toContain('▾');
 	});
 
@@ -336,7 +336,7 @@ describe('profileLinksDropdown', () => {
 
 		userLink?.dispatchEvent(clickEvent);
 
-		expect(dropdown?.style.display).toBe('block');
+		expect(dropdown?.classList.contains('active')).toBe(true);
 
 		const dropdownLink = dropdown?.querySelector('a');
 		const insideClickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
@@ -344,7 +344,7 @@ describe('profileLinksDropdown', () => {
 
 		doc.dispatchEvent(insideClickEvent);
 
-		expect(dropdown?.style.display).toBe('block');
+		expect(dropdown?.classList.contains('active')).toBe(true);
 	});
 
 	it('should not close dropdown when clicking on user link', () => {
@@ -368,13 +368,13 @@ describe('profileLinksDropdown', () => {
 
 		userLink?.dispatchEvent(clickEvent);
 
-		expect(dropdown?.style.display).toBe('block');
+		expect(dropdown?.classList.contains('active')).toBe(true);
 
 		const userLinkClickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
 		Object.defineProperty(userLinkClickEvent, 'target', { value: userLink });
 
 		doc.dispatchEvent(userLinkClickEvent);
 
-		expect(dropdown?.style.display).toBe('block');
+		expect(dropdown?.classList.contains('active')).toBe(true);
 	});
 });

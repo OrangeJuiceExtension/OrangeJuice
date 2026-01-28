@@ -42,14 +42,14 @@ describe('navbar more-links', () => {
 	it('should append "more" button and separator to navbar', () => {
 		navbar.main(mockContext);
 		const navbarEl = document.querySelector('span.pagetop');
-		const button = navbarEl?.querySelector('.oj_navbar_links_button');
+		const button = navbarEl?.querySelector('.oj_more_links_dropdown_button');
 		expect(button).toBeTruthy();
 		expect(button?.textContent).toBe('more ▾');
 	});
 
 	it('should create dropdown element with links', () => {
 		navbar.main(mockContext);
-		const dropdown = document.querySelector('.oj_navbar_links_dropdown');
+		const dropdown = document.querySelector('.oj_more_links_dropdown');
 		expect(dropdown).toBeTruthy();
 
 		const links = dropdown?.querySelectorAll('a');
@@ -63,7 +63,7 @@ describe('navbar more-links', () => {
 		});
 
 		navbar.main(mockContext);
-		const dropdown = document.querySelector('.oj_navbar_links_dropdown');
+		const dropdown = document.querySelector('.oj_more_links_dropdown');
 		const links = dropdown?.querySelectorAll('a');
 
 		const leadersLink = Array.from(links || []).find((link) => link.textContent === 'leaders');
@@ -72,37 +72,37 @@ describe('navbar more-links', () => {
 
 	it('should toggle dropdown display on button click', () => {
 		navbar.main(mockContext);
-		const button = document.querySelector('.oj_navbar_links_button') as HTMLElement;
-		const dropdown = document.querySelector('.oj_navbar_links_dropdown') as HTMLElement;
+		const button = document.querySelector('.oj_more_links_dropdown_button') as HTMLElement;
+		const dropdown = document.querySelector('.oj_more_links_dropdown') as HTMLElement;
 
-		expect(dropdown.style.display).toBe('none');
+		expect(dropdown.classList.contains('active')).toBe(false);
 
 		button.click();
-		expect(dropdown.style.display).toBe('block');
+		expect(dropdown.classList.contains('active')).toBe(true);
 		expect(button.textContent).toBe('more ▴');
 
 		button.click();
-		expect(dropdown.style.display).toBe('none');
+		expect(dropdown.classList.contains('active')).toBe(false);
 		expect(button.textContent).toBe('more ▾');
 	});
 
 	it('should not toggle dropdown on modified click', () => {
 		navbar.main(mockContext);
-		const button = document.querySelector('.oj_navbar_links_button') as HTMLElement;
-		const dropdown = document.querySelector('.oj_navbar_links_dropdown') as HTMLElement;
+		const button = document.querySelector('.oj_more_links_dropdown_button') as HTMLElement;
+		const dropdown = document.querySelector('.oj_more_links_dropdown') as HTMLElement;
 
 		const clickEvent = new MouseEvent('click', {
 			ctrlKey: true,
 		});
 
 		button.dispatchEvent(clickEvent);
-		expect(dropdown.style.display).toBe('none');
+		expect(dropdown.classList.contains('active')).toBe(false);
 	});
 
 	it('should update dropdown position on window resize when dropdown is open', () => {
 		navbar.main(mockContext);
-		const button = document.querySelector('.oj_navbar_links_button') as HTMLElement;
-		const dropdown = document.querySelector('.oj_navbar_links_dropdown') as HTMLElement;
+		const button = document.querySelector('.oj_more_links_dropdown_button') as HTMLElement;
+		const dropdown = document.querySelector('.oj_more_links_dropdown') as HTMLElement;
 
 		button.click();
 
@@ -113,7 +113,7 @@ describe('navbar more-links', () => {
 
 	it('should not update dropdown position on resize when dropdown is closed', () => {
 		navbar.main(mockContext);
-		const dropdown = document.querySelector('.oj_navbar_links_dropdown') as HTMLElement;
+		const dropdown = document.querySelector('.oj_more_links_dropdown') as HTMLElement;
 
 		dropdown.style.left = '100px';
 		window.dispatchEvent(new Event('resize'));
@@ -123,7 +123,7 @@ describe('navbar more-links', () => {
 
 	it('should clean up event listeners on context invalidation', () => {
 		navbar.main(mockContext);
-		const button = document.querySelector('.oj_navbar_links_button') as HTMLElement;
+		const button = document.querySelector('.oj_more_links_dropdown_button') as HTMLElement;
 
 		const removeEventListenerSpy = vi.spyOn(button, 'removeEventListener');
 		const windowRemoveEventListenerSpy = vi.spyOn(window, 'removeEventListener');
@@ -138,7 +138,7 @@ describe('navbar more-links', () => {
 
 	it('should set correct link attributes', () => {
 		navbar.main(mockContext);
-		const dropdown = document.querySelector('.oj_navbar_links_dropdown');
+		const dropdown = document.querySelector('.oj_more_links_dropdown');
 		const firstLink = dropdown?.querySelector('a');
 
 		expect(firstLink?.href).toContain('leaders');
@@ -147,40 +147,40 @@ describe('navbar more-links', () => {
 
 	it('should close dropdown when clicking outside', () => {
 		navbar.main(mockContext);
-		const button = document.querySelector('.oj_navbar_links_button') as HTMLElement;
-		const dropdown = document.querySelector('.oj_navbar_links_dropdown') as HTMLElement;
+		const button = document.querySelector('.oj_more_links_dropdown_button') as HTMLElement;
+		const dropdown = document.querySelector('.oj_more_links_dropdown') as HTMLElement;
 
 		button.click();
-		expect(dropdown.style.display).toBe('block');
+		expect(dropdown.classList.contains('active')).toBe(true);
 		expect(button.textContent).toBe('more ▴');
 
 		document.body.click();
-		expect(dropdown.style.display).toBe('none');
+		expect(dropdown.classList.contains('active')).toBe(false);
 		expect(button.textContent).toBe('more ▾');
 	});
 
 	it('should not close dropdown when clicking inside dropdown', () => {
 		navbar.main(mockContext);
-		const button = document.querySelector('.oj_navbar_links_button') as HTMLElement;
-		const dropdown = document.querySelector('.oj_navbar_links_dropdown') as HTMLElement;
+		const button = document.querySelector('.oj_more_links_dropdown_button') as HTMLElement;
+		const dropdown = document.querySelector('.oj_more_links_dropdown') as HTMLElement;
 
 		button.click();
-		expect(dropdown.style.display).toBe('block');
+		expect(dropdown.classList.contains('active')).toBe(true);
 
 		dropdown.click();
-		expect(dropdown.style.display).toBe('block');
+		expect(dropdown.classList.contains('active')).toBe(true);
 	});
 
 	it('should not close dropdown when clicking the button itself', () => {
 		navbar.main(mockContext);
-		const button = document.querySelector('.oj_navbar_links_button') as HTMLElement;
-		const dropdown = document.querySelector('.oj_navbar_links_dropdown') as HTMLElement;
+		const button = document.querySelector('.oj_more_links_dropdown_button') as HTMLElement;
+		const dropdown = document.querySelector('.oj_more_links_dropdown') as HTMLElement;
 
 		button.click();
-		expect(dropdown.style.display).toBe('block');
+		expect(dropdown.classList.contains('active')).toBe(true);
 
 		button.click();
-		expect(dropdown.style.display).toBe('none');
+		expect(dropdown.classList.contains('active')).toBe(false);
 	});
 
 	it('should clean up outside click listener on context invalidation', () => {
