@@ -3,12 +3,17 @@ name: Test
 on:
   push:
     branches: [ main ]
+    tags-ignore:
+      - '*'
   pull_request:
     branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'pull_request' ||
+      !contains(github.event.head_commit.message, 'chore: bump version')
 
     steps:
       - uses: actions/checkout@v4
