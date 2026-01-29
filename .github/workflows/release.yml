@@ -139,3 +139,14 @@ jobs:
             --title "v${{ steps.bump.outputs.new_version }}" \
             --notes-file changelog.txt \
             .output/orangejuice-*.zip
+
+      - name: Trigger pages workflow in orangejuiceextension.github.io
+        env:
+          GH_TOKEN: ${{ secrets.PAGES_REPO_DISPATCH_TOKEN }}
+        run: |
+          curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            https://api.github.com/repos/OrangeJuiceExtension/orangejuiceextension.github.io/actions/workflows/pages.yml/dispatches \
+            -d '{"ref":"main"}'
