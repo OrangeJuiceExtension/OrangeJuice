@@ -4,8 +4,6 @@ import { HighlightUnreadCommentsService } from '@/services/highlight-unread-comm
 import { ReadStoriesService } from '@/services/read-stories-service.ts';
 import { InjectAdapter, ProvideAdapter } from '@/utils/browser-runtime.ts';
 
-type Service = HighlightUnreadCommentsService | ReadStoriesService | FetchRemoteService;
-
 // Service registry configuration - add new services here
 const SERVICE_REGISTRY = {
 	Highlight: {
@@ -22,15 +20,16 @@ const SERVICE_REGISTRY = {
 	},
 } as const;
 
-// Export namespace constants for testing
-export const HIGHLIGHT_NAMESPACE = SERVICE_REGISTRY.Highlight.namespace;
-export const READ_STORIES_NAMESPACE = SERVICE_REGISTRY.ReadStories.namespace;
-export const FETCH_REMOTE_NAMESPACE = SERVICE_REGISTRY.FetchRemote.namespace;
+// Export namespaces object inferred from registry
+export const SERVICE_NAMESPACES = Object.fromEntries(
+	Object.entries(SERVICE_REGISTRY).map(([key, config]) => [key, config.namespace])
+) as { [K in keyof typeof SERVICE_REGISTRY]: (typeof SERVICE_REGISTRY)[K]['namespace'] };
 
 type ServiceKey = keyof typeof SERVICE_REGISTRY;
 type ServiceMap = {
 	[K in ServiceKey]: InstanceType<(typeof SERVICE_REGISTRY)[K]['class']>;
 };
+type Service = ServiceMap[ServiceKey];
 
 type ServiceGetter<K extends ServiceKey> = () => ServiceMap[K];
 

@@ -5,7 +5,7 @@ import {
 } from '@/services/highlight-unread-comments-service.ts';
 import {
 	createServicesManager,
-	HIGHLIGHT_NAMESPACE,
+	SERVICE_NAMESPACES,
 	type ServicesManager,
 } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
@@ -24,7 +24,7 @@ describe('highlightUnreadComments', () => {
 		vi.clearAllMocks();
 		manager = createServicesManager();
 		service = new HighlightUnreadCommentsService();
-		manager.started.set(HIGHLIGHT_NAMESPACE, service);
+		manager.started.set(SERVICE_NAMESPACES.Highlight, service);
 	});
 
 	describe('style injection', () => {
