@@ -20,131 +20,102 @@ describe('parseReferenceLinks', () => {
 		expect(result).toEqual([]);
 	});
 
-	it('should parse reference link with bracket notation [1]', () => {
-		const element = document.createElement('div');
-		element.innerHTML = `
-			<p>[100] <a href="https://example.com">Example</a></p>
-		`;
+	const testCases = [
+		{
+			name: 'bracket notation [1]',
+			html: '<p>[100] <a href="https://example.com">Example</a></p>',
+			expected: [{ index: 100, href: 'https://example.com/' }],
+		},
+		{
+			name: 'bracket and colon notation [1]:',
+			html: '<p>[1]: <a href="https://example.com">Example</a></p>',
+			expected: [{ index: 1, href: 'https://example.com/' }],
+		},
+		{
+			name: 'number and colon 1:',
+			html: '<p>1: <a href="https://example.com">Example</a></p>',
+			expected: [{ index: 1, href: 'https://example.com/' }],
+		},
+		{
+			name: 'number and period 1.',
+			html: '<p>1. <a href="https://example.com">Example</a></p>',
+			expected: [{ index: 1, href: 'https://example.com/' }],
+		},
+		{
+			name: 'just a number',
+			html: '<p>1 <a href="https://example.com">Example</a></p>',
+			expected: [{ index: 1, href: 'https://example.com/' }],
+		},
+		{
+			name: 'bullet point marker -',
+			html: '<p>- [1] <a href="https://example.com">Example</a></p>',
+			expected: [{ index: 1, href: 'https://example.com/' }],
+		},
+		{
+			name: 'asterisk bullet point marker *',
+			html: '<p>* [2] <a href="https://example.org">Example</a></p>',
+			expected: [{ index: 2, href: 'https://example.org/' }],
+		},
+		{
+			name: 'no space with newline',
+			html: '<p>[0]\n<a href="https://example.org">Example</a></p>',
+			expected: [{ index: 0, href: 'https://example.org/' }],
+		},
+		{
+			name: 'no space',
+			html: '<p>[0]<a href="https://example.org">Example</a></p>',
+			expected: [{ index: 0, href: 'https://example.org/' }],
+		},
+	];
 
-		const result = parseReferenceLinks(element);
+	for (const { name, html, expected } of testCases) {
+		it(`should parse reference link with ${name}`, () => {
+			const element = document.createElement('div');
+			element.innerHTML = html;
 
-		expect(result).toEqual([{ index: 100, href: 'https://example.com/' }]);
-	});
+			const result = parseReferenceLinks(element);
 
-	it('should parse reference link with bracket and colon notation [1]:', () => {
-		const element = document.createElement('div');
-		element.innerHTML = `
-			<p>[1]: <a href="https://example.com">Example</a></p>
-		`;
+			expect(result).toEqual(expected);
+		});
+	}
 
-		const result = parseReferenceLinks(element);
+	const skipTestCases = [
+		{
+			name: 'paragraphs without links',
+			html: `
+				<p>[1] <a href="https://example.com">First</a></p>
+				<p>Some text without a link</p>
+				<p>[2] <a href="https://example.org">Second</a></p>
+			`,
+			expected: [
+				{ index: 1, href: 'https://example.com/' },
+				{ index: 2, href: 'https://example.org/' },
+			],
+		},
+		{
+			name: 'paragraphs without matching index pattern',
+			html: `
+				<p>[1] <a href="https://example.com">Valid</a></p>
+				<p>Random text <a href="https://example.org">Invalid</a></p>
+				<p>[2] <a href="https://example.net">Valid</a></p>
+			`,
+			expected: [
+				{ index: 1, href: 'https://example.com/' },
+				{ index: 2, href: 'https://example.net/' },
+			],
+		},
+	];
 
-		expect(result).toEqual([{ index: 1, href: 'https://example.com/' }]);
-	});
+	for (const { name, html, expected } of skipTestCases) {
+		it(`should skip ${name}`, () => {
+			const element = document.createElement('div');
+			element.innerHTML = html;
 
-	it('should parse reference link with number and colon 1:', () => {
-		const element = document.createElement('div');
-		element.innerHTML = `
-			<p>1: <a href="https://example.com">Example</a></p>
-		`;
+			const result = parseReferenceLinks(element);
 
-		const result = parseReferenceLinks(element);
-
-		expect(result).toEqual([{ index: 1, href: 'https://example.com/' }]);
-	});
-
-	it('should parse reference link with number and period 1.', () => {
-		const element = document.createElement('div');
-		element.innerHTML = `
-			<p>1. <a href="https://example.com">Example</a></p>
-		`;
-
-		const result = parseReferenceLinks(element);
-
-		expect(result).toEqual([{ index: 1, href: 'https://example.com/' }]);
-	});
-
-	it('should parse reference link with just a number', () => {
-		const element = document.createElement('div');
-		element.innerHTML = `
-			<p>1 <a href="https://example.com">Example</a></p>
-		`;
-
-		const result = parseReferenceLinks(element);
-
-		expect(result).toEqual([{ index: 1, href: 'https://example.com/' }]);
-	});
-
-	it('should parse reference links with bullet point marker -', () => {
-		const element = document.createElement('div');
-		element.innerHTML = `
-			<p>- [1] <a href="https://example.com">Example</a></p>
-		`;
-
-		const result = parseReferenceLinks(element);
-
-		expect(result).toEqual([{ index: 1, href: 'https://example.com/' }]);
-	});
-
-	it('should parse reference links with asterisk bullet point marker *', () => {
-		const element = document.createElement('div');
-		element.innerHTML = `
-			<p>* [2] <a href="https://example.org">Example</a></p>
-		`;
-
-		const result = parseReferenceLinks(element);
-
-		expect(result).toEqual([{ index: 2, href: 'https://example.org/' }]);
-	});
-
-	it('should parse multiple reference links', () => {
-		const element = document.createElement('div');
-		element.innerHTML = `
-			<p>[1] <a href="https://example.com">First</a></p>
-			<p>[2] <a href="https://example.org">Second</a></p>
-			<p>[3] <a href="https://example.net">Third</a></p>
-		`;
-
-		const result = parseReferenceLinks(element);
-
-		expect(result).toEqual([
-			{ index: 1, href: 'https://example.com/' },
-			{ index: 2, href: 'https://example.org/' },
-			{ index: 3, href: 'https://example.net/' },
-		]);
-	});
-
-	it('should skip paragraphs without links', () => {
-		const element = document.createElement('div');
-		element.innerHTML = `
-			<p>[1] <a href="https://example.com">First</a></p>
-			<p>Some text without a link</p>
-			<p>[2] <a href="https://example.org">Second</a></p>
-		`;
-
-		const result = parseReferenceLinks(element);
-
-		expect(result).toEqual([
-			{ index: 1, href: 'https://example.com/' },
-			{ index: 2, href: 'https://example.org/' },
-		]);
-	});
-
-	it('should skip paragraphs without matching index pattern', () => {
-		const element = document.createElement('div');
-		element.innerHTML = `
-			<p>[1] <a href="https://example.com">Valid</a></p>
-			<p>Random text <a href="https://example.org">Invalid</a></p>
-			<p>[2] <a href="https://example.net">Valid</a></p>
-		`;
-
-		const result = parseReferenceLinks(element);
-
-		expect(result).toEqual([
-			{ index: 1, href: 'https://example.com/' },
-			{ index: 2, href: 'https://example.net/' },
-		]);
-	});
+			expect(result).toEqual(expected);
+		});
+	}
 
 	it('should handle whitespace around index markers', () => {
 		const element = document.createElement('div');
@@ -174,18 +145,52 @@ describe('parseReferenceLinks', () => {
 		expect(result).toEqual([]);
 	});
 
-	it('should handle various bracket and colon combinations', () => {
+	const multiLinkTestCases = [
+		{
+			name: 'multiple reference links',
+			html: `
+				<p>[1] <a href="https://example.com">First</a></p>
+				<p>[2] <a href="https://example.org">Second</a></p>
+				<p>[3] <a href="https://example.net">Third</a></p>
+			`,
+			expected: [
+				{ index: 1, href: 'https://example.com/' },
+				{ index: 2, href: 'https://example.org/' },
+				{ index: 3, href: 'https://example.net/' },
+			],
+		},
+		{
+			name: 'various bracket and colon combinations',
+			html: `
+				<p>[1]: <a href="https://example1.com">Example 1</a></p>
+				<p>[2]. <a href="https://example2.com">Example 2</a></p>
+			`,
+			expected: [
+				{ index: 1, href: 'https://example1.com/' },
+				{ index: 2, href: 'https://example2.com/' },
+			],
+		},
+	];
+
+	for (const { name, html, expected } of multiLinkTestCases) {
+		it(`should parse ${name}`, () => {
+			const element = document.createElement('div');
+			element.innerHTML = html;
+
+			const result = parseReferenceLinks(element);
+
+			expect(result).toEqual(expected);
+		});
+	}
+
+	it('should handle whitespace around index markers', () => {
 		const element = document.createElement('div');
 		element.innerHTML = `
-			<p>[1]: <a href="https://example1.com">Example 1</a></p>
-			<p>[2]. <a href="https://example2.com">Example 2</a></p>
+			<p>  [1]  <a href="https://example.com">Example</a></p>
 		`;
 
 		const result = parseReferenceLinks(element);
 
-		expect(result).toEqual([
-			{ index: 1, href: 'https://example1.com/' },
-			{ index: 2, href: 'https://example2.com/' },
-		]);
+		expect(result).toEqual([{ index: 1, href: 'https://example.com/' }]);
 	});
 });

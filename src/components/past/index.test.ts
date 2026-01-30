@@ -247,7 +247,7 @@ describe('past', () => {
 
 			const styles = document.querySelectorAll('style');
 			const hasLinkButtonStyle = Array.from(styles).some((style) =>
-				style.textContent?.includes('.oj-link-button')
+				style.textContent?.includes('.oj_link_button')
 			);
 
 			expect(hasLinkButtonStyle).toBe(true);

@@ -1,6 +1,4 @@
-import VisitItem = Browser.history.VisitItem;
-
-import { Browser } from '@wxt-dev/browser';
+import type { Browser } from '@wxt-dev/browser';
 import type { ContentScriptDefinition } from 'wxt';
 
 export type ComponentFeature = ContentScriptDefinition & {
@@ -58,12 +56,5 @@ export interface HNStory {
 	author: string | null;
 	postedDate: string | null;
 	commentsCount: number | null;
-	latestVisit?: VisitItem;
-}
-
-export interface ItemData {
-	items: HTMLElement[];
-	index: number;
-	activeItem: HTMLElement | undefined;
-	commentList: boolean;
+	latestVisit?: Browser.history.VisitItem;
 }

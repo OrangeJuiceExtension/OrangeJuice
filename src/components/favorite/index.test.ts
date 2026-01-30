@@ -66,14 +66,14 @@ describe('favorite', () => {
 		it('should add favorite/un-favorite buttons to comments', () => {
 			initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			expect(buttons.length).toBeGreaterThan(0);
 		});
 
 		it('should display "un-favorite" for already favorited items', () => {
 			initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			const firstButton = buttons[0] as HTMLButtonElement;
 
 			expect(firstButton?.textContent).toBe('un-favorite');
@@ -83,7 +83,7 @@ describe('favorite', () => {
 			mockOjContext.favorites = { items: new Map(), lastSync: 1000 };
 			initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			expect(buttons.length).toBe(2);
 			const firstButton = buttons[0] as HTMLButtonElement;
 
@@ -103,7 +103,7 @@ describe('favorite', () => {
 
 			initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			const button = buttons[0] as HTMLButtonElement;
 
 			expect(button?.textContent).toBe('un-favorite');
@@ -136,7 +136,7 @@ describe('favorite', () => {
 
 			initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			const button = buttons[0] as HTMLButtonElement;
 
 			expect(button?.textContent).toBe('favorite');
@@ -162,7 +162,7 @@ describe('favorite', () => {
 
 			initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			const button = buttons[0] as HTMLButtonElement;
 
 			button.click();
@@ -176,7 +176,7 @@ describe('favorite', () => {
 		it('should clean up event listeners when cleanup function is called', () => {
 			const cleanup = initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			const button = buttons[0] as HTMLButtonElement;
 
 			const removeEventListenerSpy = vi.spyOn(button, 'removeEventListener');
@@ -199,7 +199,7 @@ describe('favorite', () => {
 
 			initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			const button = buttons[0] as HTMLButtonElement;
 
 			button.click();
@@ -221,7 +221,7 @@ describe('favorite', () => {
 
 			initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			const button = buttons[0] as HTMLButtonElement;
 
 			button.click();
@@ -256,7 +256,7 @@ describe('favorite', () => {
 
 			initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			const button = buttons[0] as HTMLButtonElement;
 
 			button.click();
@@ -312,14 +312,14 @@ describe('favorite', () => {
 		it('should add favorite/un-favorite buttons to frontpage posts', () => {
 			initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			expect(buttons.length).toBe(2);
 		});
 
 		it('should display "un-favorite" for already favorited frontpage posts', () => {
 			initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			const firstButton = buttons[0] as HTMLButtonElement;
 
 			expect(firstButton?.textContent).toBe('un-favorite');
@@ -328,7 +328,7 @@ describe('favorite', () => {
 		it('should display "favorite" for non-favorited frontpage posts', () => {
 			initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			const secondButton = buttons[1] as HTMLButtonElement;
 
 			expect(secondButton?.textContent).toBe('favorite');
@@ -349,7 +349,7 @@ describe('favorite', () => {
 
 			initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			const button = buttons[1] as HTMLButtonElement;
 
 			expect(button?.textContent).toBe('favorite');
@@ -377,7 +377,7 @@ describe('favorite', () => {
 
 			initFavorites(document, mockOjContext);
 
-			const buttons = document.querySelectorAll('.oj-link-button');
+			const buttons = document.querySelectorAll('.oj_link_button');
 			const button = buttons[1] as HTMLButtonElement;
 
 			button.click();

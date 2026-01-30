@@ -1,12 +1,7 @@
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 import { saved } from '@/utils/saved.ts';
-import {
-	type ComponentFeature,
-	type OJContext,
-	type SavedItem,
-	SavedItemType,
-} from '@/utils/types.ts';
+import { type ComponentFeature, type OJContext, SavedItemType } from '@/utils/types.ts';
 
 const authMatchPattern = /auth=([^&]+)/;
 const unvePrefixPattern = /^unv_/;
@@ -86,13 +81,11 @@ const updateButtonAndStorage = (
 	commentId: string,
 	isFavorited: boolean,
 	authToken: string
-): SavedItem | undefined => {
+) => {
 	button.textContent = isFavorited ? 'favorite' : 'un-favorite';
 
 	if (isFavorited) {
-		// console.log(`removedFromStorage: ${commentId} ${button.textContent}`);
-		saved.removeFromStorage(commentId);
-		return undefined;
+		return saved.removeFromStorage(commentId) || undefined;
 	}
 
 	// console.log(`addToStorage: ${commentId} ${button.textContent}`);
@@ -121,7 +114,7 @@ const initFavoritesWithSelector = (
 		let savedData = ojCtx.favorites?.items.get(commentId);
 		const favoriteButton = doc.createElement('button');
 		favoriteButton.textContent = savedData ? 'un-favorite' : 'favorite';
-		favoriteButton.className = 'oj-link-button';
+		favoriteButton.classList.add('oj_link_button', 'oj_favorite_link');
 
 		const handleFavoriteClick = async (e: Event) => {
 			e.stopPropagation();
@@ -134,16 +127,17 @@ const initFavoritesWithSelector = (
 					return;
 				}
 
-				const isFavorited = savedData !== undefined;
-				const success = await toggleFavoriteState(commentId, isFavorited, authToken);
+				const isFavorite = savedData !== undefined;
+				const success = await toggleFavoriteState(commentId, isFavorite, authToken);
 
 				if (success) {
-					savedData = updateButtonAndStorage(
+					const result = await updateButtonAndStorage(
 						favoriteButton,
 						commentId,
-						isFavorited,
+						isFavorite,
 						authToken
 					);
+					savedData = result ? result : undefined;
 				}
 			} catch (error) {
 				console.error('Failed to favorite/un-favorite:', error);

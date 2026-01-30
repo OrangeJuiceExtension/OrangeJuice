@@ -56,6 +56,10 @@ const getAllComments = (doc: Document): HTMLElement[] => {
 	return [...doc.querySelectorAll<HTMLElement>('tr.comtr')];
 };
 
+const getAllCommentsById = (comments: HTMLElement[]): Map<string, HTMLElement> => {
+	return new Map(comments.map((el) => [el.id, el]));
+};
+
 const getItemIdFromLocation = (): string | null => {
 	const url = new URL(window.location.href);
 	return url.searchParams.get('id');
@@ -64,7 +68,7 @@ const getItemIdFromLocation = (): string | null => {
 const injectLinkButtonStyle = (doc: Document) => {
 	const style = doc.createElement('style');
 	style.textContent = `
-		.oj-link-button {
+		.oj_link_button {
 			background: none;
 			border: none;
 			padding: 0;
@@ -73,7 +77,7 @@ const injectLinkButtonStyle = (doc: Document) => {
 			cursor: pointer;
 			font: inherit;
 		}
-		.oj-link-button:hover {
+		.oj_link_button:hover {
 			text-decoration: underline;
 	}`;
 	doc.head.appendChild(style);
@@ -119,6 +123,16 @@ export function elementInScrollView(el: HTMLElement) {
 	return elemTop >= 0 && elemBottom <= window.innerHeight;
 }
 
+export function removeClassRecursive(node: HTMLElement, classNames: string | string[]) {
+	const classesToRemove = Array.isArray(classNames) ? classNames : [classNames];
+	for (const className of classesToRemove) {
+		node.classList.remove(className);
+	}
+	for (const child of node.children) {
+		removeClassRecursive(child as HTMLElement, classNames);
+	}
+}
+
 export function getCommentIndentation(element: HTMLElement): {
 	element?: HTMLImageElement;
 	width?: number;
@@ -138,6 +152,7 @@ export function getCommentIndentation(element: HTMLElement): {
 export const dom = {
 	injectLinkButtonStyle,
 	getAllComments,
+	getAllCommentsById,
 	createHiddenInput,
 	getHiddenInputValue,
 	getReplyIdFromLink,
@@ -151,4 +166,5 @@ export const dom = {
 	elementPosition,
 	elementInScrollView,
 	getCommentIndentation,
+	removeClassRecursive,
 };

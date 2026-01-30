@@ -481,4 +481,139 @@ describe('dom', () => {
 			expect(result).toBe(true);
 		});
 	});
+
+	describe('removeClassRecursive', () => {
+		it('should remove single class from element', () => {
+			const div = document.createElement('div');
+			div.className = 'class1 class2 class3';
+
+			dom.removeClassRecursive(div, 'class2');
+
+			expect(div.className).toBe('class1 class3');
+		});
+
+		it('should remove multiple classes from element when passed as array', () => {
+			const div = document.createElement('div');
+			div.className = 'class1 class2 class3 class4';
+
+			dom.removeClassRecursive(div, ['class2', 'class4']);
+
+			expect(div.className).toBe('class1 class3');
+		});
+
+		it('should recursively remove class from all descendants', () => {
+			const parent = document.createElement('div');
+			parent.className = 'parent-class';
+
+			const child1 = document.createElement('div');
+			child1.className = 'child1-class target-class';
+
+			const child2 = document.createElement('div');
+			child2.className = 'child2-class target-class';
+
+			const grandchild = document.createElement('span');
+			grandchild.className = 'grandchild-class target-class';
+
+			child2.appendChild(grandchild);
+			parent.appendChild(child1);
+			parent.appendChild(child2);
+
+			dom.removeClassRecursive(parent, 'target-class');
+
+			expect(parent.className).toBe('parent-class');
+			expect(child1.className).toBe('child1-class');
+			expect(child2.className).toBe('child2-class');
+			expect(grandchild.className).toBe('grandchild-class');
+		});
+
+		it('should recursively remove multiple classes from all descendants when passed as array', () => {
+			const parent = document.createElement('div');
+			parent.className = 'parent-class target-class';
+
+			const child1 = document.createElement('div');
+			child1.className = 'child1-class target-class remove-me';
+
+			const child2 = document.createElement('div');
+			child2.className = 'child2-class remove-me another-target';
+
+			const grandchild = document.createElement('span');
+			grandchild.className = 'grandchild-class target-class another-target';
+
+			child2.appendChild(grandchild);
+			parent.appendChild(child1);
+			parent.appendChild(child2);
+
+			dom.removeClassRecursive(parent, ['target-class', 'remove-me']);
+
+			expect(parent.className).toBe('parent-class');
+			expect(child1.className).toBe('child1-class');
+			expect(child2.className).toBe('child2-class another-target');
+			expect(grandchild.className).toBe('grandchild-class another-target');
+		});
+
+		it('should handle empty class name gracefully', () => {
+			const div = document.createElement('div');
+			div.className = 'class1 class2';
+
+			dom.removeClassRecursive(div, '');
+
+			expect(div.className).toBe('class1 class2');
+		});
+
+		it('should handle empty array gracefully', () => {
+			const div = document.createElement('div');
+			div.className = 'class1 class2';
+
+			dom.removeClassRecursive(div, []);
+
+			expect(div.className).toBe('class1 class2');
+		});
+
+		it('should handle non-existent classes gracefully', () => {
+			const div = document.createElement('div');
+			div.className = 'class1 class2';
+
+			dom.removeClassRecursive(div, 'non-existent');
+
+			expect(div.className).toBe('class1 class2');
+		});
+
+		it('should handle elements with no children', () => {
+			const leaf = document.createElement('span');
+			leaf.className = 'leaf-class target-class';
+
+			dom.removeClassRecursive(leaf, 'target-class');
+
+			expect(leaf.className).toBe('leaf-class');
+		});
+
+		it('should work with deeply nested structures', () => {
+			const root = document.createElement('section');
+			root.className = 'root target remove other';
+
+			// Create nested structure 5 levels deep
+			let current = root;
+			for (let i = 0; i < 5; i++) {
+				const child = document.createElement('section');
+				child.className = `level-${i} target remove other`;
+				current.appendChild(child);
+				current = child;
+			}
+
+			dom.removeClassRecursive(root, ['target', 'remove']);
+
+			// Verify root element
+			expect(root.className).toBe('root other');
+
+			// Verify all descendants have target and remove classes removed
+			let checkElement: HTMLElement = root;
+			for (let i = 0; i < 5; i++) {
+				const child = checkElement.firstElementChild as HTMLElement;
+				expect(child.className).not.toContain('target');
+				expect(child.className).not.toContain('remove');
+				expect(child.className).toContain('other');
+				checkElement = child;
+			}
+		});
+	});
 });

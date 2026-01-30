@@ -1,4 +1,5 @@
 import { defineProxy } from 'comctx';
+import { BrowserTabService } from '@/services/browser-tab-service.ts';
 import { FetchRemoteService } from '@/services/fetch-remote-service.ts';
 import { HighlightUnreadCommentsService } from '@/services/highlight-unread-comments-service.ts';
 import { ReadStoriesService } from '@/services/read-stories-service.ts';
@@ -17,6 +18,10 @@ const SERVICE_REGISTRY = {
 	FetchRemote: {
 		namespace: 'oj_fetch_remote',
 		class: FetchRemoteService,
+	},
+	BrowserTabService: {
+		namespace: 'oj_browser_tab_service',
+		class: BrowserTabService,
 	},
 } as const;
 

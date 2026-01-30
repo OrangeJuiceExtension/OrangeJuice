@@ -21,6 +21,10 @@ vi.mock('@/services/read-stories-service.ts', () => ({
 	ReadStoriesService: vi.fn(),
 }));
 
+vi.mock('@/services/browser-tab-service.ts', () => ({
+	BrowserTabService: vi.fn(),
+}));
+
 vi.mock('@/utils/browser-runtime.ts', () => ({
 	InjectAdapter: vi.fn(),
 	ProvideAdapter: vi.fn(),
@@ -45,10 +49,11 @@ describe('createServicesManager', () => {
 		const { createServicesManager } = await import('./manager.ts');
 		const manager = createServicesManager();
 
-		expect(manager.started.size).toBe(3);
+		expect(manager.started.size).toBe(4);
 		expect(manager.started.has('oj_highlight_unread')).toBe(true);
 		expect(manager.started.has('oj_read_stories')).toBe(true);
 		expect(manager.started.has('oj_fetch_remote')).toBe(true);
+		expect(manager.started.has('oj_browser_tab_service')).toBe(true);
 	});
 
 	it('should create getter methods for each service', async () => {
@@ -58,6 +63,7 @@ describe('createServicesManager', () => {
 		expect(typeof manager.getHighlightService).toBe('function');
 		expect(typeof manager.getReadStoriesService).toBe('function');
 		expect(typeof manager.getFetchRemoteService).toBe('function');
+		expect(typeof manager.getBrowserTabServiceService).toBe('function');
 	});
 
 	it('should return correct service instances from getter methods', async () => {
@@ -67,10 +73,12 @@ describe('createServicesManager', () => {
 		const highlightService = manager.getHighlightService();
 		const readStoriesService = manager.getReadStoriesService();
 		const fetchRemoteService = manager.getFetchRemoteService();
+		const browserTabService = manager.getBrowserTabServiceService();
 
 		expect(highlightService).toBe(manager.started.get('oj_highlight_unread'));
 		expect(readStoriesService).toBe(manager.started.get('oj_read_stories'));
 		expect(fetchRemoteService).toBe(manager.started.get('oj_fetch_remote'));
+		expect(browserTabService).toBe(manager.started.get('oj_browser_tab_service'));
 	});
 
 	it('should return the same instance on subsequent calls (singleton pattern)', async () => {
@@ -104,8 +112,8 @@ describe('createServicesManager', () => {
 
 		createServicesManager();
 
-		// Should be called 3 times (once for each service)
-		expect(defineProxy).toHaveBeenCalledTimes(3);
+		// Should be called 4 times (once for each service)
+		expect(defineProxy).toHaveBeenCalledTimes(4);
 		expect(defineProxy).toHaveBeenCalledWith(expect.any(Function), {
 			namespace: 'oj_highlight_unread',
 		});
@@ -114,6 +122,9 @@ describe('createServicesManager', () => {
 		});
 		expect(defineProxy).toHaveBeenCalledWith(expect.any(Function), {
 			namespace: 'oj_fetch_remote',
+		});
+		expect(defineProxy).toHaveBeenCalledWith(expect.any(Function), {
+			namespace: 'oj_browser_tab_service',
 		});
 	});
 
@@ -138,7 +149,8 @@ describe('createServicesManager', () => {
 		expect(keys).toContain('oj_highlight_unread');
 		expect(keys).toContain('oj_read_stories');
 		expect(keys).toContain('oj_fetch_remote');
-		expect(keys.length).toBe(3);
+		expect(keys).toContain('oj_browser_tab_service');
+		expect(keys.length).toBe(4);
 	});
 
 	it('should have all services defined and not undefined', async () => {
@@ -148,9 +160,11 @@ describe('createServicesManager', () => {
 		const highlightService = manager.getHighlightService();
 		const readStoriesService = manager.getReadStoriesService();
 		const fetchRemoteService = manager.getFetchRemoteService();
+		const browserTabService = manager.getBrowserTabServiceService();
 
 		expect(highlightService).toBeDefined();
 		expect(readStoriesService).toBeDefined();
 		expect(fetchRemoteService).toBeDefined();
+		expect(browserTabService).toBeDefined();
 	});
 });

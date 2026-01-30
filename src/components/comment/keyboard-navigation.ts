@@ -1,17 +1,20 @@
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { dom } from '@/utils/dom.ts';
+import { ItemData } from '@/utils/dom-item-data.ts';
 import { itemKeyboardHandlers } from '@/utils/item-keyboard-handlers.ts';
 
+// TODO: persist the state of where we are for each comment in each story so that when you reload the page, the
+// comment comes back as selected.
 export const keyboardNavigation = (
 	doc: Document,
-	_comments: HTMLElement[],
+	comments: HTMLElement[],
 	ctx: ContentScriptContext
 ): void => {
 	const style = doc.createElement('style');
 	style.textContent = `
-		.oj_focused_item {
+		.oj_focused_item .default {
 			outline: 3px solid #f7694c73;
-			padding: 20px;
+			padding: 5px;
 			background-color: white;
 		}
 		
@@ -21,51 +24,93 @@ export const keyboardNavigation = (
 	`;
 	doc.head.appendChild(style);
 
-	const itemData: ItemData = {
-		index: 0,
-		activeItem: undefined,
-		commentList: false,
-		items: [
-			...(document.querySelectorAll(
-				'tr.comtr:not(.noshow) td.default'
-			) as NodeListOf<HTMLElement>),
-		],
-	};
+	const itemData: ItemData = new ItemData(dom.getAllCommentsById(comments));
 
-	// for (const comment of comments) {
-	// }
-	const keydownHandler = (e: KeyboardEvent): void => {
+	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: it is just complex
+	const keydownHandler = (e: KeyboardEvent) => {
 		const combo = dom.isComboKey(e);
 
 		switch (e.key) {
-			// J: Go down
+			// j: Go down
+			case 'J':
 			case 'j':
-				if (combo && !e.shiftKey) {
-					return;
-				}
-
-				itemKeyboardHandlers.down(itemData, e);
-				return;
-
-			// K: Go up
+				itemKeyboardHandlers.move(e, itemData, 'down');
+				break;
+			// k: Go up
+			case 'K':
 			case 'k':
-				if (combo && !e.shiftKey) {
-					return;
-				}
-
-				itemKeyboardHandlers.up(itemData, e);
-				return;
-
+				itemKeyboardHandlers.move(e, itemData, 'up');
+				break;
 			// Escape
 			case 'Escape':
 			case 'escape':
-				if (combo) {
-					return;
+				if (!combo) {
+					// special case when reply is open
+					if (itemData.reply) {
+						itemData.reply.click();
+						itemData.reply = undefined;
+					} else {
+						itemKeyboardHandlers.escape(itemData);
+					}
 				}
-
-				itemKeyboardHandlers.escape(itemData);
-				return;
-
+				break;
+			// reply toggle
+			case 'r':
+				if (!combo && itemData.activeItem) {
+					// store off reply so that it can be used in escape. if the reply box
+					// is open, we only want to close it on escape, not unfocus the comment
+					itemData.reply = itemKeyboardHandlers.reply(itemData);
+				}
+				break;
+			// favorite toggle
+			case 'f':
+				if (!combo && itemData.activeItem) {
+					itemKeyboardHandlers.favorite(itemData);
+				}
+				break;
+			case 'n':
+				if (!combo && itemData.activeItem) {
+					itemKeyboardHandlers.next(itemData);
+				}
+				break;
+			case 'p':
+				if (!combo && itemData.activeItem) {
+					itemKeyboardHandlers.previous(itemData);
+				}
+				break;
+			case 'u':
+				if (!combo && itemData.activeItem) {
+					itemKeyboardHandlers.upvote(itemData);
+				}
+				break;
+			case 'd':
+				if (!combo && itemData.activeItem) {
+					itemKeyboardHandlers.downvote(itemData);
+				}
+				break;
+			case 'c':
+				if (!combo && itemData.activeItem) {
+					itemKeyboardHandlers.collapseToggle(itemData.activeItem);
+				}
+				break;
+			case 't':
+				document.body.scrollTo(0, 0);
+				break;
+			// parse reference links
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				if (itemData.activeItem) {
+					return itemKeyboardHandlers.openReferenceLink(e, itemData.activeItem);
+				}
+				break;
 			default:
 				break;
 		}
@@ -73,7 +118,21 @@ export const keyboardNavigation = (
 
 	window.addEventListener('keydown', keydownHandler);
 
+	const itemClickHandler = (e: PointerEvent) => {
+		if (e.target instanceof HTMLElement) {
+			itemKeyboardHandlers.activate(itemData, e.target);
+		}
+	};
+
+	for (const comment of comments) {
+		comment.addEventListener('click', itemClickHandler);
+	}
+
 	ctx.onInvalidated(() => {
 		window.removeEventListener('keydown', keydownHandler);
+		for (const comment of comments) {
+			comment.removeEventListener('click', itemClickHandler);
+		}
+		document.removeEventListener('click', itemClickHandler);
 	});
 };

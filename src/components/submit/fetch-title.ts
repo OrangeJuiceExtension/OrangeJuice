@@ -25,7 +25,7 @@ export const fetchTitle = (doc: Document, ctx: ContentScriptContext) => {
 
 	const fetchTitleBtn = doc.createElement('button');
 	fetchTitleBtn.style.paddingLeft = '10px';
-	fetchTitleBtn.classList.add('oj-link-button');
+	fetchTitleBtn.classList.add('oj_link_button');
 	fetchTitleBtn.innerText = 'fetch title';
 
 	const fetchTitleHandler = async (e: Event) => {
