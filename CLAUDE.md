@@ -9,6 +9,7 @@ Always carefully follow these directions:
 * bun run test instead of bun test.
 * If there is redundant up/down code duplication, make it more optimized.
 * On occasion when reviewing a lot of code, talk briefly about patterns that don't make sense to you or are not consistent across the codebase.
+* Make sure we don't impact the user's browser experience, especially performance.
 * Use a Go-style table-driven approach to reduce redundancy in tests.
 * Prefer for...of instead of forEach
 * Clean up any resources that might leak when the context is invalidated

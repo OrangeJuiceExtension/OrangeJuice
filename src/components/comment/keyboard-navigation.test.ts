@@ -228,6 +228,30 @@ describe('keyboardNavigation', () => {
 		});
 	});
 
+	describe('handlers requiring active item', () => {
+		const requiresActiveItemTests = [
+			{ key: 'r', handler: 'reply' },
+			{ key: 'f', handler: 'favorite' },
+			{ key: 'n', handler: 'next' },
+			{ key: 'p', handler: 'previous' },
+			{ key: 'u', handler: 'upvote' },
+			{ key: 'd', handler: 'downvote' },
+			{ key: 'c', handler: 'collapseToggle' },
+			{ key: '0', handler: 'openReferenceLink' },
+		];
+
+		for (const { key, handler } of requiresActiveItemTests) {
+			it(`${key} should not trigger without active item`, () => {
+				keyboardNavigation(doc, comments, ctx);
+				dispatchKeydown(key);
+
+				expect(
+					itemKeyboardHandlers[handler as keyof typeof itemKeyboardHandlers]
+				).not.toHaveBeenCalled();
+			});
+		}
+	});
+
 	describe('combo key handling', () => {
 		const comboKeyTests = [
 			{ key: 'r', handler: 'reply' },
