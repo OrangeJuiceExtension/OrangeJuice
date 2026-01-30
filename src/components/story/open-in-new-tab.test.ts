@@ -1,0 +1,241 @@
+/** biome-ignore-all lint/suspicious/noEmptyBlockStatements: mocks */
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createServicesManager } from '@/services/manager.ts';
+import { openInNewTab } from './open-in-new-tab.ts';
+
+const storiesWithBigboxHtml = readFileSync(
+	join(__dirname, '__fixtures__', 'stories-with-bigbox.html'),
+	'utf-8'
+);
+
+vi.mock('@/services/manager.ts', () => ({
+	createServicesManager: vi.fn(() => ({
+		getBrowserTabService: vi.fn(() => ({
+			createTab: vi.fn(),
+		})),
+	})),
+}));
+
+describe('open-in-new-tab', () => {
+	let mockCreateTab: ReturnType<typeof vi.fn>;
+	let mockCtx: {
+		onInvalidated: ReturnType<typeof vi.fn>;
+	};
+
+	beforeEach(() => {
+		document.body.innerHTML = '';
+		vi.clearAllMocks();
+
+		mockCreateTab = vi.fn();
+		mockCtx = {
+			onInvalidated: vi.fn(),
+		};
+
+		vi.mocked(createServicesManager).mockReturnValue({
+			getBrowserTabService: () => ({
+				createTab: mockCreateTab,
+			}),
+		} as any);
+	});
+
+	afterEach(() => {
+		document.body.innerHTML = '';
+	});
+
+	describe('story title links', () => {
+		it('should open title link in new tab when clicked', () => {
+			const div = document.createElement('div');
+			div.innerHTML = storiesWithBigboxHtml;
+			document.body.appendChild(div);
+
+			openInNewTab(mockCtx as any, document);
+
+			const titleLink = div.querySelector('.titleline a') as HTMLAnchorElement;
+			expect(titleLink).not.toBeNull();
+
+			titleLink.click();
+
+			expect(mockCreateTab).toHaveBeenCalledWith({
+				url: 'https://example.com/visited-story',
+				active: false,
+			});
+		});
+
+		it('should handle multiple title links', () => {
+			const div = document.createElement('div');
+			div.innerHTML = storiesWithBigboxHtml;
+			document.body.appendChild(div);
+
+			openInNewTab(mockCtx as any, document);
+
+			// Get only the actual story title links (first link in each .titleline, not the site domain links)
+			const titleLinks = Array.from(div.querySelectorAll('.titleline')).map(
+				(titleline) => titleline.querySelector('a:first-child')
+			);
+			expect(titleLinks.length).toBeGreaterThan(1);
+
+			(titleLinks[0] as HTMLAnchorElement).click();
+			(titleLinks[1] as HTMLAnchorElement).click();
+
+			expect(mockCreateTab).toHaveBeenCalledTimes(2);
+			expect(mockCreateTab).toHaveBeenNthCalledWith(1, {
+				url: 'https://example.com/visited-story',
+				active: false,
+			});
+			expect(mockCreateTab).toHaveBeenNthCalledWith(2, {
+				url: 'https://example.com/unvisited-story',
+				active: false,
+			});
+		});
+
+		it('should prevent default navigation for title links', () => {
+			const div = document.createElement('div');
+			div.innerHTML = storiesWithBigboxHtml;
+			document.body.appendChild(div);
+
+			openInNewTab(mockCtx as any, document);
+
+			const titleLink = div.querySelector('.titleline a') as HTMLAnchorElement;
+			const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+			const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+
+			titleLink.dispatchEvent(event);
+
+			expect(preventDefaultSpy).toHaveBeenCalled();
+		});
+	});
+
+	describe('other links', () => {
+		it('should not intercept comment links', () => {
+			const div = document.createElement('div');
+			div.innerHTML = storiesWithBigboxHtml;
+			document.body.appendChild(div);
+
+			openInNewTab(mockCtx as any, document);
+
+			const commentLink = Array.from(div.querySelectorAll('.subtext a')).find((link) =>
+				link.textContent?.includes('comments')
+			) as HTMLAnchorElement;
+			expect(commentLink).not.toBeNull();
+
+			const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+			const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+
+			commentLink.dispatchEvent(event);
+
+			expect(preventDefaultSpy).not.toHaveBeenCalled();
+			expect(mockCreateTab).not.toHaveBeenCalled();
+		});
+
+		it('should not intercept user links', () => {
+			const div = document.createElement('div');
+			div.innerHTML = storiesWithBigboxHtml;
+			document.body.appendChild(div);
+
+			openInNewTab(mockCtx as any, document);
+
+			// Click on a user link
+			const userLink = div.querySelector('a.hnuser') as HTMLAnchorElement;
+			expect(userLink).not.toBeNull();
+
+			const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+			const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+
+			userLink.dispatchEvent(event);
+
+			expect(preventDefaultSpy).not.toHaveBeenCalled();
+			expect(mockCreateTab).not.toHaveBeenCalled();
+		});
+
+		it('should not intercept hide links', () => {
+			const div = document.createElement('div');
+			div.innerHTML = storiesWithBigboxHtml;
+			document.body.appendChild(div);
+
+			openInNewTab(mockCtx as any, document);
+
+			const hideLink = Array.from(div.querySelectorAll('.subtext a')).find(
+				(link) => link.textContent === 'hide'
+			) as HTMLAnchorElement;
+			expect(hideLink).not.toBeNull();
+
+			const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+			const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+
+			hideLink.dispatchEvent(event);
+
+			expect(preventDefaultSpy).not.toHaveBeenCalled();
+			expect(mockCreateTab).not.toHaveBeenCalled();
+		});
+
+		it('should handle clicks on non-anchor elements', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '<div>Not a link</div>';
+			document.body.appendChild(div);
+
+			openInNewTab(mockCtx as any, document);
+
+			div.click();
+
+			expect(mockCreateTab).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('event cleanup', () => {
+		it('should register cleanup callback', () => {
+			openInNewTab(mockCtx as any, document);
+
+			expect(mockCtx.onInvalidated).toHaveBeenCalledWith(expect.any(Function));
+		});
+
+		it('should remove event listener on invalidation', () => {
+			const div = document.createElement('div');
+			div.innerHTML = storiesWithBigboxHtml;
+			document.body.appendChild(div);
+
+			openInNewTab(mockCtx as any, document);
+
+			// Get the cleanup function
+			const cleanupFn = mockCtx.onInvalidated.mock.calls[0][0];
+
+			// Call cleanup
+			cleanupFn();
+
+			// Try to click after cleanup
+			const titleLink = div.querySelector('.titleline a') as HTMLAnchorElement;
+			titleLink.click();
+
+			// Should not be called because listener was removed
+			expect(mockCreateTab).not.toHaveBeenCalled();
+		});
+	});
+
+	describe('edge cases', () => {
+		it('should handle missing href attribute', () => {
+			const div = document.createElement('div');
+			div.innerHTML = '<span class="titleline"><a>No href</a></span>';
+			document.body.appendChild(div);
+
+			openInNewTab(mockCtx as any, document);
+
+			const link = div.querySelector('a') as HTMLAnchorElement;
+			link.click();
+
+			// Should still call createTab but with empty/undefined href
+			expect(mockCreateTab).toHaveBeenCalledWith({
+				url: '',
+				active: false,
+			});
+		});
+
+		it('should handle empty document', () => {
+			document.body.innerHTML = '';
+
+			expect(() => {
+				openInNewTab(mockCtx as any, document);
+			}).not.toThrow();
+		});
+	});
+});

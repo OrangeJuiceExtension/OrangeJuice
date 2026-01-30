@@ -11,7 +11,7 @@ import {
 	hideStories,
 	type StorageState,
 	setupCheckbox,
-	showStories,
+	showStories, hideReadStories,
 } from './hide-read-stories.ts';
 
 const STORY_LIST_HTML_REGEX = /class="itemlist"/;
@@ -334,9 +334,12 @@ describe('hide_read_stories', () => {
 	});
 
 	describe('path filtering', () => {
-		it('should skip pages with kind=comments in search params', async () => {
+		it('should skip pages with kind=comment in search params', async () => {
 			Object.defineProperty(window, 'location', {
-				value: { pathname: '/flagged', search: '?id=testuser&kind=comments' },
+				value: {
+					pathname: '/flagged',
+					search: '?id=testuser&kind=comment',
+				},
 				writable: true,
 				configurable: true,
 			});
@@ -351,26 +354,52 @@ describe('hide_read_stories', () => {
 				return;
 			}
 
-			// Since the condition checks pathname.includes('kind=comments'),
-			// we need to set pathname to include the query string
-			Object.defineProperty(window.location, 'pathname', {
-				value: '/flagged?id=testuser&kind=comments',
-				writable: true,
-				configurable: true,
-			});
+			const mockCtx = {
+				onInvalidated: vi.fn(),
+			};
 
-			const result = await setupCheckbox(bigbox, document);
+			await hideReadStories(mockCtx as any, document);
 
-			// The function should still create checkbox, but hideReadStories would skip
-			// Let's just verify setupCheckbox works (it doesn't check the condition)
-			expect(result).not.toBeNull();
+			// hideReadStories should exit early and not create checkbox
+			const checkbox = document.getElementById('oj-hide-read-stories');
+			expect(checkbox).toBeNull();
 
 			document.body.removeChild(div);
 		});
 
-		it('should work on allowed paths without kind=comments', async () => {
+		it('should skip pages not in allowed paths', async () => {
 			Object.defineProperty(window, 'location', {
-				value: { pathname: '/flagged' },
+				value: {
+					pathname: '/item',
+					search: '?id=12345',
+				},
+				writable: true,
+				configurable: true,
+			});
+
+			const div = document.createElement('div');
+			div.innerHTML = storiesWithBigboxHtml;
+			document.body.appendChild(div);
+
+			const mockCtx = {
+				onInvalidated: vi.fn(),
+			};
+
+			await hideReadStories(mockCtx as any, document);
+
+			// hideReadStories should exit early due to pathname not in allowedPaths
+			const checkbox = document.getElementById('oj-hide-read-stories');
+			expect(checkbox).toBeNull();
+
+			document.body.removeChild(div);
+		});
+
+		it('should work on allowed paths without kind=comment', async () => {
+			Object.defineProperty(window, 'location', {
+				value: {
+					pathname: '/flagged',
+					search: '',
+				},
 				writable: true,
 				configurable: true,
 			});

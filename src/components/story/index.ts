@@ -1,13 +1,17 @@
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { hideReadStories } from '@/components/story/hide-read-stories.ts';
+import { openInNewTab } from '@/components/story/open-in-new-tab.ts';
 import { paths } from '@/utils/paths.ts';
 
-export const hideReadStoriesContent: ComponentFeature = {
-	id: 'hide_read_stories',
-	loginRequired: true,
+export const story: ComponentFeature = {
+	id: 'story',
+	loginRequired: false,
 	matches: [`${paths.base}/*`],
 	runAt: 'document_end',
-	async main(ctx: ContentScriptContext) {
-		await hideReadStories(ctx, document);
+	main(ctx: ContentScriptContext) {
+		return Promise.all([
+			Promise.resolve().then(() => openInNewTab(ctx, document)),
+			hideReadStories(ctx, document),
+		]);
 	},
 };

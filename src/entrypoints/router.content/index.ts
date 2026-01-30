@@ -7,7 +7,7 @@ import { navbar } from '@/components/navbar/index.ts';
 import { past } from '@/components/past/index.ts';
 import { remaining } from '@/components/remaining/index.ts';
 import { inlineReply } from '@/components/reply/index.ts';
-import { hideReadStoriesContent } from '@/components/story/index.ts';
+import { story } from '@/components/story/index.ts';
 import { submit } from '@/components/submit/index.ts';
 import { user } from '@/components/user/index.ts';
 import './global.css';
@@ -17,7 +17,7 @@ const components = [
 	favorite,
 	flag,
 	remaining,
-	hideReadStoriesContent,
+	story,
 	comments,
 	submit,
 	user,
