@@ -51,7 +51,7 @@ export const showUserInfoOnHover = (
 	let popover: HTMLDivElement | null = null;
 
 	const populateUserDiv = async (user: HTMLAnchorElement, userDivBox: HTMLDivElement) => {
-		const userName = user.innerText.trim();
+		const userName = user.innerText.trim().split(' ')[0];
 		if (cachedData.has(userName)) {
 			userDivBox.innerHTML = cachedData.get(userName)?.innerHTML || '';
 			return;
