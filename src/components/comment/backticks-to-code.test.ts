@@ -18,7 +18,7 @@ describe('backticksToCode', () => {
 			</div>
 		`;
 
-		const comments = document.querySelectorAll('.comment');
+		const comments = document.querySelectorAll('.comment') as NodeListOf<HTMLElement>;
 		backticksToCode(document, Array.from(comments));
 
 		const commentSpan = document.querySelector('.commtext');
@@ -32,7 +32,7 @@ describe('backticksToCode', () => {
 			</div>
 		`;
 
-		const comments = document.querySelectorAll('.comment');
+		const comments = document.querySelectorAll('.comment') as NodeListOf<HTMLElement>;
 		backticksToCode(document, Array.from(comments));
 
 		const commentSpan = document.querySelector('.commtext');
@@ -51,7 +51,7 @@ describe('backticksToCode', () => {
 			</div>
 		`;
 
-		const comments = document.querySelectorAll('.comment');
+		const comments = document.querySelectorAll('.comment') as NodeListOf<HTMLElement>;
 		backticksToCode(document, Array.from(comments));
 
 		const commentSpan = document.querySelector('.commtext');
@@ -70,7 +70,7 @@ describe('backticksToCode', () => {
 			</div>
 		`;
 
-		const comments = document.querySelectorAll('.comment');
+		const comments = document.querySelectorAll('.comment') as NodeListOf<HTMLElement>;
 		backticksToCode(document, Array.from(comments));
 
 		const commentSpans = document.querySelectorAll('.commtext');
@@ -85,7 +85,7 @@ describe('backticksToCode', () => {
 			</div>
 		`;
 
-		const comments = document.querySelectorAll('.comment');
+		const comments = document.querySelectorAll('.comment') as NodeListOf<HTMLElement>;
 		expect(() => backticksToCode(document, Array.from(comments))).not.toThrow();
 	});
 
@@ -96,7 +96,7 @@ describe('backticksToCode', () => {
 			</div>
 		`;
 
-		const comments = document.querySelectorAll('.comment');
+		const comments = document.querySelectorAll('.comment') as NodeListOf<HTMLElement>;
 		backticksToCode(document, Array.from(comments));
 
 		const commentSpan = document.querySelector('.commtext');
@@ -110,7 +110,7 @@ describe('backticksToCode', () => {
 			</div>
 		`;
 
-		const comments = document.querySelectorAll('.comment');
+		const comments = document.querySelectorAll('.comment') as NodeListOf<HTMLElement>;
 		backticksToCode(document, Array.from(comments));
 
 		const commentSpan = document.querySelector('.commtext');
@@ -130,7 +130,7 @@ describe('backticksToCode', () => {
 			</div>
 		`;
 
-		const comments = document.querySelectorAll('.comment');
+		const comments = document.querySelectorAll('.comment') as NodeListOf<HTMLElement>;
 		backticksToCode(document, Array.from(comments));
 
 		const commentSpan = document.querySelector('.commtext');
@@ -144,7 +144,7 @@ describe('backticksToCode', () => {
 			</div>
 		`;
 
-		const comments = document.querySelectorAll('.comment');
+		const comments = document.querySelectorAll('.comment') as NodeListOf<HTMLElement>;
 		backticksToCode(document, Array.from(comments));
 
 		const commentSpan = document.querySelector('.commtext');
@@ -158,7 +158,7 @@ describe('backticksToCode', () => {
 			</div>
 		`;
 
-		const comments = document.querySelectorAll('.comment');
+		const comments = document.querySelectorAll('.comment') as NodeListOf<HTMLElement>;
 		backticksToCode(document, Array.from(comments));
 
 		const commentSpan = document.querySelector('.commtext');
@@ -172,7 +172,7 @@ describe('backticksToCode', () => {
 			</div>
 		`;
 
-		const comments = document.querySelectorAll('.comment');
+		const comments = document.querySelectorAll('.comment') as NodeListOf<HTMLElement>;
 		backticksToCode(document, Array.from(comments));
 
 		const commentSpan = document.querySelector('.commtext');
@@ -186,7 +186,7 @@ describe('backticksToCode', () => {
 			</div>
 		`;
 
-		const comments = document.querySelectorAll('.comment');
+		const comments = document.querySelectorAll('.comment') as NodeListOf<HTMLElement>;
 		backticksToCode(document, Array.from(comments));
 
 		const commentSpan = document.querySelector('.commtext');

@@ -4,7 +4,7 @@ import { changeDeadCommentsColor } from './change-dead-comments-color.ts';
 describe('change-dead-comments-color', () => {
 	it('should add style element to document head', () => {
 		const doc = document.implementation.createHTMLDocument();
-		const comments: Element[] = [];
+		const comments: HTMLElement[] = [];
 
 		changeDeadCommentsColor(doc, comments);
 
