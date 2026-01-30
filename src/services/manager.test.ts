@@ -63,7 +63,7 @@ describe('createServicesManager', () => {
 		expect(typeof manager.getHighlightService).toBe('function');
 		expect(typeof manager.getReadStoriesService).toBe('function');
 		expect(typeof manager.getFetchRemoteService).toBe('function');
-		expect(typeof manager.getBrowserTabServiceService).toBe('function');
+		expect(typeof manager.getBrowserTabService).toBe('function');
 	});
 
 	it('should return correct service instances from getter methods', async () => {
@@ -73,7 +73,7 @@ describe('createServicesManager', () => {
 		const highlightService = manager.getHighlightService();
 		const readStoriesService = manager.getReadStoriesService();
 		const fetchRemoteService = manager.getFetchRemoteService();
-		const browserTabService = manager.getBrowserTabServiceService();
+		const browserTabService = manager.getBrowserTabService();
 
 		expect(highlightService).toBe(manager.started.get('oj_highlight_unread'));
 		expect(readStoriesService).toBe(manager.started.get('oj_read_stories'));
@@ -160,7 +160,7 @@ describe('createServicesManager', () => {
 		const highlightService = manager.getHighlightService();
 		const readStoriesService = manager.getReadStoriesService();
 		const fetchRemoteService = manager.getFetchRemoteService();
-		const browserTabService = manager.getBrowserTabServiceService();
+		const browserTabService = manager.getBrowserTabService();
 
 		expect(highlightService).toBeDefined();
 		expect(readStoriesService).toBeDefined();

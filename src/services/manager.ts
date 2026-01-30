@@ -19,7 +19,7 @@ const SERVICE_REGISTRY = {
 		namespace: 'oj_fetch_remote',
 		class: FetchRemoteService,
 	},
-	BrowserTabService: {
+	BrowserTab: {
 		namespace: 'oj_browser_tab_service',
 		class: BrowserTabService,
 	},

@@ -114,7 +114,7 @@ export const itemKeyboardHandlers = {
 		}
 
 		return createServicesManager()
-			.getBrowserTabServiceService()
+			.getBrowserTabService()
 			.createTab({ url: link.href, active: isComboKey(event) });
 	},
 
