@@ -50,6 +50,7 @@ describe('keyboardNavigation', () => {
 		vi.spyOn(itemKeyboardHandlers, 'escape');
 		vi.spyOn(itemKeyboardHandlers, 'reply');
 		vi.spyOn(itemKeyboardHandlers, 'favorite');
+		vi.spyOn(itemKeyboardHandlers, 'flag');
 		vi.spyOn(itemKeyboardHandlers, 'next');
 		vi.spyOn(itemKeyboardHandlers, 'previous');
 		vi.spyOn(itemKeyboardHandlers, 'upvote');
@@ -133,22 +134,31 @@ describe('keyboardNavigation', () => {
 				key: 'f',
 				handler: 'favorite',
 			},
+			{
+				name: 'X should call flag',
+				key: 'X',
+				handler: 'flag',
+			},
 		];
 
-		for (const { name, key, handler } of keyHandlerTests) {
-			it(name, () => {
-				keyboardNavigation(doc, comments, ctx);
-				const comment = comments[0];
-				if (comment) {
-					comment.click();
-				}
-				dispatchKeydown(key);
+		describe('handlers should be called', () => {
+			for (const { name, key, handler } of keyHandlerTests) {
+				it(name, () => {
+					keyboardNavigation(doc, comments, ctx);
+					const comment = comments[0];
+					if (comment) {
+						comment.click();
+					}
+					// Hold shift for uppercase keys to match real keyboard behavior
+					const isUppercase = key === key.toUpperCase() && key !== key.toLowerCase();
+					dispatchKeydown(key, isUppercase ? { shiftKey: true } : {});
 
-				expect(
-					itemKeyboardHandlers[handler as keyof typeof itemKeyboardHandlers]
-				).toHaveBeenCalled();
-			});
-		}
+					expect(
+						itemKeyboardHandlers[handler as keyof typeof itemKeyboardHandlers]
+					).toHaveBeenCalled();
+				});
+			}
+		});
 
 		it('Escape should call escape handler', () => {
 			keyboardNavigation(doc, comments, ctx);
@@ -238,6 +248,7 @@ describe('keyboardNavigation', () => {
 		const requiresActiveItemTests = [
 			{ key: 'r', handler: 'reply' },
 			{ key: 'f', handler: 'favorite' },
+			{ key: 'x', handler: 'flag' },
 			{ key: 'n', handler: 'next' },
 			{ key: 'p', handler: 'previous' },
 			{ key: 'u', handler: 'upvote' },
@@ -262,6 +273,7 @@ describe('keyboardNavigation', () => {
 		const comboKeyTests = [
 			{ key: 'r', handler: 'reply' },
 			{ key: 'f', handler: 'favorite' },
+			{ key: 'x', handler: 'flag' },
 			{ key: 'n', handler: 'next' },
 			{ key: 'p', handler: 'previous' },
 			{ key: 'u', handler: 'upvote' },
@@ -502,7 +514,7 @@ describe('keyboardNavigation', () => {
 			}
 			comment.click();
 
-			// Clear the spy to only count subsequent calls
+			// Clear the spy to only count later calls
 			vi.mocked(itemKeyboardHandlers.escape).mockClear();
 
 			// Click outside the comments area
@@ -531,7 +543,7 @@ describe('keyboardNavigation', () => {
 			}
 			comment.click();
 
-			// Clear the spy to only count subsequent calls
+			// Clear the spy to only count later calls
 			vi.mocked(itemKeyboardHandlers.escape).mockClear();
 
 			// Click inside a comment
@@ -560,7 +572,7 @@ describe('keyboardNavigation', () => {
 			}
 			comment.click();
 
-			// Clear the spy to only count subsequent calls
+			// Clear the spy to only count later calls
 			vi.mocked(itemKeyboardHandlers.escape).mockClear();
 
 			// Click on a textarea
@@ -589,7 +601,7 @@ describe('keyboardNavigation', () => {
 			}
 			comment.click();
 
-			// Clear the spy to only count subsequent calls
+			// Clear the spy to only count later calls
 			vi.mocked(itemKeyboardHandlers.escape).mockClear();
 
 			// Click on an input

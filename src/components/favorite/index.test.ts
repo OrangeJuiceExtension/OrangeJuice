@@ -2,11 +2,12 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { initSavedItems } from '@/components/common/saved-item-button';
+import { allowedPaths } from '@/components/favorite/index';
 import { dom } from '@/utils/dom';
 import { saved } from '@/utils/saved';
 import type { OJContext } from '@/utils/types';
 import { SavedItemType } from '@/utils/types';
-import { initFavorites } from './index';
 
 const fixtureHtml = readFileSync(
 	join(__dirname, '__fixtures__', 'hn-item-with-favorites.html'),
@@ -17,6 +18,16 @@ const frontpageFixtureHtml = readFileSync(
 	join(__dirname, '__fixtures__', 'hn-frontpage-with-favorites.html'),
 	'utf-8'
 );
+
+const initFavorites = (doc: Document, ojCtx: OJContext) => {
+	return initSavedItems(doc, ojCtx, allowedPaths, {
+		itemType: SavedItemType.FavoriteComments,
+		actionName: 'fave',
+		buttonClass: 'oj_favorite_link',
+		buttonLabels: { active: 'un-favorite', inactive: 'favorite' },
+		getStoredData: (ctx) => ctx.favorites,
+	});
+};
 
 describe('favorite', () => {
 	describe('initFavorites', () => {

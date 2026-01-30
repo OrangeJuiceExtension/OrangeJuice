@@ -135,6 +135,13 @@ export const itemKeyboardHandlers = {
 		}
 	},
 
+	flag(itemData: ItemData) {
+		const flag = itemData.activeItem?.querySelector('.oj_flag_link') as HTMLAnchorElement;
+		if (flag) {
+			flag.click();
+		}
+	},
+
 	collapseToggle(theItem: HTMLElement) {
 		let collapsed = false;
 		const el = [...theItem.querySelectorAll('a.togg.clicky')].find((a) => {

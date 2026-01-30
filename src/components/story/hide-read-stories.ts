@@ -127,7 +127,12 @@ const getVisitedStoryIds = async (
 };
 
 export const hideReadStories = async (ctx: ContentScriptContext, doc: Document) => {
-	if (!allowedPaths.includes(window.location.pathname)) {
+	if (
+		!(
+			allowedPaths.includes(window.location.pathname) &&
+			window.location.pathname.includes('kind=comments')
+		)
+	) {
 		return;
 	}
 

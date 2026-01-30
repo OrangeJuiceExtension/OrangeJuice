@@ -65,7 +65,11 @@ const getItemIdFromLocation = (): string | null => {
 	return url.searchParams.get('id');
 };
 
+let isInjectedButtonStyle = false;
 const injectLinkButtonStyle = (doc: Document) => {
+	if (isInjectedButtonStyle) {
+		return;
+	}
 	const style = doc.createElement('style');
 	style.textContent = `
 		.oj_link_button {
@@ -81,6 +85,7 @@ const injectLinkButtonStyle = (doc: Document) => {
 			text-decoration: underline;
 	}`;
 	doc.head.appendChild(style);
+	isInjectedButtonStyle = true;
 };
 
 export function isClickModified(event: MouseEvent) {

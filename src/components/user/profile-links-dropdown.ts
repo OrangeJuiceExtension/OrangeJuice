@@ -21,6 +21,14 @@ const getLinks = (user: string) => {
 			path: '/hidden',
 		},
 		{
+			title: 'flagged submissions',
+			path: `/flagged?id=${user}`,
+		},
+		{
+			title: 'flagged comments',
+			path: `/flagged?id=${user}&kind=comment`,
+		},
+		{
 			title: 'upvoted submissions',
 			path: `/upvoted?id=${user}`,
 		},

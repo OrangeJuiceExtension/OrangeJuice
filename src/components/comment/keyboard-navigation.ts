@@ -100,6 +100,12 @@ export const keyboardNavigation = (
 					itemKeyboardHandlers.favorite(itemData);
 				}
 				break;
+			// flag toggle
+			case 'X':
+				if (combo && itemData.activeItem) {
+					itemKeyboardHandlers.flag(itemData);
+				}
+				break;
 			case 'n':
 				if (!combo && itemData.activeItem) {
 					itemKeyboardHandlers.next(itemData);

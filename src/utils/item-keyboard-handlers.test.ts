@@ -257,6 +257,32 @@ describe('itemKeyboardHandlers', () => {
 		});
 	});
 
+	describe('flag', () => {
+		it('should click flag link when it exists', () => {
+			const itemData = createTestItemData(1);
+			const item = itemData.first();
+			if (!item) {
+				throw new Error('Expected item to exist');
+			}
+			const flagLink = document.createElement('a');
+			flagLink.classList.add('oj_flag_link');
+			item.appendChild(flagLink);
+			itemData.activeItem = item;
+			const clickSpy = vi.spyOn(flagLink, 'click');
+
+			itemKeyboardHandlers.flag(itemData);
+
+			expect(clickSpy).toHaveBeenCalled();
+		});
+
+		it('should not throw when no flag link exists', () => {
+			const itemData = createTestItemData(1);
+			itemData.activeItem = itemData.first();
+
+			expect(() => itemKeyboardHandlers.flag(itemData)).not.toThrow();
+		});
+	});
+
 	describe('collapseToggle', () => {
 		const testCases = [
 			{

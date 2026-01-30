@@ -27,7 +27,7 @@ const paths = {
 
 	forms: ['/reply', '/submit', '/newpoll', '/edit', '/delete-confirm', '/submitlink'],
 
-	misc: ['/leaders', '/user', '/topcolors', '/lists'],
+	misc: ['/leaders', '/user', '/topcolors', '/lists', '/flagged'],
 
 	actions: [
 		'/login',
