@@ -253,7 +253,7 @@ const syncSaved = async (username: string): Promise<StoredData> => {
 		lastSync: now,
 	};
 
-	saveToStorage(savedItems);
+	await saveToStorage(savedItems);
 	return savedItems;
 };
 
@@ -270,7 +270,7 @@ const addToStorage = async (
 	if (!storedData.items.has(itemId)) {
 		const newItem: SavedItem = { id: itemId, auth, type };
 		storedData.items.set(itemId, newItem);
-		saveToStorage(storedData);
+		await saveToStorage(storedData);
 		return newItem;
 	}
 };
@@ -281,7 +281,7 @@ const addToStorage = async (
 const removeFromStorage = async (itemId: string): Promise<void> => {
 	const saved = await loadSavedFromStorage();
 	saved.items.delete(itemId);
-	saveToStorage(saved);
+	return saveToStorage(saved);
 };
 
 /**
@@ -303,7 +303,7 @@ const updateItem = async (
 	const item = saved.items.get(itemId);
 	if (item) {
 		saved.items.set(itemId, { ...item, ...updates });
-		saveToStorage(saved);
+		await saveToStorage(saved);
 	}
 };
 
