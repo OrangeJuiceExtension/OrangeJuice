@@ -6,7 +6,7 @@ export const collapseRoot = (
 	comments: HTMLElement[],
 	ctx: ContentScriptContext
 ): void => {
-	let currentRootComment: HTMLElement;
+	let currentRootComment: HTMLElement | undefined;
 
 	for (const comment of comments) {
 		const { width: indentLevel } = dom.getCommentIndentation(comment);
@@ -16,18 +16,21 @@ export const collapseRoot = (
 			continue;
 		}
 
-		// @ts-expect-error
-		const instCurrentRootComment = currentRootComment;
+		if (!currentRootComment) {
+			continue;
+		}
+
 		const toggle = doc.createElement('a');
 		toggle.innerText = '[collapse root]';
 		toggle.style.cursor = 'pointer';
 
+		const rootComment = currentRootComment;
 		const clickHandler = () => {
-			const togg = instCurrentRootComment.querySelector<HTMLAnchorElement>('a.togg');
+			const togg = rootComment.querySelector<HTMLAnchorElement>('a.togg');
 			if (togg) {
 				togg.click();
 			}
-			const { x, y } = dom.elementPosition(doc, instCurrentRootComment);
+			const { x, y } = dom.elementPosition(doc, rootComment);
 			window.scrollTo(x, y);
 		};
 		toggle.addEventListener('click', clickHandler);
