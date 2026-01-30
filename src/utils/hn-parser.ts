@@ -60,19 +60,21 @@ export const parseHNStoriesPage = (element: HTMLElement | Document): HNStory[] =
 		const position = parsePosition(storyRow);
 		const { title, url } = parseTitle(storyRow);
 
-		const subtext =
-			storyRow.nextElementSibling?.querySelector<HTMLTableCellElement>('td.subtext');
+		if (url) {
+			const subtext =
+				storyRow.nextElementSibling?.querySelector<HTMLTableCellElement>('td.subtext');
 
-		stories.push({
-			position,
-			id,
-			title,
-			url,
-			points: subtext ? parsePoints(subtext) : null,
-			author: subtext?.querySelector('a.hnuser')?.textContent || null,
-			postedDate: subtext?.querySelector('span.age')?.getAttribute('title') || null,
-			commentsCount: subtext ? parseComments(subtext) : null,
-		});
+			stories.push({
+				position,
+				id,
+				title,
+				url,
+				points: subtext ? parsePoints(subtext) : null,
+				author: subtext?.querySelector('a.hnuser')?.textContent || null,
+				postedDate: subtext?.querySelector('span.age')?.getAttribute('title') || null,
+				commentsCount: subtext ? parseComments(subtext) : null,
+			});
+		}
 	}
 
 	return stories;

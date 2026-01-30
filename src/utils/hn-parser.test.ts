@@ -237,5 +237,29 @@ describe('hn-parser', () => {
 
 			expect(stories).toEqual([]);
 		});
+
+		it('should skip rows with anchor elements that have no href', () => {
+			const div = document.createElement('div');
+			div.innerHTML = `
+			<table class="itemlist">
+				<tr class="athing" id="12345">
+					<td align="right" valign="top" class="title"><span class="rank">1.</span></td>
+					<td class="title"><span class="titleline"><a>Story Without Href</a></span></td>
+				</tr>
+				<tr>
+					<td colspan="2"></td>
+					<td class="subtext">
+						<span class="score">10 points</span> by <a href="user?id=testuser" class="hnuser">testuser</a>
+						<span class="age" title="2024-01-19T12:00:00"><a href="item?id=12345">1 hour ago</a></span>
+						| <a href="item?id=12345">5 comments</a>
+					</td>
+				</tr>
+			</table>
+		`;
+
+			const stories = parseHNStoriesPage(div);
+
+			expect(stories).toEqual([]);
+		});
 	});
 });
