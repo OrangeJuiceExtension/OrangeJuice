@@ -56,7 +56,7 @@ const getAllComments = (doc: Document): HTMLElement[] => {
 	return [...doc.querySelectorAll<HTMLElement>('tr.comtr')];
 };
 
-const getAllCommentsById = (comments: HTMLElement[]): Map<string, HTMLElement> => {
+const mapCommentsById = (comments: HTMLElement[]): Map<string, HTMLElement> => {
 	return new Map(comments.map((el) => [el.id, el]));
 };
 
@@ -152,7 +152,7 @@ export function getCommentIndentation(element: HTMLElement): {
 export const dom = {
 	injectLinkButtonStyle,
 	getAllComments,
-	getAllCommentsById,
+	mapCommentsById,
 	createHiddenInput,
 	getHiddenInputValue,
 	getReplyIdFromLink,

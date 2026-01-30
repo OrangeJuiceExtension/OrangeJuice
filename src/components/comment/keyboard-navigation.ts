@@ -24,7 +24,7 @@ export const keyboardNavigation = (
 	`;
 	doc.head.appendChild(style);
 
-	const itemData: ItemData = new ItemData(dom.getAllCommentsById(comments));
+	const itemData: ItemData = new ItemData(dom.mapCommentsById(comments));
 
 	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: it is just complex
 	const keydownHandler = (e: KeyboardEvent) => {
