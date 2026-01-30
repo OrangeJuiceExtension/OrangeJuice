@@ -26,11 +26,31 @@ export const keyboardNavigation = (
 	`;
 	doc.head.appendChild(style);
 
+	function prevent(doc: Document) {
+		if (doc.activeElement?.tagName === undefined) {
+			return true;
+		}
+
+		if (['TEXTAREA', 'INPUT'].includes(doc.activeElement.tagName)) {
+			return true;
+		}
+
+		if (doc.activeElement.tagName === 'A') {
+			(doc.activeElement as HTMLAnchorElement).blur();
+			return false;
+		}
+		return false;
+	}
+
 	const itemData: ItemData = new ItemData(dom.mapCommentsById(comments));
 	let helpModalOpen = false;
 
 	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: it is just complex
 	const keydownHandler = (e: KeyboardEvent) => {
+		if (prevent(doc)) {
+			return;
+		}
+
 		const combo = dom.isComboKey(e);
 
 		switch (e.key) {
@@ -136,6 +156,9 @@ export const keyboardNavigation = (
 
 	const itemClickHandler = (e: PointerEvent) => {
 		if (e.target instanceof HTMLElement) {
+			if (prevent(document)) {
+				return;
+			}
 			itemKeyboardHandlers.activate(itemData, e.target);
 		}
 	};

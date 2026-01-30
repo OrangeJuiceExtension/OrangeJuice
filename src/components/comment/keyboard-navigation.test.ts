@@ -291,6 +291,107 @@ describe('keyboardNavigation', () => {
 		});
 	});
 
+	describe('prevent() method', () => {
+		it('should not trigger handlers when textarea is focused', () => {
+			const textarea = doc.createElement('textarea');
+			doc.body.appendChild(textarea);
+			textarea.focus();
+
+			keyboardNavigation(doc, comments, ctx);
+			const comment = comments[0];
+			if (comment) {
+				comment.click();
+			}
+
+			dispatchKeydown('j');
+
+			expect(itemKeyboardHandlers.move).not.toHaveBeenCalled();
+		});
+
+		it('should not trigger handlers when input is focused', () => {
+			const input = doc.createElement('input');
+			doc.body.appendChild(input);
+			input.focus();
+
+			keyboardNavigation(doc, comments, ctx);
+			const comment = comments[0];
+			if (comment) {
+				comment.click();
+			}
+
+			dispatchKeydown('k');
+
+			expect(itemKeyboardHandlers.move).not.toHaveBeenCalled();
+		});
+
+		it('should blur anchor and trigger handlers when anchor is focused', () => {
+			const anchor = doc.createElement('a');
+			anchor.href = '#';
+			doc.body.appendChild(anchor);
+			const blurSpy = vi.spyOn(anchor, 'blur');
+			anchor.focus();
+
+			keyboardNavigation(doc, comments, ctx);
+			const comment = comments[0];
+			if (comment) {
+				comment.click();
+			}
+
+			dispatchKeydown('j');
+
+			expect(blurSpy).toHaveBeenCalled();
+			expect(itemKeyboardHandlers.move).toHaveBeenCalled();
+		});
+
+		it('should not activate comment when clicking while textarea is focused', () => {
+			const textarea = document.createElement('textarea');
+			document.body.appendChild(textarea);
+			textarea.focus();
+
+			keyboardNavigation(doc, comments, ctx);
+			const comment = comments[0];
+			if (!comment) {
+				throw new Error('Expected comment to exist');
+			}
+
+			const clickEvent = new PointerEvent('click', {
+				bubbles: true,
+			});
+			Object.defineProperty(clickEvent, 'target', {
+				value: comment,
+				enumerable: true,
+			});
+			comment.dispatchEvent(clickEvent);
+
+			expect(itemKeyboardHandlers.activate).not.toHaveBeenCalled();
+			document.body.removeChild(textarea);
+		});
+
+		it('should not activate comment when clicking while input is focused', () => {
+			const input = document.createElement('input');
+			document.body.appendChild(input);
+			input.focus();
+
+			keyboardNavigation(doc, comments, ctx);
+			const comment = comments[0];
+			if (!comment) {
+				throw new Error('Expected comment to exist');
+			}
+
+			const clickEvent = new PointerEvent('click', {
+				bubbles: true,
+			});
+			Object.defineProperty(clickEvent, 'target', {
+				value: comment,
+				enumerable: true,
+			});
+			comment.dispatchEvent(clickEvent);
+
+			expect(itemKeyboardHandlers.activate).not.toHaveBeenCalled();
+			document.body.removeChild(input);
+		});
+	});
+
 	describe('click handler', () => {
 		it('should activate item when comment is clicked', () => {
 			keyboardNavigation(doc, comments, ctx);
