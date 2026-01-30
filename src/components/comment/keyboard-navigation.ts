@@ -1,4 +1,6 @@
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import { getKeyboardShortcutsHelp } from '@/components/comment/keyboard-shortcuts-help.ts';
+import { showModal } from '@/components/common/modal.ts';
 import { dom } from '@/utils/dom.ts';
 import { ItemData } from '@/utils/dom-item-data.ts';
 import { itemKeyboardHandlers } from '@/utils/item-keyboard-handlers.ts';
@@ -25,6 +27,7 @@ export const keyboardNavigation = (
 	doc.head.appendChild(style);
 
 	const itemData: ItemData = new ItemData(dom.mapCommentsById(comments));
+	let helpModalOpen = false;
 
 	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: it is just complex
 	const keydownHandler = (e: KeyboardEvent) => {
@@ -95,6 +98,19 @@ export const keyboardNavigation = (
 				break;
 			case 't':
 				document.body.scrollTo(0, 0);
+				break;
+			case '?':
+				if (combo && !helpModalOpen) {
+					helpModalOpen = true;
+					showModal({
+						doc,
+						ctx,
+						content: getKeyboardShortcutsHelp(),
+						onClose: () => {
+							helpModalOpen = false;
+						},
+					});
+				}
 				break;
 			// parse reference links
 			case '0':
