@@ -37,8 +37,11 @@ export const fetchTitle = (doc: Document, ctx: ContentScriptContext) => {
 		try {
 			let { value } = urlInput;
 			value = value.trim();
-			if (!(value.length && value.startsWith('http'))) {
+			if (!value.length) {
 				return;
+			}
+			if (!value.startsWith('http')) {
+				value = `https://${value}`;
 			}
 
 			const service = createServicesManager().getFetchRemoteService();
