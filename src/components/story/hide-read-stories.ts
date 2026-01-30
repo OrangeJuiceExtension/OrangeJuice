@@ -143,7 +143,7 @@ export const hideReadStories = async (ctx: ContentScriptContext, doc: Document) 
 	const service = createServicesManager().getReadStoriesService();
 
 	try {
-		const hnStories = parseHNStoriesPage(document);
+		const hnStories = parseHNStoriesPage(doc);
 		let readStoryIds: string[] | undefined;
 
 		const updateVisits = async () => {
