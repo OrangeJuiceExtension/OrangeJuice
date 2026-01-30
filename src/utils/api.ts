@@ -1,21 +1,22 @@
-const BASE_URL = 'https://hacker-news.firebaseio.com/v0';
+// Source for the extension is here: https://github.com/OrangeJuiceExtension/orange-juice-worker
+// This could go private in the future, but we will see how things go.
 
-async function fetchJson<T>(url: string): Promise<T | null> {
-	try {
-		const result = await fetch(url);
-		return (await result.json()) as T;
-	} catch (e) {
-		console.error(e);
-		return null;
-	}
+import { createServicesManager } from '@/services/manager.ts';
+
+export const WORKER_BASE = 'https://orange-juice-worker.orangejuiceextension.workers.dev';
+
+function fetchJson<T>(url: string): Promise<T | null | undefined> {
+	const service = createServicesManager().getFetchRemoteService();
+	return service.fetchJson(`${WORKER_BASE}/yxorp/v0/${url}`);
 }
 
-export function getUserInfo(username: string) {
-	return fetchJson<HNUser>(`${BASE_URL}/user/${username}.json`);
+export function getUserInfo(username: string, h?: string) {
+	const h2 = h ? `?h=${encodeURIComponent(h)}` : '';
+	return fetchJson<HNUser>(`user/${encodeURIComponent(username)}.json${h2}`);
 }
 
 export function getItemInfo(itemId: string) {
-	return fetchJson<HNItemInfo>(`${BASE_URL}/item/${itemId}.json`);
+	return fetchJson<HNItemInfo>(`item/${encodeURIComponent(itemId)}.json`);
 }
 
 export const apiModule = {

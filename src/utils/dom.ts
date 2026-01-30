@@ -49,7 +49,7 @@ const fetchHmacFromPage = async (url: string): Promise<string> => {
 
 const getUsername = (doc: Document): string | undefined => {
 	const userLink = doc.querySelector('span.pagetop a#me');
-	return userLink?.textContent || undefined;
+	return userLink?.textContent.split(' ')[0] || undefined;
 };
 
 const getAllComments = (doc: Document): HTMLElement[] => {

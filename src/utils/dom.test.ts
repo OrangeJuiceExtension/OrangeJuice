@@ -16,6 +16,30 @@ describe('dom', () => {
 			expect(username).toBe('testuser');
 		});
 
+		it('should return username without down arrow', () => {
+			document.body.innerHTML = `
+				<span class="pagetop">
+					<a href="user?id=testuser" id="me">testuser ▾</a>
+				</span>
+			`;
+
+			const username = dom.getUsername(document);
+
+			expect(username).toBe('testuser');
+		});
+
+		it('should return username without up arrow', () => {
+			document.body.innerHTML = `
+				<span class="pagetop">
+					<a href="user?id=testuser" id="me">testuser ▴</a>
+				</span>
+			`;
+
+			const username = dom.getUsername(document);
+
+			expect(username).toBe('testuser');
+		});
+
 		it('should return undefined when logged out', () => {
 			document.body.innerHTML = loggedOutHtml;
 

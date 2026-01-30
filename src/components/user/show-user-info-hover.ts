@@ -1,6 +1,7 @@
 import linkifyHtml from 'linkify-html';
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { getUserInfo } from '@/utils/api.ts';
+import { dom } from '@/utils/dom.ts';
 
 const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -56,7 +57,7 @@ export const showUserInfoOnHover = (
 			return;
 		}
 
-		const userInfo = await getUserInfo(userName);
+		const userInfo = await getUserInfo(userName, dom.getUsername(doc));
 		if (!userInfo) {
 			return;
 		}
