@@ -156,7 +156,7 @@ export const keyboardNavigation = (
 
 	const itemClickHandler = (e: PointerEvent) => {
 		if (e.target instanceof HTMLElement) {
-			if (prevent(document)) {
+			if (prevent(doc)) {
 				return;
 			}
 			itemKeyboardHandlers.activate(itemData, e.target);
@@ -172,6 +172,6 @@ export const keyboardNavigation = (
 		for (const comment of comments) {
 			comment.removeEventListener('click', itemClickHandler);
 		}
-		document.removeEventListener('click', itemClickHandler);
+		doc.removeEventListener('click', itemClickHandler);
 	});
 };

@@ -344,8 +344,8 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should not activate comment when clicking while textarea is focused', () => {
-			const textarea = document.createElement('textarea');
-			document.body.appendChild(textarea);
+			const textarea = doc.createElement('textarea');
+			doc.body.appendChild(textarea);
 			textarea.focus();
 
 			keyboardNavigation(doc, comments, ctx);
@@ -364,12 +364,12 @@ describe('keyboardNavigation', () => {
 			comment.dispatchEvent(clickEvent);
 
 			expect(itemKeyboardHandlers.activate).not.toHaveBeenCalled();
-			document.body.removeChild(textarea);
+			doc.body.removeChild(textarea);
 		});
 
 		it('should not activate comment when clicking while input is focused', () => {
-			const input = document.createElement('input');
-			document.body.appendChild(input);
+			const input = doc.createElement('input');
+			doc.body.appendChild(input);
 			input.focus();
 
 			keyboardNavigation(doc, comments, ctx);
@@ -388,7 +388,7 @@ describe('keyboardNavigation', () => {
 			comment.dispatchEvent(clickEvent);
 
 			expect(itemKeyboardHandlers.activate).not.toHaveBeenCalled();
-			document.body.removeChild(input);
+			doc.body.removeChild(input);
 		});
 	});
 

@@ -22,6 +22,7 @@ Code style:
 * Clean up resources on context invalidation.
 * Don’t impact browser performance.
 * Infer correct querySelector types from selectors.
+* Rely on a local DOM doc over a global document.
 * Always generate valid HTML.
     * Invalid: `<div><td></td></div>`
     * Valid: `<div><table><tbody><tr><td></td></tr></tbody></table></div>`
