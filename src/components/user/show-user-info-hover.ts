@@ -134,6 +134,11 @@ export const showUserInfoOnHover = (
 		if (!trigger || activeTrigger === trigger) {
 			return;
 		}
+
+		if (popover) {
+			hidePopover();
+		}
+
 		await showPopover(trigger);
 	};
 
