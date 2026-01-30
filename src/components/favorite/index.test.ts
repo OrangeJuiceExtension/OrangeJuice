@@ -91,7 +91,7 @@ describe('favorite', () => {
 		});
 
 		it('should toggle button text from "un-favorite" to "favorite" after successful unfavorite', async () => {
-			// Mock successful API response with 302 redirect
+			// Mock successful API response with redirect 302
 			global.fetch = vi.fn().mockResolvedValue({
 				ok: false, // This is the bug - response.ok is false for 302
 				status: 302,
@@ -99,8 +99,9 @@ describe('favorite', () => {
 			});
 
 			// Mock saved.removeFromStorage
-			vi.spyOn(saved, 'removeFromStorage').mockImplementation(() => {});
-
+			vi.spyOn(saved, 'removeFromStorage').mockImplementation((_itemId: string) =>
+				Promise.resolve()
+			);
 			initFavorites(document, mockOjContext);
 
 			const buttons = document.querySelectorAll('.oj_link_button');
@@ -127,7 +128,7 @@ describe('favorite', () => {
 				}),
 			} as any);
 
-			// Mock successful API response with 302 redirect
+			// Mock successful API response with redirect 302
 			global.fetch = vi.fn().mockResolvedValue({
 				ok: false, // This is the bug - response.ok is false for 302
 				status: 302,
@@ -195,7 +196,7 @@ describe('favorite', () => {
 
 			const removeFromStorageSpy = vi
 				.spyOn(saved, 'removeFromStorage')
-				.mockImplementation(() => {});
+				.mockImplementation((_itemId: string) => Promise.resolve());
 
 			initFavorites(document, mockOjContext);
 
@@ -217,7 +218,9 @@ describe('favorite', () => {
 			});
 			global.fetch = fetchSpy;
 
-			vi.spyOn(saved, 'removeFromStorage').mockImplementation(() => {});
+			vi.spyOn(saved, 'removeFromStorage').mockImplementation((_itemId: string) =>
+				Promise.resolve()
+			);
 
 			initFavorites(document, mockOjContext);
 
