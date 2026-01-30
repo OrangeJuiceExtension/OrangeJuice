@@ -176,11 +176,33 @@ export const keyboardNavigation = (
 		comment.addEventListener('click', itemClickHandler);
 	}
 
+	const documentClickHandler = (e: PointerEvent) => {
+		// Don't deactivate if clicking in a textarea or input
+		if (
+			e.target instanceof HTMLElement &&
+			(e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')
+		) {
+			return;
+		}
+
+		// Check if click is outside the comments area
+		if (itemData.activeItem && e.target instanceof HTMLElement) {
+			const clickedInsideComment = comments.some((comment) =>
+				comment.contains(e.target as Node)
+			);
+			if (!clickedInsideComment) {
+				itemKeyboardHandlers.escape(itemData);
+			}
+		}
+	};
+
+	doc.addEventListener('click', documentClickHandler);
+
 	ctx.onInvalidated(() => {
 		window.removeEventListener('keydown', keydownHandler);
 		for (const comment of comments) {
 			comment.removeEventListener('click', itemClickHandler);
 		}
-		doc.removeEventListener('click', itemClickHandler);
+		doc.removeEventListener('click', documentClickHandler);
 	});
 };

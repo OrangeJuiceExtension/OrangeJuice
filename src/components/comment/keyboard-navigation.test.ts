@@ -491,6 +491,145 @@ describe('keyboardNavigation', () => {
 		});
 	});
 
+	describe('document click handler', () => {
+		it('should deactivate comment when clicking outside comments area', () => {
+			keyboardNavigation(doc, comments, ctx);
+
+			// Activate a comment first
+			const comment = comments[0];
+			if (!comment) {
+				throw new Error('Expected comment to exist');
+			}
+			comment.click();
+
+			// Clear the spy to only count subsequent calls
+			vi.mocked(itemKeyboardHandlers.escape).mockClear();
+
+			// Click outside the comments area
+			const outsideElement = doc.createElement('div');
+			doc.body.appendChild(outsideElement);
+
+			const clickEvent = new PointerEvent('click', {
+				bubbles: true,
+			});
+			Object.defineProperty(clickEvent, 'target', {
+				value: outsideElement,
+				enumerable: true,
+			});
+			doc.dispatchEvent(clickEvent);
+
+			expect(itemKeyboardHandlers.escape).toHaveBeenCalled();
+		});
+
+		it('should not deactivate comment when clicking inside comments area', () => {
+			keyboardNavigation(doc, comments, ctx);
+
+			// Activate a comment first
+			const comment = comments[0];
+			if (!comment) {
+				throw new Error('Expected comment to exist');
+			}
+			comment.click();
+
+			// Clear the spy to only count subsequent calls
+			vi.mocked(itemKeyboardHandlers.escape).mockClear();
+
+			// Click inside a comment
+			const insideElement = doc.createElement('span');
+			comment.appendChild(insideElement);
+
+			const clickEvent = new PointerEvent('click', {
+				bubbles: true,
+			});
+			Object.defineProperty(clickEvent, 'target', {
+				value: insideElement,
+				enumerable: true,
+			});
+			doc.dispatchEvent(clickEvent);
+
+			expect(itemKeyboardHandlers.escape).not.toHaveBeenCalled();
+		});
+
+		it('should not deactivate when clicking on a textarea', () => {
+			keyboardNavigation(doc, comments, ctx);
+
+			// Activate a comment first
+			const comment = comments[0];
+			if (!comment) {
+				throw new Error('Expected comment to exist');
+			}
+			comment.click();
+
+			// Clear the spy to only count subsequent calls
+			vi.mocked(itemKeyboardHandlers.escape).mockClear();
+
+			// Click on a textarea
+			const textarea = doc.createElement('textarea');
+			doc.body.appendChild(textarea);
+
+			const clickEvent = new PointerEvent('click', {
+				bubbles: true,
+			});
+			Object.defineProperty(clickEvent, 'target', {
+				value: textarea,
+				enumerable: true,
+			});
+			doc.dispatchEvent(clickEvent);
+
+			expect(itemKeyboardHandlers.escape).not.toHaveBeenCalled();
+		});
+
+		it('should not deactivate when clicking on an input', () => {
+			keyboardNavigation(doc, comments, ctx);
+
+			// Activate a comment first
+			const comment = comments[0];
+			if (!comment) {
+				throw new Error('Expected comment to exist');
+			}
+			comment.click();
+
+			// Clear the spy to only count subsequent calls
+			vi.mocked(itemKeyboardHandlers.escape).mockClear();
+
+			// Click on an input
+			const input = doc.createElement('input');
+			doc.body.appendChild(input);
+
+			const clickEvent = new PointerEvent('click', {
+				bubbles: true,
+			});
+			Object.defineProperty(clickEvent, 'target', {
+				value: input,
+				enumerable: true,
+			});
+			doc.dispatchEvent(clickEvent);
+
+			expect(itemKeyboardHandlers.escape).not.toHaveBeenCalled();
+		});
+
+		it('should not deactivate when no comment is active', () => {
+			keyboardNavigation(doc, comments, ctx);
+
+			// Don't activate any comment
+
+			// Click outside
+			const outsideElement = doc.createElement('div');
+			doc.body.appendChild(outsideElement);
+
+			const clickEvent = new PointerEvent('click', {
+				bubbles: true,
+			});
+			Object.defineProperty(clickEvent, 'target', {
+				value: outsideElement,
+				enumerable: true,
+			});
+			doc.dispatchEvent(clickEvent);
+
+			expect(itemKeyboardHandlers.escape).not.toHaveBeenCalled();
+		});
+	});
+
 	describe('cleanup on invalidation', () => {
 		it('should remove keydown listener on invalidation', () => {
 			const addSpy = vi.spyOn(window, 'addEventListener');
@@ -516,6 +655,18 @@ describe('keyboardNavigation', () => {
 			invalidateCallback();
 
 			expect(removeSpy).toHaveBeenCalledWith('click', expect.any(Function));
+		});
+
+		it('should remove document click listener on invalidation', () => {
+			const addSpy = vi.spyOn(doc, 'addEventListener');
+			const removeSpy = vi.spyOn(doc, 'removeEventListener');
+
+			keyboardNavigation(doc, comments, ctx);
+			const documentClickHandler = addSpy.mock.calls.find((call) => call[0] === 'click')?.[1];
+
+			invalidateCallback();
+
+			expect(removeSpy).toHaveBeenCalledWith('click', documentClickHandler);
 		});
 	});
 });
