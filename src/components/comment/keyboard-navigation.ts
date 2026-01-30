@@ -31,7 +31,16 @@ export const keyboardNavigation = (
 			return true;
 		}
 
-		if (['TEXTAREA', 'INPUT'].includes(doc.activeElement.tagName)) {
+		if (doc.activeElement.tagName === 'TEXTAREA') {
+			// Allow keyboard navigation if the textarea is a reply textarea
+			const textarea = doc.activeElement as HTMLTextAreaElement;
+			if (textarea.closest('tr')?.querySelector('textarea') === textarea) {
+				return false;
+			}
+			return true;
+		}
+
+		if (doc.activeElement.tagName === 'INPUT') {
 			return true;
 		}
 

@@ -439,6 +439,35 @@ describe('keyboardNavigation', () => {
 			// Cleanup
 			delete (doc as any).activeElement;
 		});
+
+		it('should trigger handlers when reply textarea is focused', () => {
+			// Create a comment row with a reply textarea
+			const tr = doc.createElement('tr');
+			const textarea = doc.createElement('textarea');
+			tr.appendChild(textarea);
+			doc.body.appendChild(tr);
+
+			// Simulate reply textarea being focused by setting it as activeElement
+			Object.defineProperty(doc, 'activeElement', {
+				configurable: true,
+				get: () => textarea,
+			});
+
+			keyboardNavigation(doc, comments, ctx);
+
+			const comment = comments[0];
+			if (comment) {
+				comment.click();
+			}
+
+			dispatchKeydown('j');
+
+			expect(itemKeyboardHandlers.move).toHaveBeenCalled();
+
+			// Cleanup
+			doc.body.removeChild(tr);
+			delete (doc as any).activeElement;
+		});
 	});
 
 	describe('click handler', () => {
