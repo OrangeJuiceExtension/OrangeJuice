@@ -117,7 +117,7 @@ export const keyboardNavigation = (
 				}
 				break;
 			case 't':
-				document.body.scrollTo(0, 0);
+				doc.body.scrollTo(0, 0);
 				break;
 			case '?':
 				if (combo && !helpModalOpen) {

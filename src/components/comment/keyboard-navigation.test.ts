@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+/** biome-ignore-all lint/performance/noDelete: tests */
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { keyboardNavigation } from '@/components/comment/keyboard-navigation.ts';
 import { itemKeyboardHandlers } from '@/utils/item-keyboard-handlers.ts';
@@ -16,7 +17,7 @@ describe('keyboardNavigation', () => {
 	const createComments = (count: number): HTMLElement[] => {
 		const elements: HTMLElement[] = [];
 		for (let i = 1; i <= count; i++) {
-			const tr = document.createElement('tr');
+			const tr = doc.createElement('tr');
 			tr.id = `item-${i}`;
 			tr.classList.add('comtr');
 			elements.push(tr);
@@ -44,7 +45,7 @@ describe('keyboardNavigation', () => {
 				invalidateCallback = cb;
 			}),
 		} as unknown as ContentScriptContext;
-		vi.spyOn(document.body, 'scrollTo').mockImplementation(noop);
+		vi.spyOn(doc.body, 'scrollTo').mockImplementation(noop);
 		vi.spyOn(itemKeyboardHandlers, 'move');
 		vi.spyOn(itemKeyboardHandlers, 'escape');
 		vi.spyOn(itemKeyboardHandlers, 'reply');
@@ -56,6 +57,11 @@ describe('keyboardNavigation', () => {
 		vi.spyOn(itemKeyboardHandlers, 'collapseToggle');
 		vi.spyOn(itemKeyboardHandlers, 'openReferenceLink');
 		vi.spyOn(itemKeyboardHandlers, 'activate');
+	});
+
+	afterEach(() => {
+		// Clean up event listeners registered by keyboardNavigation
+		invalidateCallback();
 	});
 
 	describe('initialization', () => {
@@ -173,7 +179,7 @@ describe('keyboardNavigation', () => {
 			keyboardNavigation(doc, comments, ctx);
 			dispatchKeydown('t');
 
-			expect(document.body.scrollTo).toHaveBeenCalledWith(0, 0);
+			expect(doc.body.scrollTo).toHaveBeenCalledWith(0, 0);
 		});
 
 		describe('number keys', () => {
@@ -295,9 +301,15 @@ describe('keyboardNavigation', () => {
 		it('should not trigger handlers when textarea is focused', () => {
 			const textarea = doc.createElement('textarea');
 			doc.body.appendChild(textarea);
-			textarea.focus();
+
+			// Simulate textarea being focused by setting it as activeElement
+			Object.defineProperty(doc, 'activeElement', {
+				configurable: true,
+				get: () => textarea,
+			});
 
 			keyboardNavigation(doc, comments, ctx);
+
 			const comment = comments[0];
 			if (comment) {
 				comment.click();
@@ -306,14 +318,23 @@ describe('keyboardNavigation', () => {
 			dispatchKeydown('j');
 
 			expect(itemKeyboardHandlers.move).not.toHaveBeenCalled();
+
+			// Cleanup
+			delete (doc as any).activeElement;
 		});
 
 		it('should not trigger handlers when input is focused', () => {
 			const input = doc.createElement('input');
 			doc.body.appendChild(input);
-			input.focus();
+
+			// Simulate input being focused by setting it as activeElement
+			Object.defineProperty(doc, 'activeElement', {
+				configurable: true,
+				get: () => input,
+			});
 
 			keyboardNavigation(doc, comments, ctx);
+
 			const comment = comments[0];
 			if (comment) {
 				comment.click();
@@ -322,16 +343,25 @@ describe('keyboardNavigation', () => {
 			dispatchKeydown('k');
 
 			expect(itemKeyboardHandlers.move).not.toHaveBeenCalled();
+
+			// Cleanup
+			delete (doc as any).activeElement;
 		});
 
 		it('should blur anchor and trigger handlers when anchor is focused', () => {
+			keyboardNavigation(doc, comments, ctx);
+
 			const anchor = doc.createElement('a');
 			anchor.href = '#';
 			doc.body.appendChild(anchor);
 			const blurSpy = vi.spyOn(anchor, 'blur');
-			anchor.focus();
 
-			keyboardNavigation(doc, comments, ctx);
+			// Simulate anchor being focused by setting it as activeElement
+			Object.defineProperty(doc, 'activeElement', {
+				configurable: true,
+				get: () => anchor,
+			});
+
 			const comment = comments[0];
 			if (comment) {
 				comment.click();
@@ -341,12 +371,20 @@ describe('keyboardNavigation', () => {
 
 			expect(blurSpy).toHaveBeenCalled();
 			expect(itemKeyboardHandlers.move).toHaveBeenCalled();
+
+			// Cleanup
+			delete (doc as any).activeElement;
 		});
 
 		it('should not activate comment when clicking while textarea is focused', () => {
 			const textarea = doc.createElement('textarea');
 			doc.body.appendChild(textarea);
-			textarea.focus();
+
+			// Simulate textarea being focused by setting it as activeElement
+			Object.defineProperty(doc, 'activeElement', {
+				configurable: true,
+				get: () => textarea,
+			});
 
 			keyboardNavigation(doc, comments, ctx);
 			const comment = comments[0];
@@ -365,12 +403,20 @@ describe('keyboardNavigation', () => {
 
 			expect(itemKeyboardHandlers.activate).not.toHaveBeenCalled();
 			doc.body.removeChild(textarea);
+
+			// Cleanup
+			delete (doc as any).activeElement;
 		});
 
 		it('should not activate comment when clicking while input is focused', () => {
 			const input = doc.createElement('input');
 			doc.body.appendChild(input);
-			input.focus();
+
+			// Simulate input being focused by setting it as activeElement
+			Object.defineProperty(doc, 'activeElement', {
+				configurable: true,
+				get: () => input,
+			});
 
 			keyboardNavigation(doc, comments, ctx);
 			const comment = comments[0];
@@ -389,6 +435,9 @@ describe('keyboardNavigation', () => {
 
 			expect(itemKeyboardHandlers.activate).not.toHaveBeenCalled();
 			doc.body.removeChild(input);
+
+			// Cleanup
+			delete (doc as any).activeElement;
 		});
 	});
 
