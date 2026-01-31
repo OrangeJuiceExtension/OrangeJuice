@@ -12,6 +12,7 @@ import { story } from '@/components/story/index.ts';
 import { submit } from '@/components/submit/index.ts';
 import { user } from '@/components/user/index.ts';
 import './global.css';
+import pkg from '../../../package.json';
 
 const components = [
 	inlineReply,
@@ -53,6 +54,7 @@ export default defineContentScript({
 			}
 
 			if (shouldRun) {
+				component.version = pkg.version;
 				component.main(ctx);
 			}
 		}

@@ -1,6 +1,6 @@
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 
-export const addOrangeJuiceLink = (_ctx: ContentScriptContext, doc: Document) => {
+export const addOrangeJuiceLink = (_ctx: ContentScriptContext, doc: Document, version: string) => {
 	const footer = doc.querySelector('.yclinks');
 	if (!footer) {
 		return;
@@ -26,9 +26,10 @@ export const addOrangeJuiceLink = (_ctx: ContentScriptContext, doc: Document) =>
 	separator.innerHTML = ' | ';
 
 	// Create an Orange Juice link
-	const ojLink = doc.createElement('a');
+	const ojLink = doc.createElement('a') as HTMLAnchorElement;
 	ojLink.href = 'https://orangejuiceextension.github.io/';
-	ojLink.textContent = 'Orange Juice';
+	ojLink.textContent = `Orange Juice (${version})`;
+	ojLink.setAttribute('title', version);
 	ojLink.rel = 'noreferrer';
 	ojLink.target = '_blank';
 

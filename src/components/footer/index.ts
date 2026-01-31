@@ -9,6 +9,6 @@ export const footer: ComponentFeature = {
 	matches: [`${paths.base}/*`],
 	runAt: 'document_end',
 	main(ctx: ContentScriptContext) {
-		addOrangeJuiceLink(ctx, document);
+		addOrangeJuiceLink(ctx, document, footer.version || '');
 	},
 };

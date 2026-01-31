@@ -4,6 +4,7 @@ import type { ContentScriptDefinition } from 'wxt';
 export type ComponentFeature = ContentScriptDefinition & {
 	id: string;
 	loginRequired: boolean;
+	version?: string;
 };
 
 export interface OJContext {
