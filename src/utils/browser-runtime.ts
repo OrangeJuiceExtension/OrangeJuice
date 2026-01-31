@@ -64,14 +64,3 @@ export class InjectAdapter implements Adapter<MessageMeta> {
 		return () => browser.runtime.onMessage.removeListener(handler);
 	};
 }
-
-export class InjectAdapterSilent implements Adapter<MessageMeta> {
-	injector?: 'content' | 'popup';
-	constructor(injector?: 'content' | 'popup') {
-		this.injector = injector;
-	}
-	// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
-	sendMessage: SendMessage<MessageMeta> = (_message) => {};
-	// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
-	onMessage: OnMessage<MessageMeta> = (_callback) => {};
-}

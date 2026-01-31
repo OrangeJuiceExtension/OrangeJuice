@@ -57,6 +57,7 @@ export const createServicesManager = (): ServicesManager => {
 	for (const config of Object.values(SERVICE_REGISTRY)) {
 		const [, injectService] = defineProxy(() => ({}) as InstanceType<typeof config.class>, {
 			namespace: config.namespace,
+			heartbeatCheck: false,
 		});
 		started.set(config.namespace, injectService(adapter));
 	}
