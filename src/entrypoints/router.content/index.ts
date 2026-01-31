@@ -3,6 +3,7 @@ import { defineContentScript } from 'wxt/utils/define-content-script';
 import { comments } from '@/components/comment/index.ts';
 import { favorite } from '@/components/favorite/index.ts';
 import { flag } from '@/components/flag/index.ts';
+import { footer } from '@/components/footer/index.ts';
 import { navbar } from '@/components/navbar/index.ts';
 import { past } from '@/components/past/index.ts';
 import { remaining } from '@/components/remaining/index.ts';
@@ -23,6 +24,7 @@ const components = [
 	user,
 	past,
 	navbar,
+	footer,
 ];
 
 const urlMatchesPattern = (url: string, pattern: string): boolean => {
