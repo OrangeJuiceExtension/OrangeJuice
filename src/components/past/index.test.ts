@@ -191,6 +191,8 @@ describe('past', () => {
 		});
 
 		it('should navigate and default to current year/month on month change to the future', () => {
+			vi.useFakeTimers({ now: new Date(2026, 0, 25) });
+
 			window.location = { href: '', search: '' } as any;
 			chooseDate(document, MOCK_CONTEXT);
 
@@ -203,6 +205,8 @@ describe('past', () => {
 			expect(window.location.href).toContain(
 				`/front?day=${today.getFullYear().toString()}-${today.getMonth() + 1}-${today.getDate() - 1}`
 			);
+
+			vi.useRealTimers();
 		});
 
 		it('should navigate when day changes', () => {
