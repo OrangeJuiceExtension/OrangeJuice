@@ -8,10 +8,11 @@ import lStorage from '@/utils/localStorage.ts';
 import type { HNStory } from '@/utils/types.ts';
 import {
 	createCheckbox,
+	hideReadStories,
 	hideStories,
 	type StorageState,
 	setupCheckbox,
-	showStories, hideReadStories,
+	showStories,
 } from './hide-read-stories.ts';
 
 const STORY_LIST_HTML_REGEX = /class="itemlist"/;
