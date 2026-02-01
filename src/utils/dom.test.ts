@@ -169,7 +169,6 @@ describe('dom', () => {
 				height: 100,
 				x: 100,
 				y: 250,
-				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
 				toJSON: () => {},
 			}));
 
@@ -182,7 +181,6 @@ describe('dom', () => {
 				height: 950,
 				x: 0,
 				y: 50,
-				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
 				toJSON: () => {},
 			}));
 
@@ -208,7 +206,6 @@ describe('dom', () => {
 				height: 100,
 				x: 50,
 				y: 0,
-				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
 				toJSON: () => {},
 			}));
 
@@ -221,7 +218,6 @@ describe('dom', () => {
 				height: 1000,
 				x: 0,
 				y: 0,
-				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
 				toJSON: () => {},
 			}));
 
@@ -248,7 +244,6 @@ describe('dom', () => {
 				height: 200,
 				x: 0,
 				y: 100,
-				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
 				toJSON: () => {},
 			}));
 
@@ -279,7 +274,6 @@ describe('dom', () => {
 				height: 90,
 				x: 0,
 				y: -100,
-				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
 				toJSON: () => {},
 			}));
 
@@ -310,7 +304,6 @@ describe('dom', () => {
 				height: 200,
 				x: 0,
 				y: 900,
-				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
 				toJSON: () => {},
 			}));
 
@@ -341,7 +334,6 @@ describe('dom', () => {
 				height: 100,
 				x: 0,
 				y: 0,
-				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
 				toJSON: () => {},
 			}));
 
@@ -372,7 +364,6 @@ describe('dom', () => {
 				height: 200,
 				x: 0,
 				y: 600,
-				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
 				toJSON: () => {},
 			}));
 
@@ -403,7 +394,6 @@ describe('dom', () => {
 				height: 200,
 				x: 0,
 				y: 700,
-				// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
 				toJSON: () => {},
 			}));
 

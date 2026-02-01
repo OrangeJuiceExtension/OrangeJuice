@@ -6,7 +6,6 @@ import { type ActivityTrail, newActivityTrail } from '@/utils/activity-trail';
 import { dom } from '@/utils/dom';
 
 vi.mock('@/components/common/activity-buttons', () => ({
-	// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
 	initActivityButtons: vi.fn(() => Promise.resolve(() => {})),
 }));
 

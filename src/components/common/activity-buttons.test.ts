@@ -472,7 +472,6 @@ describe('activity-buttons', () => {
 			});
 
 			it('should handle errors gracefully', async () => {
-				// biome-ignore lint/suspicious/noEmptyBlockStatements: ignore
 				const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 				createSubline('12345');
 				vi.mocked(dom.getAuthToken).mockRejectedValueOnce(new Error('Network error'));

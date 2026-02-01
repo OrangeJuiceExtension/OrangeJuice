@@ -18,7 +18,6 @@ describe('collapseRoot', () => {
 		} as unknown as ContentScriptContext;
 
 		vi.spyOn(dom, 'elementPosition').mockReturnValue({ x: 0, y: 100 });
-		// biome-ignore lint/suspicious/noEmptyBlockStatements: tests
 		vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
 	});
 
