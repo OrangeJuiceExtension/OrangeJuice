@@ -1,5 +1,5 @@
 import { createServicesManager } from '@/services/manager.ts';
-import { dom, isComboKey } from '@/utils/dom';
+import { dom } from '@/utils/dom';
 import { activateItem, focusClass, type ItemData } from '@/utils/dom-item-data.ts';
 import { parseReferenceLinks } from '@/utils/parse-reference-links.ts';
 
@@ -115,7 +115,7 @@ export const itemKeyboardHandlers = {
 
 		return createServicesManager()
 			.getBrowserTabService()
-			.createTab({ url: link.href, active: isComboKey(event) });
+			.createTab({ url: link.href, active: dom.isComboKey(event) });
 	},
 
 	reply(itemData: ItemData) {

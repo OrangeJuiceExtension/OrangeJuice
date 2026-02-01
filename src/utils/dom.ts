@@ -49,7 +49,7 @@ const fetchHmacFromPage = async (url: string): Promise<string> => {
 
 const authMatchPattern = /auth=([^&]+)/;
 
-export const getAuthToken = async (
+const getAuthToken = async (
 	commentId: string,
 	activityType: ActivityType
 ): Promise<string | undefined> => {
@@ -90,7 +90,7 @@ const getActivityActionName = (type: ActivityType): 'fave' | 'flag' | undefined 
 	}
 };
 
-export const toggleActivityState = async (
+const toggleActivityState = async (
 	commentId: string,
 	isActive: boolean,
 	authToken: string,
@@ -137,17 +137,17 @@ const getItemIdFromLocation = (): string | null => {
 	return url.searchParams.get('id');
 };
 
-export function isClickModified(event: MouseEvent) {
+function isClickModified(event: MouseEvent) {
 	return (
 		Boolean(event.button) || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
 	);
 }
 
-export function isComboKey(event: KeyboardEvent) {
+function isComboKey(event: KeyboardEvent) {
 	return event.ctrlKey || event.metaKey || event.shiftKey || event.altKey;
 }
 
-export const createOptions = (start: number, end: number, step: number, selectedValue: number) => {
+const createOptions = (start: number, end: number, step: number, selectedValue: number) => {
 	const options: HTMLOptionElement[] = [];
 	for (let i = start; step > 0 ? i <= end : i >= end; i += step) {
 		const option = document.createElement('option');
@@ -161,7 +161,7 @@ export const createOptions = (start: number, end: number, step: number, selected
 	return options;
 };
 
-export const elementPosition = (doc: Document, el: HTMLElement) => {
+const elementPosition = (doc: Document, el: HTMLElement) => {
 	const bodyRect = doc.body.getBoundingClientRect();
 	const rect = el.getBoundingClientRect();
 	const top = rect.top - bodyRect.top;
@@ -169,7 +169,7 @@ export const elementPosition = (doc: Document, el: HTMLElement) => {
 };
 
 // From: https://stackoverflow.com/a/22480938
-export function elementInScrollView(el: HTMLElement) {
+function elementInScrollView(el: HTMLElement) {
 	const rect = el.getBoundingClientRect();
 	const elemTop = rect.top;
 	const elemBottom = rect.bottom;
@@ -177,7 +177,7 @@ export function elementInScrollView(el: HTMLElement) {
 	return elemTop >= 0 && elemBottom <= window.innerHeight;
 }
 
-export function removeClassRecursive(node: HTMLElement, classNames: string | string[]) {
+function removeClassRecursive(node: HTMLElement, classNames: string | string[]) {
 	const classesToRemove = Array.isArray(classNames) ? classNames : [classNames];
 	for (const className of classesToRemove) {
 		node.classList.remove(className);
@@ -187,7 +187,7 @@ export function removeClassRecursive(node: HTMLElement, classNames: string | str
 	}
 }
 
-export function getCommentIndentation(element: HTMLElement): {
+function getCommentIndentation(element: HTMLElement): {
 	element?: HTMLImageElement;
 	width?: number;
 } {

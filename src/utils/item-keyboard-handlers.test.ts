@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { dom as domModule } from '@/utils/dom';
+import { dom } from '@/utils/dom.ts';
 import { ItemData } from '@/utils/dom-item-data.ts';
 import { itemKeyboardHandlers } from '@/utils/item-keyboard-handlers.ts';
 
@@ -128,7 +128,7 @@ describe('itemKeyboardHandlers', () => {
 				const first = itemData.first();
 				itemData.activeItem = itemData.get('item-2');
 				const event = { shiftKey: false } as KeyboardEvent;
-				vi.spyOn(domModule, 'elementInScrollView').mockReturnValue(true);
+				vi.spyOn(dom, 'elementInScrollView').mockReturnValue(true);
 
 				itemKeyboardHandlers.move(event, itemData, 'up');
 
@@ -142,7 +142,7 @@ describe('itemKeyboardHandlers', () => {
 				const itemData = createTestItemData(3);
 				itemData.activeItem = itemData.first();
 				const event = { shiftKey: false } as KeyboardEvent;
-				vi.spyOn(domModule, 'elementInScrollView').mockReturnValue(false);
+				vi.spyOn(dom, 'elementInScrollView').mockReturnValue(false);
 				const scrollSpy = vi
 					.spyOn(HTMLElement.prototype, 'scrollIntoView')
 					.mockImplementation(noop);
@@ -156,7 +156,7 @@ describe('itemKeyboardHandlers', () => {
 				const itemData = createTestItemData(3);
 				itemData.activeItem = itemData.first();
 				const event = { shiftKey: false } as KeyboardEvent;
-				vi.spyOn(domModule, 'elementInScrollView').mockReturnValue(true);
+				vi.spyOn(dom, 'elementInScrollView').mockReturnValue(true);
 				const scrollSpy = vi
 					.spyOn(HTMLElement.prototype, 'scrollIntoView')
 					.mockImplementation(noop);

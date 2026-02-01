@@ -1,5 +1,5 @@
 import type { ContentScriptContext } from '#imports';
-import { isClickModified } from '@/utils/dom';
+import { dom } from '@/utils/dom';
 
 export interface DropdownOptions {
 	triggerElement: HTMLElement;
@@ -20,7 +20,7 @@ export const createDropdown = (options: DropdownOptions) => {
 	};
 
 	const clickHandler = (event: MouseEvent) => {
-		if (isClickModified(event)) {
+		if (dom.isClickModified(event)) {
 			return;
 		}
 
