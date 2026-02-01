@@ -1,4 +1,4 @@
-import { browser } from '@wxt-dev/browser';
+import { type Browser, browser } from '@wxt-dev/browser';
 import type { Adapter, Message, OnMessage, SendMessage } from 'comctx';
 
 export interface MessageMeta {
@@ -10,7 +10,9 @@ export class ProvideAdapter implements Adapter<MessageMeta> {
 	sendMessage: SendMessage<MessageMeta> = async (message) => {
 		switch (message.meta.injector) {
 			case 'content': {
-				const tabs = await browser.tabs.query({ url: message.meta.url });
+				const tabs: Browser.tabs.Tab[] = await browser.tabs.query({
+					url: message.meta.url,
+				});
 				// Send a message to the content-script
 				// biome-ignore lint/style/noNonNullAssertion: we should always have a tab id
 				tabs.map((tab) => browser.tabs.sendMessage(tab.id!, message));

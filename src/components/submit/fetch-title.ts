@@ -1,7 +1,6 @@
 import type { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { createServicesManager } from '@/services/manager.ts';
 import { WORKER_BASE } from '@/utils/api.ts';
-import { dom } from '@/utils/dom.ts';
 
 interface Title {
 	title: string;
@@ -17,7 +16,6 @@ export const fetchTitle = (doc: Document, ctx: ContentScriptContext) => {
 	if (!urlInput) {
 		return;
 	}
-	dom.injectLinkButtonStyle(doc);
 
 	const urlInputParent = urlInput.parentElement;
 	if (!urlInputParent) {

@@ -12,13 +12,8 @@ export const user: ComponentFeature = {
 	matches: [`${paths.base}/*`],
 	runAt: 'document_end',
 	main(ctx: ContentScriptContext) {
-		const allUsers = document.querySelectorAll('a.hnuser') as NodeListOf<HTMLAnchorElement>;
-		if (!allUsers.length) {
-			return;
-		}
-
 		return Promise.all([
-			Promise.resolve().then(() => showUserInfoOnHover(document, ctx, allUsers)),
+			Promise.resolve().then(() => showUserInfoOnHover(document, ctx)),
 			Promise.resolve().then(() => profileLinksDropdown(document, ctx)),
 			Promise.resolve().then(() => userAboutLinkify(document, ctx)),
 			Promise.resolve().then(() => topLeadersKarma(document, ctx)),

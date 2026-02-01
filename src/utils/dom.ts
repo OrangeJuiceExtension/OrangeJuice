@@ -1,3 +1,4 @@
+import { ActivityId, type ActivityType } from '@/utils/activity-trail.ts';
 import { paths } from '@/utils/paths';
 
 const createHiddenInput = (name: string, value: string) => {
@@ -32,10 +33,9 @@ const getPageDom = async (
 	}
 	const response = await fetch(fixedUrl, { cache });
 	const html = await response.text();
-
-	const div = document.createElement('div');
-	div.innerHTML = html;
-	return div;
+	const parser = new DOMParser();
+	const doc = parser.parseFromString(html, 'text/html');
+	return doc.body;
 };
 
 const fetchHmacFromPage = async (url: string): Promise<string> => {
@@ -47,9 +47,81 @@ const fetchHmacFromPage = async (url: string): Promise<string> => {
 	return '';
 };
 
+const authMatchPattern = /auth=([^&]+)/;
+
+export const getAuthToken = async (
+	commentId: string,
+	activityType: ActivityType
+): Promise<string | undefined> => {
+	const actionName = getActivityActionName(activityType);
+	if (!actionName) {
+		return;
+	}
+	const itemPageUrl = `${paths.base}/item?id=${commentId}`;
+	const itemDiv = await dom.getPageDom(itemPageUrl);
+	if (!itemDiv) {
+		return;
+	}
+
+	let actionLink = itemDiv.querySelector<HTMLAnchorElement>(`a[href*="${actionName}?id="]`);
+	if (!actionLink) {
+		// fall back to looking at the hide link. a job item only has that.
+		// ie: https://news.ycombinator.com/item?id=46840801
+		actionLink = itemDiv.querySelector<HTMLAnchorElement>(`a[href*="hide?id="]`);
+	}
+	return actionLink?.href.match(authMatchPattern)?.[1];
+};
+
 const getUsername = (doc: Document): string | undefined => {
 	const userLink = doc.querySelector('span.pagetop a#me');
 	return userLink?.textContent.split(' ')[0] || undefined;
+};
+
+const getActivityActionName = (type: ActivityType): 'fave' | 'flag' | undefined => {
+	switch (type) {
+		case ActivityId.FavoriteComments:
+		case ActivityId.FavoriteSubmissions:
+			return 'fave';
+		case ActivityId.FlagsComments:
+		case ActivityId.FlagsSubmissions:
+			return 'flag';
+		default:
+			return undefined;
+	}
+};
+
+export const toggleActivityState = async (
+	commentId: string,
+	isActive: boolean,
+	authToken: string,
+	activityType: ActivityType
+): Promise<boolean | undefined> => {
+	const actionName = getActivityActionName(activityType);
+	if (!actionName) {
+		return;
+	}
+
+	const url = isActive
+		? `${paths.base}/${actionName}?id=${commentId}&un=t&auth=${authToken}`
+		: `${paths.base}/${actionName}?id=${commentId}&auth=${authToken}`;
+
+	const response = await fetch(url, {
+		method: 'GET',
+		credentials: 'include',
+		redirect: 'manual',
+	});
+
+	if (!response.ok && response.status !== 302 && response.status !== 0) {
+		console.log({
+			error: 'Failed to toggle state for comment',
+			actionName,
+			commentId,
+			status: response.status,
+			statusText: response.statusText,
+		});
+	}
+
+	return true;
 };
 
 const getAllComments = (doc: Document): HTMLElement[] => {
@@ -63,29 +135,6 @@ const mapCommentsById = (comments: HTMLElement[]): Map<string, HTMLElement> => {
 const getItemIdFromLocation = (): string | null => {
 	const url = new URL(window.location.href);
 	return url.searchParams.get('id');
-};
-
-let isInjectedButtonStyle = false;
-const injectLinkButtonStyle = (doc: Document) => {
-	if (isInjectedButtonStyle) {
-		return;
-	}
-	const style = doc.createElement('style');
-	style.textContent = `
-		.oj_link_button {
-			background: none;
-			border: none;
-			padding: 0;
-			color: inherit;
-			text-decoration: none;
-			cursor: pointer;
-			font: inherit;
-		}
-		.oj_link_button:hover {
-			text-decoration: underline;
-	}`;
-	doc.head.appendChild(style);
-	isInjectedButtonStyle = true;
 };
 
 export function isClickModified(event: MouseEvent) {
@@ -155,7 +204,8 @@ export function getCommentIndentation(element: HTMLElement): {
 }
 
 export const dom = {
-	injectLinkButtonStyle,
+	getAuthToken,
+	toggleActivityState,
 	getAllComments,
 	mapCommentsById,
 	createHiddenInput,

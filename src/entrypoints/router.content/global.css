@@ -17,3 +17,17 @@
 		transform: rotate(360deg);
 	}
 }
+
+.oj_link_button {
+	background: none;
+	border: none;
+	padding: 0;
+	color: inherit;
+	text-decoration: none;
+	cursor: pointer;
+	font: inherit;
+}
+
+.oj_link_button:hover {
+	text-decoration: underline;
+}

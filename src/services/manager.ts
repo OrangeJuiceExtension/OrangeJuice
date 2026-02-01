@@ -10,18 +10,22 @@ const SERVICE_REGISTRY = {
 	Highlight: {
 		namespace: 'oj_highlight_unread',
 		class: HighlightUnreadCommentsService,
+		background: true,
 	},
 	ReadStories: {
 		namespace: 'oj_read_stories',
 		class: ReadStoriesService,
+		background: true,
 	},
 	FetchRemote: {
 		namespace: 'oj_fetch_remote',
 		class: FetchRemoteService,
+		background: true,
 	},
 	BrowserTab: {
 		namespace: 'oj_browser_tab_service',
 		class: BrowserTabService,
+		background: true,
 	},
 } as const;
 
@@ -57,7 +61,6 @@ export const createServicesManager = (): ServicesManager => {
 	for (const config of Object.values(SERVICE_REGISTRY)) {
 		const [, injectService] = defineProxy(() => ({}) as InstanceType<typeof config.class>, {
 			namespace: config.namespace,
-			heartbeatCheck: false,
 		});
 		started.set(config.namespace, injectService(adapter));
 	}
@@ -73,12 +76,22 @@ export const createServicesManager = (): ServicesManager => {
 };
 
 export const initBackgroundServices = (): void => {
+	initServices(true);
+};
+
+export const initContentServices = (): void => {
+	initServices(false);
+};
+
+const initServices = (background: boolean): void => {
 	const adapter = new ProvideAdapter();
 
 	for (const config of Object.values(SERVICE_REGISTRY)) {
-		const [provideService] = defineProxy(() => new config.class(), {
-			namespace: config.namespace,
-		});
-		provideService(adapter);
+		if (config.background === background) {
+			const [provideService] = defineProxy(() => new config.class(), {
+				namespace: config.namespace,
+			});
+			provideService(adapter);
+		}
 	}
 };

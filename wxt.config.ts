@@ -12,7 +12,11 @@ export default defineConfig({
 		openDevtools: true,
 		openConsole: true,
 		startUrls: ['https://news.ycombinator.com/'],
-		chromiumArgs: ['--user-data-dir=./.wxt/chrome-data', '--hide-crash-restore-bubble'],
+		chromiumArgs: [
+			'--user-data-dir=./.wxt/chrome-data',
+			'--hide-crash-restore-bubble',
+			'--auto-open-devtools-for-tabs',
+		],
 	}),
 	manifest: {
 		name: 'Orange Juice',
@@ -23,7 +27,7 @@ export default defineConfig({
 			96: '/icon/orange_juice_icon_96x96.png',
 			128: '/icon/orange_juice_icon_128x128.png',
 		},
-		permissions: ['history', 'storage'],
+		permissions: ['history', 'storage', 'webNavigation'],
 		host_permissions: ['https://orange-juice-worker.orangejuiceextension.workers.dev/*'],
 	},
 	vite: () => ({

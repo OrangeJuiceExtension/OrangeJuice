@@ -45,8 +45,6 @@ export const chooseDate = (doc: Document, ctx: ContentScriptContext) => {
 		return;
 	}
 
-	dom.injectLinkButtonStyle(doc);
-
 	const today = new Date();
 	today.setDate(today.getDate() - 1); // Default to the day before.
 

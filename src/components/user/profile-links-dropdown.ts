@@ -54,7 +54,7 @@ export const profileLinksDropdown = (doc: Document, ctx: ContentScriptContext) =
 	}
 
 	// There are multiple pagetops and we want the second one
-	const pageTop = doc.querySelectorAll('span.pagetop');
+	const pageTop = doc.querySelectorAll('.pagetop');
 	if (pageTop.length < 2) {
 		return;
 	}

@@ -44,5 +44,17 @@
 				"useKeyWithClickEvents": "off"
 			}
 		}
-	}
+	},
+	"overrides": [
+		{
+			"includes": ["**/*.test.ts"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noEmptyBlockStatements": "off"
+					}
+				}
+			}
+		}
+	]
 }

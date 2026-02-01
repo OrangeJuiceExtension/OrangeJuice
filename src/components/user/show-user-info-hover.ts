@@ -5,11 +5,7 @@ import { dom } from '@/utils/dom.ts';
 
 const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
-export const showUserInfoOnHover = (
-	doc: Document,
-	ctx: ContentScriptContext,
-	allUsers: NodeListOf<HTMLAnchorElement>
-) => {
+export const showUserInfoOnHover = (doc: Document, ctx: ContentScriptContext) => {
 	const style = doc.createElement('style');
 	style.textContent = `
 		.oj_user_info_hover {
@@ -44,6 +40,11 @@ export const showUserInfoOnHover = (
 		}
 	`;
 	doc.head.appendChild(style);
+
+	const allUsers = document.querySelectorAll('a.hnuser') as NodeListOf<HTMLAnchorElement>;
+	if (!allUsers.length) {
+		return;
+	}
 
 	// Globals
 	const cachedData = new Map<string, HTMLDivElement>();

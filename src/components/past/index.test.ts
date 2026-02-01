@@ -241,16 +241,5 @@ describe('past', () => {
 			expect(monthSpy).toHaveBeenCalledWith('change', expect.any(Function));
 			expect(daySpy).toHaveBeenCalledWith('change', expect.any(Function));
 		});
-
-		it('should inject link button style', () => {
-			chooseDate(document, MOCK_CONTEXT);
-
-			const styles = document.querySelectorAll('style');
-			const hasLinkButtonStyle = Array.from(styles).some((style) =>
-				style.textContent?.includes('.oj_link_button')
-			);
-
-			expect(hasLinkButtonStyle).toBe(true);
-		});
 	});
 });

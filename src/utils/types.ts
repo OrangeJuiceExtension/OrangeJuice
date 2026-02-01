@@ -9,8 +9,6 @@ export type ComponentFeature = ContentScriptDefinition & {
 
 export interface OJContext {
 	user: User;
-	favorites?: StoredData;
-	flags?: StoredData;
 }
 
 export const SavedItemType = {

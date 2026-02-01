@@ -310,9 +310,36 @@ describe('keyboardNavigation', () => {
 	});
 
 	describe('prevent() method', () => {
-		it('should not trigger handlers when textarea is focused', () => {
+		it('should trigger handlers when non-reply textarea is focused', () => {
 			const textarea = doc.createElement('textarea');
 			doc.body.appendChild(textarea);
+
+			// Simulate textarea being focused by setting it as activeElement
+			Object.defineProperty(doc, 'activeElement', {
+				configurable: true,
+				get: () => textarea,
+			});
+
+			keyboardNavigation(doc, comments, ctx);
+
+			const comment = comments[0];
+			if (comment) {
+				comment.click();
+			}
+
+			dispatchKeydown('j');
+
+			expect(itemKeyboardHandlers.move).toHaveBeenCalled();
+
+			// Cleanup
+			delete (doc as any).activeElement;
+		});
+
+		it('should not trigger handlers when reply textarea is focused', () => {
+			const tr = doc.createElement('tr');
+			const textarea = doc.createElement('textarea');
+			tr.appendChild(textarea);
+			doc.body.appendChild(tr);
 
 			// Simulate textarea being focused by setting it as activeElement
 			Object.defineProperty(doc, 'activeElement', {
@@ -388,7 +415,7 @@ describe('keyboardNavigation', () => {
 			delete (doc as any).activeElement;
 		});
 
-		it('should not activate comment when clicking while textarea is focused', () => {
+		it('should activate comment when clicking while non-reply textarea is focused', () => {
 			const textarea = doc.createElement('textarea');
 			doc.body.appendChild(textarea);
 
@@ -413,7 +440,7 @@ describe('keyboardNavigation', () => {
 			});
 			comment.dispatchEvent(clickEvent);
 
-			expect(itemKeyboardHandlers.activate).not.toHaveBeenCalled();
+			expect(itemKeyboardHandlers.activate).toHaveBeenCalled();
 			doc.body.removeChild(textarea);
 
 			// Cleanup
@@ -452,7 +479,7 @@ describe('keyboardNavigation', () => {
 			delete (doc as any).activeElement;
 		});
 
-		it('should trigger handlers when reply textarea is focused', () => {
+		it('should not trigger handlers when reply textarea is focused', () => {
 			// Create a comment row with a reply textarea
 			const tr = doc.createElement('tr');
 			const textarea = doc.createElement('textarea');
@@ -474,7 +501,7 @@ describe('keyboardNavigation', () => {
 
 			dispatchKeydown('j');
 
-			expect(itemKeyboardHandlers.move).toHaveBeenCalled();
+			expect(itemKeyboardHandlers.move).not.toHaveBeenCalled();
 
 			// Cleanup
 			doc.body.removeChild(tr);

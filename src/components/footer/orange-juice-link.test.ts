@@ -74,7 +74,7 @@ describe('footer orange-juice-link', () => {
 
 		// Check that separator exists between contact and Orange Juice link
 		expect(html).toContain(
-			'<a href="/contact">Contact</a><span> | </span><a href="https://orangejuiceextension.github.io/" rel="noreferrer" target="_blank">Orange Juice</a> | <a href="/apply">Apply</a>'
+			'<a href="/contact">Contact</a><span> | </span><a href="https://orangejuiceextension.github.io/" title="" rel="noreferrer" target="_blank">Orange Juice</a> | <a href="/apply">Apply</a>'
 		);
 	});
 
