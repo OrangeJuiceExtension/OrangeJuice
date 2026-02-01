@@ -1,4 +1,4 @@
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 import { getUserInfo } from '@/utils/api';
 
 export const topLeadersKarma = async (doc: Document, _ctx: ContentScriptContext) => {

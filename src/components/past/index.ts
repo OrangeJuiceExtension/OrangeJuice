@@ -1,5 +1,5 @@
 import DOMPurify from 'dompurify';
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 import { parseDate } from '@/utils/date.ts';
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';

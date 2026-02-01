@@ -1,5 +1,5 @@
-import type { Browser } from '@wxt-dev/browser';
 import type { ContentScriptDefinition } from 'wxt';
+import type { Browser } from '#imports';
 
 export type ComponentFeature = ContentScriptDefinition & {
 	id: string;

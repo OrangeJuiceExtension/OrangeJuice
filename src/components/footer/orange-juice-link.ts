@@ -1,4 +1,4 @@
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 
 export const addOrangeJuiceLink = (_ctx: ContentScriptContext, doc: Document, version: string) => {
 	const footer = doc.querySelector('.yclinks');

@@ -1,4 +1,4 @@
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 
 const HN_ORANGE = '#ff6600';
 const HN_BACKGROUND = '#f6f6ef';

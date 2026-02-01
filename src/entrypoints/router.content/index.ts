@@ -1,5 +1,4 @@
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
-import { defineContentScript } from 'wxt/utils/define-content-script';
+import { type ContentScriptContext, defineContentScript } from '#imports';
 import { activities } from '@/components/activities/index.ts';
 import { comments } from '@/components/comment/index.ts';
 import { footer } from '@/components/footer/index.ts';

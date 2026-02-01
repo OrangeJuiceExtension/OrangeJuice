@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 import { getUserInfo } from '@/utils/api';
 import { showUserInfoOnHover } from './show-user-info-hover';
 
@@ -181,9 +181,9 @@ describe('showUserInfoOnHover', () => {
 
 		// Hide popover by moving mouse away
 		document.dispatchEvent(new MouseEvent('mousemove', {
-			bubbles: true,
-			clientX: 9999,
-			clientY: 9999,
+				bubbles: true,
+				clientX: 9999,
+				clientY: 9999,
 		}));
 
 		await vi.waitFor(() => {
@@ -214,9 +214,9 @@ describe('showUserInfoOnHover', () => {
 		});
 
 		document.dispatchEvent(new MouseEvent('mousemove', {
-			bubbles: true,
-			clientX: 9999,
-			clientY: 9999,
+				bubbles: true,
+				clientX: 9999,
+				clientY: 9999,
 		}));
 
 		await vi.waitFor(() => {
@@ -301,9 +301,9 @@ describe('showUserInfoOnHover', () => {
 		});
 
 		document.dispatchEvent(new MouseEvent('mousemove', {
-			bubbles: true,
-			clientX: 9999,
-			clientY: 9999,
+				bubbles: true,
+				clientX: 9999,
+				clientY: 9999,
 		}));
 
 		await vi.waitFor(() => {

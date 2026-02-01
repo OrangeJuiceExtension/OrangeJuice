@@ -1,4 +1,4 @@
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 import { createServicesManager } from '@/services/manager.ts';
 import type { ReadStoriesService } from '@/services/read-stories-service.ts';
 import { parseHNStoriesPage } from '@/utils/hn-parser.ts';

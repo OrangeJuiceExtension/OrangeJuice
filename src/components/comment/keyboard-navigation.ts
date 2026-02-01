@@ -1,4 +1,4 @@
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 import { getKeyboardShortcutsHelp } from '@/components/comment/keyboard-shortcuts-help.ts';
 import { showModal } from '@/components/common/modal.ts';
 import { dom } from '@/utils/dom.ts';

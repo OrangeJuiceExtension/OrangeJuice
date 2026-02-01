@@ -1,4 +1,4 @@
-import { type Browser, browser } from '@wxt-dev/browser';
+import { type Browser, browser } from '#imports';
 
 export class BrowserTabService {
 	async createTab(request: Browser.tabs.CreateProperties) {

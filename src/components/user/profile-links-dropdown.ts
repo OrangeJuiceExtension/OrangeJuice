@@ -1,5 +1,5 @@
 import DOMPurify from 'dompurify';
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 import { createDropdown, createDropdownStyle } from '@/components/common/dropdown';
 
 const getLinks = (user: string) => {

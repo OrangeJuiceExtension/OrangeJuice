@@ -1,6 +1,6 @@
 /** biome-ignore-all lint/performance/noDelete: tests */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 import { keyboardNavigation } from '@/components/comment/keyboard-navigation.ts';
 import { itemKeyboardHandlers } from '@/utils/item-keyboard-handlers.ts';
 

@@ -1,4 +1,5 @@
 import { defineProxy } from 'comctx';
+import { browser } from '#imports';
 import { BrowserTabService } from '@/services/browser-tab-service.ts';
 import { FetchRemoteService } from '@/services/fetch-remote-service.ts';
 import { HighlightUnreadCommentsService } from '@/services/highlight-unread-comments-service.ts';

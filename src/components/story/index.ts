@@ -1,4 +1,4 @@
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 import { hideReadStories } from '@/components/story/hide-read-stories.ts';
 import { openInNewTab } from '@/components/story/open-in-new-tab.ts';
 import { paths } from '@/utils/paths.ts';

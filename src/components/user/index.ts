@@ -1,4 +1,4 @@
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 import { profileLinksDropdown } from '@/components/user/profile-links-dropdown.ts';
 import { showUserInfoOnHover } from '@/components/user/show-user-info-hover.ts';
 import { topLeadersKarma } from '@/components/user/top-leaders-karma.ts';

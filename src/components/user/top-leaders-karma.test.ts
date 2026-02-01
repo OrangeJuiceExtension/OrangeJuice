@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 import { getUserInfo } from '@/utils/api.ts';
 import { topLeadersKarma } from './top-leaders-karma';
 

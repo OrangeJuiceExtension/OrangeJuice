@@ -1,4 +1,4 @@
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 import { isClickModified } from '@/utils/dom';
 
 export interface DropdownOptions {

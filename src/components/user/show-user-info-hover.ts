@@ -1,5 +1,5 @@
 import linkifyHtml from 'linkify-html';
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 import { getUserInfo } from '@/utils/api.ts';
 import { dom } from '@/utils/dom.ts';
 

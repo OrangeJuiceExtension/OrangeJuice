@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
 import { activities } from '@/components/activities/index.ts';
 import { initActivityButtons } from '@/components/common/activity-buttons.ts';
 import { type ActivityTrail, newActivityTrail } from '@/utils/activity-trail';
