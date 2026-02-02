@@ -40,7 +40,7 @@ describe('profileLinksDropdown', () => {
 			writable: true,
 		});
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const styleElement = doc.head.querySelector('style');
 		expect(styleElement).toBeNull();
@@ -57,7 +57,7 @@ describe('profileLinksDropdown', () => {
 		span.className = 'pagetop';
 		doc.body.appendChild(span);
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const styleElement = doc.head.querySelector('style');
 		expect(styleElement).toBeNull();
@@ -72,7 +72,7 @@ describe('profileLinksDropdown', () => {
 			doc.body.appendChild(span);
 		}
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const styleElement = doc.head.querySelector('style');
 		expect(styleElement).toBeNull();
@@ -83,7 +83,7 @@ describe('profileLinksDropdown', () => {
 		createPageTop(doc, 'testuser');
 		createPageTop(doc, 'testuser');
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const styleElement = doc.head.querySelector('style');
 		expect(styleElement).not.toBeNull();
@@ -95,7 +95,7 @@ describe('profileLinksDropdown', () => {
 		createPageTop(doc, 'testuser');
 		createPageTop(doc, 'testuser');
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
 		expect(dropdown).not.toBeNull();
@@ -127,7 +127,7 @@ describe('profileLinksDropdown', () => {
 		createPageTop(doc, 'testuser');
 		createPageTop(doc, 'testuser');
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
 		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
@@ -139,7 +139,7 @@ describe('profileLinksDropdown', () => {
 		createPageTop(doc, 'testuser');
 		createPageTop(doc, 'testuser');
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
 		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
@@ -170,7 +170,7 @@ describe('profileLinksDropdown', () => {
 		createPageTop(doc, 'testuser');
 		createPageTop(doc, 'testuser');
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
 		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
@@ -194,7 +194,7 @@ describe('profileLinksDropdown', () => {
 		createPageTop(doc, 'testuser');
 		createPageTop(doc, 'testuser');
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
 		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
@@ -224,7 +224,7 @@ describe('profileLinksDropdown', () => {
 		createPageTop(doc, 'testuser');
 		createPageTop(doc, 'testuser');
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
 		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
@@ -246,7 +246,7 @@ describe('profileLinksDropdown', () => {
 		createPageTop(doc, 'testuser');
 		createPageTop(doc, 'testuser');
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		expect(MOCK_CONTEXT.onInvalidated).toHaveBeenCalled();
 	});
@@ -258,7 +258,7 @@ describe('profileLinksDropdown', () => {
 
 		const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
 		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
@@ -276,7 +276,7 @@ describe('profileLinksDropdown', () => {
 		createPageTop(doc, 'testuser');
 		createPageTop(doc, 'testuser');
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
 		expect(dropdown?.classList.contains('active')).toBe(false);
@@ -287,7 +287,7 @@ describe('profileLinksDropdown', () => {
 		createPageTop(doc, 'testuser');
 		createPageTop(doc, 'testuser');
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
 		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
@@ -322,7 +322,7 @@ describe('profileLinksDropdown', () => {
 		createPageTop(doc, 'testuser');
 		createPageTop(doc, 'testuser');
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
 		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
@@ -354,7 +354,7 @@ describe('profileLinksDropdown', () => {
 		createPageTop(doc, 'testuser');
 		createPageTop(doc, 'testuser');
 
-		profileLinksDropdown(doc, MOCK_CONTEXT);
+		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
 		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');

@@ -1,7 +1,5 @@
 import type { ContentScriptContext } from '#imports';
 import { dom } from '@/utils/dom.ts';
-import { paths } from '@/utils/paths.ts';
-import type { ComponentFeature } from '@/utils/types.ts';
 
 /*
  * TODO: We're going to need an API in here where text can be substituted and buttons can be added
@@ -80,35 +78,29 @@ export const handleReplyClick = async (link: HTMLAnchorElement, itemId: string) 
 	link.textContent = 'hide reply';
 };
 
-export const inlineReply: ComponentFeature = {
-	id: 'inline-reply',
-	loginRequired: true,
-	matches: [`${paths.base}/item?*`, `${paths.base}/threads?*`],
-	runAt: 'document_end',
-	main(ctx: ContentScriptContext) {
-		const itemId = dom.getHiddenInputValue(document, 'parent');
-		const listeners = new Map<HTMLAnchorElement, (e: Event) => void>();
+export const inlineReply = (ctx: ContentScriptContext, doc: Document) => {
+	const itemId = dom.getHiddenInputValue(doc, 'parent');
+	const listeners = new Map<HTMLAnchorElement, (e: Event) => void>();
 
-		// Attach listeners to all reply links
-		for (const link of document.querySelectorAll<HTMLAnchorElement>('a')) {
-			const text = link.textContent?.trim();
-			if (text === 'reply') {
-				const handler = (e: Event) => {
-					e.preventDefault();
-					e.stopPropagation();
-					return handleReplyClick(link, itemId);
-				};
-				link.addEventListener('click', handler);
-				listeners.set(link, handler);
-			}
+	// Attach listeners to all reply links
+	for (const link of doc.querySelectorAll<HTMLAnchorElement>('a')) {
+		const text = link.textContent?.trim();
+		if (text === 'reply') {
+			const handler = (e: Event) => {
+				e.preventDefault();
+				e.stopPropagation();
+				return handleReplyClick(link, itemId);
+			};
+			link.addEventListener('click', handler);
+			listeners.set(link, handler);
 		}
+	}
 
-		// Clean up listeners
-		ctx.onInvalidated(() => {
-			for (const [link, handler] of listeners) {
-				link.removeEventListener('click', handler);
-			}
-			listeners.clear();
-		});
-	},
+	// Clean up listeners
+	ctx.onInvalidated(() => {
+		for (const [link, handler] of listeners) {
+			link.removeEventListener('click', handler);
+		}
+		listeners.clear();
+	});
 };

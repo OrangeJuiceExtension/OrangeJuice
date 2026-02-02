@@ -39,7 +39,7 @@ export const updateMonthAndDayOptions = (
 	yearSelect.value = `${newYearValue}`;
 };
 
-export const chooseDate = (doc: Document, ctx: ContentScriptContext) => {
+export const chooseDate = (ctx: ContentScriptContext, doc: Document) => {
 	const navigator = doc.querySelectorAll('#bigbox > td > div');
 	if (!navigator.length) {
 		return;
@@ -103,6 +103,6 @@ export const past: ComponentFeature = {
 	matches: [`${paths.base}/front*`],
 	runAt: 'document_end',
 	main(ctx: ContentScriptContext) {
-		chooseDate(document, ctx);
+		chooseDate(ctx, document);
 	},
 };

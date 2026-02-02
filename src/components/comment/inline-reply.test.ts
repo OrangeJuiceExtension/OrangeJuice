@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { getByRole, getByTestId } from '@testing-library/dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { dom } from '@/utils/dom.ts';
-import { handleReplyClick } from './index.ts';
+import { handleReplyClick } from './inline-reply.ts';
 
 const fixtureHtml = readFileSync(join(__dirname, '__fixtures__', 'hn-item.html'), 'utf-8');
 const itemId = '46670279';

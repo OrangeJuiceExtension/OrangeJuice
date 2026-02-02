@@ -9,6 +9,6 @@ export const submit: ComponentFeature = {
 	matches: [`${paths.base}/submit`],
 	runAt: 'document_end',
 	main(ctx: ContentScriptContext) {
-		return Promise.all([Promise.resolve().then(() => fetchTitle(document, ctx))]);
+		return Promise.all([Promise.resolve().then(() => fetchTitle(ctx, document))]);
 	},
 };

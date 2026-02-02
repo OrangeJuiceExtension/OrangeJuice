@@ -1,7 +1,6 @@
-import type { ContentScriptContext } from '#imports';
 import { getUserInfo } from '@/utils/api';
 
-export const topLeadersKarma = async (doc: Document, _ctx: ContentScriptContext) => {
+export const topLeadersKarma = async (doc: Document) => {
 	if (!window.location.pathname.startsWith('/leaders')) {
 		return;
 	}

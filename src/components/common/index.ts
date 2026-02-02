@@ -1,5 +1,6 @@
 import type { ContentScriptContext } from '#imports';
 import { openInNewTab } from '@/components/common/open-in-new-tab.ts';
+import { resizeTextarea } from '@/components/common/resize-textarea.ts';
 import { paths } from '@/utils/paths.ts';
 
 export const common: ComponentFeature = {
@@ -8,6 +9,9 @@ export const common: ComponentFeature = {
 	matches: [`${paths.base}/*`],
 	runAt: 'document_end',
 	main(ctx: ContentScriptContext) {
-		return Promise.all([Promise.resolve().then(() => openInNewTab(ctx, document))]);
+		return Promise.all([
+			Promise.resolve().then(() => openInNewTab(ctx, document)),
+			Promise.resolve().then(() => resizeTextarea(ctx, document)),
+		]);
 	},
 };

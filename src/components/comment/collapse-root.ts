@@ -2,9 +2,9 @@ import type { ContentScriptContext } from '#imports';
 import { dom } from '@/utils/dom';
 
 export const collapseRoot = (
+	ctx: ContentScriptContext,
 	doc: Document,
-	comments: HTMLElement[],
-	ctx: ContentScriptContext
+	comments: HTMLElement[]
 ): void => {
 	let currentRootComment: HTMLElement | undefined;
 

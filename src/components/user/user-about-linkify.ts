@@ -1,7 +1,7 @@
 import linkifyHtml from 'linkify-html';
 import type { ContentScriptContext } from '#imports';
 
-export const userAboutLinkify = (doc: Document, _ctx: ContentScriptContext) => {
+export const userAboutLinkify = (_ctx: ContentScriptContext, doc: Document) => {
 	if (window.location.pathname.startsWith('/user')) {
 		return;
 	}

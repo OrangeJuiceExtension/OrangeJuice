@@ -52,7 +52,7 @@ describe('showUserInfoOnHover', () => {
 	};
 
 	it('should inject styles into the document head', () => {
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		const style = document.querySelector('style');
 		expect(style).toBeTruthy();
@@ -64,7 +64,7 @@ describe('showUserInfoOnHover', () => {
 		const userLink = createUserLink('testuser');
 		mockUserInfo('testuser');
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true });
 		userLink.dispatchEvent(mouseoverEvent);
@@ -82,7 +82,7 @@ describe('showUserInfoOnHover', () => {
 			submitted: Array.from({ length: 100 }),
 		});
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
@@ -98,7 +98,7 @@ describe('showUserInfoOnHover', () => {
 		const userLink = createUserLink('testuser');
 		mockUserInfo('testuser', { about: 'I love programming' });
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
@@ -112,7 +112,7 @@ describe('showUserInfoOnHover', () => {
 		const userLink = createUserLink('testuser');
 		mockUserInfo('testuser', { about: undefined });
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
@@ -131,7 +131,7 @@ describe('showUserInfoOnHover', () => {
 		const thirtyDaysAgo = Math.floor(Date.now() / 1000) - 15 * 24 * 60 * 60;
 		mockUserInfo('newuser', { created: thirtyDaysAgo });
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
@@ -148,7 +148,7 @@ describe('showUserInfoOnHover', () => {
 		const oneYearAgo = Math.floor(Date.now() / 1000) - 365 * 24 * 60 * 60;
 		mockUserInfo('olduser', { created: oneYearAgo });
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
@@ -163,7 +163,7 @@ describe('showUserInfoOnHover', () => {
 		const userLink = createUserLink('testuser');
 		mockUserInfo('testuser');
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		// First mouseover
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
@@ -198,7 +198,7 @@ describe('showUserInfoOnHover', () => {
 		const userLink = createUserLink('testuser');
 		mockUserInfo('testuser');
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
@@ -235,7 +235,7 @@ describe('showUserInfoOnHover', () => {
 			toJSON: () => ({}),
 		}));
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
@@ -266,7 +266,7 @@ describe('showUserInfoOnHover', () => {
 		const userLink = createUserLink('testuser');
 		vi.mocked(getUserInfo).mockResolvedValueOnce(null);
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
@@ -283,7 +283,7 @@ describe('showUserInfoOnHover', () => {
 		mockUserInfo('user1', { karma: 1000 });
 		mockUserInfo('user2', { karma: 2000 });
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		user1Link.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
@@ -316,7 +316,7 @@ describe('showUserInfoOnHover', () => {
 		const userLink = createUserLink('testuser');
 		mockUserInfo('testuser');
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
@@ -349,7 +349,7 @@ describe('showUserInfoOnHover', () => {
 			});
 		});
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
@@ -364,7 +364,7 @@ describe('showUserInfoOnHover', () => {
 		const userLink = createUserLink('testuser');
 		mockUserInfo('testuser');
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		expect(mockCtx.onInvalidated).toHaveBeenCalledTimes(1);
 
@@ -385,7 +385,7 @@ describe('showUserInfoOnHover', () => {
 		const testDate = new Date('2023-01-15T00:00:00Z');
 		mockUserInfo('testuser', { created: Math.floor(testDate.getTime() / 1000) });
 
-		showUserInfoOnHover(document, mockCtx);
+		showUserInfoOnHover(mockCtx, document);
 
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 

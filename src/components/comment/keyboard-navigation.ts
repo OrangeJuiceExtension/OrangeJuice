@@ -8,9 +8,9 @@ import { itemKeyboardHandlers } from '@/utils/item-keyboard-handlers.ts';
 // TODO: persist the state of where we are for each comment in each story so that when you reload the page, the
 // comment comes back as selected.
 export const keyboardNavigation = (
+	ctx: ContentScriptContext,
 	doc: Document,
-	comments: HTMLElement[],
-	ctx: ContentScriptContext
+	comments: HTMLElement[]
 ): void => {
 	const style = doc.createElement('style');
 	style.textContent = `

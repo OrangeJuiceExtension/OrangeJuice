@@ -24,7 +24,7 @@ I’m also interested in exploring social features. HN is already a massive soci
 I’m intentionally not adding screenshots. Things are still changing, and I don’t want to constantly update feature visuals that will quickly be out of date. More importantly, the extension isn’t meant to be loud or attention-grabbing. Ideally, you shouldn’t really notice it at all. The features should feel subtle but natural: visible, useful, and aligned with what most users would expect the site to have supported in the first place. As we grow the feature set, it should always be with respect to the original design.
 
 <details>
-<summary>Click to expand detailed summaries</summary>
+<summary style="font-size: 1.5em">Click to expand detailed summaries</summary>
 
 ## Inline Reply
 Clicking a "reply" link now opens an inline reply form directly on the page, eliminating the need to navigate to a separate comment page. The form includes support for quoting selected text.
@@ -62,8 +62,7 @@ Improves the comment reading experience with several visual enhancements:
 - **Dead comment styling**: Comments marked as `[dead]` by moderators are displayed in a distinct muted color (#d89899), making it clear when a comment has been removed or flagged.
 - **Backticks to code**: Converts all backticks in comments to HTML code elements
 - **Collapse root button**: Adds a "collapse root" button to thread pages that allows you to collapse all top-level comments at once, making it easier to navigate long comment threads and focus on specific sub-discussions.
-
-
+- **Auto-resize textarea**: Automatically adjusts the height of comment textareas based on their content, ensuring that users can see their entire comment without scrolling.
 </details>
 
 # Installation

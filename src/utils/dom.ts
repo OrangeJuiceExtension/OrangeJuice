@@ -203,6 +203,37 @@ function getCommentIndentation(element: HTMLElement): {
 			};
 }
 
+function newReplyTextareasObserver(callback: (e: KeyboardEvent) => void) {
+	const mainTable = document.querySelector('table#hnmain');
+
+	if (paths.comments.includes(window.location.pathname) && mainTable) {
+		const observer = new MutationObserver((mutationsList) => {
+			for (const mutation of mutationsList) {
+				const { addedNodes } = mutation;
+				for (const node of addedNodes) {
+					if (node.nodeType !== Node.ELEMENT_NODE) {
+						continue;
+					}
+
+					const textarea = (node as HTMLElement).querySelector('textarea');
+					if (textarea) {
+						textarea.addEventListener('keydown', callback);
+					}
+				}
+			}
+		});
+
+		const observerConfig = {
+			attributes: false,
+			childList: true,
+			subtree: true,
+		};
+
+		observer.observe(mainTable, observerConfig);
+		return observer;
+	}
+}
+
 export const dom = {
 	getAuthToken,
 	toggleActivityState,
@@ -222,4 +253,5 @@ export const dom = {
 	elementInScrollView,
 	getCommentIndentation,
 	removeClassRecursive,
+	newReplyTextareasObserver,
 };

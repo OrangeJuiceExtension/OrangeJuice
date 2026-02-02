@@ -6,7 +6,7 @@ interface Title {
 	title: string;
 }
 
-export const fetchTitle = (doc: Document, ctx: ContentScriptContext) => {
+export const fetchTitle = (ctx: ContentScriptContext, doc: Document) => {
 	const titleInput = document.querySelector<HTMLInputElement>('input[name="title"]');
 	if (!titleInput) {
 		return;

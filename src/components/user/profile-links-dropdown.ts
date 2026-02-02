@@ -48,7 +48,7 @@ const getLinks = (user: string) => {
 };
 
 const COMPONENT_NAME = 'oj_profile_dropdown';
-export const profileLinksDropdown = (doc: Document, ctx: ContentScriptContext) => {
+export const profileLinksDropdown = (ctx: ContentScriptContext, doc: Document) => {
 	if (window.location.pathname.startsWith('/user')) {
 		return;
 	}

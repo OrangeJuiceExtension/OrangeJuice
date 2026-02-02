@@ -3,6 +3,7 @@ import { backticksToCode } from '@/components/comment/backticks-to-code.ts';
 import { changeDeadCommentsColor } from '@/components/comment/change-dead-comments-color.ts';
 import { collapseRoot } from '@/components/comment/collapse-root.ts';
 import { indentToggle } from '@/components/comment/indent-toggle.ts';
+import { inlineReply } from '@/components/comment/inline-reply.ts';
 import { keyboardNavigation } from '@/components/comment/keyboard-navigation.ts';
 import { createClientServices } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
@@ -11,14 +12,14 @@ import type { ComponentFeature } from '@/utils/types.ts';
 import { highlightUnreadComments } from './highlight-unread-comments.ts';
 import { initCommentUX } from './init-comment-ux.ts';
 
-const validPaths = [...paths.comments, ...paths.specialComments];
+const validPaths = [...paths.comments];
 
 export const comments: ComponentFeature = {
 	id: 'comments',
 	loginRequired: true,
 	matches: [`${paths.base}/*`],
 	runAt: 'document_end',
-	main(_ctx: ContentScriptContext) {
+	main(ctx: ContentScriptContext) {
 		if (!validPaths.some((p) => document.location.pathname.startsWith(p))) {
 			return;
 		}
@@ -32,8 +33,9 @@ export const comments: ComponentFeature = {
 			Promise.resolve().then(() => indentToggle(document, comments)),
 			Promise.resolve().then(() => changeDeadCommentsColor(document, comments)),
 			Promise.resolve().then(() => backticksToCode(document, comments)),
-			Promise.resolve().then(() => collapseRoot(document, comments, _ctx)),
-			Promise.resolve().then(() => keyboardNavigation(document, comments, _ctx)),
+			Promise.resolve().then(() => collapseRoot(ctx, document, comments)),
+			Promise.resolve().then(() => keyboardNavigation(ctx, document, comments)),
+			Promise.resolve().then(() => inlineReply(ctx, document)),
 		]);
 	},
 };

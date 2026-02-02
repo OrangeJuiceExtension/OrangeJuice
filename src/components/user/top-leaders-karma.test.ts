@@ -33,7 +33,7 @@ describe('topLeadersKarma', () => {
 			} as HNUser;
 		});
 
-		await topLeadersKarma(mockDoc, mockCtx);
+		await topLeadersKarma(mockDoc);
 
 		expect(called).toBeFalsy();
 	});
@@ -64,7 +64,7 @@ describe('topLeadersKarma', () => {
 				submitted: [],
 			}));
 
-		await topLeadersKarma(mockDoc, mockCtx);
+		await topLeadersKarma(mockDoc);
 
 		expect(getUserInfoSpy).toHaveBeenCalledTimes(10);
 		for (let i = 0; i < 10; i++) {
@@ -105,7 +105,7 @@ describe('topLeadersKarma', () => {
 			} as HNUser;
 		});
 
-		await topLeadersKarma(mockDoc, mockCtx);
+		await topLeadersKarma(mockDoc);
 
 		const karmaSpans = mockDoc.querySelectorAll('.karma-placeholder');
 		expect(karmaSpans[0]?.textContent).toBe('5000');
@@ -141,7 +141,7 @@ describe('topLeadersKarma', () => {
 			submitted: [],
 		});
 
-		await topLeadersKarma(mockDoc, mockCtx);
+		await topLeadersKarma(mockDoc);
 
 		expect(getUserInfoSpy).toHaveBeenCalledTimes(1);
 		expect(getUserInfoSpy).toHaveBeenCalledWith('validuser');
@@ -163,7 +163,7 @@ describe('topLeadersKarma', () => {
 
 		vi.mocked(getUserInfo).mockResolvedValue(null);
 
-		await topLeadersKarma(mockDoc, mockCtx);
+		await topLeadersKarma(mockDoc);
 
 		const karmaSpan = mockDoc.querySelector('.karma-placeholder');
 		expect(karmaSpan?.textContent).toBe('original');
@@ -187,7 +187,7 @@ describe('topLeadersKarma', () => {
 			submitted: [],
 		});
 
-		await topLeadersKarma(mockDoc, mockCtx);
+		await topLeadersKarma(mockDoc);
 
 		expect(getUserInfoSpy).toHaveBeenCalledWith('alice');
 	});
@@ -219,7 +219,7 @@ describe('topLeadersKarma', () => {
 			submitted: [],
 		});
 
-		await topLeadersKarma(mockDoc, mockCtx);
+		await topLeadersKarma(mockDoc);
 
 		expect(getUserInfoSpy).toHaveBeenCalledTimes(10);
 	});
@@ -257,7 +257,7 @@ describe('topLeadersKarma', () => {
 			};
 		});
 
-		await topLeadersKarma(mockDoc, mockCtx);
+		await topLeadersKarma(mockDoc);
 
 		// All calls should start before any end
 		const firstEndIndex = callOrder.findIndex((call) => call.startsWith('end-'));

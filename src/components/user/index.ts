@@ -13,10 +13,10 @@ export const user: ComponentFeature = {
 	runAt: 'document_end',
 	main(ctx: ContentScriptContext) {
 		return Promise.all([
-			Promise.resolve().then(() => showUserInfoOnHover(document, ctx)),
-			Promise.resolve().then(() => profileLinksDropdown(document, ctx)),
-			Promise.resolve().then(() => userAboutLinkify(document, ctx)),
-			Promise.resolve().then(() => topLeadersKarma(document, ctx)),
+			Promise.resolve().then(() => showUserInfoOnHover(ctx, document)),
+			Promise.resolve().then(() => profileLinksDropdown(ctx, document)),
+			Promise.resolve().then(() => userAboutLinkify(ctx, document)),
+			Promise.resolve().then(() => topLeadersKarma(document)),
 		]);
 	},
 };
