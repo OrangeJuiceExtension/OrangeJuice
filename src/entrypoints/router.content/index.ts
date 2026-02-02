@@ -45,11 +45,11 @@ export default defineContentScript({
 	async main(ctx: ContentScriptContext): Promise<void> {
 		const currentUrl = window.location.href;
 		createClientServices();
+		const username = dom.getUsername(document.body);
 
 		await Promise.all([
 			Promise.resolve().then(async () => {
 				try {
-					const username = dom.getUsername(document);
 					if (username) {
 						const activityFetcher = newActivityFetcher(username);
 						await activityFetcher.start();
@@ -72,6 +72,7 @@ export default defineContentScript({
 					if (shouldRun) {
 						try {
 							component.version = version;
+							component.username = username;
 							await component.main(ctx);
 						} catch (e) {
 							console.error({
@@ -81,7 +82,7 @@ export default defineContentScript({
 							});
 						}
 					}
-				}),
+				})
 			),
 		]);
 	},

@@ -1,11 +1,14 @@
 import linkifyHtml from 'linkify-html';
 import type { ContentScriptContext } from '#imports';
 import { getUserInfo } from '@/utils/api.ts';
-import { dom } from '@/utils/dom.ts';
 
 const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
-export const showUserInfoOnHover = (ctx: ContentScriptContext, doc: Document) => {
+export const showUserInfoOnHover = (
+	ctx: ContentScriptContext,
+	doc: Document,
+	username?: string
+) => {
 	const style = doc.createElement('style');
 	style.textContent = `
 		.oj_user_info_hover {
@@ -41,7 +44,7 @@ export const showUserInfoOnHover = (ctx: ContentScriptContext, doc: Document) =>
 	`;
 	doc.head.appendChild(style);
 
-	const allUsers = document.querySelectorAll('a.hnuser') as NodeListOf<HTMLAnchorElement>;
+	const allUsers = doc.querySelectorAll('a.hnuser') as NodeListOf<HTMLAnchorElement>;
 	if (!allUsers.length) {
 		return;
 	}
@@ -58,7 +61,7 @@ export const showUserInfoOnHover = (ctx: ContentScriptContext, doc: Document) =>
 			return;
 		}
 
-		const userInfo = await getUserInfo(userName, dom.getUsername(doc));
+		const userInfo = await getUserInfo(userName, username);
 		if (!userInfo) {
 			return;
 		}
@@ -99,7 +102,7 @@ export const showUserInfoOnHover = (ctx: ContentScriptContext, doc: Document) =>
 		cachedData.set(userName, userDivBox);
 	};
 
-	const createUserDiv = (_user: HTMLAnchorElement) => {
+	const createUserDiv = (doc: Document) => {
 		const userDiv = doc.createElement('div') as HTMLDivElement;
 		userDiv.classList.add('oj_user_info_hover');
 		return userDiv;
@@ -107,7 +110,7 @@ export const showUserInfoOnHover = (ctx: ContentScriptContext, doc: Document) =>
 
 	function showPopover(trigger: HTMLAnchorElement): Promise<void> {
 		if (!popover) {
-			popover = createUserDiv(trigger);
+			popover = createUserDiv(doc);
 		}
 
 		popover?.classList.add('active');
@@ -181,13 +184,13 @@ export const showUserInfoOnHover = (ctx: ContentScriptContext, doc: Document) =>
 		hidePopover();
 	};
 
-	document.addEventListener('mousemove', onMouseMove);
+	doc.addEventListener('mousemove', onMouseMove);
 
 	ctx.onInvalidated(() => {
 		for (const user of allUsers) {
 			user.removeEventListener('mouseover', onMouseOver);
 		}
-		document.removeEventListener('mousemove', onMouseMove);
+		doc.removeEventListener('mousemove', onMouseMove);
 	});
 
 	for (const user of allUsers) {

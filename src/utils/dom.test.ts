@@ -11,7 +11,7 @@ describe('dom', () => {
 		it('should return username when logged in', () => {
 			document.body.innerHTML = loggedInHtml;
 
-			const username = dom.getUsername(document);
+			const username = dom.getUsername(document.body);
 
 			expect(username).toBe('testuser');
 		});
@@ -23,7 +23,7 @@ describe('dom', () => {
 				</span>
 			`;
 
-			const username = dom.getUsername(document);
+			const username = dom.getUsername(document.body);
 
 			expect(username).toBe('testuser');
 		});
@@ -35,7 +35,7 @@ describe('dom', () => {
 				</span>
 			`;
 
-			const username = dom.getUsername(document);
+			const username = dom.getUsername(document.body);
 
 			expect(username).toBe('testuser');
 		});
@@ -43,7 +43,7 @@ describe('dom', () => {
 		it('should return undefined when logged out', () => {
 			document.body.innerHTML = loggedOutHtml;
 
-			const username = dom.getUsername(document);
+			const username = dom.getUsername(document.body);
 
 			expect(username).toBeUndefined();
 		});
@@ -51,7 +51,7 @@ describe('dom', () => {
 		it('should return undefined when pagetop is missing', () => {
 			document.body.innerHTML = '<div>No pagetop here</div>';
 
-			const username = dom.getUsername(document);
+			const username = dom.getUsername(document.body);
 
 			expect(username).toBeUndefined();
 		});

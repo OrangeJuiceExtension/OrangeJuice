@@ -3,7 +3,6 @@ import type { ContentScriptContext } from '#imports';
 import { activities } from '@/components/activities/index.ts';
 import { initActivityButtons } from '@/components/common/activity-buttons.ts';
 import { type ActivityTrail, newActivityTrail } from '@/utils/activity-trail';
-import { dom } from '@/utils/dom';
 
 vi.mock('@/components/common/activity-buttons', () => ({
 	initActivityButtons: vi.fn(() => Promise.resolve(() => {})),
@@ -16,12 +15,6 @@ vi.mock('@/utils/activity-trail', () => ({
 		FavoriteComments: 8,
 		FlagsSubmissions: 3,
 		FlagsComments: 4,
-	},
-}));
-
-vi.mock('@/utils/dom', () => ({
-	dom: {
-		getUsername: vi.fn(),
 	},
 }));
 
@@ -73,8 +66,6 @@ describe('activities component', () => {
 
 	describe('main', () => {
 		it('should return early if no username is found', async () => {
-			vi.mocked(dom.getUsername).mockReturnValue(undefined);
-
 			const result = await activities.main(mockCtx);
 
 			expect(result).toBeUndefined();
@@ -82,16 +73,14 @@ describe('activities component', () => {
 		});
 
 		it('should create activity trail when username exists', async () => {
-			vi.mocked(dom.getUsername).mockReturnValue('testuser');
-
+			activities.username = 'testuser';
 			await activities.main(mockCtx);
 
 			expect(newActivityTrail).toHaveBeenCalledTimes(1);
 		});
 
 		it('should initialize favorite and flag buttons', async () => {
-			vi.mocked(dom.getUsername).mockReturnValue('testuser');
-
+			activities.username = 'testuser';
 			await activities.main(mockCtx);
 
 			expect(initActivityButtons).toHaveBeenCalledTimes(2);
@@ -122,16 +111,14 @@ describe('activities component', () => {
 		});
 
 		it('should add activity trail listeners', async () => {
-			vi.mocked(dom.getUsername).mockReturnValue('testuser');
-
+			activities.username = 'testuser';
 			await activities.main(mockCtx);
 
 			expect(mockActivityTrail.addListener).toHaveBeenCalledTimes(2);
 		});
 
 		it('should cleanup buttons when activity trail updates', async () => {
-			vi.mocked(dom.getUsername).mockReturnValue('testuser');
-
+			activities.username = 'testuser';
 			const mockCleanup1 = vi.fn();
 			const mockCleanup2 = vi.fn();
 			let callCount = 0;
@@ -167,7 +154,7 @@ describe('activities component', () => {
 		});
 
 		it('should cleanup on context invalidation', async () => {
-			vi.mocked(dom.getUsername).mockReturnValue('testuser');
+			activities.username = 'testuser';
 
 			const mockCleanupFavorite = vi.fn();
 			const mockCleanupFlag = vi.fn();

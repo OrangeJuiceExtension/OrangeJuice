@@ -105,13 +105,13 @@ describe('past', () => {
 		it('should not run if navigator element is missing', () => {
 			document.body.innerHTML = '';
 
-			chooseDate(document, MOCK_CONTEXT);
+			chooseDate(MOCK_CONTEXT, document);
 
 			expect(document.querySelector('#oj-go-form')).toBeNull();
 		});
 
 		it('should create year, month, and day dropdowns', () => {
-			chooseDate(document, MOCK_CONTEXT);
+			chooseDate(MOCK_CONTEXT, document);
 
 			expect(document.querySelector('#oj-year-select')).not.toBeNull();
 			expect(document.querySelector('#oj-month-select')).not.toBeNull();
@@ -119,7 +119,7 @@ describe('past', () => {
 		});
 
 		it('should create form with dropdowns', () => {
-			chooseDate(document, MOCK_CONTEXT);
+			chooseDate(MOCK_CONTEXT, document);
 
 			const form = document.querySelector('#oj-go-form');
 			expect(form).not.toBeNull();
@@ -131,7 +131,7 @@ describe('past', () => {
 				writable: true,
 			});
 
-			chooseDate(document, MOCK_CONTEXT);
+			chooseDate(MOCK_CONTEXT, document);
 
 			const yesterday = new Date();
 			yesterday.setDate(yesterday.getDate() - 1);
@@ -151,7 +151,7 @@ describe('past', () => {
 				writable: true,
 			});
 
-			chooseDate(document, MOCK_CONTEXT);
+			chooseDate(MOCK_CONTEXT, document);
 
 			const yearInput = document.querySelector('#oj-year-select') as HTMLSelectElement;
 			const monthInput = document.querySelector('#oj-month-select') as HTMLSelectElement;
@@ -165,7 +165,7 @@ describe('past', () => {
 		it('should navigate when year changes', () => {
 			window.location = { href: '', search: '' } as any;
 
-			chooseDate(document, MOCK_CONTEXT);
+			chooseDate(MOCK_CONTEXT, document);
 
 			const yearInput = document.querySelector('#oj-year-select') as HTMLSelectElement;
 			yearInput.value = '2024';
@@ -178,7 +178,7 @@ describe('past', () => {
 			vi.useFakeTimers({ now: new Date(2026, 0, 25) });
 
 			window.location = { href: '', search: '' } as any;
-			chooseDate(document, MOCK_CONTEXT);
+			chooseDate(MOCK_CONTEXT, document);
 			const yearInput = document.querySelector('#oj-year-select') as HTMLSelectElement;
 			yearInput.value = '2025';
 			const monthInput = document.querySelector('#oj-month-select') as HTMLSelectElement;
@@ -194,7 +194,7 @@ describe('past', () => {
 			vi.useFakeTimers({ now: new Date(2026, 0, 25) });
 
 			window.location = { href: '', search: '' } as any;
-			chooseDate(document, MOCK_CONTEXT);
+			chooseDate(MOCK_CONTEXT, document);
 
 			const monthInput = document.querySelector('#oj-month-select') as HTMLSelectElement;
 			monthInput.value = '6';
@@ -212,7 +212,7 @@ describe('past', () => {
 		it('should navigate when day changes', () => {
 			window.location = { href: '', search: '' } as any;
 
-			chooseDate(document, MOCK_CONTEXT);
+			chooseDate(MOCK_CONTEXT, document);
 
 			const dayInput = document.querySelector('#oj-day-select') as HTMLSelectElement;
 			dayInput.value = '10';
@@ -222,13 +222,13 @@ describe('past', () => {
 		});
 
 		it('should register cleanup on context invalidation', () => {
-			chooseDate(document, MOCK_CONTEXT);
+			chooseDate(MOCK_CONTEXT, document);
 
 			expect(MOCK_CONTEXT.onInvalidated).toHaveBeenCalled();
 		});
 
 		it('should clean up event listeners on invalidation', () => {
-			chooseDate(document, MOCK_CONTEXT);
+			chooseDate(MOCK_CONTEXT, document);
 
 			const yearInput = document.querySelector('#oj-year-select') as HTMLSelectElement;
 			const monthInput = document.querySelector('#oj-month-select') as HTMLSelectElement;

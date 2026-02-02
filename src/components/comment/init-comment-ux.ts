@@ -3,7 +3,7 @@ import { dom } from '@/utils/dom.ts';
 // TODO: make this configurable in a popup menu
 const customWidth = 40;
 
-export const initCommentUX = (doc: Document, comments: HTMLElement[]): void => {
+export const initCommentUX = (doc: Document, comments: HTMLElement[], username?: string): void => {
 	const style = doc.createElement('style');
 	style.textContent = `
 		.oj_comment_indent {
@@ -45,10 +45,8 @@ export const initCommentUX = (doc: Document, comments: HTMLElement[]): void => {
 			continue;
 		}
 
-		const itemAuthor = dom.getUsername(doc);
-
 		// Highlight-op-username
-		if (itemAuthor && itemAuthor === commentAuthor.innerText) {
+		if (username && username === commentAuthor.innerText) {
 			commentAuthor.innerText += ' [op]';
 			commentAuthor.classList.add('oj_op');
 		}

@@ -5,6 +5,7 @@ export type ComponentFeature = ContentScriptDefinition & {
 	id: string;
 	loginRequired: boolean;
 	version?: string;
+	username?: string;
 };
 
 export interface OJContext {

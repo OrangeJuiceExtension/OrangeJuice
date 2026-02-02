@@ -4,7 +4,6 @@ import {
 	initActivityButtons,
 } from '@/components/common/activity-buttons.ts';
 import { type ActivityTrail, newActivityTrail } from '@/utils/activity-trail.ts';
-import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 import type { ComponentFeature } from '@/utils/types.ts';
 
@@ -14,7 +13,7 @@ export const activities: ComponentFeature = {
 	matches: [`${paths.base}/*`],
 	runAt: 'document_end',
 	main(ctx) {
-		const username = dom.getUsername(document);
+		const username = activities.username;
 		if (!username) {
 			return;
 		}
@@ -23,14 +22,14 @@ export const activities: ComponentFeature = {
 
 		return Promise.all([
 			Promise.resolve().then(() => {
-				return init(ctx, activityTrail, {
+				return init(ctx, document, activityTrail, {
 					componentType: 'favorite',
 					buttonClass: 'oj_favorite_link',
 					buttonLabels: { active: 'un-favorite', inactive: 'favorite' },
 				});
 			}),
 			Promise.resolve().then(() => {
-				return init(ctx, activityTrail, {
+				return init(ctx, document, activityTrail, {
 					componentType: 'flag',
 					buttonClass: 'oj_flag_link',
 					buttonLabels: { active: 'un-flag', inactive: 'flag' },
@@ -42,6 +41,7 @@ export const activities: ComponentFeature = {
 
 const init = async (
 	ctx: ContentScriptContext,
+	doc: Document,
 	activityTrail: ActivityTrail,
 	config: ActivityButtonConfig
 ) => {
@@ -55,7 +55,7 @@ const init = async (
 		}
 
 		cleanupButtons = await initActivityButtons(
-			document,
+			doc,
 			window.location.pathname,
 			activityTrail,
 			config

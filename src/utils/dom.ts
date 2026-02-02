@@ -72,7 +72,7 @@ const getAuthToken = async (
 	return actionLink?.href.match(authMatchPattern)?.[1];
 };
 
-const getUsername = (doc: Document): string | undefined => {
+const getUsername = (doc: HTMLElement): string | undefined => {
 	const userLink = doc.querySelector('span.pagetop a#me');
 	return userLink?.textContent.split(' ')[0] || undefined;
 };

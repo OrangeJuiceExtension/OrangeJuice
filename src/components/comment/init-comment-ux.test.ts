@@ -120,7 +120,7 @@ describe('initCommentUX', () => {
 
 	describe('OP highlighting', () => {
 		it('should highlight OP username', () => {
-			initCommentUX(document, comments);
+			initCommentUX(document, comments, 'opauthor');
 
 			const opComment = document.querySelector('#comment1');
 			const authorLink = opComment?.querySelector<HTMLAnchorElement>('a.hnuser');
@@ -140,7 +140,7 @@ describe('initCommentUX', () => {
 		});
 
 		it('should handle multiple OP comments', () => {
-			initCommentUX(document, comments);
+			initCommentUX(document, comments, 'opauthor');
 
 			const opComments = document.querySelectorAll('a.hnuser.oj_op');
 			expect(opComments.length).toBe(1);
@@ -190,7 +190,7 @@ describe('initCommentUX', () => {
 				</tr>
 			`;
 
-			expect(() => initCommentUX(document, comments)).not.toThrow();
+			expect(() => initCommentUX(document, comments, 'testuser')).not.toThrow();
 		});
 
 		it('should handle logged out state (no OP)', () => {
@@ -211,7 +211,7 @@ describe('initCommentUX', () => {
 				</table>
 			`;
 
-			initCommentUX(document, comments);
+			initCommentUX(document, comments, 'someuser');
 
 			const authorLink = document.querySelector<HTMLAnchorElement>('a.hnuser');
 			expect(authorLink?.classList.contains('oj_op')).toBe(false);

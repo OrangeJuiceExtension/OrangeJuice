@@ -104,7 +104,7 @@ describe('modal', () => {
 				key: 'Escape',
 				bubbles: true,
 			});
-			window.dispatchEvent(escapeEvent);
+			doc.dispatchEvent(escapeEvent);
 
 			expect(doc.body.contains(overlay)).toBe(false);
 		});
@@ -117,7 +117,7 @@ describe('modal', () => {
 				key: 'escape',
 				bubbles: true,
 			});
-			window.dispatchEvent(escapeEvent);
+			doc.dispatchEvent(escapeEvent);
 
 			expect(doc.body.contains(overlay)).toBe(false);
 		});
@@ -132,7 +132,7 @@ describe('modal', () => {
 		});
 
 		it('should clean up event listeners on invalidation', () => {
-			const removeSpy = vi.spyOn(window, 'removeEventListener');
+			const removeSpy = vi.spyOn(doc, 'removeEventListener');
 			createModal({ doc, ctx, content: 'test' });
 
 			invalidateCallback();

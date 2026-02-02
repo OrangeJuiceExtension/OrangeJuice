@@ -26,15 +26,15 @@ export const comments: ComponentFeature = {
 
 		const manager = createClientServices();
 
-		const comments = dom.getAllComments(document);
+		const allComments = dom.getAllComments(document);
 		return Promise.all([
-			Promise.resolve().then(() => initCommentUX(document, comments)),
-			Promise.resolve().then(() => highlightUnreadComments(document, comments, manager)),
-			Promise.resolve().then(() => indentToggle(document, comments)),
-			Promise.resolve().then(() => changeDeadCommentsColor(document, comments)),
-			Promise.resolve().then(() => backticksToCode(document, comments)),
-			Promise.resolve().then(() => collapseRoot(ctx, document, comments)),
-			Promise.resolve().then(() => keyboardNavigation(ctx, document, comments)),
+			Promise.resolve().then(() => initCommentUX(document, allComments, comments.username)),
+			Promise.resolve().then(() => highlightUnreadComments(document, allComments, manager)),
+			Promise.resolve().then(() => indentToggle(document, allComments)),
+			Promise.resolve().then(() => changeDeadCommentsColor(document, allComments)),
+			Promise.resolve().then(() => backticksToCode(document, allComments)),
+			Promise.resolve().then(() => collapseRoot(ctx, document, allComments)),
+			Promise.resolve().then(() => keyboardNavigation(ctx, document, allComments)),
 			Promise.resolve().then(() => inlineReply(ctx, document)),
 		]);
 	},

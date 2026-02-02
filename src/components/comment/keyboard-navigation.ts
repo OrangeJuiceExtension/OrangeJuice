@@ -1,6 +1,4 @@
 import type { ContentScriptContext } from '#imports';
-import { getKeyboardShortcutsHelp } from '@/components/comment/keyboard-shortcuts-help.ts';
-import { showModal } from '@/components/common/modal.ts';
 import { dom } from '@/utils/dom.ts';
 import { ItemData } from '@/utils/dom-item-data.ts';
 import { itemKeyboardHandlers } from '@/utils/item-keyboard-handlers.ts';
@@ -52,7 +50,6 @@ export const keyboardNavigation = (
 	}
 
 	const itemData: ItemData = new ItemData(dom.mapCommentsById(comments));
-	let helpModalOpen = false;
 
 	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: it is just complex
 	const keydownHandler = (e: KeyboardEvent) => {
@@ -134,19 +131,6 @@ export const keyboardNavigation = (
 			case 't':
 				doc.body.scrollTo(0, 0);
 				break;
-			case '?':
-				if (combo && !helpModalOpen) {
-					helpModalOpen = true;
-					showModal({
-						doc,
-						ctx,
-						content: getKeyboardShortcutsHelp(),
-						onClose: () => {
-							helpModalOpen = false;
-						},
-					});
-				}
-				break;
 			// parse reference links
 			case '0':
 			case '1':
@@ -167,7 +151,7 @@ export const keyboardNavigation = (
 		}
 	};
 
-	window.addEventListener('keydown', keydownHandler);
+	doc.addEventListener('keydown', keydownHandler);
 
 	const itemClickHandler = (e: PointerEvent) => {
 		if (e.target instanceof HTMLElement) {
@@ -205,7 +189,7 @@ export const keyboardNavigation = (
 	doc.addEventListener('click', documentClickHandler);
 
 	ctx.onInvalidated(() => {
-		window.removeEventListener('keydown', keydownHandler);
+		doc.removeEventListener('keydown', keydownHandler);
 		for (const comment of comments) {
 			comment.removeEventListener('click', itemClickHandler);
 		}

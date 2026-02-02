@@ -1,0 +1,102 @@
+import type { ContentScriptContext } from '#imports';
+import { getKeyboardShortcutsHelp } from '@/components/common/keyboard-shortcuts-help.ts';
+import { showModal } from '@/components/common/modal.ts';
+import { dom } from '@/utils/dom.ts';
+import { paths } from '@/utils/paths.ts';
+
+export const keyboardNavigation = (
+	ctx: ContentScriptContext,
+	doc: Document,
+	username?: string
+): void => {
+	let helpModalOpen = false;
+
+	const keydownHandlerHelp = (event: KeyboardEvent) => {
+		if (helpModalOpen) {
+			return;
+		}
+
+		const combo = dom.isComboKey(event);
+
+		switch (event.key) {
+			case '?':
+				if (combo && !helpModalOpen) {
+					helpModalOpen = true;
+					showModal({
+						doc,
+						ctx,
+						content: getKeyboardShortcutsHelp(doc),
+						onClose: () => {
+							helpModalOpen = false;
+						},
+					});
+				}
+				break;
+			default:
+				break;
+		}
+	};
+
+	const keydownHandler = (event: KeyboardEvent) => {
+		let locationUrl: string | undefined;
+
+		switch (event.key) {
+			// H: Home
+			case 'Ó': {
+				locationUrl = paths.base;
+				break;
+			}
+
+			// S: Submit
+			case 'Í': {
+				locationUrl = `${paths.base}/submit`;
+				break;
+			}
+
+			// O: Show
+			case 'Ø': {
+				locationUrl = `${paths.base}/show`;
+				break;
+			}
+
+			// A: Ask
+			case 'Å': {
+				locationUrl = `${paths.base}/ask`;
+				break;
+			}
+
+			// N: New
+			case '˜': {
+				locationUrl = `${paths.base}/newest`;
+				break;
+			}
+
+			// P: Profile
+			case '∏': {
+				locationUrl = username ? `${paths.base}/user?id=${username}` : undefined;
+				break;
+			}
+
+			// T: Threads
+			case 'ˇ': {
+				locationUrl = username ? `${paths.base}/threads?id=${username}` : undefined;
+				break;
+			}
+
+			default:
+				break;
+		}
+
+		if (locationUrl) {
+			window.location.href = locationUrl;
+		}
+	};
+
+	doc.addEventListener('keydown', keydownHandlerHelp);
+	doc.addEventListener('keydown', keydownHandler);
+
+	ctx.onInvalidated(() => {
+		doc.removeEventListener('keydown', keydownHandlerHelp);
+		doc.removeEventListener('keydown', keydownHandler);
+	});
+};

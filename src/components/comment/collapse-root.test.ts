@@ -36,7 +36,7 @@ describe('collapseRoot', () => {
 
 		document.body.append(rootComment, childComment);
 
-		collapseRoot(document, [rootComment, childComment], mockCtx);
+		collapseRoot(mockCtx, document, [rootComment, childComment]);
 
 		const rootComhead = rootComment.querySelector('span.comhead');
 		expect(rootComhead?.textContent).not.toContain('[collapse root]');
@@ -61,7 +61,7 @@ describe('collapseRoot', () => {
 
 		document.body.append(rootComment, childComment);
 
-		collapseRoot(document, [rootComment, childComment], mockCtx);
+		collapseRoot(mockCtx, document, [rootComment, childComment]);
 
 		const comhead = childComment.querySelector('span.comhead');
 		const collapseLink = comhead?.querySelector('a');
@@ -90,7 +90,7 @@ describe('collapseRoot', () => {
 
 		document.body.append(rootComment, childComment);
 
-		collapseRoot(document, [rootComment, childComment], mockCtx);
+		collapseRoot(mockCtx, document, [rootComment, childComment]);
 
 		const collapseLink = childComment.querySelector<HTMLAnchorElement>('span.comhead a');
 		collapseLink?.click();
@@ -121,7 +121,7 @@ describe('collapseRoot', () => {
 
 		document.body.append(rootComment, child1, child2);
 
-		collapseRoot(document, [rootComment, child1, child2], mockCtx);
+		collapseRoot(mockCtx, document, [rootComment, child1, child2]);
 
 		const link1 = child1.querySelector('span.comhead a');
 		const link2 = child2.querySelector('span.comhead a');
@@ -152,7 +152,7 @@ describe('collapseRoot', () => {
 
 		document.body.append(rootComment, child1, child2);
 
-		collapseRoot(document, [rootComment, child1, child2], mockCtx);
+		collapseRoot(mockCtx, document, [rootComment, child1, child2]);
 
 		expect(mockCtx.onInvalidated).toHaveBeenCalledTimes(2);
 		expect(cleanupFunctions).toHaveLength(2);
@@ -172,7 +172,7 @@ describe('collapseRoot', () => {
 
 		document.body.append(rootComment, childComment);
 
-		collapseRoot(document, [rootComment, childComment], mockCtx);
+		collapseRoot(mockCtx, document, [rootComment, childComment]);
 
 		const collapseLink = childComment.querySelector('a');
 		expect(collapseLink).toBeNull();
@@ -213,7 +213,7 @@ describe('collapseRoot', () => {
 
 		document.body.append(root1, child1, root2, child2);
 
-		collapseRoot(document, [root1, child1, root2, child2], mockCtx);
+		collapseRoot(mockCtx, document, [root1, child1, root2, child2]);
 
 		const link1 = child1.querySelector<HTMLAnchorElement>('span.comhead a');
 		const link2 = child2.querySelector<HTMLAnchorElement>('span.comhead a');
@@ -246,7 +246,7 @@ describe('collapseRoot', () => {
 
 		document.body.append(rootComment, childComment);
 
-		collapseRoot(document, [rootComment, childComment], mockCtx);
+		collapseRoot(mockCtx, document, [rootComment, childComment]);
 
 		const collapseLink = childComment.querySelector<HTMLAnchorElement>('span.comhead a');
 

@@ -35,7 +35,7 @@ describe('fetchTitle', () => {
 	});
 
 	it('should create a fetch title button', () => {
-		fetchTitle(mockDoc, mockContext);
+		fetchTitle(mockContext, mockDoc);
 
 		const urlInput = mockDoc.querySelector<HTMLInputElement>('input[name="url"]');
 		const button = urlInput?.parentElement?.querySelector('button');
@@ -47,7 +47,7 @@ describe('fetchTitle', () => {
 	it('should prepend https:// to URLs without http', () => {
 		mockFetchJson.mockResolvedValue({ title: 'Test Title' });
 
-		fetchTitle(mockDoc, mockContext);
+		fetchTitle(mockContext, mockDoc);
 
 		const urlInput = mockDoc.querySelector<HTMLInputElement>('input[name="url"]');
 		const titleInput = mockDoc.querySelector<HTMLInputElement>('input[name="title"]');
@@ -70,7 +70,7 @@ describe('fetchTitle', () => {
 	it('should not modify URLs that already start with http', () => {
 		mockFetchJson.mockResolvedValue({ title: 'Test Title' });
 
-		fetchTitle(mockDoc, mockContext);
+		fetchTitle(mockContext, mockDoc);
 
 		const urlInput = mockDoc.querySelector<HTMLInputElement>('input[name="url"]');
 		const button = urlInput?.parentElement?.querySelector('button');
@@ -89,7 +89,7 @@ describe('fetchTitle', () => {
 	});
 
 	it('should return early if URL input is empty', () => {
-		fetchTitle(mockDoc, mockContext);
+		fetchTitle(mockContext, mockDoc);
 
 		const urlInput = mockDoc.querySelector<HTMLInputElement>('input[name="url"]');
 		const button = urlInput?.parentElement?.querySelector('button');
@@ -106,7 +106,7 @@ describe('fetchTitle', () => {
 	});
 
 	it('should register cleanup handler with context', () => {
-		fetchTitle(mockDoc, mockContext);
+		fetchTitle(mockContext, mockDoc);
 
 		expect(mockContext.onInvalidated).toHaveBeenCalledWith(expect.any(Function));
 	});

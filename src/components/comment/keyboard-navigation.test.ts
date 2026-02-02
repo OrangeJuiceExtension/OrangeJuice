@@ -31,7 +31,7 @@ describe('keyboardNavigation', () => {
 			bubbles: true,
 			...options,
 		});
-		window.dispatchEvent(event);
+		doc.dispatchEvent(event);
 		return event;
 	};
 
@@ -67,7 +67,7 @@ describe('keyboardNavigation', () => {
 
 	describe('initialization', () => {
 		it('should inject focus styles into document head', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 
 			const styleElement = doc.head.querySelector('style');
 			expect(styleElement).toBeDefined();
@@ -76,7 +76,7 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should register onInvalidated callback', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 
 			expect(ctx.onInvalidated).toHaveBeenCalledWith(expect.any(Function));
 		});
@@ -144,7 +144,7 @@ describe('keyboardNavigation', () => {
 		describe('handlers should be called', () => {
 			for (const { name, key, handler } of keyHandlerTests) {
 				it(name, () => {
-					keyboardNavigation(doc, comments, ctx);
+					keyboardNavigation(ctx, doc, comments);
 					const comment = comments[0];
 					if (comment) {
 						comment.click();
@@ -161,21 +161,21 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('Escape should call escape handler', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 			dispatchKeydown('Escape');
 
 			expect(itemKeyboardHandlers.escape).toHaveBeenCalled();
 		});
 
 		it('escape should call escape handler', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 			dispatchKeydown('escape');
 
 			expect(itemKeyboardHandlers.escape).toHaveBeenCalled();
 		});
 
 		it('c should call collapseToggle', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 			const comment = comments[0];
 			if (comment) {
 				comment.click();
@@ -186,7 +186,7 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('t should scroll to top', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 			dispatchKeydown('t');
 
 			expect(doc.body.scrollTo).toHaveBeenCalledWith(0, 0);
@@ -197,7 +197,7 @@ describe('keyboardNavigation', () => {
 
 			for (const num of numbers) {
 				it(`${num} should call openReferenceLink`, () => {
-					keyboardNavigation(doc, comments, ctx);
+					keyboardNavigation(ctx, doc, comments);
 					const comment = comments[0];
 					if (comment) {
 						comment.click();
@@ -212,7 +212,7 @@ describe('keyboardNavigation', () => {
 
 	describe('escape with reply open', () => {
 		it('should click reply button when reply is stored', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 			const comment = comments[0];
 			if (comment) {
 				comment.click();
@@ -230,7 +230,7 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should clear reply after clicking', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 			const replyBtn = document.createElement('a');
 			replyBtn.href = 'reply?id=123';
 			vi.spyOn(replyBtn, 'click');
@@ -259,7 +259,7 @@ describe('keyboardNavigation', () => {
 
 		for (const { key, handler } of requiresActiveItemTests) {
 			it(`${key} should not trigger without active item`, () => {
-				keyboardNavigation(doc, comments, ctx);
+				keyboardNavigation(ctx, doc, comments);
 				dispatchKeydown(key);
 
 				expect(
@@ -283,7 +283,7 @@ describe('keyboardNavigation', () => {
 
 		for (const { key, handler } of comboKeyTests) {
 			it(`${key} should not trigger with metaKey`, () => {
-				keyboardNavigation(doc, comments, ctx);
+				keyboardNavigation(ctx, doc, comments);
 				dispatchKeydown(key, { metaKey: true });
 
 				expect(
@@ -292,7 +292,7 @@ describe('keyboardNavigation', () => {
 			});
 
 			it(`${key} should not trigger with ctrlKey`, () => {
-				keyboardNavigation(doc, comments, ctx);
+				keyboardNavigation(ctx, doc, comments);
 				dispatchKeydown(key, { ctrlKey: true });
 
 				expect(
@@ -302,7 +302,7 @@ describe('keyboardNavigation', () => {
 		}
 
 		it('Escape should not trigger with combo key', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 			dispatchKeydown('Escape', { metaKey: true });
 
 			expect(itemKeyboardHandlers.escape).not.toHaveBeenCalled();
@@ -320,7 +320,7 @@ describe('keyboardNavigation', () => {
 				get: () => textarea,
 			});
 
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 
 			const comment = comments[0];
 			if (comment) {
@@ -347,7 +347,7 @@ describe('keyboardNavigation', () => {
 				get: () => textarea,
 			});
 
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 
 			const comment = comments[0];
 			if (comment) {
@@ -372,7 +372,7 @@ describe('keyboardNavigation', () => {
 				get: () => input,
 			});
 
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 
 			const comment = comments[0];
 			if (comment) {
@@ -388,7 +388,7 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should blur anchor and trigger handlers when anchor is focused', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 
 			const anchor = doc.createElement('a');
 			anchor.href = '#';
@@ -425,7 +425,7 @@ describe('keyboardNavigation', () => {
 				get: () => textarea,
 			});
 
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 			const comment = comments[0];
 			if (!comment) {
 				throw new Error('Expected comment to exist');
@@ -457,7 +457,7 @@ describe('keyboardNavigation', () => {
 				get: () => input,
 			});
 
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 			const comment = comments[0];
 			if (!comment) {
 				throw new Error('Expected comment to exist');
@@ -492,7 +492,7 @@ describe('keyboardNavigation', () => {
 				get: () => textarea,
 			});
 
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 
 			const comment = comments[0];
 			if (comment) {
@@ -511,7 +511,7 @@ describe('keyboardNavigation', () => {
 
 	describe('click handler', () => {
 		it('should activate item when comment is clicked', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 			const comment = comments[0];
 			if (!comment) {
 				throw new Error('Expected comment to exist');
@@ -532,7 +532,7 @@ describe('keyboardNavigation', () => {
 
 	describe('document click handler', () => {
 		it('should deactivate comment when clicking outside comments area', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 
 			// Activate a comment first
 			const comment = comments[0];
@@ -561,7 +561,7 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should not deactivate comment when clicking inside comments area', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 
 			// Activate a comment first
 			const comment = comments[0];
@@ -590,7 +590,7 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should not deactivate when clicking on a textarea', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 
 			// Activate a comment first
 			const comment = comments[0];
@@ -619,7 +619,7 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should not deactivate when clicking on an input', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 
 			// Activate a comment first
 			const comment = comments[0];
@@ -648,7 +648,7 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should not deactivate when no comment is active', () => {
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 
 			// Don't activate any comment
 
@@ -671,10 +671,10 @@ describe('keyboardNavigation', () => {
 
 	describe('cleanup on invalidation', () => {
 		it('should remove keydown listener on invalidation', () => {
-			const addSpy = vi.spyOn(window, 'addEventListener');
-			const removeSpy = vi.spyOn(window, 'removeEventListener');
+			const addSpy = vi.spyOn(doc, 'addEventListener');
+			const removeSpy = vi.spyOn(doc, 'removeEventListener');
 
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 			const keydownHandler = addSpy.mock.calls[0]?.[1];
 
 			invalidateCallback();
@@ -689,7 +689,7 @@ describe('keyboardNavigation', () => {
 			}
 			const removeSpy = vi.spyOn(comment, 'removeEventListener');
 
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 
 			invalidateCallback();
 
@@ -700,7 +700,7 @@ describe('keyboardNavigation', () => {
 			const addSpy = vi.spyOn(doc, 'addEventListener');
 			const removeSpy = vi.spyOn(doc, 'removeEventListener');
 
-			keyboardNavigation(doc, comments, ctx);
+			keyboardNavigation(ctx, doc, comments);
 			const documentClickHandler = addSpy.mock.calls.find((call) => call[0] === 'click')?.[1];
 
 			invalidateCallback();

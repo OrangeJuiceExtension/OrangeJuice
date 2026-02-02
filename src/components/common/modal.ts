@@ -62,15 +62,15 @@ export const createModal = (options: ModalOptions): HTMLElement => {
 	const escapeHandler = (e: KeyboardEvent) => {
 		if (e.key === 'Escape' || e.key === 'escape') {
 			hide();
-			window.removeEventListener('keydown', escapeHandler);
+			doc.removeEventListener('keydown', escapeHandler);
 		}
 	};
 
-	window.addEventListener('keydown', escapeHandler);
+	doc.addEventListener('keydown', escapeHandler);
 
 	ctx.onInvalidated(() => {
 		hide();
-		window.removeEventListener('keydown', escapeHandler);
+		doc.removeEventListener('keydown', escapeHandler);
 	});
 
 	modal.addEventListener('click', (e) => {
