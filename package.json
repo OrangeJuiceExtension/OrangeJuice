@@ -2,7 +2,7 @@
 	"name": "orangejuice",
 	"description": "Orange Juice makes HackerNews sweeter",
 	"private": true,
-	"version": "0.18.0",
+	"version": "0.18.1",
 	"type": "module",
 	"scripts": {
 		"dev": "wxt",
