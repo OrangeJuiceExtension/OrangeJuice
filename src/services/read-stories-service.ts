@@ -1,4 +1,4 @@
-import { browser } from '@wxt-dev/browser';
+import { browser } from '#imports';
 
 export class ReadStoriesService {
 	getVisits(stories: HNStory[]) {
@@ -13,7 +13,7 @@ export class ReadStoriesService {
 			);
 			return Promise.all(visitPromises);
 		} catch (e) {
-			console.error('Error in handleHideReadStories:', e);
+			console.error({ error: 'Error in ReadStoriesService.getVisits', e });
 		}
 	}
 }

@@ -133,4 +133,8 @@ Testing is crucial for maintaining code quality and preventing regressions as th
 
 We haven't implemented end-to-end testing yet because it doesn't seem necessary at this stage. The extension's features are relatively straightforward, and manual testing has been enough for catching integration issues. As the project grows in complexity, we may revisit this decision.
 
+## Logged in
+
+Not much testing has been done while logged out. This isn't a focus for now since the real benefits come from being logged in, but it's something to keep in mind as the project matures.
+
 Make sure to run `bunx playwright install` before running tests.

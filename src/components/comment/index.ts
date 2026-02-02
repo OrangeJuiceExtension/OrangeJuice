@@ -4,8 +4,7 @@ import { changeDeadCommentsColor } from '@/components/comment/change-dead-commen
 import { collapseRoot } from '@/components/comment/collapse-root.ts';
 import { indentToggle } from '@/components/comment/indent-toggle.ts';
 import { keyboardNavigation } from '@/components/comment/keyboard-navigation.ts';
-import { openInNewTab } from '@/components/comment/open-in-new-tab.ts';
-import { createServicesManager } from '@/services/manager.ts';
+import { createClientServices } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 import type { ComponentFeature } from '@/utils/types.ts';
@@ -20,14 +19,11 @@ export const comments: ComponentFeature = {
 	matches: [`${paths.base}/*`],
 	runAt: 'document_end',
 	main(_ctx: ContentScriptContext) {
-		// runs on all pages
-		openInNewTab(_ctx, document);
-
 		if (!validPaths.some((p) => document.location.pathname.startsWith(p))) {
 			return;
 		}
 
-		const manager = createServicesManager();
+		const manager = createClientServices();
 
 		const comments = dom.getAllComments(document);
 		return Promise.all([

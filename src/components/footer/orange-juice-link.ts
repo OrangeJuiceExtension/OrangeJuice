@@ -28,7 +28,7 @@ export const addOrangeJuiceLink = (_ctx: ContentScriptContext, doc: Document, ve
 	// Create an Orange Juice link
 	const ojLink = doc.createElement('a') as HTMLAnchorElement;
 	ojLink.href = 'https://orangejuiceextension.github.io/';
-	ojLink.textContent = `Orange Juice${version ?? ` (${version})`}`;
+	ojLink.textContent = 'Orange Juice';
 	ojLink.setAttribute('title', version);
 	ojLink.rel = 'noreferrer';
 	ojLink.target = '_blank';

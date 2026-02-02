@@ -105,7 +105,7 @@ export const showUserInfoOnHover = (doc: Document, ctx: ContentScriptContext) =>
 		return userDiv;
 	};
 
-	async function showPopover(trigger: HTMLAnchorElement): Promise<void> {
+	function showPopover(trigger: HTMLAnchorElement): Promise<void> {
 		if (!popover) {
 			popover = createUserDiv(trigger);
 		}
@@ -120,7 +120,7 @@ export const showUserInfoOnHover = (doc: Document, ctx: ContentScriptContext) =>
 		trigger.parentElement?.append(popover);
 		activeTrigger = trigger;
 
-		await populateUserDiv(trigger, popover);
+		return populateUserDiv(trigger, popover);
 	}
 
 	function hidePopover(): void {
@@ -129,32 +129,32 @@ export const showUserInfoOnHover = (doc: Document, ctx: ContentScriptContext) =>
 		activeTrigger = null;
 	}
 
-	const onMouseOver = async (e: MouseEvent): Promise<void> => {
+	const onMouseOver = (e: MouseEvent): Promise<void> => {
 		const trigger = (e.target as HTMLAnchorElement) || null;
 
 		if (!trigger || activeTrigger === trigger) {
-			return;
+			return Promise.resolve();
 		}
 
 		if (popover) {
 			hidePopover();
 		}
 
-		await showPopover(trigger);
+		return showPopover(trigger);
 	};
 
 	const onMouseMove = (e: MouseEvent): void => {
-		if (!activeTrigger) {
+		if (!(activeTrigger && popover)) {
 			return;
 		}
 
 		const target = e.target as Node | null;
-		if (activeTrigger.contains(target) || popover?.contains(target)) {
+		if (activeTrigger.contains(target) || popover.contains(target)) {
 			return;
 		}
 
 		const triggerRect = activeTrigger.getBoundingClientRect();
-		const popoverRect = popover?.getBoundingClientRect();
+		const popoverRect = popover.getBoundingClientRect();
 
 		if (popoverRect) {
 			const PADDING = 10;

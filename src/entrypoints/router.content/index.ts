@@ -9,23 +9,26 @@ import { inlineReply } from '@/components/reply/index.ts';
 import { story } from '@/components/story/index.ts';
 import { submit } from '@/components/submit/index.ts';
 import { user } from '@/components/user/index.ts';
+import { createClientServices } from '@/services/manager.ts';
 import { newActivityFetcher } from '@/utils/activity-trail.ts';
 import { dom } from '@/utils/dom.ts';
 
 import { version } from '../../../package.json';
 import './global.css';
+import { common } from '@/components/common/index.ts';
 
-const components = [
+const components: ComponentFeature[] = [
+	common,
 	inlineReply,
 	activities,
 	remaining,
-	story,
 	comments,
 	submit,
 	user,
 	past,
 	navbar,
 	footer,
+	story,
 ];
 
 const urlMatchesPattern = (url: string, pattern: string): boolean => {
@@ -43,6 +46,7 @@ export default defineContentScript({
 	runAt: 'document_end',
 	async main(ctx: ContentScriptContext): Promise<void> {
 		const currentUrl = window.location.href;
+		createClientServices();
 
 		await Promise.all([
 			Promise.resolve().then(async () => {
@@ -57,8 +61,8 @@ export default defineContentScript({
 					return;
 				}
 			}),
-			Promise.resolve().then(() => {
-				for (const component of components) {
+			...components.map((component) =>
+				Promise.resolve().then(async () => {
 					let shouldRun = false;
 					for (const pattern of component?.matches as string[]) {
 						if (urlMatchesPattern(currentUrl, pattern)) {
@@ -68,11 +72,19 @@ export default defineContentScript({
 					}
 
 					if (shouldRun) {
-						component.version = version;
-						component.main(ctx);
+						try {
+							component.version = version;
+							await component.main(ctx);
+						} catch (e) {
+							console.error({
+								error: 'Failed to run component',
+								e,
+								component: component.id,
+							});
+						}
 					}
-				}
-			}),
+				}),
+			),
 		]);
 	},
 });

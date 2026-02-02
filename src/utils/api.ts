@@ -1,12 +1,12 @@
 // Source for the extension is here: https://github.com/OrangeJuiceExtension/orange-juice-worker
 // This could go private in the future, but we will see how things go.
 
-import { createServicesManager } from '@/services/manager.ts';
+import { createClientServices } from '@/services/manager.ts';
 
 export const WORKER_BASE = 'https://orange-juice-worker.orangejuiceextension.workers.dev';
 
 function fetchJson<T>(url: string): Promise<T | null | undefined> {
-	const service = createServicesManager().getFetchRemoteService();
+	const service = createClientServices().getFetchRemoteService();
 	return service.fetchJson(`${WORKER_BASE}/yxorp/v0/${url}`);
 }
 

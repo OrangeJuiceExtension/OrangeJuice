@@ -1,23 +1,25 @@
-import { type Browser, browser } from '@wxt-dev/browser';
 import type { Adapter, Message, OnMessage, SendMessage } from 'comctx';
+import { type Browser, browser } from '#imports';
 
 export interface MessageMeta {
 	url: string;
 	injector?: 'content' | 'popup';
+	sender?: Browser.runtime.MessageSender;
 }
 
 export class ProvideAdapter implements Adapter<MessageMeta> {
 	sendMessage: SendMessage<MessageMeta> = async (message) => {
 		switch (message.meta.injector) {
-			case 'content': {
-				const tabs: Browser.tabs.Tab[] = await browser.tabs.query({
-					url: message.meta.url,
-				});
-				// Send a message to the content-script
-				// biome-ignore lint/style/noNonNullAssertion: we should always have a tab id
-				tabs.map((tab) => browser.tabs.sendMessage(tab.id!, message));
+			case 'content':
+				{
+					const tabs: Browser.tabs.Tab[] = await browser.tabs.query({
+						url: message.meta.url,
+					});
+					// Send a message to the content-script
+					// biome-ignore lint/style/noNonNullAssertion: we should always have a tab id
+					tabs.map((tab) => browser.tabs.sendMessage(tab.id!, message));
+				}
 				break;
-			}
 			case 'popup': {
 				// Send a message to the popup or other internal pages
 				await browser.runtime.sendMessage(message).catch((error) => {
@@ -39,8 +41,12 @@ export class ProvideAdapter implements Adapter<MessageMeta> {
 	};
 
 	onMessage: OnMessage<MessageMeta> = (callback) => {
-		const handler = (message?: Partial<Message<MessageMeta>>) => {
+		const handler = (
+			message: Partial<Message<MessageMeta>>
+			// sender: Browser.runtime.MessageSender
+		) => {
 			callback(message);
+			// callback({ ...message, args: [...(message?.args || []), sender] });
 		};
 		browser.runtime.onMessage.addListener(handler);
 		return () => browser.runtime.onMessage.removeListener(handler);
@@ -49,18 +55,23 @@ export class ProvideAdapter implements Adapter<MessageMeta> {
 
 export class InjectAdapter implements Adapter<MessageMeta> {
 	injector?: 'content' | 'popup';
+
 	constructor(injector?: 'content' | 'popup') {
 		this.injector = injector;
 	}
 	sendMessage: SendMessage<MessageMeta> = (message) => {
 		browser.runtime.sendMessage(browser.runtime.id, {
 			...message,
-			meta: { url: document.location.href, injector: this.injector },
+			meta: { url: document.location.href, injector: this.injector, message },
 		});
 	};
 	onMessage: OnMessage<MessageMeta> = (callback) => {
-		const handler = (message?: Partial<Message<MessageMeta>>) => {
+		const handler = (
+			message: Partial<Message<MessageMeta>>
+			// sender: Browser.runtime.MessageSender
+		) => {
 			callback(message);
+			// callback({ ...message, args: [...(message?.args || []), sender] });
 		};
 		browser.runtime.onMessage.addListener(handler);
 		return () => browser.runtime.onMessage.removeListener(handler);

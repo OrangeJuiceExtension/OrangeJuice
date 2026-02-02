@@ -9,7 +9,7 @@
 		"dev:firefox": "wxt -b firefox",
 		"docs": "mkdir -p public && cp -r docs/* public/ && cp -r assets public/",
 		"build": "wxt build",
-		"build-watch": "chokidar \"src/**/*\" -c \"bun run build\"",
+		"build-watch": "chokidar --initial --silent \"src/**/*\" -c \"bun run build\"",
 		"build:firefox": "wxt build -b firefox",
 		"icons": "bun run scripts/generate-icons.ts",
 		"zip": "wxt zip",

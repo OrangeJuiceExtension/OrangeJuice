@@ -1,5 +1,5 @@
 import type { ContentScriptContext } from '#imports';
-import { createServicesManager } from '@/services/manager.ts';
+import { createClientServices } from '@/services/manager.ts';
 import { WORKER_BASE } from '@/utils/api.ts';
 
 interface Title {
@@ -42,7 +42,7 @@ export const fetchTitle = (doc: Document, ctx: ContentScriptContext) => {
 				value = `https://${value}`;
 			}
 
-			const service = createServicesManager().getFetchRemoteService();
+			const service = createClientServices().getFetchRemoteService();
 			const url = `${WORKER_BASE}/title?url=${encodeURIComponent(value)}`;
 			const result = await service.fetchJson(url);
 			if (!result) {

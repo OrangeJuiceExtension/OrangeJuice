@@ -2,11 +2,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContentScriptContext } from '#imports';
-import { createServicesManager } from '@/services/manager.ts';
+import { createClientServices } from '@/services/manager.ts';
 import { fetchTitle } from './fetch-title';
 
 vi.mock('@/services/manager.ts', () => ({
-	createServicesManager: vi.fn(),
+	createClientServices: vi.fn(),
 }));
 
 const fixtureHtml = readFileSync(
@@ -27,7 +27,7 @@ describe('fetchTitle', () => {
 		} as unknown as ContentScriptContext;
 
 		mockFetchJson = vi.fn();
-		vi.mocked(createServicesManager).mockReturnValue({
+		vi.mocked(createClientServices).mockReturnValue({
 			getFetchRemoteService: () => ({
 				fetchJson: mockFetchJson,
 			}),

@@ -1,15 +1,18 @@
-import { browser } from '@wxt-dev/browser';
-import { defineBackground } from 'wxt/utils/define-background';
-import { initBackgroundServices } from '@/services/manager.ts';
+import { browser, defineBackground } from '#imports';
+import { createBackgroundServices } from '@/services/manager.ts';
 
 export const main = () => {
 	// This allows the service-worker to remain resident in the background
 	// https://stackoverflow.com/questions/66618136/persistent-service-worker-in-chrome-extension
-	browser.webNavigation.onHistoryStateUpdated.addListener(() => {
-		console.log('background active');
-	});
+	const keepAlive = () => {
+		setInterval(browser.runtime.getPlatformInfo, 1000);
+		browser.webNavigation.onHistoryStateUpdated.addListener(() => {
+			console.log({ info: 'background onHistoryStateUpdated active', date: Date.now() });
+		});
+	};
+	keepAlive();
 
-	initBackgroundServices();
+	createBackgroundServices();
 };
 
-export default defineBackground(main);
+export default defineBackground({ main });

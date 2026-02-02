@@ -2,8 +2,23 @@ import { type Browser, browser } from '#imports';
 
 export class BrowserTabService {
 	async createTab(request: Browser.tabs.CreateProperties) {
-		const current = await browser.tabs.getCurrent();
-		const index = current === undefined ? request.index : current.index + 1;
-		return browser.tabs.create({ ...request, index, active: false });
+		const tabs = await browser.tabs.query({});
+
+		let activeTab: Browser.tabs.Tab | undefined;
+		for (const tab of tabs) {
+			if (tab.active) {
+				activeTab = tab;
+			}
+		}
+
+		const index = activeTab ? activeTab.index + 1 : request.index;
+
+		const opts = {
+			...request,
+			index,
+			active: false,
+		};
+
+		await browser.tabs.create(opts);
 	}
 }

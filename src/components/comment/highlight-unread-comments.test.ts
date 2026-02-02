@@ -3,11 +3,7 @@ import {
 	HighlightUnreadCommentsService,
 	ojReadCommentsKey,
 } from '@/services/highlight-unread-comments-service.ts';
-import {
-	createServicesManager,
-	SERVICE_NAMESPACES,
-	type ServicesManager,
-} from '@/services/manager.ts';
+import { createClientServices, type ServicesManager } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
 import lStorage from '@/utils/localStorage.ts';
 import type { ReadCommentsList } from './highlight-unread-comments.ts';
@@ -22,9 +18,9 @@ describe('highlightUnreadComments', () => {
 		mockDoc = document.implementation.createHTMLDocument('test');
 		lStorage.clear();
 		vi.clearAllMocks();
-		manager = createServicesManager();
+		manager = createClientServices();
 		service = new HighlightUnreadCommentsService();
-		manager.started.set(SERVICE_NAMESPACES.Highlight, service);
+		manager.getHighlightService = () => service;
 	});
 
 	describe('style injection', () => {

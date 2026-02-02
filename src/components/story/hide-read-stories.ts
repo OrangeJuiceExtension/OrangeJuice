@@ -1,5 +1,5 @@
 import type { ContentScriptContext } from '#imports';
-import { createServicesManager } from '@/services/manager.ts';
+import { createClientServices } from '@/services/manager.ts';
 import type { ReadStoriesService } from '@/services/read-stories-service.ts';
 import { parseHNStoriesPage } from '@/utils/hn-parser.ts';
 import lStorage from '@/utils/localStorage.ts';
@@ -119,11 +119,18 @@ const getVisitedStoryIds = async (
 	service: ReadStoriesService,
 	hnStories: HNStory[]
 ): Promise<string[] | undefined> => {
-	const response = await service.getVisits(hnStories);
-	if (!response) {
-		return;
+	try {
+		const response = await service.getVisits(hnStories);
+		if (!response) {
+			return;
+		}
+		return response
+			.filter((story: HNStory) => story.latestVisit)
+			.map((story: HNStory) => story.id);
+	} catch (e) {
+		console.error({ error: 'Error in getVisitedStoryIds', e });
+		return Promise.resolve(undefined);
 	}
-	return response.filter((story: HNStory) => story.latestVisit).map((story: HNStory) => story.id);
 };
 
 export const hideReadStories = async (ctx: ContentScriptContext, doc: Document) => {
@@ -144,9 +151,8 @@ export const hideReadStories = async (ctx: ContentScriptContext, doc: Document) 
 		return;
 	}
 
-	const service = createServicesManager().getReadStoriesService();
-
 	try {
+		const service = createClientServices().getReadStoriesService();
 		const hnStories = parseHNStoriesPage(doc);
 		let readStoryIds: string[] | undefined;
 
@@ -157,7 +163,11 @@ export const hideReadStories = async (ctx: ContentScriptContext, doc: Document) 
 			}
 			checkbox.checked ? hideStories(readStoryIds, doc) : showStories(readStoryIds, doc);
 		};
-		await updateVisits();
+		try {
+			await updateVisits();
+		} catch (e) {
+			console.log({ error: 'error update visits', e });
+		}
 
 		const handleCheckboxChange = async () => {
 			await updateVisits();
@@ -174,9 +184,9 @@ export const hideReadStories = async (ctx: ContentScriptContext, doc: Document) 
 
 		ctx.onInvalidated(() => {
 			checkbox.removeEventListener('change', handleCheckboxChange);
-			window.removeEventListener('pageshow', pageshow);
+			// window.removeEventListener('pageshow', pageshow);
 		});
 	} catch (e) {
-		console.error('Error in hideReadStories component:', e);
+		console.error({ error: 'Error in hideread stories', e });
 	}
 };
