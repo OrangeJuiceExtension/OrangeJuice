@@ -71,7 +71,7 @@ Improves the comment reading experience with several visual enhancements:
 
 # Installation
 
-I recommend you install from github releases for now. I'm moving quickly and fixing / modifying things left and right. I'll update this once the webstores are updating on a more regular basis.
+For now, I recommend installing from GitHub releases. Things are moving fast and I’m making fixes and tweaks frequently. I’ll update this once the web stores are updated on a more regular cadence.
 
 ## From the Chrome webstore
 
