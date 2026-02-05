@@ -8,7 +8,7 @@ describe('keyboard shortcuts help', () => {
 
 		const text = help.textContent ?? '';
 
-		expect(text).toContain('(requires ⌥)');
+		expect(text).toContain('(requires alt or ⌥)');
 		expect(text).toContain('⇧');
 		expect(text).toContain('←');
 		expect(text).toContain('→');
