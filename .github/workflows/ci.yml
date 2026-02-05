@@ -38,6 +38,32 @@ jobs:
       - name: Run CI
         run: bun run ci
 
+  test-latest:
+    name:  Test against latest dependencies in order to predict failures
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Update dependencies (latest)
+        run: |
+          bun update --latest
+
+      - name: Run CI
+        run: bun run ci
+
   codeql:
     needs: test
     # Only run on push to main, and not on the bump commit (and not if CI was intentionally skipped)
