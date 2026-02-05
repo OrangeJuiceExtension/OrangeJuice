@@ -2,6 +2,10 @@
 apply: always
 ---
 
+---
+apply: always
+---
+
 Agents must follow:
 
 General:
@@ -13,8 +17,8 @@ General:
 
 Environment:
 * Reference DOM: https://news.hackernews.com
-* Package manager: bun.
-* Tests: bun run test (not bun test).
+* Package manager: bun (never anything else)
+* Tests: bun run test (not any other service test, like pnpm or node).
 
 Code style:
 * Prefer for...of over forEach.
@@ -27,6 +31,10 @@ Code style:
 * Don’t impact browser performance.
 * Infer correct querySelector types from selectors.
 * Rely on a local DOM doc over a global document.
+* Place constants at the top of the file, not in the function.
+* import type { Browser } from '#imports';
+* Refactoring code to be async, add `await` as needed.
+* import.meta.dirname instead of __dirname.
 * Always generate valid HTML.
     * Invalid: `<div><td></td></div>`
     * Valid: `<div><table><tbody><tr><td></td></tr></tbody></table></div>`
