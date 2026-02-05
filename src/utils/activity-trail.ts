@@ -1,3 +1,4 @@
+import { withBackoff } from '@/utils/backoff.ts';
 import { DAYS_1, DAYS_30 } from '@/utils/constants.ts';
 import { dom } from '@/utils/dom.ts';
 import lStorage from '@/utils/localStorage.ts';
@@ -267,46 +268,7 @@ class ActivityFetcher {
 	}
 
 	async fetchAllByType(type: ActivityType, cache: RequestCache | undefined = 'force-cache') {
-		const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
-
 		type PageFn = (page: number) => Promise<void>;
-
-		async function withBackoff(
-			fn: () => Promise<void>,
-			{
-				sleepBetweenAttemptsMs = 2000,
-				retries = Number.POSITIVE_INFINITY,
-				baseDelayMs = 2000,
-				maxDelayMs = 30_000,
-				jitter = true,
-			}: {
-				sleepBetweenAttemptsMs?: number;
-				retries?: number;
-				baseDelayMs?: number;
-				maxDelayMs?: number;
-				jitter?: boolean;
-			} = {}
-		): Promise<void> {
-			let attempt = 0;
-
-			while (true) {
-				try {
-					await sleep(sleepBetweenAttemptsMs);
-					await fn();
-					return;
-				} catch (err) {
-					if (attempt >= retries) {
-						throw err;
-					}
-
-					const exp = Math.min(maxDelayMs, baseDelayMs * 2 ** attempt);
-					const delay = jitter ? Math.floor(exp * (0.5 + Math.random())) : exp;
-
-					await sleep(delay);
-					attempt++;
-				}
-			}
-		}
 
 		async function runPagesSequentially(pages: number[], work: PageFn): Promise<void> {
 			for (const page of pages) {
