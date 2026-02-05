@@ -3,7 +3,7 @@ import { KeyboardHandlers } from '@/components/story/keyboard-handlers.ts';
 import { StoryData } from '@/components/story/story-data.ts';
 import lStorage from '@/utils/localStorage.ts';
 
-const ACTIVE_STORY_KEY = 'oj_active_story_id';
+const ACTIVE_STORY_KEY = 'oj_active_story_id2';
 const NAV_STATE_KEY = 'oj_page_nav_state';
 
 const createStoryRows = (doc: Document, count: number) => {
@@ -55,6 +55,7 @@ describe('Story KeyboardHandlers', () => {
 
 	beforeEach(() => {
 		doc = document.implementation.createHTMLDocument();
+		window.history.pushState({}, '', '/news?p=1');
 		vi.clearAllMocks();
 		vi.spyOn(lStorage, 'getItem').mockResolvedValue(null);
 		vi.spyOn(lStorage, 'setItem').mockResolvedValue();
@@ -89,7 +90,7 @@ describe('Story KeyboardHandlers', () => {
 
 			vi.mocked(lStorage.getItem).mockImplementation((key) => {
 				if (key === ACTIVE_STORY_KEY) {
-					return Promise.resolve('missing');
+					return Promise.resolve({ '/news?p=1': 'missing' });
 				}
 				if (key === NAV_STATE_KEY) {
 					return Promise.resolve(testCase.navState as 'next' | 'prev');
@@ -104,5 +105,53 @@ describe('Story KeyboardHandlers', () => {
 			expect(storyData.getActiveStory()?.id).toBe(testCase.expectedId);
 			expect(lStorage.setItem).toHaveBeenCalledWith(NAV_STATE_KEY, null);
 		}
+	});
+
+	it('should clear stored active story when missing on page', async () => {
+		const bigbox = doc.createElement('div');
+		const rows = createStoryRows(doc, 2);
+		const storyData = new StoryData(bigbox, rows);
+
+		vi.mocked(lStorage.getItem).mockImplementation((key) => {
+			if (key === ACTIVE_STORY_KEY) {
+				return Promise.resolve({ '/news?p=1': 'missing' });
+			}
+			if (key === NAV_STATE_KEY) {
+				return Promise.resolve(null);
+			}
+			return Promise.resolve(null);
+		});
+
+		const keyboardHandlers = new KeyboardHandlers(doc);
+
+		await keyboardHandlers.checkNavState(storyData);
+
+		expect(lStorage.setItem).toHaveBeenCalledWith(ACTIVE_STORY_KEY, {});
+		expect(storyData.getActiveStory()).toBeUndefined();
+	});
+
+	it('should clear stored active story on escape', async () => {
+		const bigbox = doc.createElement('div');
+		const rows = createStoryRows(doc, 2);
+		const storyData = new StoryData(bigbox, rows);
+		const firstStory = storyData.get('1');
+		if (!firstStory) {
+			throw new Error('Expected story to exist');
+		}
+		storyData.activate(firstStory);
+
+		vi.mocked(lStorage.getItem).mockImplementation((key) => {
+			if (key === ACTIVE_STORY_KEY) {
+				return Promise.resolve({ '/news?p=1': '1' });
+			}
+			return Promise.resolve(null);
+		});
+
+		const keyboardHandlers = new KeyboardHandlers(doc);
+
+		await keyboardHandlers.escape(storyData);
+
+		expect(lStorage.setItem).toHaveBeenCalledWith(ACTIVE_STORY_KEY, {});
+		expect(storyData.getActiveStory()).toBeUndefined();
 	});
 });

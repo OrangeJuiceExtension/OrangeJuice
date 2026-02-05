@@ -38,7 +38,7 @@ describe('indentToggle', () => {
 			toggleBtn.className = 'togg';
 
 			const comment = mockDoc.createElement('tr');
-			comment.className = 'comtr';
+			comment.className = 'comtr athing';
 			comment.appendChild(indentCell);
 			comment.appendChild(toggleBtn);
 
@@ -59,7 +59,7 @@ describe('indentToggle', () => {
 			toggleBtn.click = clickSpy;
 
 			const comment = mockDoc.createElement('tr');
-			comment.className = 'comtr';
+			comment.className = 'comtr athing';
 			comment.appendChild(indentCell);
 			comment.appendChild(toggleBtn);
 
@@ -122,7 +122,7 @@ describe('indentToggle', () => {
 			toggleBtn.className = 'togg';
 
 			const comment = mockDoc.createElement('tr');
-			comment.className = 'comtr';
+			comment.className = 'comtr athing';
 			comment.appendChild(toggleBtn);
 
 			mockComments = [comment];
@@ -138,7 +138,7 @@ describe('indentToggle', () => {
 			indentCell.className = 'ind';
 
 			const comment = mockDoc.createElement('tr');
-			comment.className = 'comtr';
+			comment.className = 'comtr athing';
 			comment.appendChild(indentCell);
 
 			mockComments = [comment];
@@ -159,7 +159,7 @@ describe('indentToggle', () => {
 
 		it('should handle comments with both indent cell and toggle button missing', () => {
 			const comment = mockDoc.createElement('tr');
-			comment.className = 'comtr';
+			comment.className = 'comtr athing';
 
 			mockComments = [comment];
 
@@ -194,7 +194,7 @@ function createCommentWithIndent(doc: Document): HTMLElement {
 	toggleBtn.className = 'togg';
 
 	const comment = doc.createElement('tr');
-	comment.className = 'comtr';
+	comment.className = 'comtr athing';
 	comment.appendChild(indentCell);
 	comment.appendChild(toggleBtn);
 

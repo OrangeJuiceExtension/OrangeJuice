@@ -6,6 +6,7 @@ const createCommentRow = (doc: Document, id: number, options?: { collapsed?: boo
 	const row = doc.createElement('tr');
 	row.id = `comment-${id}`;
 	row.classList.add('comtr');
+	row.classList.add('athing');
 	if (options?.collapsed) {
 		row.classList.add('coll');
 	}

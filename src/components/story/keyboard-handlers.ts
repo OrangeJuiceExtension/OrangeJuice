@@ -6,7 +6,7 @@ import lStorage from '@/utils/localStorage.ts';
 const PAGE_PARAM_REGEX = /[?&]p=\d+/;
 const CHECKBOX_ID = 'oj-hide-read-stories';
 const NAV_STATE_KEY = 'oj_page_nav_state';
-const ACTIVE_STORY_KEY = 'oj_active_story_id';
+const ACTIVE_STORY_KEY = 'oj_active_story_id2';
 
 type NavDirection = 'next' | 'prev';
 
@@ -75,14 +75,21 @@ export class KeyboardHandlers {
 	}
 
 	// De-activate item
-	escape(storyData: StoryData) {
+	async escape(storyData: StoryData) {
 		(this.doc.activeElement as HTMLElement)?.blur();
 		storyData.deactivate();
+		const activeStoryMap = await this.getActiveStoryMap();
+		const locationKey = this.getLocationKey();
+		if (activeStoryMap[locationKey]) {
+			await this.clearStoredActiveStory(activeStoryMap, locationKey);
+		}
 	}
 
 	async activateStory(storyData: StoryData, story: HNStory) {
 		storyData.activate(story);
-		await lStorage.setItem(ACTIVE_STORY_KEY, story.id);
+		const activeStoryMap = await this.getActiveStoryMap();
+		activeStoryMap[this.getLocationKey()] = story.id;
+		await lStorage.setItem(ACTIVE_STORY_KEY, activeStoryMap);
 	}
 
 	// Activate item
@@ -178,43 +185,37 @@ export class KeyboardHandlers {
 	}
 
 	async checkNavState(storyData: StoryData): Promise<void> {
-		const activeStoryId = await lStorage.getItem<string>(ACTIVE_STORY_KEY);
+		const activeStoryMap = await this.getActiveStoryMap();
+		const locationKey = this.getLocationKey();
+		const activeStoryId = activeStoryMap[locationKey];
 		const navState = await lStorage.getItem<NavDirection>(NAV_STATE_KEY);
 
 		const story = activeStoryId ? storyData.get(activeStoryId) : undefined;
-		const isInMiddle = story && story !== storyData.first() && story !== storyData.last();
 
-		if (navState && !story) {
-			await lStorage.setItem(NAV_STATE_KEY, null);
-			const target =
-				navState === 'next'
-					? storyData.firstTopDownVisible()
-					: storyData.firstBottomUpVisible();
-			if (target) {
-				await this.activateStory(storyData, target);
+		if (!story && activeStoryId) {
+			await this.clearStoredActiveStory(activeStoryMap, locationKey);
+		}
+
+		const navTarget = navState ? this.getNavTarget(storyData, navState) : undefined;
+		if (!story) {
+			if (navTarget) {
+				await this.activateWithNavStateClear(storyData, navTarget);
 			}
 			return;
 		}
 
 		// Prioritize an active story if in the middle of a list
-		if (isInMiddle && !story.hidden()) {
+		if (this.isStoryInMiddle(storyData, story) && !story.hidden()) {
 			await this.activateStory(storyData, story);
 			if (navState) {
-				await lStorage.setItem(NAV_STATE_KEY, null);
+				await this.clearNavState();
 			}
 			return;
 		}
 
 		// Handle nav state
-		if (navState) {
-			await lStorage.setItem(NAV_STATE_KEY, null);
-			const target =
-				navState === 'next'
-					? storyData.firstTopDownVisible()
-					: storyData.firstBottomUpVisible();
-			if (target) {
-				await this.activateStory(storyData, target);
-			}
+		if (navTarget) {
+			await this.activateWithNavStateClear(storyData, navTarget);
 			return;
 		}
 
@@ -222,5 +223,44 @@ export class KeyboardHandlers {
 		if (story && !story.hidden()) {
 			await this.activateStory(storyData, story);
 		}
+	}
+
+	private async activateWithNavStateClear(storyData: StoryData, target: HNStory) {
+		await this.activateStory(storyData, target);
+		await this.clearNavState();
+	}
+
+	private async clearNavState() {
+		await lStorage.setItem(NAV_STATE_KEY, null);
+	}
+
+	private getNavTarget(storyData: StoryData, navState: NavDirection) {
+		return navState === 'next'
+			? storyData.firstTopDownVisible()
+			: storyData.firstBottomUpVisible();
+	}
+
+	private isStoryInMiddle(storyData: StoryData, story: HNStory): boolean {
+		return story !== storyData.first() && story !== storyData.last();
+	}
+
+	private async clearStoredActiveStory(
+		activeStoryMap: Record<string, string>,
+		locationKey: string
+	) {
+		delete activeStoryMap[locationKey];
+		await lStorage.setItem(ACTIVE_STORY_KEY, activeStoryMap);
+	}
+
+	private getLocationKey(): string {
+		return `${window.location.pathname}${window.location.search}`;
+	}
+
+	private async getActiveStoryMap(): Promise<Record<string, string>> {
+		const stored = await lStorage.getItem<Record<string, string>>(ACTIVE_STORY_KEY);
+		if (!stored || typeof stored !== 'object') {
+			return {};
+		}
+		return stored;
 	}
 }

@@ -21,6 +21,7 @@ const createCommentRow = (doc: Document, id: number): HTMLElement => {
 	const tr = doc.createElement('tr');
 	tr.id = `item-${id}`;
 	tr.classList.add('comtr');
+	tr.classList.add('athing');
 	doc.body.appendChild(tr);
 	return tr;
 };
