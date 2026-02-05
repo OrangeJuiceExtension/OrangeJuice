@@ -149,7 +149,7 @@ export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
 	commonNote.style.color = '#666';
 	commonNote.style.marginTop = '8px';
 	commonNote.style.marginBottom = '6px';
-	commonNote.textContent = '(requires ⌥)';
+	commonNote.textContent = '(requires alt or ⌥)';
 	navColumn.appendChild(commonNote);
 
 	navColumn.appendChild(createShortcutsTable(doc, SHORTCUTS_COMMON));
