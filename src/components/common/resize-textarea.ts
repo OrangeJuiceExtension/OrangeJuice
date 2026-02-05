@@ -1,5 +1,6 @@
 import fitTextarea from 'fit-textarea';
-import type { ContentScriptContext } from 'wxt/utils/content-script-context';
+import type { ContentScriptContext } from '#imports';
+
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 
