@@ -30,3 +30,5 @@ playwright-report/
 test-results/
 
 bpp-keys.jsonc
+
+public

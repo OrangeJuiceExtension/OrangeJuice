@@ -7,7 +7,7 @@
 	"scripts": {
 		"dev": "wxt",
 		"dev:firefox": "wxt -b firefox",
-		"docs": "mkdir -p public && cp -r docs/* public/ && cp -r assets public/",
+		"docs": "bash scripts/docs.sh",
 		"build": "wxt build",
 		"build-watch": "chokidar --initial --silent \"src/**/*\" -c \"bun run build\"",
 		"build:firefox": "wxt build -b firefox",
