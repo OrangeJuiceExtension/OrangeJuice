@@ -71,9 +71,13 @@ Improves the comment reading experience with several visual enhancements:
 
 # Installation
 
+I recommend you install from github releases for now. I'm moving quickly and fixing / modifying things left and right. I'll update this once the webstores are updating on a more regular basis.
+
 ## From the Chrome webstore
 
 https://chromewebstore.google.com/detail/orange-juice/jojpnpkbdjfpjjgjhdccgpbifipacaii
+
+Unfortunately, this is very slow to update. I'm hoping this improves in the future.
 
 ## From the Firefox webstore
 
