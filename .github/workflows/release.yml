@@ -117,7 +117,8 @@ jobs:
           FIXES=$(echo "$COMMITS" | grep -iE "^- fix(\(.*\))?:" || true)
           CHORES=$(echo "$COMMITS" | grep -iE "^- (chore|docs|style|refactor|perf|test)(\(.*\))?:" || true)
 
-          CHANGELOG="## What's Changed"$'\n'
+          INSTALL_INSTRUCTIONS=$(cat scripts/browser-install.txt)
+          CHANGELOG="$INSTALL_INSTRUCTIONS"$'\n\n'"## What's Changed"$'\n'
           if [ -n "$FEATURES" ]; then CHANGELOG+=$'\n'"### ✨ Features"$'\n'"$FEATURES"$'\n'; fi
           if [ -n "$FIXES" ]; then CHANGELOG+=$'\n'"### 🐛 Bug Fixes"$'\n'"$FIXES"$'\n'; fi
           if [ -n "$CHORES" ]; then CHANGELOG+=$'\n'"### 🔧 Maintenance"$'\n'"$CHORES"$'\n'; fi

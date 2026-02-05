@@ -1,0 +1,14 @@
+## Install
+
+Chrome:
+- Open chrome://extensions/
+- Enable Developer mode (top right)
+- Click "Load unpacked" and select the extracted folder
+- The extension should now be active
+
+Firefox:
+- Open about:debugging#/runtime/this-firefox
+- Click "Load Temporary Add-on..."
+- Select the manifest.json file in the extracted folder
+- The extension should now be active
+Note: Temporary extensions in Firefox are removed when you restart the browser. For a permanent installation, install from Firefox Add-ons once the extension is published there.
