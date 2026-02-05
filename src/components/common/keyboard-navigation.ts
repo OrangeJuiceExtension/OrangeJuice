@@ -17,19 +17,22 @@ export const keyboardNavigation = (
 		helpModalOpen: false,
 	};
 
-	const keydownHandlerHelp = (event: KeyboardEvent) => {
-		if (state.helpModalOpen) {
-			return;
-		}
-
-		// someone could be typing and hit '?'
-		const tagName = (event.target as HTMLElement).tagName;
-		if (tagName === 'TEXTAREA' || tagName === 'INPUT') {
-			return;
-		}
+	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: it is ok
+	const keydownHandler = (event: KeyboardEvent) => {
+		let locationUrl: string | undefined;
 
 		switch (event.key) {
+			// Help!
 			case '?': {
+				if (state.helpModalOpen) {
+					return;
+				}
+				// someone could be typing and hit '?'
+				const tagName = (event.target as HTMLElement).tagName;
+				if (tagName === 'TEXTAREA' || tagName === 'INPUT') {
+					return;
+				}
+
 				const combo = dom.isComboKey(event);
 				if (combo && !state.helpModalOpen) {
 					state.helpModalOpen = true;
@@ -44,15 +47,7 @@ export const keyboardNavigation = (
 				}
 				break;
 			}
-			default:
-				break;
-		}
-	};
 
-	const keydownHandler = (event: KeyboardEvent) => {
-		let locationUrl: string | undefined;
-
-		switch (event.key) {
 			// H: Home
 			case 'Ó': {
 				locationUrl = paths.base;
@@ -104,11 +99,9 @@ export const keyboardNavigation = (
 		}
 	};
 
-	doc.addEventListener('keydown', keydownHandlerHelp);
 	doc.addEventListener('keydown', keydownHandler);
 
 	ctx.onInvalidated(() => {
-		doc.removeEventListener('keydown', keydownHandlerHelp);
 		doc.removeEventListener('keydown', keydownHandler);
 	});
 
