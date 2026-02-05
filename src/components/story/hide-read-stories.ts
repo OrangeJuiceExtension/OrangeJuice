@@ -1,27 +1,10 @@
 import type { ContentScriptContext } from '#imports';
+import type { HNStory } from '@/components/story/hn-story.ts';
+import type { StoryData } from '@/components/story/story-data.ts';
 import { createClientServices } from '@/services/manager.ts';
 import type { ReadStoriesService } from '@/services/read-stories-service.ts';
-import { parseHNStoriesPage } from '@/utils/hn-parser.ts';
 import lStorage from '@/utils/localStorage.ts';
 
-const allowedPaths = [
-	'/',
-	'/ask',
-	'/newest',
-	'/news',
-	'/show',
-	'/jobs',
-	'/front',
-	'/active',
-	'/past',
-	'/noobstories',
-	'/classic',
-	'/shownew',
-	'/pool',
-	'/best',
-	'/launches',
-	'/flagged',
-];
 const CHECKBOX_ID = 'oj-hide-read-stories';
 const STORAGE_KEY = 'oj_hide_read_stories';
 
@@ -48,46 +31,24 @@ export const createCheckbox = (doc: Document) => {
 	return { row, checkbox };
 };
 
-export const hideStories = (storyIds: string[], doc: Document): void => {
-	for (const id of storyIds) {
-		const storyRow = doc.getElementById(id);
-		if (!storyRow) {
-			continue;
-		}
+export const STORY_HIDDEN = 'oj_story_hidden';
 
-		const subtextRow = storyRow.nextElementSibling;
-		const spacerRow = subtextRow?.nextElementSibling;
-
-		storyRow.style.display = 'none';
-
-		if (subtextRow) {
-			(subtextRow as HTMLElement).style.display = 'none';
-		}
-		if (spacerRow) {
-			(spacerRow as HTMLElement).style.display = 'none';
+const setDisplay = (readStories: HNStory[], display: string) => {
+	for (const story of readStories) {
+		if (display === 'none') {
+			story.hide();
+		} else {
+			story.show();
 		}
 	}
 };
 
-export const showStories = (storyIds: string[], doc: Document): void => {
-	for (const id of storyIds) {
-		const storyRow = doc.getElementById(id);
-		if (!storyRow) {
-			continue;
-		}
+export const hideStories = (readStories: HNStory[]): void => {
+	setDisplay(readStories, 'none');
+};
 
-		const subtextRow = storyRow.nextElementSibling;
-		const spacerRow = subtextRow?.nextElementSibling;
-
-		storyRow.style.display = '';
-
-		if (subtextRow) {
-			(subtextRow as HTMLElement).style.display = '';
-		}
-		if (spacerRow) {
-			(spacerRow as HTMLElement).style.display = '';
-		}
-	}
+export const showStories = (readStories: HNStory[]): void => {
+	setDisplay(readStories, '');
 };
 
 export interface StorageState {
@@ -115,53 +76,54 @@ export const setupCheckbox = async (
 	return checkbox;
 };
 
-const getVisitedStoryIds = async (
+const getVisitedStories = async (
 	service: ReadStoriesService,
 	hnStories: HNStory[]
-): Promise<string[] | undefined> => {
+): Promise<HNStory[]> => {
 	try {
 		const response = await service.getVisits(hnStories);
 		if (!response) {
-			return;
+			return [];
 		}
-		return response
-			.filter((story: HNStory) => story.latestVisit)
-			.map((story: HNStory) => story.id);
+
+		const map = new Map(hnStories.map((item) => [item.id, item]));
+
+		const ret: HNStory[] = [];
+		for (const story of response) {
+			if (story.latestVisit) {
+				const found = map.get(story.id);
+				if (found) {
+					found.latestVisit = story.latestVisit;
+					found.hide();
+					ret.push(found);
+				}
+			}
+		}
+		return ret;
 	} catch (e) {
 		console.error({ error: 'Error in getVisitedStoryIds', e });
-		return Promise.resolve(undefined);
+		return [];
 	}
 };
 
-export const hideReadStories = async (ctx: ContentScriptContext, doc: Document) => {
-	if (
-		!allowedPaths.includes(window.location.pathname) ||
-		window.location.search.includes('kind=comment')
-	) {
-		return;
-	}
-
-	const bigbox = doc.querySelector('#bigbox');
-	if (!bigbox) {
-		return;
-	}
-
-	const checkbox = await setupCheckbox(bigbox, doc);
+export const hideReadStories = async (
+	ctx: ContentScriptContext,
+	doc: Document,
+	storyData: StoryData
+) => {
+	const checkbox = await setupCheckbox(storyData.bigbox, doc);
 	if (!checkbox) {
 		return;
 	}
 
 	try {
 		const service = createClientServices().getReadStoriesService();
-		const hnStories = parseHNStoriesPage(doc);
-		let readStoryIds: string[] | undefined;
-
 		const updateVisits = async () => {
-			readStoryIds = await getVisitedStoryIds(service, hnStories);
-			if (!readStoryIds) {
+			const readStories = await getVisitedStories(service, storyData.hnStories);
+			if (!readStories) {
 				return;
 			}
-			checkbox.checked ? hideStories(readStoryIds, doc) : showStories(readStoryIds, doc);
+			checkbox.checked ? hideStories(readStories) : showStories(readStories);
 		};
 		try {
 			await updateVisits();

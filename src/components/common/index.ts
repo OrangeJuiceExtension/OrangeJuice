@@ -1,8 +1,15 @@
 import type { ContentScriptContext } from '#imports';
-import { keyboardNavigation } from '@/components/common/keyboard-navigation.ts';
+import {
+	keyboardNavigation,
+	type KeyboardNavState,
+} from '@/components/common/keyboard-navigation.ts';
 import { openInNewTab } from '@/components/common/open-in-new-tab.ts';
 import { resizeTextarea } from '@/components/common/resize-textarea.ts';
 import { paths } from '@/utils/paths.ts';
+
+let navState: KeyboardNavState | undefined;
+
+export const getNavState = (): KeyboardNavState | undefined => navState;
 
 export const common: ComponentFeature = {
 	id: 'common',
@@ -13,7 +20,9 @@ export const common: ComponentFeature = {
 		return Promise.all([
 			Promise.resolve().then(() => openInNewTab(ctx, document)),
 			Promise.resolve().then(() => resizeTextarea(ctx, document)),
-			Promise.resolve().then(() => keyboardNavigation(ctx, document, common.username)),
+			Promise.resolve().then(() => {
+				navState = keyboardNavigation(ctx, document, common.username);
+			}),
 		]);
 	},
 };

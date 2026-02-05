@@ -1,0 +1,180 @@
+import type { ContentScriptContext } from '#imports';
+import type { KeyboardNavState } from '@/components/common/keyboard-navigation.ts';
+import { KeyboardHandlers } from '@/components/story/keyboard-handlers.ts';
+import {
+	focusClass1,
+	focusClass2,
+	focusClass3,
+	type StoryData,
+} from '@/components/story/story-data.ts';
+import { dom } from '@/utils/dom.ts';
+
+export const keyboardNavigation = async (
+	ctx: ContentScriptContext,
+	doc: Document,
+	storyData: StoryData,
+	navState?: KeyboardNavState
+): Promise<void> => {
+	const style = doc.createElement('style');
+	style.textContent = `
+		:root {
+		  --oj-focus-color: #f7694c;
+		  --oj-focus-w: 2px;
+		}
+		
+		tr.athing td:last-child {
+			padding-top: 2px;
+			padding-right: 4px;
+		}
+		
+		tr.athing td:first-child,
+		tr.${focusClass2} td:first-child,
+		tr.${focusClass3} td:first-child {
+		  padding-left: 4px;
+		}
+		
+		/* Base: 4 “slots” for shadows */
+		tr.${focusClass1} td,
+		tr.${focusClass2} td,
+		tr.${focusClass3} td {
+		  --oj-top: inset 0 0 0 0 transparent;
+		  --oj-right: inset 0 0 0 0 transparent;
+		  --oj-bottom: inset 0 0 0 0 transparent;
+		  --oj-left: inset 0 0 0 0 transparent;
+		  box-shadow: var(--oj-top), var(--oj-right), var(--oj-bottom), var(--oj-left);
+		  background-color: white;
+		}
+		
+		/* Top edge */
+		tr.${focusClass1} td {
+		  --oj-top: inset 0 var(--oj-focus-w) 0 0 var(--oj-focus-color);
+		}
+		
+		/* Bottom edge */
+		tr.${focusClass3} td {
+		  --oj-bottom: inset 0 calc(-1 * var(--oj-focus-w)) 0 0 var(--oj-focus-color);
+		}
+		
+		/* Left edge */
+		tr.${focusClass1} td:first-child,
+		tr.${focusClass2} td:first-child,
+		tr.${focusClass3} td:first-child {
+		  --oj-left: inset var(--oj-focus-w) 0 0 0 var(--oj-focus-color);
+		}
+		
+		/* Right edge */
+		tr.${focusClass1} td:last-child,
+		tr.${focusClass2} td:last-child,
+		tr.${focusClass3} td:last-child {
+		  --oj-right: inset calc(-1 * var(--oj-focus-w)) 0 0 0 var(--oj-focus-color);
+		}
+	`;
+	doc.head.appendChild(style);
+
+	const keyboardHandlers = new KeyboardHandlers(doc);
+
+	await keyboardHandlers.checkNavState(storyData);
+
+	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: shrug
+	const keydownHandler = (e: KeyboardEvent) => {
+		if (navState?.helpModalOpen) {
+			if (e.key === 'Escape') {
+				return;
+			}
+			e.preventDefault();
+			e.stopPropagation();
+			return;
+		}
+
+		const combo = dom.isComboKey(e);
+
+		switch (e.key) {
+			// j: Go down
+			case 'J':
+			case 'j':
+				keyboardHandlers.move(storyData, 'down');
+				break;
+			// k: Go up
+			case 'K':
+			case 'k':
+				keyboardHandlers.move(storyData, 'up');
+				break;
+			case 'u':
+				if (!combo && storyData.getActiveStory()) {
+					keyboardHandlers.vote(storyData);
+				}
+				break;
+			case 'f':
+				if (!combo && storyData.getActiveStory()) {
+					keyboardHandlers.favorite(storyData);
+				}
+				break;
+			case 'X':
+				if (!combo && storyData.getActiveStory()) {
+					keyboardHandlers.flag(storyData);
+				}
+				break;
+			case 'r':
+				if (!combo && storyData.getActiveStory()) {
+					keyboardHandlers.reply(storyData);
+				}
+				break;
+			case 'Enter':
+				if (!combo && storyData.getActiveStory()) {
+					keyboardHandlers.open(storyData);
+				}
+				break;
+			case 'O':
+				if (combo && storyData.getActiveStory()) {
+					keyboardHandlers.openWithComments(storyData);
+				}
+				break;
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+			case '0':
+				if (!combo) {
+					keyboardHandlers.openByPosition(storyData, e.key);
+				}
+				break;
+			case 'm':
+				if (!combo) {
+					keyboardHandlers.clickMore(doc);
+				}
+				break;
+			case 'b':
+				if (!combo) {
+					keyboardHandlers.goBack();
+				}
+				break;
+			case 'h':
+				if (!combo) {
+					keyboardHandlers.toggleHideRead(doc);
+				}
+				break;
+			case 'Escape':
+				keyboardHandlers.escape(storyData);
+				break;
+			default:
+				break;
+		}
+	};
+	doc.addEventListener('keydown', keydownHandler);
+
+	const clickToFocus = (e: MouseEvent) => {
+		keyboardHandlers.activateElement(storyData, e.target as HTMLElement);
+	};
+
+	storyData.addEventListener('click', clickToFocus);
+
+	ctx.onInvalidated(() => {
+		doc.removeEventListener('keydown', keydownHandler);
+		storyData.removeEventListener('click', clickToFocus);
+	});
+};

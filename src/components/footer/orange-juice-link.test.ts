@@ -27,7 +27,7 @@ describe('footer orange-juice-link', () => {
 		const result = footer.main(mockContext);
 		expect(result).toBe(undefined);
 
-		const ojLink = document.querySelector('a[href="https://orangejuiceextension.github.io/"]');
+		const ojLink = document.querySelector('a[href="https://oj-hn.com/"]');
 		expect(ojLink).toBeNull();
 	});
 
@@ -40,7 +40,7 @@ describe('footer orange-juice-link', () => {
 
 		footer.main(mockContext);
 
-		const ojLink = document.querySelector('a[href="https://orangejuiceextension.github.io/"]');
+		const ojLink = document.querySelector('a[href="https://oj-hn.com/"]');
 		expect(ojLink).toBeTruthy();
 		expect(ojLink?.textContent).toBe('Orange Juice');
 	});
@@ -54,7 +54,7 @@ describe('footer orange-juice-link', () => {
 
 		footer.main(mockContext);
 
-		const ojLink = document.querySelector('a[href="https://orangejuiceextension.github.io/"]');
+		const ojLink = document.querySelector('a[href="https://oj-hn.com/"]');
 		expect(ojLink?.getAttribute('rel')).toBe('noreferrer');
 		expect(ojLink?.getAttribute('target')).toBe('_blank');
 		expect(ojLink?.textContent).toBe('Orange Juice');
@@ -74,7 +74,7 @@ describe('footer orange-juice-link', () => {
 
 		// Check that separator exists between contact and Orange Juice link
 		expect(html).toContain(
-			'<a href="/contact">Contact</a><span> | </span><a href="https://orangejuiceextension.github.io/" title="" rel="noreferrer" target="_blank">Orange Juice</a> | <a href="/apply">Apply</a>'
+			'<a href="/contact">Contact</a><span> | </span><a href="https://oj-hn.com/" title="" rel="noreferrer" target="_blank">Orange Juice</a> | <a href="/apply">Apply</a>'
 		);
 	});
 
@@ -87,7 +87,7 @@ describe('footer orange-juice-link', () => {
 
 		footer.main(mockContext);
 
-		const ojLink = document.querySelector('a[href="https://orangejuiceextension.github.io/"]');
+		const ojLink = document.querySelector('a[href="https://oj-hn.com/"]');
 		expect(ojLink).toBeTruthy();
 		expect(ojLink?.textContent).toBe('Orange Juice');
 	});
@@ -101,7 +101,7 @@ describe('footer orange-juice-link', () => {
 
 		footer.main(mockContext);
 
-		const ojLink = document.querySelector('a[href="https://orangejuiceextension.github.io/"]');
+		const ojLink = document.querySelector('a[href="https://oj-hn.com/"]');
 		expect(ojLink).toBeTruthy();
 	});
 
@@ -115,9 +115,7 @@ describe('footer orange-juice-link', () => {
 		footer.main(mockContext);
 		footer.main(mockContext);
 
-		const ojLinks = document.querySelectorAll(
-			'a[href="https://orangejuiceextension.github.io/"]'
-		);
+		const ojLinks = document.querySelectorAll('a[href="https://oj-hn.com/"]');
 		expect(ojLinks.length).toBe(2); // Will add twice since we call main twice
 	});
 

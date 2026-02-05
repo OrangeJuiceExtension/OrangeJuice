@@ -4,7 +4,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { dom } from '@/utils/dom.ts';
 import { initCommentUX } from './init-comment-ux.ts';
 
-const commentsHtml = readFileSync(join(__dirname, '__fixtures__', 'hn-comments.html'), 'utf-8');
+const commentsHtml = readFileSync(
+	join(import.meta.dirname, '__fixtures__', 'hn-comments.html'),
+	'utf-8'
+);
 
 describe('initCommentUX', () => {
 	let comments: HTMLElement[];

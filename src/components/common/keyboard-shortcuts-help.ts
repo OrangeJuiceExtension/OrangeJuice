@@ -1,8 +1,6 @@
 const SHORTCUTS_COMMENTS = [
-	{ key: 'j', description: 'Move down to next comment' },
-	{ key: 'J', description: 'Next comment, including collapsed' },
-	{ key: 'k', description: 'Move up to previous comment' },
-	{ key: 'K', description: 'Previous comment, including collapsed' },
+	{ key: 'j / J', description: 'Move down / expands collapsed' },
+	{ key: 'k / K', description: 'Move up / expands collapsed' },
 	{ key: 'n', description: 'Go to next sibling comment' },
 	{ key: 'p', description: 'Go to previous sibling comment' },
 	{ key: 'c', description: 'Collapse/expand comment thread' },
@@ -13,8 +11,23 @@ const SHORTCUTS_COMMENTS = [
 	{ key: 'X', description: 'Flag selected comment' },
 	{ key: '0-9', description: 'Open reference link by number' },
 	{ key: 't', description: 'Scroll to top of page' },
+	{ key: 'b', description: 'Go back (if paginated)' },
 	{ key: 'esc', description: 'Unfocus comment or close reply box' },
-	{ key: '?', description: 'Show this help dialog' },
+];
+
+const SHORTCUTS_STORIES = [
+	{ key: 'j / k', description: 'Move down / up' },
+	{ key: 'Enter', description: 'Open selected story in new tab' },
+	{ key: 'O', description: 'Open story and comments in new tabs' },
+	{ key: 'u', description: 'Upvote selected story' },
+	{ key: 'f', description: 'Favorite selected story' },
+	{ key: 'X', description: 'Flag selected story' },
+	{ key: 'r', description: 'Reply to story (go to comments)' },
+	{ key: '1-9, 0', description: 'Open story at position 1-10' },
+	{ key: 'm', description: 'Click more link' },
+	{ key: 'b', description: 'Go back (if paginated)' },
+	{ key: 'h', description: 'Toggle hide read stories' },
+	{ key: 'esc', description: 'Unfocus story' },
 ];
 
 const SHORTCUTS_COMMON = [
@@ -25,7 +38,17 @@ const SHORTCUTS_COMMON = [
 	{ key: 'N', description: 'New' },
 	{ key: 'P', description: 'Profile' },
 	{ key: 'T', description: 'Threads' },
+	{ key: '?', description: 'Show help dialog' },
+	{ key: 'esc', description: 'Hide help dialog' },
 ];
+
+const LOGO_PATH = '/assets/image-128.png';
+const WEBSITE_URL = 'https://oj-hn.com';
+const GITHUB_URL = 'https://github.com/OrangeJuiceExtension/OrangeJuice';
+
+const getLogoUrl = () => {
+	return `${WEBSITE_URL}${LOGO_PATH}`;
+};
 
 const createShortcutsTable = (
 	doc: Document,
@@ -44,12 +67,12 @@ const createShortcutsTable = (
 		keyTd.style.padding = '3px 8px';
 		keyTd.style.fontWeight = 'bold';
 		keyTd.style.width = '30%';
+		keyTd.style.whiteSpace = 'nowrap';
 		keyTd.textContent = key;
 		tr.appendChild(keyTd);
 
 		const descTd = doc.createElement('td');
 		descTd.style.padding = '3px 8px';
-		descTd.style.whiteSpace = 'nowrap';
 		descTd.textContent = description;
 		tr.appendChild(descTd);
 
@@ -61,29 +84,51 @@ const createShortcutsTable = (
 };
 
 export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
-	const container = doc.createElement('div');
-	container.style.display = 'flex';
-	container.style.gap = '32px';
+	const outerContainer = doc.createElement('div');
 
-	// Left column - Comments shortcuts
-	const leftColumn = doc.createElement('div');
-	leftColumn.style.flex = '1';
+	// Top row - Branding left, navigation shortcuts right
+	const topRow = doc.createElement('div');
+	topRow.style.display = 'flex';
+	topRow.style.gap = '32px';
+	topRow.style.marginBottom = '24px';
 
-	const heading = doc.createElement('h2');
-	heading.style.marginTop = '0';
-	heading.style.marginBottom = '8px';
-	heading.style.color = '#000';
-	heading.style.paddingBottom = '8px';
-	heading.style.borderBottom = '1px solid #ff6600';
-	heading.textContent = 'Comments shortcuts';
-	leftColumn.appendChild(heading);
+	const brandColumn = doc.createElement('div');
+	brandColumn.style.flex = '1';
+	brandColumn.style.display = 'flex';
+	brandColumn.style.flexDirection = 'column';
+	brandColumn.style.alignItems = 'center';
+	brandColumn.style.justifyContent = 'center';
+	brandColumn.style.textAlign = 'center';
 
-	leftColumn.appendChild(createShortcutsTable(doc, SHORTCUTS_COMMENTS));
-	container.appendChild(leftColumn);
+	const logo = doc.createElement('img');
+	logo.src = getLogoUrl();
+	logo.alt = 'Orange Juice logo';
+	logo.style.width = '128px';
+	logo.style.height = '128px';
+	brandColumn.appendChild(logo);
 
-	// Right column - Navigation shortcuts
-	const rightColumn = doc.createElement('div');
-	rightColumn.style.flex = '0 0 auto';
+	const linkContainer = doc.createElement('div');
+	linkContainer.style.display = 'flex';
+	linkContainer.style.gap = '12px';
+
+	const siteLink = doc.createElement('a');
+	siteLink.href = WEBSITE_URL;
+	siteLink.textContent = 'Website';
+	siteLink.rel = 'noreferrer';
+	siteLink.target = '_blank';
+
+	const githubLink = doc.createElement('a');
+	githubLink.href = GITHUB_URL;
+	githubLink.textContent = 'GitHub';
+	githubLink.rel = 'noreferrer';
+	githubLink.target = '_blank';
+
+	linkContainer.appendChild(siteLink);
+	linkContainer.appendChild(githubLink);
+	brandColumn.appendChild(linkContainer);
+
+	const navColumn = doc.createElement('div');
+	navColumn.style.flex = '1';
 
 	const commonHeading = doc.createElement('h2');
 	commonHeading.style.marginTop = '0';
@@ -92,7 +137,7 @@ export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
 	commonHeading.style.paddingBottom = '8px';
 	commonHeading.style.borderBottom = '1px solid #ff6600';
 	commonHeading.textContent = 'Navigation shortcuts';
-	rightColumn.appendChild(commonHeading);
+	navColumn.appendChild(commonHeading);
 
 	const commonNote = doc.createElement('div');
 	commonNote.style.fontSize = '0.85em';
@@ -100,10 +145,52 @@ export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
 	commonNote.style.marginTop = '8px';
 	commonNote.style.marginBottom = '6px';
 	commonNote.textContent = '(requires Alt / Option ⌥)';
-	rightColumn.appendChild(commonNote);
+	navColumn.appendChild(commonNote);
 
-	rightColumn.appendChild(createShortcutsTable(doc, SHORTCUTS_COMMON));
-	container.appendChild(rightColumn);
+	navColumn.appendChild(createShortcutsTable(doc, SHORTCUTS_COMMON));
 
-	return container;
+	topRow.appendChild(brandColumn);
+	topRow.appendChild(navColumn);
+	outerContainer.appendChild(topRow);
+
+	// Bottom row - Comments and Stories
+	const bottomRow = doc.createElement('div');
+	bottomRow.style.display = 'flex';
+	bottomRow.style.gap = '32px';
+
+	// Left column - Stories shortcuts
+	const leftColumn = doc.createElement('div');
+	leftColumn.style.flex = '1';
+
+	const storiesHeading = doc.createElement('h2');
+	storiesHeading.style.marginTop = '0';
+	storiesHeading.style.marginBottom = '8px';
+	storiesHeading.style.color = '#000';
+	storiesHeading.style.paddingBottom = '8px';
+	storiesHeading.style.borderBottom = '1px solid #ff6600';
+	storiesHeading.textContent = 'Stories shortcuts';
+	leftColumn.appendChild(storiesHeading);
+
+	leftColumn.appendChild(createShortcutsTable(doc, SHORTCUTS_STORIES));
+	bottomRow.appendChild(leftColumn);
+
+	// Right column - Comments shortcuts
+	const rightColumn = doc.createElement('div');
+	rightColumn.style.flex = '1';
+
+	const commentsHeading = doc.createElement('h2');
+	commentsHeading.style.marginTop = '0';
+	commentsHeading.style.marginBottom = '8px';
+	commentsHeading.style.color = '#000';
+	commentsHeading.style.paddingBottom = '8px';
+	commentsHeading.style.borderBottom = '1px solid #ff6600';
+	commentsHeading.textContent = 'Comments shortcuts';
+	rightColumn.appendChild(commentsHeading);
+
+	rightColumn.appendChild(createShortcutsTable(doc, SHORTCUTS_COMMENTS));
+	bottomRow.appendChild(rightColumn);
+
+	outerContainer.appendChild(bottomRow);
+
+	return outerContainer;
 };

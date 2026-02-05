@@ -1,4 +1,5 @@
 import { dom } from '@/utils/dom.ts';
+import { OJ_NEW_COMMENT_INDENT } from './constants.ts';
 
 // TODO: make this configurable in a popup menu
 const customWidth = 40;
@@ -12,7 +13,7 @@ export const initCommentUX = (doc: Document, comments: HTMLElement[], username?:
 		.oj_op {
 			color: #ff6000 !important
 		}
-		.oj_new_comment_indent {
+		.${OJ_NEW_COMMENT_INDENT} {
 			box-shadow: inset -2px 0 #ff6000
 		}
 		.comment .commtext pre {

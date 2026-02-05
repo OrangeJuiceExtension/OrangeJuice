@@ -15,14 +15,29 @@ export class ProvideAdapter implements Adapter<MessageMeta> {
 					const tabs: Browser.tabs.Tab[] = await browser.tabs.query({
 						url: message.meta.url,
 					});
+
+					if (!tabs.length) {
+						console.log({
+							error: 'unable to find the tab to send a message back',
+							message,
+						});
+					}
 					// Send a message to the content-script
-					// biome-ignore lint/style/noNonNullAssertion: we should always have a tab id
-					tabs.map((tab) => browser.tabs.sendMessage(tab.id!, message));
+					try {
+						tabs.map((tab) =>
+							// biome-ignore lint/style/noNonNullAssertion: we should always have a tab id
+							browser.tabs.sendMessage(tab.id!, message).catch((e) => {
+								console.log({ error: 'provider tab.sendMessage', e });
+							})
+						);
+					} catch (e) {
+						console.log({ error: 'provider content sendMessage', e });
+					}
 				}
 				break;
 			case 'popup': {
 				// Send a message to the popup or other internal pages
-				await browser.runtime.sendMessage(message).catch((error) => {
+				await browser.runtime.sendMessage(browser.runtime.id, message).catch((error) => {
 					/**
 					 * When the popup page is closed, sending a message to the popup will cause an error.
 					 * In the pub/sub pattern, we can assume that the subscriber doesn’t exist,
@@ -45,7 +60,11 @@ export class ProvideAdapter implements Adapter<MessageMeta> {
 			message: Partial<Message<MessageMeta>>
 			// sender: Browser.runtime.MessageSender
 		) => {
-			callback(message);
+			try {
+				callback(message);
+			} catch (e) {
+				console.log({ error: 'failed to execute handler', e });
+			}
 			// callback({ ...message, args: [...(message?.args || []), sender] });
 		};
 		browser.runtime.onMessage.addListener(handler);
@@ -60,9 +79,13 @@ export class InjectAdapter implements Adapter<MessageMeta> {
 		this.injector = injector;
 	}
 	sendMessage: SendMessage<MessageMeta> = (message) => {
-		browser.runtime.sendMessage(browser.runtime.id, {
+		return browser.runtime.sendMessage(browser.runtime.id, {
 			...message,
-			meta: { url: document.location.href, injector: this.injector, message },
+			meta: {
+				url: document.location.href.split('#')[0],
+				injector: this.injector,
+				message,
+			},
 		});
 	};
 	onMessage: OnMessage<MessageMeta> = (callback) => {

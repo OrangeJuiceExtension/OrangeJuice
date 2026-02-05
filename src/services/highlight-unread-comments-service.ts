@@ -5,18 +5,22 @@ export const ojReadCommentsKey = 'oj_read_comments';
 
 export class HighlightUnreadCommentsService {
 	async expireOldComments(readCommentsList: ReadCommentsList) {
-		const currentMilliseconds = Date.now();
-		let hasChanges = false;
+		try {
+			const currentMilliseconds = Date.now();
+			let hasChanges = false;
 
-		for (const [id, itemObj] of Object.entries(readCommentsList)) {
-			if (itemObj.expiry <= currentMilliseconds) {
-				delete readCommentsList[id];
-				hasChanges = true;
+			for (const [id, itemObj] of Object.entries(readCommentsList)) {
+				if (itemObj.expiry <= currentMilliseconds) {
+					delete readCommentsList[id];
+					hasChanges = true;
+				}
 			}
-		}
 
-		if (hasChanges) {
-			await lStorage.setItem<ReadCommentsList>(ojReadCommentsKey, readCommentsList);
+			if (hasChanges) {
+				await lStorage.setItem<ReadCommentsList>(ojReadCommentsKey, readCommentsList);
+			}
+		} catch (e) {
+			console.error({ error: 'error in expireOldComments', e });
 		}
 	}
 }

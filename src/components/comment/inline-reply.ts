@@ -1,5 +1,6 @@
 import type { ContentScriptContext } from '#imports';
 import { dom } from '@/utils/dom.ts';
+import { paths } from '@/utils/paths.ts';
 
 /*
  * TODO: We're going to need an API in here where text can be substituted and buttons can be added
@@ -7,7 +8,7 @@ import { dom } from '@/utils/dom.ts';
  * into a class or something.
  */
 
-export const handleReplyClick = async (link: HTMLAnchorElement, itemId: string) => {
+export const handleReplyClick = async (link: HTMLAnchorElement) => {
 	const href = link.getAttribute('href');
 	if (!href) {
 		return;
@@ -21,8 +22,15 @@ export const handleReplyClick = async (link: HTMLAnchorElement, itemId: string) 
 		return;
 	}
 
+	// gather the things for the form
+	const linkUrl = new URL(href, paths.base);
+	const goto = linkUrl.searchParams.get('goto');
+	const replyId = linkUrl.searchParams.get('id');
 	const hmacValue = await dom.fetchHmacFromPage(href);
-	const replyId = dom.getReplyIdFromLink(link);
+
+	if (!(goto && replyId)) {
+		return;
+	}
 
 	// Create form
 	const form = document.createElement('form');
@@ -51,7 +59,7 @@ export const handleReplyClick = async (link: HTMLAnchorElement, itemId: string) 
 
 	// Create and append hidden inputs
 	form.appendChild(dom.createHiddenInput('parent', replyId));
-	form.appendChild(dom.createHiddenInput('goto', `item?id=${itemId}#${replyId}`));
+	form.appendChild(dom.createHiddenInput('goto', goto));
 	form.appendChild(dom.createHiddenInput('hmac', hmacValue));
 
 	// Create submit buttons container
@@ -62,8 +70,7 @@ export const handleReplyClick = async (link: HTMLAnchorElement, itemId: string) 
 
 	const submitButton = document.createElement('input');
 	submitButton.type = 'submit';
-	submitButton.name = 'submit_comment';
-	submitButton.value = 'add comment';
+	submitButton.value = 'reply';
 
 	buttonContainer.appendChild(submitButton);
 	form.appendChild(buttonContainer);
@@ -79,7 +86,6 @@ export const handleReplyClick = async (link: HTMLAnchorElement, itemId: string) 
 };
 
 export const inlineReply = (ctx: ContentScriptContext, doc: Document) => {
-	const itemId = dom.getHiddenInputValue(doc, 'parent');
 	const listeners = new Map<HTMLAnchorElement, (e: Event) => void>();
 
 	// Attach listeners to all reply links
@@ -89,7 +95,7 @@ export const inlineReply = (ctx: ContentScriptContext, doc: Document) => {
 			const handler = (e: Event) => {
 				e.preventDefault();
 				e.stopPropagation();
-				return handleReplyClick(link, itemId);
+				return handleReplyClick(link);
 			};
 			link.addEventListener('click', handler);
 			listeners.set(link, handler);

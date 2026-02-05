@@ -1,246 +1,292 @@
 /** biome-ignore-all lint/performance/noDelete: tests */
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ContentScriptContext } from '#imports';
+import { focusClass, focusClassDefault } from '@/components/comment/hn-comment.ts';
+import { KeyboardHandlers } from '@/components/comment/keyboard-handlers.ts';
 import { keyboardNavigation } from '@/components/comment/keyboard-navigation.ts';
-import { itemKeyboardHandlers } from '@/utils/item-keyboard-handlers.ts';
+import lStorage from '@/utils/localStorage.ts';
 
 const noop = () => {
 	/* intentionally empty */
 };
 
-describe('keyboardNavigation', () => {
-	let doc: Document;
-	let comments: HTMLElement[];
-	let ctx: ContentScriptContext;
-	let invalidateCallback: () => void;
+interface TestContext {
+	doc: Document;
+	comments: HTMLElement[];
+	ctx: ContentScriptContext;
+	invalidate: () => void;
+}
 
-	const createComments = (count: number): HTMLElement[] => {
-		const elements: HTMLElement[] = [];
-		for (let i = 1; i <= count; i++) {
-			const tr = doc.createElement('tr');
-			tr.id = `item-${i}`;
-			tr.classList.add('comtr');
-			elements.push(tr);
-		}
-		return elements;
+const createCommentRow = (doc: Document, id: number): HTMLElement => {
+	const tr = doc.createElement('tr');
+	tr.id = `item-${id}`;
+	tr.classList.add('comtr');
+	doc.body.appendChild(tr);
+	return tr;
+};
+
+const createComments = (doc: Document, count: number): HTMLElement[] =>
+	Array.from({ length: count }, (_, index) => createCommentRow(doc, index + 1));
+
+const createContext = (): { ctx: ContentScriptContext; invalidate: () => void } => {
+	let invalidateCallback = noop;
+	const ctx = {
+		onInvalidated: vi.fn((cb) => {
+			invalidateCallback = cb;
+		}),
+	} as unknown as ContentScriptContext;
+
+	return {
+		ctx,
+		invalidate: () => invalidateCallback(),
 	};
+};
 
-	const dispatchKeydown = (key: string, options: Partial<KeyboardEvent> = {}) => {
-		const event = new KeyboardEvent('keydown', {
-			key,
-			bubbles: true,
-			...options,
-		});
-		doc.dispatchEvent(event);
-		return event;
-	};
+const createTestContext = (commentCount = 3): TestContext => {
+	const doc = document.implementation.createHTMLDocument();
+	const comments = createComments(doc, commentCount);
+	const { ctx, invalidate } = createContext();
+	vi.spyOn(doc.body, 'scrollTo').mockImplementation(noop);
+	vi.spyOn(KeyboardHandlers.prototype, 'move');
+	vi.spyOn(KeyboardHandlers.prototype, 'escape');
+	vi.spyOn(KeyboardHandlers.prototype, 'reply');
+	vi.spyOn(KeyboardHandlers.prototype, 'favorite');
+	vi.spyOn(KeyboardHandlers.prototype, 'flag');
+	vi.spyOn(KeyboardHandlers.prototype, 'next');
+	vi.spyOn(KeyboardHandlers.prototype, 'previous');
+	vi.spyOn(KeyboardHandlers.prototype, 'upvote');
+	vi.spyOn(KeyboardHandlers.prototype, 'downvote');
+	vi.spyOn(KeyboardHandlers.prototype, 'collapseToggle');
+	vi.spyOn(KeyboardHandlers.prototype, 'openReferenceLink');
+	vi.spyOn(KeyboardHandlers.prototype, 'activateElement');
+	vi.spyOn(lStorage, 'getItem').mockResolvedValue(null);
 
-	beforeEach(() => {
-		vi.clearAllMocks();
-		doc = document.implementation.createHTMLDocument();
-		comments = createComments(3);
-		invalidateCallback = noop;
-		ctx = {
-			onInvalidated: vi.fn((cb) => {
-				invalidateCallback = cb;
-			}),
-		} as unknown as ContentScriptContext;
-		vi.spyOn(doc.body, 'scrollTo').mockImplementation(noop);
-		vi.spyOn(itemKeyboardHandlers, 'move');
-		vi.spyOn(itemKeyboardHandlers, 'escape');
-		vi.spyOn(itemKeyboardHandlers, 'reply');
-		vi.spyOn(itemKeyboardHandlers, 'favorite');
-		vi.spyOn(itemKeyboardHandlers, 'flag');
-		vi.spyOn(itemKeyboardHandlers, 'next');
-		vi.spyOn(itemKeyboardHandlers, 'previous');
-		vi.spyOn(itemKeyboardHandlers, 'upvote');
-		vi.spyOn(itemKeyboardHandlers, 'downvote');
-		vi.spyOn(itemKeyboardHandlers, 'collapseToggle');
-		vi.spyOn(itemKeyboardHandlers, 'openReferenceLink');
-		vi.spyOn(itemKeyboardHandlers, 'activate');
+	return { doc, comments, ctx, invalidate };
+};
+
+const dispatchKeydown = (doc: Document, key: string, options: Partial<KeyboardEvent> = {}) => {
+	const event = new KeyboardEvent('keydown', {
+		key,
+		bubbles: true,
+		...options,
 	});
+	doc.dispatchEvent(event);
+	return event;
+};
 
+const dispatchClick = (dispatcher: EventTarget, target: HTMLElement) => {
+	const clickEvent = new PointerEvent('click', {
+		bubbles: true,
+	});
+	Object.defineProperty(clickEvent, 'target', {
+		value: target,
+		enumerable: true,
+	});
+	dispatcher.dispatchEvent(clickEvent);
+};
+
+const getComment = (comments: HTMLElement[], index: number): HTMLElement => {
+	const comment = comments[index];
+	if (!comment) {
+		throw new Error('Expected comment to exist');
+	}
+	return comment;
+};
+
+const setActiveElement = (doc: Document, element: HTMLElement) => {
+	Object.defineProperty(doc, 'activeElement', {
+		configurable: true,
+		get: () => element,
+	});
+};
+
+const clearActiveElement = (doc: Document) => {
+	delete (doc as unknown as { activeElement?: HTMLElement }).activeElement;
+};
+
+describe('keyboardNavigation', () => {
 	afterEach(() => {
-		// Clean up event listeners registered by keyboardNavigation
-		invalidateCallback();
+		vi.clearAllMocks();
 	});
 
 	describe('initialization', () => {
-		it('should inject focus styles into document head', () => {
-			keyboardNavigation(ctx, doc, comments);
+		it('should inject focus styles into document head', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments);
 
 			const styleElement = doc.head.querySelector('style');
 			expect(styleElement).toBeDefined();
-			expect(styleElement?.textContent).toContain('.oj_focused_item .default');
-			expect(styleElement?.textContent).toContain('outline: 3px solid #f7694c73');
+			expect(styleElement?.textContent).toContain(`tr.${focusClass} td`);
+			expect(styleElement?.textContent).toContain(`td.${focusClassDefault}`);
+			expect(styleElement?.textContent).toContain('--oj-focus-color: #f7694c');
+
+			invalidate();
 		});
 
-		it('should register onInvalidated callback', () => {
-			keyboardNavigation(ctx, doc, comments);
+		it('should register onInvalidated callback', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments);
 
 			expect(ctx.onInvalidated).toHaveBeenCalledWith(expect.any(Function));
+
+			invalidate();
 		});
 	});
 
 	describe('keyboard shortcuts', () => {
 		const keyHandlerTests = [
-			{
-				name: 'j should move down',
-				key: 'j',
-				handler: 'move',
-			},
-			{
-				name: 'J should move down',
-				key: 'J',
-				handler: 'move',
-			},
-			{
-				name: 'k should move up',
-				key: 'k',
-				handler: 'move',
-			},
-			{
-				name: 'K should move up',
-				key: 'K',
-				handler: 'move',
-			},
-			{
-				name: 'n should call next',
-				key: 'n',
-				handler: 'next',
-			},
-			{
-				name: 'p should call previous',
-				key: 'p',
-				handler: 'previous',
-			},
-			{
-				name: 'u should call upvote',
-				key: 'u',
-				handler: 'upvote',
-			},
-			{
-				name: 'd should call downvote',
-				key: 'd',
-				handler: 'downvote',
-			},
-			{
-				name: 'r should call reply',
-				key: 'r',
-				handler: 'reply',
-			},
-			{
-				name: 'f should call favorite',
-				key: 'f',
-				handler: 'favorite',
-			},
-			{
-				name: 'X should call flag',
-				key: 'X',
-				handler: 'flag',
-			},
+			{ name: 'j should move down', key: 'j', handler: 'move' },
+			{ name: 'J should move down', key: 'J', handler: 'move' },
+			{ name: 'k should move up', key: 'k', handler: 'move' },
+			{ name: 'K should move up', key: 'K', handler: 'move' },
+			{ name: 'n should call next', key: 'n', handler: 'next' },
+			{ name: 'p should call previous', key: 'p', handler: 'previous' },
+			{ name: 'u should call upvote', key: 'u', handler: 'upvote' },
+			{ name: 'd should call downvote', key: 'd', handler: 'downvote' },
+			{ name: 'r should call reply', key: 'r', handler: 'reply' },
+			{ name: 'f should call favorite', key: 'f', handler: 'favorite' },
+			{ name: 'X should call flag', key: 'X', handler: 'flag' },
 		];
 
-		describe('handlers should be called', () => {
+		describe('runs a bunch of tests in a loop', () => {
 			for (const { name, key, handler } of keyHandlerTests) {
-				it(name, () => {
-					keyboardNavigation(ctx, doc, comments);
-					const comment = comments[0];
-					if (comment) {
-						comment.click();
-					}
-					// Hold shift for uppercase keys to match real keyboard behavior
+				it(name, async () => {
+					const { doc, comments, ctx, invalidate } = createTestContext();
+
+					await keyboardNavigation(ctx, doc, comments);
+					getComment(comments, 0).click();
+
 					const isUppercase = key === key.toUpperCase() && key !== key.toLowerCase();
-					dispatchKeydown(key, isUppercase ? { shiftKey: true } : {});
+					const needsShift = isUppercase && key !== 'X';
+					dispatchKeydown(doc, key, needsShift ? { shiftKey: true } : {});
 
 					expect(
-						itemKeyboardHandlers[handler as keyof typeof itemKeyboardHandlers]
+						KeyboardHandlers.prototype[handler as keyof KeyboardHandlers]
 					).toHaveBeenCalled();
+
+					invalidate();
 				});
 			}
 		});
 
-		it('Escape should call escape handler', () => {
-			keyboardNavigation(ctx, doc, comments);
-			dispatchKeydown('Escape');
+		it('Escape should call escape handler', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 
-			expect(itemKeyboardHandlers.escape).toHaveBeenCalled();
+			await keyboardNavigation(ctx, doc, comments);
+			dispatchKeydown(doc, 'Escape');
+
+			expect(KeyboardHandlers.prototype.escape).toHaveBeenCalled();
+
+			invalidate();
 		});
 
-		it('escape should call escape handler', () => {
-			keyboardNavigation(ctx, doc, comments);
-			dispatchKeydown('escape');
+		it('escape should call escape handler', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 
-			expect(itemKeyboardHandlers.escape).toHaveBeenCalled();
+			await keyboardNavigation(ctx, doc, comments);
+			dispatchKeydown(doc, 'escape');
+
+			expect(KeyboardHandlers.prototype.escape).toHaveBeenCalled();
+
+			invalidate();
 		});
 
-		it('c should call collapseToggle', () => {
-			keyboardNavigation(ctx, doc, comments);
-			const comment = comments[0];
-			if (comment) {
-				comment.click();
-			}
-			dispatchKeydown('c');
+		it('c should call collapseToggle', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 
-			expect(itemKeyboardHandlers.collapseToggle).toHaveBeenCalled();
+			await keyboardNavigation(ctx, doc, comments);
+			getComment(comments, 0).click();
+			dispatchKeydown(doc, 'c');
+
+			expect(KeyboardHandlers.prototype.collapseToggle).toHaveBeenCalled();
+
+			invalidate();
 		});
 
-		it('t should scroll to top', () => {
-			keyboardNavigation(ctx, doc, comments);
-			dispatchKeydown('t');
+		it('t should scroll to top', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments);
+			dispatchKeydown(doc, 't');
 
 			expect(doc.body.scrollTo).toHaveBeenCalledWith(0, 0);
+
+			invalidate();
+		});
+
+		it('b should go back when paginated', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
+			const backSpy = vi.spyOn(window.history, 'back');
+			const locationSpy = vi
+				.spyOn(window, 'location', 'get')
+				.mockReturnValue(new URL('https://news.ycombinator.com/item?id=1&p=2') as any);
+
+			await keyboardNavigation(ctx, doc, comments);
+			dispatchKeydown(doc, 'b');
+
+			expect(backSpy).toHaveBeenCalled();
+
+			locationSpy.mockRestore();
+			invalidate();
 		});
 
 		describe('number keys', () => {
 			const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 			for (const num of numbers) {
-				it(`${num} should call openReferenceLink`, () => {
-					keyboardNavigation(ctx, doc, comments);
-					const comment = comments[0];
-					if (comment) {
-						comment.click();
-					}
-					dispatchKeydown(num);
+				it(`${num} should call openReferenceLink`, async () => {
+					const { doc, comments, ctx, invalidate } = createTestContext();
 
-					expect(itemKeyboardHandlers.openReferenceLink).toHaveBeenCalled();
+					await keyboardNavigation(ctx, doc, comments);
+					getComment(comments, 0).click();
+					dispatchKeydown(doc, num);
+
+					expect(KeyboardHandlers.prototype.openReferenceLink).toHaveBeenCalled();
+
+					invalidate();
 				});
 			}
 		});
 	});
 
 	describe('escape with reply open', () => {
-		it('should click reply button when reply is stored', () => {
-			keyboardNavigation(ctx, doc, comments);
-			const comment = comments[0];
-			if (comment) {
-				comment.click();
-			}
+		it('should click reply button when reply is stored', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments);
+			getComment(comments, 0).click();
 
 			const replyBtn = doc.createElement('a');
 			replyBtn.href = 'reply?id=123';
 			const clickSpy = vi.spyOn(replyBtn, 'click');
-			vi.mocked(itemKeyboardHandlers.reply).mockReturnValueOnce(replyBtn);
+			vi.mocked(KeyboardHandlers.prototype.reply).mockReturnValueOnce(replyBtn);
 
-			dispatchKeydown('r');
-			dispatchKeydown('Escape');
+			dispatchKeydown(doc, 'r');
+			dispatchKeydown(doc, 'Escape');
 
 			expect(clickSpy).toHaveBeenCalledTimes(1);
+
+			invalidate();
 		});
 
-		it('should clear reply after clicking', () => {
-			keyboardNavigation(ctx, doc, comments);
-			const replyBtn = document.createElement('a');
+		it('should clear reply after clicking', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments);
+			const replyBtn = doc.createElement('a');
 			replyBtn.href = 'reply?id=123';
 			vi.spyOn(replyBtn, 'click');
-			vi.mocked(itemKeyboardHandlers.reply).mockReturnValue(replyBtn);
+			vi.mocked(KeyboardHandlers.prototype.reply).mockReturnValue(replyBtn);
 
-			dispatchKeydown('r');
-			dispatchKeydown('Escape');
-			dispatchKeydown('Escape');
+			dispatchKeydown(doc, 'r');
+			dispatchKeydown(doc, 'Escape');
+			dispatchKeydown(doc, 'Escape');
 
-			expect(itemKeyboardHandlers.escape).toHaveBeenCalled();
+			expect(KeyboardHandlers.prototype.escape).toHaveBeenCalled();
+
+			invalidate();
 		});
 	});
 
@@ -258,13 +304,17 @@ describe('keyboardNavigation', () => {
 		];
 
 		for (const { key, handler } of requiresActiveItemTests) {
-			it(`${key} should not trigger without active item`, () => {
-				keyboardNavigation(ctx, doc, comments);
-				dispatchKeydown(key);
+			it(`${key} should not trigger without active item`, async () => {
+				const { doc, comments, ctx, invalidate } = createTestContext();
+
+				await keyboardNavigation(ctx, doc, comments);
+				dispatchKeydown(doc, key);
 
 				expect(
-					itemKeyboardHandlers[handler as keyof typeof itemKeyboardHandlers]
+					KeyboardHandlers.prototype[handler as keyof KeyboardHandlers]
 				).not.toHaveBeenCalled();
+
+				invalidate();
 			});
 		}
 	});
@@ -282,428 +332,283 @@ describe('keyboardNavigation', () => {
 		];
 
 		for (const { key, handler } of comboKeyTests) {
-			it(`${key} should not trigger with metaKey`, () => {
-				keyboardNavigation(ctx, doc, comments);
-				dispatchKeydown(key, { metaKey: true });
+			it(`${key} should not trigger with metaKey`, async () => {
+				const { doc, comments, ctx, invalidate } = createTestContext();
+
+				await keyboardNavigation(ctx, doc, comments);
+				dispatchKeydown(doc, key, { metaKey: true });
 
 				expect(
-					itemKeyboardHandlers[handler as keyof typeof itemKeyboardHandlers]
+					KeyboardHandlers.prototype[handler as keyof KeyboardHandlers]
 				).not.toHaveBeenCalled();
+
+				invalidate();
 			});
 
-			it(`${key} should not trigger with ctrlKey`, () => {
-				keyboardNavigation(ctx, doc, comments);
-				dispatchKeydown(key, { ctrlKey: true });
+			it(`${key} should not trigger with ctrlKey`, async () => {
+				const { doc, comments, ctx, invalidate } = createTestContext();
+
+				await keyboardNavigation(ctx, doc, comments);
+				dispatchKeydown(doc, key, { ctrlKey: true });
 
 				expect(
-					itemKeyboardHandlers[handler as keyof typeof itemKeyboardHandlers]
+					KeyboardHandlers.prototype[handler as keyof KeyboardHandlers]
 				).not.toHaveBeenCalled();
+
+				invalidate();
 			});
 		}
 
-		it('Escape should not trigger with combo key', () => {
-			keyboardNavigation(ctx, doc, comments);
-			dispatchKeydown('Escape', { metaKey: true });
+		it('Escape should not trigger with combo key', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 
-			expect(itemKeyboardHandlers.escape).not.toHaveBeenCalled();
+			await keyboardNavigation(ctx, doc, comments);
+			dispatchKeydown(doc, 'Escape', { metaKey: true });
+
+			expect(KeyboardHandlers.prototype.escape).not.toHaveBeenCalled();
+
+			invalidate();
 		});
 	});
 
 	describe('prevent() method', () => {
-		it('should trigger handlers when non-reply textarea is focused', () => {
+		it('should trigger handlers when a non-reply textarea is focused', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 			const textarea = doc.createElement('textarea');
 			doc.body.appendChild(textarea);
+			setActiveElement(doc, textarea);
 
-			// Simulate textarea being focused by setting it as activeElement
-			Object.defineProperty(doc, 'activeElement', {
-				configurable: true,
-				get: () => textarea,
-			});
+			await keyboardNavigation(ctx, doc, comments);
+			getComment(comments, 0).click();
+			dispatchKeydown(doc, 'j');
 
-			keyboardNavigation(ctx, doc, comments);
+			expect(KeyboardHandlers.prototype.move).toHaveBeenCalled();
 
-			const comment = comments[0];
-			if (comment) {
-				comment.click();
-			}
-
-			dispatchKeydown('j');
-
-			expect(itemKeyboardHandlers.move).toHaveBeenCalled();
-
-			// Cleanup
-			delete (doc as any).activeElement;
+			clearActiveElement(doc);
+			invalidate();
 		});
 
-		it('should not trigger handlers when reply textarea is focused', () => {
+		it('should not trigger handlers when reply textarea is focused', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 			const tr = doc.createElement('tr');
 			const textarea = doc.createElement('textarea');
 			tr.appendChild(textarea);
 			doc.body.appendChild(tr);
+			setActiveElement(doc, textarea);
 
-			// Simulate textarea being focused by setting it as activeElement
-			Object.defineProperty(doc, 'activeElement', {
-				configurable: true,
-				get: () => textarea,
-			});
+			await keyboardNavigation(ctx, doc, comments);
+			getComment(comments, 0).click();
+			dispatchKeydown(doc, 'j');
 
-			keyboardNavigation(ctx, doc, comments);
+			expect(KeyboardHandlers.prototype.move).not.toHaveBeenCalled();
 
-			const comment = comments[0];
-			if (comment) {
-				comment.click();
-			}
-
-			dispatchKeydown('j');
-
-			expect(itemKeyboardHandlers.move).not.toHaveBeenCalled();
-
-			// Cleanup
-			delete (doc as any).activeElement;
+			doc.body.removeChild(tr);
+			clearActiveElement(doc);
+			invalidate();
 		});
 
-		it('should not trigger handlers when input is focused', () => {
+		it('should not trigger handlers when input is focused', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 			const input = doc.createElement('input');
 			doc.body.appendChild(input);
+			setActiveElement(doc, input);
 
-			// Simulate input being focused by setting it as activeElement
-			Object.defineProperty(doc, 'activeElement', {
-				configurable: true,
-				get: () => input,
-			});
+			await keyboardNavigation(ctx, doc, comments);
+			getComment(comments, 0).click();
+			dispatchKeydown(doc, 'k');
 
-			keyboardNavigation(ctx, doc, comments);
+			expect(KeyboardHandlers.prototype.move).not.toHaveBeenCalled();
 
-			const comment = comments[0];
-			if (comment) {
-				comment.click();
-			}
-
-			dispatchKeydown('k');
-
-			expect(itemKeyboardHandlers.move).not.toHaveBeenCalled();
-
-			// Cleanup
-			delete (doc as any).activeElement;
+			doc.body.removeChild(input);
+			clearActiveElement(doc);
+			invalidate();
 		});
 
-		it('should blur anchor and trigger handlers when anchor is focused', () => {
-			keyboardNavigation(ctx, doc, comments);
-
+		it('should blur anchor and trigger handlers when anchor is focused', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 			const anchor = doc.createElement('a');
 			anchor.href = '#';
 			doc.body.appendChild(anchor);
 			const blurSpy = vi.spyOn(anchor, 'blur');
+			setActiveElement(doc, anchor);
 
-			// Simulate anchor being focused by setting it as activeElement
-			Object.defineProperty(doc, 'activeElement', {
-				configurable: true,
-				get: () => anchor,
-			});
-
-			const comment = comments[0];
-			if (comment) {
-				comment.click();
-			}
-
-			dispatchKeydown('j');
+			await keyboardNavigation(ctx, doc, comments);
+			getComment(comments, 0).click();
+			dispatchKeydown(doc, 'j');
 
 			expect(blurSpy).toHaveBeenCalled();
-			expect(itemKeyboardHandlers.move).toHaveBeenCalled();
+			expect(KeyboardHandlers.prototype.move).toHaveBeenCalled();
 
-			// Cleanup
-			delete (doc as any).activeElement;
+			clearActiveElement(doc);
+			invalidate();
 		});
 
-		it('should activate comment when clicking while non-reply textarea is focused', () => {
+		it('should activate comment when clicking while a non-reply textarea is focused', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 			const textarea = doc.createElement('textarea');
 			doc.body.appendChild(textarea);
+			setActiveElement(doc, textarea);
 
-			// Simulate textarea being focused by setting it as activeElement
-			Object.defineProperty(doc, 'activeElement', {
-				configurable: true,
-				get: () => textarea,
-			});
+			await keyboardNavigation(ctx, doc, comments);
+			const comment = getComment(comments, 0);
+			dispatchClick(comment, comment);
 
-			keyboardNavigation(ctx, doc, comments);
-			const comment = comments[0];
-			if (!comment) {
-				throw new Error('Expected comment to exist');
-			}
+			expect(KeyboardHandlers.prototype.activateElement).toHaveBeenCalled();
 
-			const clickEvent = new PointerEvent('click', {
-				bubbles: true,
-			});
-			Object.defineProperty(clickEvent, 'target', {
-				value: comment,
-				enumerable: true,
-			});
-			comment.dispatchEvent(clickEvent);
-
-			expect(itemKeyboardHandlers.activate).toHaveBeenCalled();
 			doc.body.removeChild(textarea);
-
-			// Cleanup
-			delete (doc as any).activeElement;
+			clearActiveElement(doc);
+			invalidate();
 		});
 
-		it('should not activate comment when clicking while input is focused', () => {
+		it('should activate comment when clicking while input is focused', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 			const input = doc.createElement('input');
 			doc.body.appendChild(input);
+			setActiveElement(doc, input);
 
-			// Simulate input being focused by setting it as activeElement
-			Object.defineProperty(doc, 'activeElement', {
-				configurable: true,
-				get: () => input,
-			});
+			await keyboardNavigation(ctx, doc, comments);
+			const comment = getComment(comments, 0);
+			dispatchClick(comment, comment);
 
-			keyboardNavigation(ctx, doc, comments);
-			const comment = comments[0];
-			if (!comment) {
-				throw new Error('Expected comment to exist');
-			}
+			expect(KeyboardHandlers.prototype.activateElement).toHaveBeenCalled();
 
-			const clickEvent = new PointerEvent('click', {
-				bubbles: true,
-			});
-			Object.defineProperty(clickEvent, 'target', {
-				value: comment,
-				enumerable: true,
-			});
-			comment.dispatchEvent(clickEvent);
-
-			expect(itemKeyboardHandlers.activate).not.toHaveBeenCalled();
 			doc.body.removeChild(input);
-
-			// Cleanup
-			delete (doc as any).activeElement;
-		});
-
-		it('should not trigger handlers when reply textarea is focused', () => {
-			// Create a comment row with a reply textarea
-			const tr = doc.createElement('tr');
-			const textarea = doc.createElement('textarea');
-			tr.appendChild(textarea);
-			doc.body.appendChild(tr);
-
-			// Simulate reply textarea being focused by setting it as activeElement
-			Object.defineProperty(doc, 'activeElement', {
-				configurable: true,
-				get: () => textarea,
-			});
-
-			keyboardNavigation(ctx, doc, comments);
-
-			const comment = comments[0];
-			if (comment) {
-				comment.click();
-			}
-
-			dispatchKeydown('j');
-
-			expect(itemKeyboardHandlers.move).not.toHaveBeenCalled();
-
-			// Cleanup
-			doc.body.removeChild(tr);
-			delete (doc as any).activeElement;
+			clearActiveElement(doc);
+			invalidate();
 		});
 	});
 
 	describe('click handler', () => {
-		it('should activate item when comment is clicked', () => {
-			keyboardNavigation(ctx, doc, comments);
-			const comment = comments[0];
-			if (!comment) {
-				throw new Error('Expected comment to exist');
-			}
+		it('should activate item when comment is clicked', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 
-			const clickEvent = new PointerEvent('click', {
-				bubbles: true,
-			});
-			Object.defineProperty(clickEvent, 'target', {
-				value: comment,
-				enumerable: true,
-			});
-			comment.dispatchEvent(clickEvent);
+			await keyboardNavigation(ctx, doc, comments);
+			const comment = getComment(comments, 0);
+			dispatchClick(comment, comment);
 
-			expect(itemKeyboardHandlers.activate).toHaveBeenCalled();
+			expect(KeyboardHandlers.prototype.activateElement).toHaveBeenCalled();
+
+			invalidate();
 		});
 	});
 
 	describe('document click handler', () => {
-		it('should deactivate comment when clicking outside comments area', () => {
-			keyboardNavigation(ctx, doc, comments);
+		it('should deactivate comment when clicking outside comments area', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 
-			// Activate a comment first
-			const comment = comments[0];
-			if (!comment) {
-				throw new Error('Expected comment to exist');
-			}
-			comment.click();
+			await keyboardNavigation(ctx, doc, comments);
+			getComment(comments, 0).click();
+			vi.mocked(KeyboardHandlers.prototype.escape).mockClear();
 
-			// Clear the spy to only count later calls
-			vi.mocked(itemKeyboardHandlers.escape).mockClear();
-
-			// Click outside the comments area
 			const outsideElement = doc.createElement('div');
 			doc.body.appendChild(outsideElement);
+			dispatchClick(doc, outsideElement);
 
-			const clickEvent = new PointerEvent('click', {
-				bubbles: true,
-			});
-			Object.defineProperty(clickEvent, 'target', {
-				value: outsideElement,
-				enumerable: true,
-			});
-			doc.dispatchEvent(clickEvent);
+			expect(KeyboardHandlers.prototype.escape).toHaveBeenCalled();
 
-			expect(itemKeyboardHandlers.escape).toHaveBeenCalled();
+			invalidate();
 		});
 
-		it('should not deactivate comment when clicking inside comments area', () => {
-			keyboardNavigation(ctx, doc, comments);
+		it('should not deactivate comment when clicking inside comments area', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 
-			// Activate a comment first
-			const comment = comments[0];
-			if (!comment) {
-				throw new Error('Expected comment to exist');
-			}
+			await keyboardNavigation(ctx, doc, comments);
+			const comment = getComment(comments, 0);
 			comment.click();
+			vi.mocked(KeyboardHandlers.prototype.escape).mockClear();
 
-			// Clear the spy to only count later calls
-			vi.mocked(itemKeyboardHandlers.escape).mockClear();
-
-			// Click inside a comment
 			const insideElement = doc.createElement('span');
 			comment.appendChild(insideElement);
+			dispatchClick(doc, insideElement);
 
-			const clickEvent = new PointerEvent('click', {
-				bubbles: true,
-			});
-			Object.defineProperty(clickEvent, 'target', {
-				value: insideElement,
-				enumerable: true,
-			});
-			doc.dispatchEvent(clickEvent);
+			expect(KeyboardHandlers.prototype.escape).not.toHaveBeenCalled();
 
-			expect(itemKeyboardHandlers.escape).not.toHaveBeenCalled();
+			invalidate();
 		});
 
-		it('should not deactivate when clicking on a textarea', () => {
-			keyboardNavigation(ctx, doc, comments);
+		it('should not deactivate when clicking on a textarea', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 
-			// Activate a comment first
-			const comment = comments[0];
-			if (!comment) {
-				throw new Error('Expected comment to exist');
-			}
-			comment.click();
+			await keyboardNavigation(ctx, doc, comments);
+			getComment(comments, 0).click();
+			vi.mocked(KeyboardHandlers.prototype.escape).mockClear();
 
-			// Clear the spy to only count later calls
-			vi.mocked(itemKeyboardHandlers.escape).mockClear();
-
-			// Click on a textarea
 			const textarea = doc.createElement('textarea');
 			doc.body.appendChild(textarea);
+			dispatchClick(doc, textarea);
 
-			const clickEvent = new PointerEvent('click', {
-				bubbles: true,
-			});
-			Object.defineProperty(clickEvent, 'target', {
-				value: textarea,
-				enumerable: true,
-			});
-			doc.dispatchEvent(clickEvent);
+			expect(KeyboardHandlers.prototype.escape).not.toHaveBeenCalled();
 
-			expect(itemKeyboardHandlers.escape).not.toHaveBeenCalled();
+			invalidate();
 		});
 
-		it('should not deactivate when clicking on an input', () => {
-			keyboardNavigation(ctx, doc, comments);
+		it('should not deactivate when clicking on an input', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 
-			// Activate a comment first
-			const comment = comments[0];
-			if (!comment) {
-				throw new Error('Expected comment to exist');
-			}
-			comment.click();
+			await keyboardNavigation(ctx, doc, comments);
+			getComment(comments, 0).click();
+			vi.mocked(KeyboardHandlers.prototype.escape).mockClear();
 
-			// Clear the spy to only count later calls
-			vi.mocked(itemKeyboardHandlers.escape).mockClear();
-
-			// Click on an input
 			const input = doc.createElement('input');
 			doc.body.appendChild(input);
+			dispatchClick(doc, input);
 
-			const clickEvent = new PointerEvent('click', {
-				bubbles: true,
-			});
-			Object.defineProperty(clickEvent, 'target', {
-				value: input,
-				enumerable: true,
-			});
-			doc.dispatchEvent(clickEvent);
+			expect(KeyboardHandlers.prototype.escape).not.toHaveBeenCalled();
 
-			expect(itemKeyboardHandlers.escape).not.toHaveBeenCalled();
+			invalidate();
 		});
 
-		it('should not deactivate when no comment is active', () => {
-			keyboardNavigation(ctx, doc, comments);
+		it('should not deactivate when no comment is active', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 
-			// Don't activate any comment
+			await keyboardNavigation(ctx, doc, comments);
 
-			// Click outside
 			const outsideElement = doc.createElement('div');
 			doc.body.appendChild(outsideElement);
+			dispatchClick(doc, outsideElement);
 
-			const clickEvent = new PointerEvent('click', {
-				bubbles: true,
-			});
-			Object.defineProperty(clickEvent, 'target', {
-				value: outsideElement,
-				enumerable: true,
-			});
-			doc.dispatchEvent(clickEvent);
+			expect(KeyboardHandlers.prototype.escape).not.toHaveBeenCalled();
 
-			expect(itemKeyboardHandlers.escape).not.toHaveBeenCalled();
+			invalidate();
 		});
 	});
 
 	describe('cleanup on invalidation', () => {
-		it('should remove keydown listener on invalidation', () => {
+		it('should remove keydown listener on invalidation', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 			const addSpy = vi.spyOn(doc, 'addEventListener');
 			const removeSpy = vi.spyOn(doc, 'removeEventListener');
 
-			keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments);
 			const keydownHandler = addSpy.mock.calls[0]?.[1];
 
-			invalidateCallback();
+			invalidate();
 
 			expect(removeSpy).toHaveBeenCalledWith('keydown', keydownHandler);
 		});
 
-		it('should remove click listeners from comments on invalidation', () => {
-			const comment = comments[0];
-			if (!comment) {
-				throw new Error('Expected comment to exist');
-			}
+		it('should remove click listeners from comments on invalidation', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
+			const comment = getComment(comments, 0);
 			const removeSpy = vi.spyOn(comment, 'removeEventListener');
 
-			keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments);
 
-			invalidateCallback();
+			invalidate();
 
-			expect(removeSpy).toHaveBeenCalledWith('click', expect.any(Function));
+			expect(removeSpy).toHaveBeenCalledWith('click', expect.any(Function), undefined);
+			expect(removeSpy).toHaveBeenCalledTimes(1);
 		});
 
-		it('should remove document click listener on invalidation', () => {
+		it('should remove document click listener on invalidation', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
 			const addSpy = vi.spyOn(doc, 'addEventListener');
 			const removeSpy = vi.spyOn(doc, 'removeEventListener');
 
-			keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments);
 			const documentClickHandler = addSpy.mock.calls.find((call) => call[0] === 'click')?.[1];
 
-			invalidateCallback();
+			invalidate();
 
 			expect(removeSpy).toHaveBeenCalledWith('click', documentClickHandler);
 		});

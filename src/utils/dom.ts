@@ -13,12 +13,6 @@ const getHiddenInputValue = (doc: Document, name: string) => {
 	return doc.querySelector<HTMLInputElement>(`input[type="hidden"][name="${name}"]`)?.value || '';
 };
 
-const getReplyIdFromLink = (link: HTMLAnchorElement): string => {
-	const href = link.getAttribute('href') || '';
-	const url = new URL(href, link.baseURI);
-	return url.searchParams.get('id') || '';
-};
-
 const getPageDom = async (
 	url: string,
 	cache: RequestCache | undefined = 'force-cache'
@@ -128,8 +122,8 @@ const getAllComments = (doc: Document): HTMLElement[] => {
 	return [...doc.querySelectorAll<HTMLElement>('tr.comtr')];
 };
 
-const mapCommentsById = (comments: HTMLElement[]): Map<string, HTMLElement> => {
-	return new Map(comments.map((el) => [el.id, el]));
+const mapElementsById = (elements: HTMLElement[]): Map<string, HTMLElement> => {
+	return new Map(elements.map((el) => [el.id, el]));
 };
 
 const getItemIdFromLocation = (): string | null => {
@@ -238,10 +232,9 @@ export const dom = {
 	getAuthToken,
 	toggleActivityState,
 	getAllComments,
-	mapCommentsById,
+	mapElementsById,
 	createHiddenInput,
 	getHiddenInputValue,
-	getReplyIdFromLink,
 	getPageDom,
 	fetchHmacFromPage,
 	getUsername,

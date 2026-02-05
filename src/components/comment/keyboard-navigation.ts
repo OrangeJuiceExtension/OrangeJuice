@@ -1,41 +1,62 @@
 import type { ContentScriptContext } from '#imports';
+import { CommentData } from '@/components/comment/comment-data.ts';
+import { focusClass, focusClassDefault, HNComment } from '@/components/comment/hn-comment.ts';
+import { KeyboardHandlers } from '@/components/comment/keyboard-handlers.ts';
+import type { KeyboardNavState } from '@/components/common/keyboard-navigation.ts';
 import { dom } from '@/utils/dom.ts';
-import { ItemData } from '@/utils/dom-item-data.ts';
-import { itemKeyboardHandlers } from '@/utils/item-keyboard-handlers.ts';
 
-// TODO: persist the state of where we are for each comment in each story so that when you reload the page, the
-// comment comes back as selected.
-export const keyboardNavigation = (
+export const keyboardNavigation = async (
 	ctx: ContentScriptContext,
 	doc: Document,
-	comments: HTMLElement[]
-): void => {
+	commentElements: HTMLElement[],
+	navState?: KeyboardNavState
+): Promise<void> => {
 	const style = doc.createElement('style');
 	style.textContent = `
-		.oj_focused_item .default {
-			outline: 3px solid #f7694c73;
-			padding: 5px;
-			background-color: white;
+		:root {
+			--oj-focus-color: #f7694c;
+			--oj-focus-w: 2px;
+			--oj-focus-pad: 4px;
 		}
-		
-		.oj_focused_item.morelink {
+
+		tr.comtr td.default {
+			padding: var(--oj-focus-pad);
+		}
+
+		tr.${focusClass} td {
+			--oj-top: inset 0 0 0 0 transparent;
+			--oj-right: inset 0 0 0 0 transparent;
+			--oj-bottom: inset 0 0 0 0 transparent;
+			--oj-left: inset 0 0 0 0 transparent;
+			box-shadow: var(--oj-top), var(--oj-right), var(--oj-bottom), var(--oj-left);
+		}
+
+		tr.${focusClass} td.${focusClassDefault} {
+			background-color: white;
+			--oj-top: inset 0 var(--oj-focus-w) 0 0 var(--oj-focus-color);
+			--oj-right: inset calc(-1 * var(--oj-focus-w)) 0 0 0 var(--oj-focus-color);
+			--oj-bottom: inset 0 calc(-1 * var(--oj-focus-w)) 0 0 var(--oj-focus-color);
+			--oj-left: inset var(--oj-focus-w) 0 0 0 var(--oj-focus-color);
+		}
+
+		tr.${focusClass}.morelink {
 			margin: 0;
 		}
 	`;
 	doc.head.appendChild(style);
 
-	function prevent(doc: Document) {
+	function prevent(doc: Document, e?: KeyboardEvent) {
 		if (doc.activeElement?.tagName === undefined) {
 			return true;
 		}
 
 		if (doc.activeElement.tagName === 'TEXTAREA') {
-			// Allow keyboard navigation if the textarea is a reply textarea
 			const textarea = doc.activeElement as HTMLTextAreaElement;
-			if (textarea.closest('tr')?.querySelector('textarea') === textarea) {
-				return true;
+			const isReplyTextarea = textarea.closest('tr')?.querySelector('textarea') === textarea;
+			if (isReplyTextarea && e?.key === 'Escape') {
+				return false;
 			}
-			return false;
+			return isReplyTextarea;
 		}
 
 		if (doc.activeElement.tagName === 'INPUT') {
@@ -44,94 +65,112 @@ export const keyboardNavigation = (
 
 		if (doc.activeElement.tagName === 'A') {
 			(doc.activeElement as HTMLAnchorElement).blur();
-			return false;
 		}
+
+		if (navState?.helpModalOpen && e) {
+			if (e.key === 'Escape') {
+				return;
+			}
+			e.preventDefault();
+			e.stopPropagation();
+			return;
+		}
+
 		return false;
 	}
 
-	const itemData: ItemData = new ItemData(dom.mapCommentsById(comments));
+	const comments = commentElements.map((el) => new HNComment(el));
+	const commentData = new CommentData(comments);
+	const keyboardHandlers = new KeyboardHandlers(doc);
+
+	await keyboardHandlers.checkActiveState(commentData);
 
 	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: it is just complex
-	const keydownHandler = (e: KeyboardEvent) => {
-		if (prevent(doc)) {
+	const keydownHandler = async (e: KeyboardEvent) => {
+		if (prevent(doc, e)) {
 			return;
 		}
 
 		const combo = dom.isComboKey(e);
 
 		switch (e.key) {
-			// j: Go down
 			case 'J':
 			case 'j':
-				itemKeyboardHandlers.move(e, itemData, 'down');
+				if (!combo || e.shiftKey) {
+					await keyboardHandlers.move(e, commentData, 'down');
+				}
 				break;
-			// k: Go up
 			case 'K':
 			case 'k':
-				itemKeyboardHandlers.move(e, itemData, 'up');
+				if (!combo || e.shiftKey) {
+					await keyboardHandlers.move(e, commentData, 'up');
+				}
 				break;
-			// Escape
 			case 'Escape':
 			case 'escape':
 				if (!combo) {
-					// special case when reply is open
-					if (itemData.reply) {
-						itemData.reply.click();
-						itemData.reply = undefined;
+					if (commentData.replyButton) {
+						const activeComment = commentData.getActiveComment();
+						commentData.replyButton.click();
+						commentData.replyButton = undefined;
+						if (activeComment) {
+							await keyboardHandlers.activateComment(commentData, activeComment);
+						}
 					} else {
-						itemKeyboardHandlers.escape(itemData);
+						await keyboardHandlers.escape(commentData);
 					}
 				}
 				break;
-			// reply toggle
 			case 'r':
-				if (!combo && itemData.activeItem) {
-					// store off reply so that it can be used in escape. if the reply box
-					// is open, we only want to close it on escape, not unfocus the comment
-					itemData.reply = itemKeyboardHandlers.reply(itemData);
+				if (!combo && commentData.getActiveComment()) {
+					commentData.replyButton = keyboardHandlers.reply(commentData);
 				}
 				break;
-			// favorite toggle
 			case 'f':
-				if (!combo && itemData.activeItem) {
-					itemKeyboardHandlers.favorite(itemData);
+				if (!combo && commentData.getActiveComment()) {
+					keyboardHandlers.favorite(commentData);
 				}
 				break;
-			// flag toggle
 			case 'X':
-				if (combo && itemData.activeItem) {
-					itemKeyboardHandlers.flag(itemData);
+				if (!combo && commentData.getActiveComment()) {
+					keyboardHandlers.flag(commentData);
 				}
 				break;
 			case 'n':
-				if (!combo && itemData.activeItem) {
-					itemKeyboardHandlers.next(itemData);
+				if (!combo && commentData.getActiveComment()) {
+					await keyboardHandlers.next(commentData);
 				}
 				break;
 			case 'p':
-				if (!combo && itemData.activeItem) {
-					itemKeyboardHandlers.previous(itemData);
+				if (!combo && commentData.getActiveComment()) {
+					await keyboardHandlers.previous(commentData);
 				}
 				break;
 			case 'u':
-				if (!combo && itemData.activeItem) {
-					itemKeyboardHandlers.upvote(itemData);
+				if (!combo && commentData.getActiveComment()) {
+					keyboardHandlers.upvote(commentData);
 				}
 				break;
 			case 'd':
-				if (!combo && itemData.activeItem) {
-					itemKeyboardHandlers.downvote(itemData);
+				if (!combo && commentData.getActiveComment()) {
+					keyboardHandlers.downvote(commentData);
 				}
 				break;
 			case 'c':
-				if (!combo && itemData.activeItem) {
-					itemKeyboardHandlers.collapseToggle(itemData.activeItem);
+				if (!combo && commentData.getActiveComment()) {
+					keyboardHandlers.collapseToggle(commentData);
 				}
 				break;
 			case 't':
-				doc.body.scrollTo(0, 0);
+				if (!combo) {
+					doc.body.scrollTo(0, 0);
+				}
 				break;
-			// parse reference links
+			case 'b':
+				if (!combo) {
+					window.history.back();
+				}
+				break;
 			case '0':
 			case '1':
 			case '2':
@@ -142,8 +181,8 @@ export const keyboardNavigation = (
 			case '7':
 			case '8':
 			case '9':
-				if (itemData.activeItem) {
-					return itemKeyboardHandlers.openReferenceLink(e, itemData.activeItem);
+				if (commentData.getActiveComment()) {
+					return keyboardHandlers.openReferenceLink(e, commentData);
 				}
 				break;
 			default:
@@ -153,21 +192,13 @@ export const keyboardNavigation = (
 
 	doc.addEventListener('keydown', keydownHandler);
 
-	const itemClickHandler = (e: PointerEvent) => {
-		if (e.target instanceof HTMLElement) {
-			if (prevent(doc)) {
-				return;
-			}
-			itemKeyboardHandlers.activate(itemData, e.target);
-		}
+	const clickToFocus = (e: MouseEvent) => {
+		keyboardHandlers.activateElement(commentData, e.target as HTMLElement);
 	};
 
-	for (const comment of comments) {
-		comment.addEventListener('click', itemClickHandler);
-	}
+	commentData.addEventListener('click', clickToFocus);
 
-	const documentClickHandler = (e: PointerEvent) => {
-		// Don't deactivate if clicking in a textarea or input
+	const documentClickHandler = async (e: PointerEvent) => {
 		if (
 			e.target instanceof HTMLElement &&
 			(e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')
@@ -175,13 +206,12 @@ export const keyboardNavigation = (
 			return;
 		}
 
-		// Check if click is outside the comments area
-		if (itemData.activeItem && e.target instanceof HTMLElement) {
-			const clickedInsideComment = comments.some((comment) =>
+		if (commentData.getActiveComment() && e.target instanceof HTMLElement) {
+			const clickedInsideComment = commentElements.some((comment) =>
 				comment.contains(e.target as Node)
 			);
 			if (!clickedInsideComment) {
-				itemKeyboardHandlers.escape(itemData);
+				await keyboardHandlers.escape(commentData);
 			}
 		}
 	};
@@ -190,9 +220,7 @@ export const keyboardNavigation = (
 
 	ctx.onInvalidated(() => {
 		doc.removeEventListener('keydown', keydownHandler);
-		for (const comment of comments) {
-			comment.removeEventListener('click', itemClickHandler);
-		}
+		commentData.removeEventListener('click', clickToFocus);
 		doc.removeEventListener('click', documentClickHandler);
 	});
 };

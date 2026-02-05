@@ -3,8 +3,14 @@ import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import { dom } from './dom.ts';
 
-const loggedInHtml = readFileSync(join(__dirname, '__fixtures__', 'hn-logged-in.html'), 'utf-8');
-const loggedOutHtml = readFileSync(join(__dirname, '__fixtures__', 'hn-logged-out.html'), 'utf-8');
+const loggedInHtml = readFileSync(
+	join(import.meta.dirname, '__fixtures__', 'hn-logged-in.html'),
+	'utf-8'
+);
+const loggedOutHtml = readFileSync(
+	join(import.meta.dirname, '__fixtures__', 'hn-logged-out.html'),
+	'utf-8'
+);
 
 describe('dom', () => {
 	describe('getUsername', () => {

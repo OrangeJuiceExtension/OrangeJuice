@@ -51,6 +51,9 @@ There are a number of urls which are not exposed in the regular HN ux. Add a 'mo
 - **Profile about clickable links**: In the about section for a user, if they have put links in, make them clickable.
 - **Load top leaders karma**: On the /leaders page, show the karma for the top 10
 
+## Keyboard Navigation
+Navigate stories and comments efficiently with keyboard shortcuts.
+
 ## Enhanced Comment UX
 Improves the comment reading experience with several visual enhancements:
 - **Highlight Unread Comments**: Tracks comments you've read and highlights new ones with an orange left border. When you revisit a thread within 3 days, new comments added since your last visit are clearly marked. The highlight becomes brighter on hover for easy identification.

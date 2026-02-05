@@ -4,26 +4,28 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { browser } from '#imports';
 import { ReadStoriesService } from '@/services/read-stories-service.ts';
 import lStorage from '@/utils/localStorage.ts';
-import type { HNStory } from '@/utils/types.ts';
 import {
 	createCheckbox,
-	hideReadStories,
 	hideStories,
 	type StorageState,
 	setupCheckbox,
 	showStories,
 } from './hide-read-stories.ts';
+import { HNStory } from './hn-story.ts';
 
 const STORY_LIST_HTML_REGEX = /class="itemlist"/;
 const homepageHtml = readFileSync(
-	join(__dirname, '..', '..', 'utils', '__fixtures__', 'hn-homepage.html'),
+	join(import.meta.dirname, '..', '..', 'utils', '__fixtures__', 'hn-homepage.html'),
 	'utf-8'
 );
 const storiesWithBigboxHtml = readFileSync(
-	join(__dirname, '__fixtures__', 'stories-with-bigbox.html'),
+	join(import.meta.dirname, '__fixtures__', 'stories-with-bigbox.html'),
 	'utf-8'
 );
-const emptyPageHtml = readFileSync(join(__dirname, '__fixtures__', 'empty-page.html'), 'utf-8');
+const emptyPageHtml = readFileSync(
+	join(import.meta.dirname, '__fixtures__', 'empty-page.html'),
+	'utf-8'
+);
 
 describe('hide_read_stories', () => {
 	let service: ReadStoriesService;
@@ -52,7 +54,7 @@ describe('hide_read_stories', () => {
 			expect(itemlist).not.toBeNull();
 		});
 
-		it('should hide story rows when ids are provided', () => {
+		it('should hide story rows when stories are provided', () => {
 			const storyRow = document.createElement('tr');
 			storyRow.id = '12345678';
 			document.body.appendChild(storyRow);
@@ -63,18 +65,20 @@ describe('hide_read_stories', () => {
 			const spacerRow = document.createElement('tr');
 			subtextRow.after(spacerRow);
 
+			const story = new HNStory(storyRow);
+
 			expect(storyRow.style.display).toBe('');
 			expect(subtextRow.style.display).toBe('');
 			expect(spacerRow.style.display).toBe('');
 
-			hideStories(['12345678'], document);
+			hideStories([story]);
 
 			expect(storyRow.style.display).toBe('none');
 			expect(subtextRow.style.display).toBe('none');
 			expect(spacerRow.style.display).toBe('none');
 		});
 
-		it('should show story rows when ids are provided', () => {
+		it('should show story rows when stories are provided', () => {
 			const storyRow = document.createElement('tr');
 			storyRow.id = '87654321';
 			storyRow.style.display = 'none';
@@ -88,16 +92,18 @@ describe('hide_read_stories', () => {
 			spacerRow.style.display = 'none';
 			subtextRow.after(spacerRow);
 
-			showStories(['87654321'], document);
+			const story = new HNStory(storyRow);
+
+			showStories([story]);
 
 			expect(storyRow.style.display).toBe('');
 			expect(subtextRow.style.display).toBe('');
 			expect(spacerRow.style.display).toBe('');
 		});
 
-		it('should handle missing story elements gracefully', () => {
+		it('should handle empty story list gracefully', () => {
 			expect(() => {
-				hideStories(['nonexistent'], document);
+				hideStories([]);
 			}).not.toThrow();
 		});
 
@@ -106,8 +112,10 @@ describe('hide_read_stories', () => {
 			storyRow.id = 'lonely-story';
 			document.body.appendChild(storyRow);
 
+			const story = new HNStory(storyRow);
+
 			expect(() => {
-				hideStories(['lonely-story'], document);
+				hideStories([story]);
 			}).not.toThrow();
 
 			expect(storyRow.style.display).toBe('none');
@@ -197,28 +205,31 @@ describe('hide_read_stories', () => {
 		});
 
 		it('should fetch visit history for each story', async () => {
-			const stories: HNStory[] = [
-				{
-					id: '12345678',
-					position: 1,
-					title: 'Test Story',
-					url: 'https://example.com/test',
-					points: 42,
-					author: 'testuser',
-					postedDate: '2024-01-19T12:00:00',
-					commentsCount: 15,
-				},
-				{
-					id: '87654321',
-					position: 2,
-					title: 'Another Story',
-					url: 'https://example.com/another',
-					points: 123,
-					author: 'anotheruser',
-					postedDate: '2024-01-19T10:00:00',
-					commentsCount: 42,
-				},
-			];
+			const storyRow1 = document.createElement('tr');
+			storyRow1.id = '12345678';
+			document.body.appendChild(storyRow1);
+
+			const storyRow2 = document.createElement('tr');
+			storyRow2.id = '87654321';
+			document.body.appendChild(storyRow2);
+
+			const story1 = new HNStory(storyRow1);
+			story1.title = 'Test Story';
+			story1.url = 'https://example.com/test';
+			story1.points = 42;
+			story1.author = 'testuser';
+			story1.postedDate = '2024-01-19T12:00:00';
+			story1.commentsCount = 15;
+
+			const story2 = new HNStory(storyRow2);
+			story2.title = 'Another Story';
+			story2.url = 'https://example.com/another';
+			story2.points = 123;
+			story2.author = 'anotheruser';
+			story2.postedDate = '2024-01-19T10:00:00';
+			story2.commentsCount = 42;
+
+			const stories = [story1, story2];
 
 			mockGetVisits.mockResolvedValueOnce([{ visitTime: 1_234_567_890, transition: 'link' }]);
 			mockGetVisits.mockResolvedValueOnce([]);
@@ -232,89 +243,93 @@ describe('hide_read_stories', () => {
 			expect(mockGetVisits).toHaveBeenCalledWith({
 				url: 'https://example.com/another',
 			});
+
+			document.body.removeChild(storyRow1);
+			document.body.removeChild(storyRow2);
 		});
 
 		it('should return stories with visit information', async () => {
-			const stories: HNStory[] = [
-				{
-					id: '12345678',
-					position: 1,
-					title: 'Visited Story',
-					url: 'https://example.com/visited',
-					points: 42,
-					author: 'testuser',
-					postedDate: '2024-01-19T12:00:00',
-					commentsCount: 15,
-				},
-			];
+			const storyRow = document.createElement('tr');
+			storyRow.id = '12345678';
+			document.body.appendChild(storyRow);
+
+			const story = new HNStory(storyRow);
+			story.title = 'Visited Story';
+			story.url = 'https://example.com/visited';
+			story.points = 42;
+			story.author = 'testuser';
+			story.postedDate = '2024-01-19T12:00:00';
+			story.commentsCount = 15;
+
+			const stories = [story];
 
 			const visitData = { visitTime: 1_234_567_890, transition: 'link' };
 			mockGetVisits.mockResolvedValueOnce([visitData]);
 
 			const result = await service.getVisits(stories);
 
-			expect(result).toEqual([
-				{
-					...stories[0],
-					latestVisit: visitData,
-				},
-			]);
+			expect(result).toHaveLength(1);
+			if (!result) {
+				throw new Error('expected result to be defined');
+			}
+			expect(result[0].id).toBe('12345678');
+			expect(result[0].latestVisit).toEqual(visitData);
+
+			document.body.removeChild(storyRow);
 		});
 
 		it('should return story without visit if no history exists', async () => {
-			const stories: HNStory[] = [
-				{
-					id: '87654321',
-					position: 1,
-					title: 'Unvisited Story',
-					url: 'https://example.com/unvisited',
-					points: 123,
-					author: 'anotheruser',
-					postedDate: '2024-01-19T10:00:00',
-					commentsCount: 42,
-				},
-			];
+			const storyRow = document.createElement('tr');
+			storyRow.id = '87654321';
+			document.body.appendChild(storyRow);
+
+			const story = new HNStory(storyRow);
+			story.title = 'Unvisited Story';
+			story.url = 'https://example.com/unvisited';
+			story.points = 123;
+			story.author = 'anotheruser';
+			story.postedDate = '2024-01-19T10:00:00';
+			story.commentsCount = 42;
+
+			const stories = [story];
 
 			mockGetVisits.mockResolvedValueOnce([]);
 
 			const result = await service.getVisits(stories);
 
-			expect(result).toEqual([stories[0]]);
+			expect(result).toHaveLength(1);
+			if (!result) {
+				throw new Error('expected result to be defined');
+			}
+			expect(result[0].id).toBe('87654321');
+			expect(result[0].latestVisit).toBeUndefined();
+
+			document.body.removeChild(storyRow);
 		});
 
 		it('should handle multiple stories with mixed visit history', async () => {
-			const stories: HNStory[] = [
-				{
-					id: '1',
-					position: 1,
-					title: 'Story 1',
-					url: 'https://example.com/1',
-					points: 10,
-					author: 'user1',
-					postedDate: '2024-01-19T12:00:00',
-					commentsCount: 5,
-				},
-				{
-					id: '2',
-					position: 2,
-					title: 'Story 2',
-					url: 'https://example.com/2',
-					points: 20,
-					author: 'user2',
-					postedDate: '2024-01-19T11:00:00',
-					commentsCount: 10,
-				},
-				{
-					id: '3',
-					position: 3,
-					title: 'Story 3',
-					url: 'https://example.com/3',
-					points: 30,
-					author: 'user3',
-					postedDate: '2024-01-19T10:00:00',
-					commentsCount: 15,
-				},
-			];
+			const storyRow1 = document.createElement('tr');
+			storyRow1.id = '1';
+			document.body.appendChild(storyRow1);
+
+			const storyRow2 = document.createElement('tr');
+			storyRow2.id = '2';
+			document.body.appendChild(storyRow2);
+
+			const storyRow3 = document.createElement('tr');
+			storyRow3.id = '3';
+			document.body.appendChild(storyRow3);
+
+			const story1 = new HNStory(storyRow1);
+			story1.url = 'https://example.com/1';
+
+			const story2 = new HNStory(storyRow2);
+			story2.url = 'https://example.com/2';
+
+			const story3 = new HNStory(storyRow3);
+			story3.url = 'https://example.com/3';
+
+			const stories = [story1, story2, story3];
 
 			const visit1 = { visitTime: 1000, transition: 'link' };
 			const visit3 = { visitTime: 3000, transition: 'typed' };
@@ -325,76 +340,25 @@ describe('hide_read_stories', () => {
 
 			const result = await service.getVisits(stories);
 
-			expect(result).toEqual([
-				{ ...stories[0], latestVisit: visit1 },
-				stories[1],
-				{ ...stories[2], latestVisit: visit3 },
-			]);
+			expect(result).toHaveLength(3);
+			if (!result) {
+				throw new Error('expected result to be defined');
+			}
+			expect(result[0].id).toBe('1');
+			expect(result[0].latestVisit).toEqual(visit1);
+			expect(result[1].id).toBe('2');
+			expect(result[1].latestVisit).toBeUndefined();
+			expect(result[2].id).toBe('3');
+			expect(result[2].latestVisit).toEqual(visit3);
+
+			document.body.removeChild(storyRow1);
+			document.body.removeChild(storyRow2);
+			document.body.removeChild(storyRow3);
 		});
 	});
 
-	describe('path filtering', () => {
-		it('should skip pages with kind=comment in search params', async () => {
-			Object.defineProperty(window, 'location', {
-				value: {
-					pathname: '/flagged',
-					search: '?id=testuser&kind=comment',
-				},
-				writable: true,
-				configurable: true,
-			});
-
-			const div = document.createElement('div');
-			div.innerHTML = storiesWithBigboxHtml;
-			document.body.appendChild(div);
-
-			const bigbox = document.getElementById('bigbox');
-			if (!bigbox) {
-				expect(bigbox).not.toBeNull();
-				return;
-			}
-
-			const mockCtx = {
-				onInvalidated: vi.fn(),
-			};
-
-			await hideReadStories(mockCtx as any, document);
-
-			// hideReadStories should exit early and not create checkbox
-			const checkbox = document.getElementById('oj-hide-read-stories');
-			expect(checkbox).toBeNull();
-
-			document.body.removeChild(div);
-		});
-
-		it('should skip pages not in allowed paths', async () => {
-			Object.defineProperty(window, 'location', {
-				value: {
-					pathname: '/item',
-					search: '?id=12345',
-				},
-				writable: true,
-				configurable: true,
-			});
-
-			const div = document.createElement('div');
-			div.innerHTML = storiesWithBigboxHtml;
-			document.body.appendChild(div);
-
-			const mockCtx = {
-				onInvalidated: vi.fn(),
-			};
-
-			await hideReadStories(mockCtx as any, document);
-
-			// hideReadStories should exit early due to pathname not in allowedPaths
-			const checkbox = document.getElementById('oj-hide-read-stories');
-			expect(checkbox).toBeNull();
-
-			document.body.removeChild(div);
-		});
-
-		it('should work on allowed paths without kind=comment', async () => {
+	describe('checkbox setup', () => {
+		it('should create checkbox on valid page', async () => {
 			Object.defineProperty(window, 'location', {
 				value: {
 					pathname: '/flagged',
@@ -486,16 +450,20 @@ describe('hide_read_stories', () => {
 			div.innerHTML = storiesWithBigboxHtml;
 			document.body.appendChild(div);
 
-			const story1 = document.getElementById('story1');
-			const story2 = document.getElementById('story2');
+			const story1El = document.getElementById('story1');
+			const story2El = document.getElementById('story2');
+			const story3El = document.getElementById('story3');
 
-			expect(story1?.style.display).toBe('');
-			expect(story2?.style.display).toBe('');
+			expect(story1El?.style.display).toBe('');
+			expect(story2El?.style.display).toBe('');
 
-			hideStories(['story1', 'story3'], document);
+			const story1 = new HNStory(story1El as HTMLElement);
+			const story3 = new HNStory(story3El as HTMLElement);
 
-			expect(story1?.style.display).toBe('none');
-			expect(story2?.style.display).toBe('');
+			hideStories([story1, story3]);
+
+			expect(story1El?.style.display).toBe('none');
+			expect(story2El?.style.display).toBe('');
 
 			document.body.removeChild(div);
 		});
@@ -539,7 +507,7 @@ describe('hide_read_stories', () => {
 			document.body.appendChild(div);
 
 			expect(() => {
-				hideStories(['nonexistent'], document);
+				hideStories([]);
 			}).not.toThrow();
 
 			document.body.removeChild(div);

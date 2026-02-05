@@ -2,6 +2,7 @@ import { ojReadCommentsKey } from '@/services/highlight-unread-comments-service.
 import type { ServicesManager } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
 import lStorage from '@/utils/localStorage.ts';
+import { OJ_NEW_CLICKABLE_INDENT, OJ_NEW_COMMENT_INDENT } from './constants.ts';
 
 const THREE_DAYS_IN_MS = 3 * 24 * 60 * 60 * 1000;
 
@@ -21,15 +22,15 @@ export const highlightUnreadComments = async (
 ) => {
 	const style = doc.createElement('style');
 	style.textContent = `
-		.oj_new_comment_indent {
+		.${OJ_NEW_COMMENT_INDENT} {
 			box-shadow: inset -3px 0 #f6b391 !important;
 		}
 		
-		.oj_new_comment_indent:hover {
+		.${OJ_NEW_COMMENT_INDENT}:hover {
 			box-shadow: inset -3px 0 #ff6000 !important;
 		}
 
-		.coll .oj_new_clickable_indent {
+		.coll .${OJ_NEW_CLICKABLE_INDENT} {
 			box-shadow: inset -3px 0 #ff6000 !important;
 		}
 	`;
@@ -70,7 +71,7 @@ export const highlightUnreadComments = async (
 		for (const commentId of newComments) {
 			const commentElement = doc.getElementById(commentId);
 			if (commentElement) {
-				commentElement.querySelector('td.ind')?.classList.add('oj_new_comment_indent');
+				commentElement.querySelector('td.ind')?.classList.add(OJ_NEW_COMMENT_INDENT);
 			}
 		}
 	}

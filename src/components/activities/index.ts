@@ -7,6 +7,9 @@ import { type ActivityTrail, newActivityTrail } from '@/utils/activity-trail.ts'
 import { paths } from '@/utils/paths.ts';
 import type { ComponentFeature } from '@/utils/types.ts';
 
+export const FAVORITE_LINK = 'oj_favorite_link';
+export const FLAG_LINK = 'oj_flag_link';
+
 export const activities: ComponentFeature = {
 	id: 'activities',
 	loginRequired: true,
@@ -24,14 +27,14 @@ export const activities: ComponentFeature = {
 			Promise.resolve().then(() => {
 				return init(ctx, document, activityTrail, {
 					componentType: 'favorite',
-					buttonClass: 'oj_favorite_link',
+					buttonClass: FAVORITE_LINK,
 					buttonLabels: { active: 'un-favorite', inactive: 'favorite' },
 				});
 			}),
 			Promise.resolve().then(() => {
 				return init(ctx, document, activityTrail, {
 					componentType: 'flag',
-					buttonClass: 'oj_flag_link',
+					buttonClass: FLAG_LINK,
 					buttonLabels: { active: 'un-flag', inactive: 'flag' },
 				});
 			}),

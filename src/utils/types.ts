@@ -1,5 +1,4 @@
 import type { ContentScriptDefinition } from 'wxt';
-import type { Browser } from '#imports';
 
 export type ComponentFeature = ContentScriptDefinition & {
 	id: string;
@@ -46,16 +45,4 @@ export interface SavedItem {
 
 export interface User {
 	username: string;
-}
-
-export interface HNStory {
-	position: number;
-	id: string;
-	title: string;
-	url: string;
-	points: number | null;
-	author: string | null;
-	postedDate: string | null;
-	commentsCount: number | null;
-	latestVisit?: Browser.history.VisitItem;
 }

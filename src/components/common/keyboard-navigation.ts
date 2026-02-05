@@ -4,34 +4,46 @@ import { showModal } from '@/components/common/modal.ts';
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 
+export interface KeyboardNavState {
+	helpModalOpen: boolean;
+}
+
 export const keyboardNavigation = (
 	ctx: ContentScriptContext,
 	doc: Document,
 	username?: string
-): void => {
-	let helpModalOpen = false;
+): KeyboardNavState => {
+	const state: KeyboardNavState = {
+		helpModalOpen: false,
+	};
 
 	const keydownHandlerHelp = (event: KeyboardEvent) => {
-		if (helpModalOpen) {
+		if (state.helpModalOpen) {
 			return;
 		}
 
-		const combo = dom.isComboKey(event);
+		// someone could be typing and hit '?'
+		const tagName = (event.target as HTMLElement).tagName;
+		if (tagName === 'TEXTAREA' || tagName === 'INPUT') {
+			return;
+		}
 
 		switch (event.key) {
-			case '?':
-				if (combo && !helpModalOpen) {
-					helpModalOpen = true;
+			case '?': {
+				const combo = dom.isComboKey(event);
+				if (combo && !state.helpModalOpen) {
+					state.helpModalOpen = true;
 					showModal({
 						doc,
 						ctx,
 						content: getKeyboardShortcutsHelp(doc),
 						onClose: () => {
-							helpModalOpen = false;
+							state.helpModalOpen = false;
 						},
 					});
 				}
 				break;
+			}
 			default:
 				break;
 		}
@@ -99,4 +111,6 @@ export const keyboardNavigation = (
 		doc.removeEventListener('keydown', keydownHandlerHelp);
 		doc.removeEventListener('keydown', keydownHandler);
 	});
+
+	return state;
 };

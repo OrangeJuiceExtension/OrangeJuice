@@ -78,6 +78,7 @@ export default defineContentScript({
 							console.error({
 								error: 'Failed to run component',
 								e,
+								stack: (e as Error).stack,
 								component: component.id,
 							});
 						}

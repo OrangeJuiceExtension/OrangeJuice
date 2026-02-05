@@ -5,7 +5,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { dom } from '@/utils/dom.ts';
 import { handleReplyClick } from './inline-reply.ts';
 
-const fixtureHtml = readFileSync(join(__dirname, '__fixtures__', 'hn-item.html'), 'utf-8');
+const fixtureHtml = readFileSync(
+	join(import.meta.dirname, '__fixtures__', 'hn-item.html'),
+	'utf-8'
+);
 const itemId = '46670279';
 const hmacValue = '62d3dbf0610b7a13b23f62fa272a3de9e5f486fa';
 
@@ -43,7 +46,7 @@ describe('handleReplyClick', () => {
 		expect(hmacInput?.value).toBe(hmacValue);
 
 		const submitButton = form?.querySelector('input[type="submit"]') as HTMLInputElement;
-		expect(submitButton?.value).toBe('add comment');
+		expect(submitButton?.value).toBe('reply');
 
 		expect(link1.textContent).toBe('hide reply');
 	});

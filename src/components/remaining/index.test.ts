@@ -5,7 +5,7 @@ import type { ContentScriptContext } from '#imports';
 import { remaining, updateCharacterCount } from './index';
 
 const fixtureHtml = readFileSync(
-	join(__dirname, '__fixtures__', 'hn-submit-page.html'),
+	join(import.meta.dirname, '__fixtures__', 'hn-submit-page.html'),
 	'utf-8'
 );
 
