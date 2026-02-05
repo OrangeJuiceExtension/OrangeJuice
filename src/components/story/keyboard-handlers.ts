@@ -117,6 +117,28 @@ export class KeyboardHandlers {
 		}
 	}
 
+	openStoryUrl(storyData: StoryData, openInNewTab: boolean) {
+		const activeStory = storyData.getActiveStory();
+		if (activeStory?.url) {
+			if (openInNewTab) {
+				window.open(activeStory.url, '_blank');
+				return;
+			}
+			window.location.href = activeStory.url;
+		}
+	}
+
+	openComments(storyData: StoryData, openInNewTab: boolean) {
+		const activeStory = storyData.getActiveStory();
+		if (activeStory?.commentsUrl) {
+			if (openInNewTab) {
+				window.open(activeStory.commentsUrl, '_blank');
+				return;
+			}
+			window.location.href = activeStory.commentsUrl;
+		}
+	}
+
 	openWithComments(storyData: StoryData) {
 		const activeStory = storyData.getActiveStory();
 		if (activeStory?.url) {

@@ -87,8 +87,25 @@ export const keyboardNavigation = async (
 		}
 
 		const combo = dom.isComboKey(e);
+		const modifier = e.ctrlKey || e.metaKey || e.altKey;
 
 		switch (e.key) {
+			case 'ArrowDown':
+				keyboardHandlers.move(storyData, 'down');
+				break;
+			case 'ArrowUp':
+				keyboardHandlers.move(storyData, 'up');
+				break;
+			case 'ArrowLeft':
+				if (!modifier && storyData.getActiveStory()) {
+					keyboardHandlers.openComments(storyData, !e.shiftKey);
+				}
+				break;
+			case 'ArrowRight':
+				if (!modifier && storyData.getActiveStory()) {
+					keyboardHandlers.openStoryUrl(storyData, !e.shiftKey);
+				}
+				break;
 			// j: Go down
 			case 'J':
 			case 'j':

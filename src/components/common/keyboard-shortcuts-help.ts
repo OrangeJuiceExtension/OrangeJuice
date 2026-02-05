@@ -16,6 +16,11 @@ const SHORTCUTS_COMMENTS = [
 ];
 
 const SHORTCUTS_STORIES = [
+	{ key: '↑ / ↓', description: 'Move up / down' },
+	{ key: '←', description: 'Open story comments (new tab)' },
+	{ key: '⇧ + ←', description: 'Open story comments' },
+	{ key: '→', description: 'Open story url (new tab)' },
+	{ key: '⇧ + →', description: 'Open story url' },
 	{ key: 'j / k', description: 'Move down / up' },
 	{ key: 'Enter', description: 'Open selected story in new tab' },
 	{ key: 'O', description: 'Open story and comments in new tabs' },
@@ -144,7 +149,7 @@ export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
 	commonNote.style.color = '#666';
 	commonNote.style.marginTop = '8px';
 	commonNote.style.marginBottom = '6px';
-	commonNote.textContent = '(requires Alt / Option ⌥)';
+	commonNote.textContent = '(requires ⌥)';
 	navColumn.appendChild(commonNote);
 
 	navColumn.appendChild(createShortcutsTable(doc, SHORTCUTS_COMMON));
