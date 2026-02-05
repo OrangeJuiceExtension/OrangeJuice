@@ -19,7 +19,7 @@ export const keyboardNavigation = async (
 			--oj-focus-pad: 4px;
 		}
 
-		tr.comtr td.default {
+		tr.athing td.default {
 			padding: var(--oj-focus-pad);
 		}
 

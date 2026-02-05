@@ -15,7 +15,7 @@ export class CommentData {
 	}
 
 	getCommentFromElement(element: HTMLElement): HNComment | undefined {
-		const commentRow = element.closest('tr.comtr') as HTMLElement;
+		const commentRow = element.closest('tr.athing') as HTMLElement;
 		if (!commentRow?.id) {
 			return undefined;
 		}

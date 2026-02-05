@@ -7,7 +7,8 @@ const VOTE_SELECTORS = {
 	DOWNVOTE_ARROW: 'div.votearrow[title="downvote"]',
 } as const;
 const FAVORITE_LINK = '.oj_favorite_link';
-const FLAG_LINK = '.oj_flag_link';
+const FLAG_LINK_1 = '.oj_flag_link';
+const FLAG_LINK_2 = 'a[href*="flag"]';
 const REPLY_LINK = 'a[href^="reply"]';
 const COMMENT_ID_ATTR = 'data-comment-id';
 
@@ -104,7 +105,9 @@ export class HNComment {
 	}
 
 	flag(): boolean {
-		const flagLink = this.commentRow.querySelector(FLAG_LINK) as HTMLAnchorElement;
+		const flagLink = this.commentRow.querySelector<HTMLAnchorElement>(
+			`${FLAG_LINK_1}, ${FLAG_LINK_2}`
+		);
 		if (flagLink) {
 			flagLink.click();
 			return true;

@@ -70,7 +70,7 @@ describe('initCommentUX', () => {
 		it('should process all comments', () => {
 			initCommentUX(document, comments);
 
-			const c = document.querySelectorAll('tr.comtr');
+			const c = document.querySelectorAll('tr.athing');
 			expect(c.length).toBe(4);
 		});
 	});
