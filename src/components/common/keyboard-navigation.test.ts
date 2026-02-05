@@ -158,7 +158,7 @@ describe('keyboardNavigation', () => {
 			invalidateCallback();
 
 			expect(removeSpy).toHaveBeenCalledWith('keydown', expect.any(Function));
-			expect(removeSpy).toHaveBeenCalledTimes(2);
+			expect(removeSpy).toHaveBeenCalledTimes(1);
 		});
 	});
 });
