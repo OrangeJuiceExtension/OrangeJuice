@@ -26,7 +26,8 @@ I’m also interested in exploring social features. HN is already a massive soci
 Ideally, you shouldn’t really notice it at all. The features should feel subtle but natural: visible, useful, and aligned with what most users would expect the site to have supported in the first place. As we grow the feature set, it should always be with respect to the original design.
 
 <details>
-<summary style="font-size: 1.5em">Click to expand detailed summaries</summary>
+<summary style="font-size: 1.6em; color: darkorange; font-style: italic">Click to expand detailed summaries</summary>
+
 ## Inline Reply
 Clicking a "reply" link now opens an inline reply form directly on the page, eliminating the need to navigate to a separate comment page. The form includes support for quoting selected text.
 
@@ -128,17 +129,17 @@ Note: Temporary extensions in Firefox are removed when you restart the browser. 
 
 This should automatically open a Chrome window with the extension loaded. If you'd like to add it to your own browser, `bun run build`, then drop the .output/chrome-mv3 folder onto the Extensions tab of your browser.
 
-**Note on releases:** For now, there are no official releases. The project is still evolving quickly, and I'm actively changing data structures. Locking in backwards compatibility would slow things down more than it helps at this stage.
-
 # Tests
 
 ## Why Testing Matters
 
-Testing is crucial for maintaining code quality and preventing regressions as the extension evolves. Unit tests help ensure individual components work correctly and make refactoring safer. They provide confidence when adding new features or making changes to existing code. All code contributions should come with tests. Fact is that AI makes this a lot easier now, so you might as well take advantage of it.
+Testing is crucial for maintaining code quality and preventing regressions as the extension evolves. Unit tests help ensure individual components work correctly and make refactoring safer. They provide confidence when adding new features or making changes to existing code. All code contributions must come with tests. AI makes this a lot easier now, we might as well take advantage of it.
+
+That said, this isn't perfect by any means... but it's a start!
 
 ## E2E
 
-We haven't implemented end-to-end testing yet because it doesn't seem necessary at this stage. The extension's features are relatively straightforward, and manual testing has been enough for catching integration issues. As the project grows in complexity, we may revisit this decision.
+I'd love someone to take this on.
 
 ## Logged in
 
