@@ -61,6 +61,9 @@ jobs:
             COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"%s")
           fi
 
+          # Start at patch; bump to major if any commit is a breaking change (type with ! or "breaking change"),
+          # else bump to minor if any commit is a feature; otherwise keep patch. The higher the minor number, 
+          # the more featureful the app.
           BUMP="patch"
           if echo "$COMMITS" | grep -qiE "^(feat|feature)(\(.*\))?!:|^[a-z]+(\(.*\))?!:|(breaking change|BREAKING CHANGE):"; then
             BUMP="major"
