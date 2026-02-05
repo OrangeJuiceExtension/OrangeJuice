@@ -59,13 +59,14 @@ const createStoryData = (doc: Document) => {
 };
 
 const setLocationHref = (href: string) => {
+	let hrefStr = href;
 	Object.defineProperty(window, 'location', {
 		value: {
 			get href() {
-				return href;
+				return hrefStr;
 			},
 			set href(val: string) {
-				href = val;
+				hrefStr = val;
 			},
 		},
 		writable: true,
@@ -194,5 +195,23 @@ describe('story keyboard navigation', () => {
 
 			expect(storyData.getActiveStory()?.id).toBe(testCase.expectedId);
 		}
+	});
+
+	it('should deselect active story when clicking outside', async () => {
+		const storyData = createStoryData(doc);
+		const first = storyData.first();
+		if (!first) {
+			throw new Error('Expected story to exist');
+		}
+		storyData.activate(first);
+
+		await keyboardNavigation(ctx, doc, storyData, { helpModalOpen: false });
+
+		const outside = doc.createElement('div');
+		doc.body.appendChild(outside);
+
+		outside.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+		expect(storyData.getActiveStory()).toBeUndefined();
 	});
 });

@@ -190,8 +190,27 @@ export const keyboardNavigation = async (
 
 	storyData.addEventListener('click', clickToFocus);
 
+	const documentClickHandler = async (e: MouseEvent) => {
+		if (
+			e.target instanceof HTMLElement &&
+			(e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')
+		) {
+			return;
+		}
+
+		if (storyData.getActiveStory() && e.target instanceof HTMLElement) {
+			const clickedInsideStory = Boolean(e.target.closest('[data-story-id]'));
+			if (!clickedInsideStory) {
+				await keyboardHandlers.escape(storyData);
+			}
+		}
+	};
+
+	doc.addEventListener('click', documentClickHandler);
+
 	ctx.onInvalidated(() => {
 		doc.removeEventListener('keydown', keydownHandler);
 		storyData.removeEventListener('click', clickToFocus);
+		doc.removeEventListener('click', documentClickHandler);
 	});
 };
