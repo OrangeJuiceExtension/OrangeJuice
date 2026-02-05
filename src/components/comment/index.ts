@@ -14,7 +14,7 @@ import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 import type { ComponentFeature } from '@/utils/types.ts';
 
-const validPaths = [...paths.comments];
+const validPaths = [...paths.comments, ...paths.specialComments];
 
 export const comments: ComponentFeature = {
 	id: 'comments',
