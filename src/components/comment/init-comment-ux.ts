@@ -4,6 +4,20 @@ import { OJ_NEW_COMMENT_INDENT } from './constants.ts';
 // TODO: make this configurable in a popup menu
 const customWidth = 40;
 
+export const createGuidelinesNote = (options?: { marginBottom?: string }): HTMLDivElement => {
+	const guidelinesNote = document.createElement('div');
+	guidelinesNote.style.marginTop = '4px';
+	guidelinesNote.style.fontSize = '12px';
+	if (options?.marginBottom) {
+		guidelinesNote.style.marginBottom = options.marginBottom;
+	}
+	guidelinesNote.innerHTML =
+		"HN's approach to " +
+		'<a href="newswelcome.html" target="_blank" rel="noopener"><u>comments</u></a> ' +
+		'and site <a href="newsguidelines.html#comments" target="_blank" rel="noopener"><u>guidelines</u></a>.';
+	return guidelinesNote;
+};
+
 export const initCommentUX = (doc: Document, comments: HTMLElement[], username?: string): void => {
 	const style = doc.createElement('style');
 	style.textContent = `
@@ -29,6 +43,7 @@ export const initCommentUX = (doc: Document, comments: HTMLElement[], username?:
 		}
 	`;
 	doc.head.appendChild(style);
+	insertGuidelinesNote(doc);
 
 	for (const comment of comments) {
 		comment.querySelector('td.ind')?.classList.add('oj_comment_indent');
@@ -52,4 +67,28 @@ export const initCommentUX = (doc: Document, comments: HTMLElement[], username?:
 			commentAuthor.classList.add('oj_op');
 		}
 	}
+};
+
+const insertGuidelinesNote = (doc: Document): void => {
+	const form = doc.querySelector<HTMLFormElement>('form[action="comment"][method="post"]');
+	if (!form) {
+		return;
+	}
+
+	const textarea = form.querySelector<HTMLTextAreaElement>('textarea[name="text"]');
+	const submit = form.querySelector<HTMLInputElement>(
+		'input[type="submit"][value="add comment"]'
+	);
+	if (!(textarea && submit)) {
+		return;
+	}
+
+	let node = textarea.nextSibling;
+	while (node && node !== submit) {
+		const next = node.nextSibling;
+		node.remove();
+		node = next;
+	}
+
+	form.insertBefore(createGuidelinesNote({ marginBottom: '8px' }), submit);
 };

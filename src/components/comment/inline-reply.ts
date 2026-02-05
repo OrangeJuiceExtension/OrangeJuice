@@ -1,4 +1,5 @@
 import type { ContentScriptContext } from '#imports';
+import { createGuidelinesNote } from '@/components/comment/init-comment-ux.ts';
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 
@@ -115,16 +116,6 @@ const createSubmitContainer = (): HTMLDivElement => {
 
 	buttonContainer.appendChild(submitButton);
 	return buttonContainer;
-};
-
-const createGuidelinesNote = (): HTMLDivElement => {
-	const guidelinesNote = document.createElement('div');
-	guidelinesNote.style.marginTop = '4px';
-	guidelinesNote.innerHTML =
-		"HN's approach to " +
-		'<a href="newswelcome.html" target="_blank" rel="noopener">comments</a> ' +
-		'and site <a href="newsguidelines.html#comments" target="_blank" rel="noopener">guidelines</a>.';
-	return guidelinesNote;
 };
 
 export const inlineReply = (ctx: ContentScriptContext, doc: Document) => {
