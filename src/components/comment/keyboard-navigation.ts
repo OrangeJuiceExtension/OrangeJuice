@@ -132,7 +132,7 @@ export const keyboardNavigation = async (
 				}
 				break;
 			case 'X':
-				if (!combo && commentData.getActiveComment()) {
+				if (combo && commentData.getActiveComment()) {
 					keyboardHandlers.flag(commentData);
 				}
 				break;

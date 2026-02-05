@@ -57,13 +57,22 @@ const getAuthToken = async (
 		return;
 	}
 
-	let actionLink = itemDiv.querySelector<HTMLAnchorElement>(`a[href*="${actionName}?id="]`);
-	if (!actionLink) {
-		// fall back to looking at the hide link. a job item only has that.
-		// ie: https://news.ycombinator.com/item?id=46840801
-		actionLink = itemDiv.querySelector<HTMLAnchorElement>(`a[href*="hide?id="]`);
+	let token: string | undefined;
+
+	const hmacInput = itemDiv.querySelector<HTMLInputElement>('input[type="hidden"][name="hmac"]');
+	token = hmacInput?.value;
+
+	if (!token) {
+		let actionLink = itemDiv.querySelector<HTMLAnchorElement>(`a[href*="${actionName}?id="]`);
+		if (!actionLink) {
+			// fall back to looking at the hide link. a job item only has that.
+			// ie: https://news.ycombinator.com/item?id=46840801
+			actionLink = itemDiv.querySelector<HTMLAnchorElement>(`a[href*="hide?id="]`);
+		}
+		token = actionLink?.href.match(authMatchPattern)?.[1];
 	}
-	return actionLink?.href.match(authMatchPattern)?.[1];
+
+	return token;
 };
 
 const getUsername = (doc: HTMLElement): string | undefined => {
@@ -119,7 +128,7 @@ const toggleActivityState = async (
 };
 
 const getAllComments = (doc: Document): HTMLElement[] => {
-	return [...doc.querySelectorAll<HTMLElement>('tr.comtr')];
+	return [...doc.querySelectorAll<HTMLElement>('tr.athing')];
 };
 
 const mapElementsById = (elements: HTMLElement[]): Map<string, HTMLElement> => {

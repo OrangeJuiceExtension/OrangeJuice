@@ -28,7 +28,6 @@ describe('keyboard shortcuts help', () => {
 				hrefs.add(href);
 			}
 		}
-		console.log({ hrefs });
 
 		expect(hrefs.has('https://oj-hn.com')).toBe(true);
 		expect(hrefs.has('https://github.com/OrangeJuiceExtension/OrangeJuice')).toBe(true);

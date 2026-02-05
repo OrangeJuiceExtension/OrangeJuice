@@ -6,8 +6,8 @@ const VOTE_SELECTORS = {
 	UPVOTE_ARROW: 'div.votearrow[title="upvote"]',
 	DOWNVOTE_ARROW: 'div.votearrow[title="downvote"]',
 } as const;
-const FAVORITE_LINK = 'button.oj_favorite_link';
-const FLAG_LINK = 'a.oj_flag_link';
+const FAVORITE_LINK = '.oj_favorite_link';
+const FLAG_LINK = '.oj_flag_link';
 const REPLY_LINK = 'a[href^="reply"]';
 const COMMENT_ID_ATTR = 'data-comment-id';
 

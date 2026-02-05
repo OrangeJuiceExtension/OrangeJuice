@@ -3,6 +3,7 @@ import type { ContentScriptContext } from '#imports';
 import { getUserInfo } from '@/utils/api.ts';
 
 const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
+const USER_INFO_HOVER_CLASS = 'oj_user_info_hover';
 
 export const showUserInfoOnHover = (
 	ctx: ContentScriptContext,
@@ -11,7 +12,7 @@ export const showUserInfoOnHover = (
 ) => {
 	const style = doc.createElement('style');
 	style.textContent = `
-		.oj_user_info_hover {
+		.${USER_INFO_HOVER_CLASS} {
 			position: absolute;
 			background: #f6f6ef;
 			z-index: 2;
@@ -23,21 +24,21 @@ export const showUserInfoOnHover = (
 			display: none;
 		}
 		
-		.oj_user_info_hover.active {
+		.${USER_INFO_HOVER_CLASS}.active {
 			display: block;
 			margin-top: 2px;
 		}
 
-		.oj_user_info_hover td {
+		.${USER_INFO_HOVER_CLASS} td {
 			font-size: 10px !important;
 			vertical-align: top;
 		}
 		
-		.oj_user_info_hover td:nth-child(2) {
+		.${USER_INFO_HOVER_CLASS} td:nth-child(2) {
 			word-break: break-word;
 		}
 		
-		.oj_user_info_hover td a {
+		.${USER_INFO_HOVER_CLASS} td a {
 			color: #000 !important;
 			text-decoration: none !important;
 		}
@@ -104,7 +105,7 @@ export const showUserInfoOnHover = (
 
 	const createUserDiv = (doc: Document) => {
 		const userDiv = doc.createElement('div') as HTMLDivElement;
-		userDiv.classList.add('oj_user_info_hover');
+		userDiv.classList.add(USER_INFO_HOVER_CLASS);
 		return userDiv;
 	};
 

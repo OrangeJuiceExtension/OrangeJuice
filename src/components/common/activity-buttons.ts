@@ -150,6 +150,7 @@ export const initActivityButtons = async (
 					authToken = await dom.getAuthToken(commentId, activityType);
 				}
 				if (!authToken) {
+					console.log({ error: 'unable to find auth token', commentId, activityType });
 					return;
 				}
 

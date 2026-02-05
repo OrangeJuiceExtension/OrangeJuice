@@ -158,9 +158,7 @@ describe('keyboardNavigation', () => {
 					await keyboardNavigation(ctx, doc, comments);
 					getComment(comments, 0).click();
 
-					const isUppercase = key === key.toUpperCase() && key !== key.toLowerCase();
-					const needsShift = isUppercase && key !== 'X';
-					dispatchKeydown(doc, key, needsShift ? { shiftKey: true } : {});
+					dispatchKeydown(doc, key, { shiftKey: key === key.toUpperCase() });
 
 					expect(
 						KeyboardHandlers.prototype[handler as keyof KeyboardHandlers]

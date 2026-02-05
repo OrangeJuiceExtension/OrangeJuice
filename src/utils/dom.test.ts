@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
+import { ActivityId } from './activity-trail.ts';
 import { dom } from './dom.ts';
 
 const loggedInHtml = readFileSync(
@@ -116,6 +117,50 @@ describe('dom', () => {
 				cache: 'force-cache',
 			});
 			fetchSpy.mockRestore();
+		});
+	});
+
+	describe('getAuthToken', () => {
+		it('should return undefined for unsupported activity types', async () => {
+			const getPageDomSpy = vi.spyOn(dom, 'getPageDom');
+
+			const token = await dom.getAuthToken('123', ActivityId.Hidden);
+
+			expect(token).toBeUndefined();
+			expect(getPageDomSpy).not.toHaveBeenCalled();
+			getPageDomSpy.mockRestore();
+		});
+
+		it('should return hmac token from item page', async () => {
+			const itemDiv = document.createElement('body');
+			itemDiv.innerHTML = '<input type="hidden" name="hmac" value="537dd5ac8147db54ef6be4639acd3dd861b20549" />';
+			const getPageDomSpy = vi.spyOn(dom, 'getPageDom').mockResolvedValue(itemDiv);
+
+			const token = await dom.getAuthToken('123', ActivityId.FavoriteComments);
+
+			expect(getPageDomSpy).toHaveBeenCalledWith('https://news.ycombinator.com/item?id=123');
+			expect(token).toBe('537dd5ac8147db54ef6be4639acd3dd861b20549');
+			getPageDomSpy.mockRestore();
+		});
+
+		it('should return undefined when item page cannot be fetched', async () => {
+			const getPageDomSpy = vi.spyOn(dom, 'getPageDom').mockResolvedValue(undefined);
+
+			const token = await dom.getAuthToken('123', ActivityId.FlagsComments);
+
+			expect(token).toBeUndefined();
+			getPageDomSpy.mockRestore();
+		});
+
+		it('should return undefined when hmac input is missing', async () => {
+			const itemDiv = document.createElement('body');
+			itemDiv.innerHTML = '<div>no token</div>';
+			const getPageDomSpy = vi.spyOn(dom, 'getPageDom').mockResolvedValue(itemDiv);
+
+			const token = await dom.getAuthToken('123', ActivityId.FavoriteSubmissions);
+
+			expect(token).toBeUndefined();
+			getPageDomSpy.mockRestore();
 		});
 	});
 

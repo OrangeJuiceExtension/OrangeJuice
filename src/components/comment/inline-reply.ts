@@ -14,55 +14,96 @@ export const handleReplyClick = async (link: HTMLAnchorElement) => {
 		return;
 	}
 
-	// Check if form already exists, which toggles the display and the link
+	if (toggleExistingForm(link)) {
+		return;
+	}
+
+	const replyParams = await getReplyParams(href);
+	if (!replyParams) {
+		return;
+	}
+
+	const form = createReplyForm(replyParams);
+	link.parentElement?.insertAdjacentElement('afterend', form);
+	form.querySelector<HTMLTextAreaElement>('textarea')?.focus();
+	link.textContent = 'hide reply';
+};
+
+const toggleExistingForm = (link: HTMLAnchorElement): boolean => {
 	const existingForm = link.parentElement?.nextElementSibling;
 	if (existingForm?.tagName === 'FORM') {
 		existingForm.remove();
 		link.textContent = 'reply';
-		return;
+		return true;
 	}
+	return false;
+};
 
-	// gather the things for the form
+const getReplyParams = async (
+	href: string
+): Promise<{ goto: string; replyId: string; hmacValue: string } | undefined> => {
 	const linkUrl = new URL(href, paths.base);
 	const goto = linkUrl.searchParams.get('goto');
 	const replyId = linkUrl.searchParams.get('id');
-	const hmacValue = await dom.fetchHmacFromPage(href);
-
 	if (!(goto && replyId)) {
 		return;
 	}
 
-	// Create form
+	const hmacValue = await dom.fetchHmacFromPage(href);
+	return { goto, replyId, hmacValue };
+};
+
+const createReplyForm = (params: {
+	goto: string;
+	replyId: string;
+	hmacValue: string;
+}): HTMLFormElement => {
 	const form = document.createElement('form');
 	form.method = 'post';
 	form.action = 'comment';
 	form.style.marginTop = '8px';
 
-	// Create textarea
+	const textarea = createReplyTextarea();
+	form.appendChild(textarea);
+
+	form.appendChild(dom.createHiddenInput('parent', params.replyId));
+	form.appendChild(dom.createHiddenInput('goto', params.goto));
+	form.appendChild(dom.createHiddenInput('hmac', params.hmacValue));
+
+	form.appendChild(createGuidelinesNote());
+	form.appendChild(createSubmitContainer());
+
+	return form;
+};
+
+const createReplyTextarea = (): HTMLTextAreaElement => {
 	const textarea = document.createElement('textarea');
 	textarea.name = 'text';
 	textarea.rows = 8;
 	textarea.cols = 80;
 	textarea.wrap = 'virtual';
 
-	// Add selected text as quoted
-	const selection = window.getSelection()?.toString().trim();
+	const selection = getQuotedSelection();
 	if (selection) {
-		textarea.value = selection
-			.split('\n')
-			.filter((line) => line.length > 0)
-			.map((line) => `> ${line}`)
-			.join('\n\n');
+		textarea.value = selection;
 	}
 
-	form.appendChild(textarea);
+	return textarea;
+};
 
-	// Create and append hidden inputs
-	form.appendChild(dom.createHiddenInput('parent', replyId));
-	form.appendChild(dom.createHiddenInput('goto', goto));
-	form.appendChild(dom.createHiddenInput('hmac', hmacValue));
+const getQuotedSelection = (): string => {
+	const selection = window.getSelection()?.toString().trim();
+	if (!selection) {
+		return '';
+	}
+	return selection
+		.split('\n')
+		.filter((line) => line.length > 0)
+		.map((line) => `> ${line}`)
+		.join('\n\n');
+};
 
-	// Create submit buttons container
+const createSubmitContainer = (): HTMLDivElement => {
 	const buttonContainer = document.createElement('div');
 	buttonContainer.style.marginTop = '8px';
 	buttonContainer.style.display = 'flex';
@@ -73,16 +114,17 @@ export const handleReplyClick = async (link: HTMLAnchorElement) => {
 	submitButton.value = 'reply';
 
 	buttonContainer.appendChild(submitButton);
-	form.appendChild(buttonContainer);
+	return buttonContainer;
+};
 
-	// Insert form after the parent element
-	link.parentElement?.insertAdjacentElement('afterend', form);
-
-	// Focus the textarea
-	textarea.focus();
-
-	// Change link text
-	link.textContent = 'hide reply';
+const createGuidelinesNote = (): HTMLDivElement => {
+	const guidelinesNote = document.createElement('div');
+	guidelinesNote.style.marginTop = '4px';
+	guidelinesNote.innerHTML =
+		"HN's approach to " +
+		'<a href="newswelcome.html" target="_blank" rel="noopener">comments</a> ' +
+		'and site <a href="newsguidelines.html#comments" target="_blank" rel="noopener">guidelines</a>.';
+	return guidelinesNote;
 };
 
 export const inlineReply = (ctx: ContentScriptContext, doc: Document) => {

@@ -3,7 +3,7 @@
 
 import { createClientServices } from '@/services/manager.ts';
 
-export const WORKER_BASE = 'https://app.oj-hn.com';
+export const WORKER_BASE = 'https://squeeze.oj-hn.com';
 
 function fetchJson<T>(url: string): Promise<T | null | undefined> {
 	const service = createClientServices().getFetchRemoteService();
