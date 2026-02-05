@@ -59,14 +59,15 @@
 			color: var(--primary);
 			margin-bottom: 1rem;
 			display: flex;
+			flex-direction: column;
 			align-items: center;
 			justify-content: center;
-			gap: 1rem;
+			gap: 0.5rem;
 		}
 
 		.logo img {
-			width: 80px;
-			height: 80px;
+			width: 512px;
+			height: 512px;
 			object-fit: contain;
 		}
 
@@ -337,8 +338,14 @@
 		<div class="container">
 			<header>
 				<div class="logo">
-					<img src="assets/image-128.png" alt="🍊 Orange Juice" width="80" height="80">
+					<img
+						src="assets/image-512.png"
+						alt="Orange Juice Logo"
+						width="512"
+						height="512"
+					>
 					<span>Orange Juice</span>
+					<span style="font-size: 1.5rem;">Hacker News Browser Extension</span>
 				</div>
 				<p class="tagline">
 					Make Hacker News sweeter with thoughtful, invisible improvements
