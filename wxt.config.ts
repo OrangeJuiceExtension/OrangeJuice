@@ -31,6 +31,9 @@ export default defineConfig({
 	}),
 	manifest: {
 		name: 'Orange Juice',
+		author: { email: 'hello@oj-hn.com' },
+		homepage_url: 'https://oj-hn.com',
+		description: 'Orange Juice makes Hacker News sweeter',
 		icons: {
 			16: '/icon/orange_juice_icon_16x16.png',
 			24: '/icon/orange_juice_icon_32x32.png',
@@ -39,7 +42,7 @@ export default defineConfig({
 			128: '/icon/orange_juice_icon_128x128.png',
 		},
 		permissions: ['history', 'storage', 'tabs', 'webNavigation'],
-		host_permissions: ['https://orange-juice-worker.orangejuiceextension.workers.dev/*'],
+		host_permissions: ['https://squeeze.oj-hn.com/*'],
 	},
 	vite: () => ({
 		plugins: [react(), tailwindcss()],
