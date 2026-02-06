@@ -9,7 +9,6 @@ const fixtureHtml = readFileSync(
 	join(import.meta.dirname, '__fixtures__', 'hn-item.html'),
 	'utf-8'
 );
-const itemId = '46670279';
 const hmacValue = '62d3dbf0610b7a13b23f62fa272a3de9e5f486fa';
 
 describe('handleReplyClick', () => {
@@ -22,7 +21,7 @@ describe('handleReplyClick', () => {
 	it('should create a form with textarea when clicking reply link', async () => {
 		// Execute
 		const link1 = getByTestId<HTMLAnchorElement>(document.body, 'test-a-1');
-		await handleReplyClick(link1, itemId);
+		await handleReplyClick(link1);
 
 		// Assert
 		const textbox = getByRole(document.body, 'textbox') as HTMLTextAreaElement;
@@ -55,12 +54,12 @@ describe('handleReplyClick', () => {
 		const link1 = getByTestId<HTMLAnchorElement>(document.body, 'test-a-1');
 
 		// First click to create form
-		await handleReplyClick(link1, itemId);
+		await handleReplyClick(link1);
 		expect(getByRole(document.body, 'textbox')).toBeTruthy();
 		expect(link1.textContent).toBe('hide reply');
 
 		// Second click to remove form
-		await handleReplyClick(link1, itemId);
+		await handleReplyClick(link1);
 		expect(document.body.querySelector('textarea[name="text"]')).toBeNull();
 		expect(link1.textContent).toBe('reply');
 	});
@@ -74,7 +73,7 @@ describe('handleReplyClick', () => {
 
 		// Execute
 		const link1 = getByTestId<HTMLAnchorElement>(document.body, 'test-a-1');
-		await handleReplyClick(link1, itemId);
+		await handleReplyClick(link1);
 
 		// Assert
 		const textarea = getByRole(document.body, 'textbox') as HTMLTextAreaElement;
@@ -84,11 +83,11 @@ describe('handleReplyClick', () => {
 	it('should handle multiple reply links independently', async () => {
 		// Execute - click first link
 		const link1 = getByTestId<HTMLAnchorElement>(document.body, 'test-a-1');
-		await handleReplyClick(link1, itemId);
+		await handleReplyClick(link1);
 
 		// Execute - click second link
 		const link2 = getByTestId<HTMLAnchorElement>(document.body, 'test-a-2');
-		await handleReplyClick(link2, itemId);
+		await handleReplyClick(link2);
 
 		// Assert - both forms should exist
 		const textareas = document.body.querySelectorAll('textarea[name="text"]');
@@ -106,7 +105,7 @@ describe('handleReplyClick', () => {
 	it('should focus the textarea when form is created', async () => {
 		// Execute
 		const link1 = getByTestId<HTMLAnchorElement>(document.body, 'test-a-1');
-		await handleReplyClick(link1, itemId);
+		await handleReplyClick(link1);
 
 		// Assert
 		const textarea = getByRole(document.body, 'textbox') as HTMLTextAreaElement;
