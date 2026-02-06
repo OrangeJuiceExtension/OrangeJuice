@@ -7,6 +7,7 @@ import {
 	focusClass3,
 	type StoryData,
 } from '@/components/story/story-data.ts';
+import { USER_INFO_HOVER_CLASS } from '@/components/user/show-user-info-hover.ts';
 import { dom } from '@/utils/dom.ts';
 
 export const keyboardNavigation = async (
@@ -22,21 +23,21 @@ export const keyboardNavigation = async (
 		  --oj-focus-w: 2px;
 		}
 		
-		tr.athing td:last-child {
+		tr.athing > td:last-child {
 			padding-top: 2px;
 			padding-right: 4px;
 		}
 		
-		tr.athing td:first-child,
-		tr.${focusClass2} td:first-child,
-		tr.${focusClass3} td:first-child {
+		tr.athing > td:first-child,
+		tr.${focusClass2} > td:first-child,
+		tr.${focusClass3} > td:first-child {
 		  padding-left: 4px;
 		}
 		
 		/* Base: 4 “slots” for shadows */
-		tr.${focusClass1} td,
-		tr.${focusClass2} td,
-		tr.${focusClass3} td {
+		tr.${focusClass1} > td,
+		tr.${focusClass2} > td,
+		tr.${focusClass3} > td {
 		  --oj-top: inset 0 0 0 0 transparent;
 		  --oj-right: inset 0 0 0 0 transparent;
 		  --oj-bottom: inset 0 0 0 0 transparent;
@@ -46,27 +47,39 @@ export const keyboardNavigation = async (
 		}
 		
 		/* Top edge */
-		tr.${focusClass1} td {
+		tr.${focusClass1} > td {
 		  --oj-top: inset 0 var(--oj-focus-w) 0 0 var(--oj-focus-color);
 		}
 		
 		/* Bottom edge */
-		tr.${focusClass3} td {
+		tr.${focusClass3} > td {
 		  --oj-bottom: inset 0 calc(-1 * var(--oj-focus-w)) 0 0 var(--oj-focus-color);
 		}
 		
 		/* Left edge */
-		tr.${focusClass1} td:first-child,
-		tr.${focusClass2} td:first-child,
-		tr.${focusClass3} td:first-child {
+		tr.${focusClass1} > td:first-child,
+		tr.${focusClass2} > td:first-child,
+		tr.${focusClass3} > td:first-child {
 		  --oj-left: inset var(--oj-focus-w) 0 0 0 var(--oj-focus-color);
 		}
 		
 		/* Right edge */
-		tr.${focusClass1} td:last-child,
-		tr.${focusClass2} td:last-child,
-		tr.${focusClass3} td:last-child {
+		tr.${focusClass1} > td:last-child,
+		tr.${focusClass2} > td:last-child,
+		tr.${focusClass3} > td:last-child {
 		  --oj-right: inset calc(-1 * var(--oj-focus-w)) 0 0 0 var(--oj-focus-color);
+		}
+
+		/** info hover class lives inside focusClass2, so we need to unstyle things */
+		tr.${focusClass2} > td .${USER_INFO_HOVER_CLASS},
+		.${focusClass2} .${USER_INFO_HOVER_CLASS} {
+		  box-shadow: none;
+		  background: #f6f6ef;
+		}
+
+		tr.${focusClass2} > td .${USER_INFO_HOVER_CLASS} *,
+		.${focusClass2} .${USER_INFO_HOVER_CLASS} * {
+		  box-shadow: none;
 		}
 	`;
 	doc.head.appendChild(style);

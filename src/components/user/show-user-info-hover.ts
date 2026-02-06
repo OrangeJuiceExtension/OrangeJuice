@@ -3,7 +3,7 @@ import type { ContentScriptContext } from '#imports';
 import { getUserInfo } from '@/utils/api.ts';
 
 const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
-const USER_INFO_HOVER_CLASS = 'oj_user_info_hover';
+export const USER_INFO_HOVER_CLASS = 'oj_user_info_hover';
 
 export const showUserInfoOnHover = (
 	ctx: ContentScriptContext,
