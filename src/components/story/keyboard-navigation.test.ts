@@ -1,9 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContentScriptContext } from '#imports';
+import { hideReadStoriesOnce } from '@/components/story/hide-read-stories.ts';
 import { keyboardNavigation } from '@/components/story/keyboard-navigation.ts';
 import { StoryData } from '@/components/story/story-data.ts';
 import lStorage from '@/utils/localStorage.ts';
 import { paths } from '@/utils/paths.ts';
+
+vi.mock('@/components/story/hide-read-stories.ts', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('@/components/story/hide-read-stories.ts')>();
+	return {
+		...actual,
+		hideReadStoriesOnce: vi.fn(),
+	};
+});
 
 const createStoryRows = (doc: Document, count: number) => {
 	const rows: HTMLElement[] = [];
@@ -84,6 +93,7 @@ describe('story keyboard navigation', () => {
 		vi.clearAllMocks();
 		vi.spyOn(lStorage, 'getItem').mockResolvedValue(null);
 		vi.spyOn(lStorage, 'setItem').mockResolvedValue();
+		vi.mocked(hideReadStoriesOnce).mockResolvedValue();
 	});
 
 	it('should handle arrow left/right navigation', async () => {
@@ -213,5 +223,26 @@ describe('story keyboard navigation', () => {
 		outside.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
 		expect(storyData.getActiveStory()).toBeUndefined();
+	});
+
+	it('should hide read stories when pressing H', async () => {
+		const storyData = createStoryData(doc);
+		const first = storyData.first();
+		if (!first) {
+			throw new Error('Expected story to exist');
+		}
+		storyData.activate(first);
+
+		await keyboardNavigation(ctx, doc, storyData, { helpModalOpen: false });
+
+		doc.dispatchEvent(new KeyboardEvent('keydown', { key: 'H', shiftKey: true }));
+
+		await vi.waitFor(() => {
+			expect(hideReadStoriesOnce).toHaveBeenCalledWith(storyData);
+		});
+
+		await vi.waitFor(() => {
+			expect(storyData.getActiveStory()?.id).toBe('2');
+		});
 	});
 });

@@ -188,6 +188,11 @@ export const keyboardNavigation = async (
 					keyboardHandlers.toggleHideRead(doc);
 				}
 				break;
+			case 'H':
+				if (combo) {
+					keyboardHandlers.hideReadStoriesNow(storyData);
+				}
+				break;
 			case 'Escape':
 				keyboardHandlers.escape(storyData);
 				break;

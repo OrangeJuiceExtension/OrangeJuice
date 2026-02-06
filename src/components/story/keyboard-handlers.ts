@@ -1,3 +1,4 @@
+import { hideReadStoriesOnce } from '@/components/story/hide-read-stories.ts';
 import type { HNStory } from '@/components/story/hn-story.ts';
 import type { StoryData } from '@/components/story/story-data.ts';
 import { dom } from '@/utils/dom.ts';
@@ -181,6 +182,20 @@ export class KeyboardHandlers {
 		if (checkbox) {
 			checkbox.checked = !checkbox.checked;
 			checkbox.dispatchEvent(new Event('change'));
+		}
+	}
+
+	async hideReadStoriesNow(storyData: StoryData) {
+		await hideReadStoriesOnce(storyData);
+
+		const activeStory = storyData.getActiveStory();
+		if (activeStory) {
+			const nextStory = storyData.getNext(activeStory, true);
+			if (nextStory) {
+				await this.activateStory(storyData, nextStory);
+			} else {
+				await this.escape(storyData);
+			}
 		}
 	}
 

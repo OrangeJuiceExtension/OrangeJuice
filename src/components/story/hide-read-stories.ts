@@ -152,3 +152,16 @@ export const hideReadStories = async (
 		console.error({ error: 'Error in hideread stories', e });
 	}
 };
+
+export const hideReadStoriesOnce = async (storyData: StoryData): Promise<void> => {
+	try {
+		const service = createClientServices().getReadStoriesService();
+		const readStories = await getVisitedStories(service, storyData.hnStories);
+		if (!readStories) {
+			return;
+		}
+		hideStories(readStories);
+	} catch (e) {
+		console.error({ error: 'Error in hideReadStoriesOnce', e });
+	}
+};

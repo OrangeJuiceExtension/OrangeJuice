@@ -1,10 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { hideReadStoriesOnce } from '@/components/story/hide-read-stories.ts';
 import { KeyboardHandlers } from '@/components/story/keyboard-handlers.ts';
 import { StoryData } from '@/components/story/story-data.ts';
 import lStorage from '@/utils/localStorage.ts';
 
 const ACTIVE_STORY_KEY = 'oj_active_story_id2';
 const NAV_STATE_KEY = 'oj_page_nav_state';
+
+vi.mock('@/components/story/hide-read-stories.ts', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('@/components/story/hide-read-stories.ts')>();
+	return {
+		...actual,
+		hideReadStoriesOnce: vi.fn(),
+	};
+});
 
 const createStoryRows = (doc: Document, count: number) => {
 	const rows: HTMLElement[] = [];
@@ -59,6 +68,7 @@ describe('Story KeyboardHandlers', () => {
 		vi.clearAllMocks();
 		vi.spyOn(lStorage, 'getItem').mockResolvedValue(null);
 		vi.spyOn(lStorage, 'setItem').mockResolvedValue();
+		vi.mocked(hideReadStoriesOnce).mockResolvedValue();
 	});
 
 	it('should use nav state when active story id is missing', async () => {
@@ -153,5 +163,48 @@ describe('Story KeyboardHandlers', () => {
 
 		expect(lStorage.setItem).toHaveBeenCalledWith(ACTIVE_STORY_KEY, {});
 		expect(storyData.getActiveStory()).toBeUndefined();
+	});
+
+	it('should activate next visible story before hiding read stories', async () => {
+		const bigbox = doc.createElement('div');
+		const rows = createStoryRows(doc, 3);
+		const storyData = new StoryData(bigbox, rows);
+		const firstStory = storyData.get('1');
+		const secondStory = storyData.get('2');
+		if (!firstStory) {
+			throw new Error('Expected story to exist');
+		}
+		if (!secondStory) {
+			throw new Error('Expected story to exist');
+		}
+		storyData.activate(firstStory);
+		secondStory.hide();
+
+		const keyboardHandlers = new KeyboardHandlers(doc);
+
+		await keyboardHandlers.hideReadStoriesNow(storyData);
+
+		expect(storyData.getActiveStory()?.id).toBe('3');
+		expect(hideReadStoriesOnce).toHaveBeenCalledWith(storyData);
+	});
+
+	it('should escape when no next story exists before hiding read stories', async () => {
+		const bigbox = doc.createElement('div');
+		const rows = createStoryRows(doc, 2);
+		const storyData = new StoryData(bigbox, rows);
+		const lastStory = storyData.get('2');
+		if (!lastStory) {
+			throw new Error('Expected story to exist');
+		}
+		storyData.activate(lastStory);
+
+		vi.mocked(lStorage.getItem).mockResolvedValueOnce({ '/news?p=1': '2' });
+
+		const keyboardHandlers = new KeyboardHandlers(doc);
+
+		await keyboardHandlers.hideReadStoriesNow(storyData);
+
+		expect(storyData.getActiveStory()).toBeUndefined();
+		expect(hideReadStoriesOnce).toHaveBeenCalledWith(storyData);
 	});
 });
