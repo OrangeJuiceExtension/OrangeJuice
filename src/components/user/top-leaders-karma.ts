@@ -1,4 +1,4 @@
-import { getUserInfo } from '@/utils/api';
+import { apiModule } from '@/utils/api';
 
 export const topLeadersKarma = async (doc: Document) => {
 	if (!window.location.pathname.startsWith('/leaders')) {
@@ -28,7 +28,9 @@ export const topLeadersKarma = async (doc: Document) => {
 		}
 	}
 
-	const userInfoResults = await Promise.all(anchorData.map(({ user }) => getUserInfo(user)));
+	const userInfoResults = await Promise.all(
+		anchorData.map(({ user }) => apiModule.getUserInfo(user))
+	);
 
 	for (const [index, { anchor }] of anchorData.entries()) {
 		const userInfo = userInfoResults[index];

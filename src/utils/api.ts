@@ -10,18 +10,23 @@ function fetchJson<T>(url: string): Promise<T | null | undefined> {
 	return service.fetchJson(`${WORKER_BASE}/yxorp/v0/${url}`);
 }
 
-export function getUserInfo(username: string, h?: string) {
+function getUserInfo(username: string, h?: string) {
 	const h2 = h ? `?h=${encodeURIComponent(h)}` : '';
 	return fetchJson<HNUser>(`user/${encodeURIComponent(username)}.json${h2}`);
 }
 
-export function getItemInfo(itemId: string) {
+function getItemInfo(itemId: string) {
 	return fetchJson<HNItemInfo>(`item/${encodeURIComponent(itemId)}.json`);
+}
+
+function getImageURL(url: string) {
+	return `${WORKER_BASE}/yxorp-img?url=${encodeURIComponent(url)}`;
 }
 
 export const apiModule = {
 	getUserInfo,
 	getItemInfo,
+	getImageURL,
 };
 
 // Field	Description

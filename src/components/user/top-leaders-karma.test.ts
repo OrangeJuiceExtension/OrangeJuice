@@ -1,19 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ContentScriptContext } from '#imports';
-import { getUserInfo } from '@/utils/api.ts';
+import { apiModule } from '@/utils/api.ts';
 import { topLeadersKarma } from './top-leaders-karma';
 
-vi.mock('@/utils/api.ts', () => ({
-	getUserInfo: vi.fn(),
-}));
+vi.mock('@/utils/api', () => {
+	const getUserInfo = vi.fn();
+	return {
+		apiModule: {
+			getUserInfo,
+		},
+		getUserInfo,
+	};
+});
 
 describe('topLeadersKarma', () => {
 	let mockDoc: Document;
-	let mockCtx: ContentScriptContext;
 
 	beforeEach(() => {
 		mockDoc = document.implementation.createHTMLDocument();
-		mockCtx = {} as ContentScriptContext;
 		window.location.pathname = '/leaders';
 		vi.clearAllMocks();
 	});
@@ -23,7 +26,7 @@ describe('topLeadersKarma', () => {
 		let called = false;
 
 		// biome-ignore lint/suspicious/useAwait: mocks
-		vi.mocked(getUserInfo).mockImplementation(async (username) => {
+		vi.mocked(apiModule.getUserInfo).mockImplementation(async (username) => {
 			called = true;
 			return {
 				id: username || '',
@@ -56,7 +59,7 @@ describe('topLeadersKarma', () => {
 		`;
 
 		const getUserInfoSpy = vi
-			.mocked(getUserInfo)
+			.mocked(apiModule.getUserInfo)
 			.mockImplementation(async (_username: string) => ({
 				id: 'testuser',
 				created: 1_234_567_890,
@@ -95,7 +98,7 @@ describe('topLeadersKarma', () => {
 		`;
 
 		// biome-ignore lint/suspicious/useAwait: mocks
-		vi.mocked(getUserInfo).mockImplementation(async (username: string) => {
+		vi.mocked(apiModule.getUserInfo).mockImplementation(async (username: string) => {
 			const karmaMap: Record<string, number> = { alice: 5000, bob: 3000 };
 			return {
 				id: username,
@@ -134,7 +137,7 @@ describe('topLeadersKarma', () => {
 			</table>
 		`;
 
-		const getUserInfoSpy = vi.mocked(getUserInfo).mockResolvedValue({
+		const getUserInfoSpy = vi.mocked(apiModule.getUserInfo).mockResolvedValue({
 			id: 'validuser',
 			created: 1_234_567_890,
 			karma: 2000,
@@ -161,7 +164,7 @@ describe('topLeadersKarma', () => {
 			</table>
 		`;
 
-		vi.mocked(getUserInfo).mockResolvedValue(null);
+		vi.mocked(apiModule.getUserInfo).mockResolvedValue(null);
 
 		await topLeadersKarma(mockDoc);
 
@@ -180,7 +183,7 @@ describe('topLeadersKarma', () => {
 			</table>
 		`;
 
-		const getUserInfoSpy = vi.mocked(getUserInfo).mockResolvedValue({
+		const getUserInfoSpy = vi.mocked(apiModule.getUserInfo).mockResolvedValue({
 			id: 'alice',
 			created: 1_234_567_890,
 			karma: 5000,
@@ -212,7 +215,7 @@ describe('topLeadersKarma', () => {
 			</table>
 		`;
 
-		const getUserInfoSpy = vi.mocked(getUserInfo).mockResolvedValue({
+		const getUserInfoSpy = vi.mocked(apiModule.getUserInfo).mockResolvedValue({
 			id: 'testuser',
 			created: 1_234_567_890,
 			karma: 1000,
@@ -245,7 +248,7 @@ describe('topLeadersKarma', () => {
 		`;
 
 		const callOrder: string[] = [];
-		vi.mocked(getUserInfo).mockImplementation(async (username: string) => {
+		vi.mocked(apiModule.getUserInfo).mockImplementation(async (username: string) => {
 			callOrder.push(`start-${username}`);
 			await new Promise((resolve) => setTimeout(resolve, 10));
 			callOrder.push(`end-${username}`);

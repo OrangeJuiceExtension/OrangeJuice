@@ -1,11 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContentScriptContext } from '#imports';
-import { getUserInfo } from '@/utils/api';
+import { apiModule } from '@/utils/api';
 import { showUserInfoOnHover } from './show-user-info-hover';
 
-vi.mock('@/utils/api', () => ({
-	getUserInfo: vi.fn(),
-}));
+vi.mock('@/utils/api', () => {
+	const getUserInfo = vi.fn();
+	return {
+		apiModule: {
+			getUserInfo,
+		},
+		getUserInfo,
+	};
+});
 
 vi.mock('linkify-html', () => ({
 	default: (html: string) => html,
@@ -41,7 +47,7 @@ describe('showUserInfoOnHover', () => {
 	};
 
 	const mockUserInfo = (userName: string, overrides = {}) => {
-		vi.mocked(getUserInfo).mockResolvedValueOnce({
+		vi.mocked(apiModule.getUserInfo).mockResolvedValueOnce({
 			id: userName,
 			created: Math.floor(Date.now() / 1000) - 365 * 24 * 60 * 60, // 1 year ago
 			karma: 1000,
@@ -191,7 +197,7 @@ describe('showUserInfoOnHover', () => {
 		});
 
 		// getUserInfo should only be called once
-		expect(getUserInfo).toHaveBeenCalledTimes(1);
+		expect(apiModule.getUserInfo).toHaveBeenCalledTimes(1);
 	});
 
 	it('should hide popover when mouse moves away', async () => {
@@ -264,7 +270,7 @@ describe('showUserInfoOnHover', () => {
 
 	it('should not show popover when getUserInfo returns null', async () => {
 		const userLink = createUserLink('testuser');
-		vi.mocked(getUserInfo).mockResolvedValueOnce(null);
+		vi.mocked(apiModule.getUserInfo).mockResolvedValueOnce(null);
 
 		showUserInfoOnHover(mockCtx, document);
 
@@ -321,21 +327,21 @@ describe('showUserInfoOnHover', () => {
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
 		await vi.waitFor(() => {
-			expect(getUserInfo).toHaveBeenCalledTimes(1);
+			expect(apiModule.getUserInfo).toHaveBeenCalledTimes(1);
 		});
 
 		// Second mouseover on the same link should be ignored
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
 		await new Promise((resolve) => setTimeout(resolve, 50));
-		expect(getUserInfo).toHaveBeenCalledTimes(1);
+		expect(apiModule.getUserInfo).toHaveBeenCalledTimes(1);
 	});
 
 	it('should show loader while fetching user data', async () => {
 		const userLink = createUserLink('testuser');
 
 		// Delay the response
-		vi.mocked(getUserInfo).mockImplementationOnce(() => {
+		vi.mocked(apiModule.getUserInfo).mockImplementationOnce(() => {
 			return new Promise((resolve) => {
 				setTimeout(() => {
 					resolve({
@@ -377,7 +383,7 @@ describe('showUserInfoOnHover', () => {
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
 		await new Promise((resolve) => setTimeout(resolve, 50));
-		expect(getUserInfo).not.toHaveBeenCalled();
+		expect(apiModule.getUserInfo).not.toHaveBeenCalled();
 	});
 
 	it('should format date using locale formatting', async () => {
