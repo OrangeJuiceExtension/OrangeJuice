@@ -21,8 +21,6 @@ export class HNComment {
 
 	author?: string;
 	postedDate?: string;
-	isCollapsed = false;
-	isDead = false;
 
 	constructor(commentRow: HTMLElement) {
 		this.id = commentRow.id;
@@ -35,10 +33,17 @@ export class HNComment {
 		this.author = this.commentRow.querySelector('a.hnuser')?.textContent || undefined;
 		this.postedDate =
 			this.commentRow.querySelector('span.age')?.getAttribute('title') || undefined;
-		this.isCollapsed =
+	}
+
+	get isCollapsed(): boolean {
+		return (
 			this.commentRow.classList.contains('coll') ||
-			this.commentRow.classList.contains('noshow');
-		this.isDead = this.commentRow.querySelector('.comhead .dead') !== null;
+			this.commentRow.classList.contains('noshow')
+		);
+	}
+
+	get isDead(): boolean {
+		return this.commentRow.querySelector('.comhead .dead') !== null;
 	}
 
 	hidden(): boolean {
@@ -163,6 +168,23 @@ export class HNComment {
 			return [];
 		}
 		return parseReferenceLinks(commtext);
+	}
+
+	getIndentLevel(): number {
+		const indentImage = this.commentRow.querySelector<HTMLImageElement>('td.ind img');
+		if (!indentImage) {
+			return 0;
+		}
+
+		const dataLevel = indentImage.dataset.indentLevel;
+		if (dataLevel) {
+			const parsed = Number.parseInt(dataLevel, 10);
+			if (!Number.isNaN(parsed)) {
+				return parsed;
+			}
+		}
+
+		return indentImage.width / 40;
 	}
 
 	static getCommentIdFromElement(element: HTMLElement): string | null {

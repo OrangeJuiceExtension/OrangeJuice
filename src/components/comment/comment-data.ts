@@ -39,13 +39,44 @@ export class CommentData {
 		}
 	}
 
+	private hasChildren(comment: HNComment): boolean {
+		const next = this.comments.getNext(comment);
+		if (!next) {
+			return false;
+		}
+		return next.getIndentLevel() > comment.getIndentLevel();
+	}
+
+	private getNextAfterCollapsedSubtree(
+		comment: HNComment,
+		skipHidden: boolean
+	): HNComment | undefined {
+		const baseIndent = comment.getIndentLevel();
+		let current = this.comments.getNext(comment);
+		while (current) {
+			if (current.getIndentLevel() <= baseIndent) {
+				if (skipHidden && current.hidden()) {
+					return this.getNext(current, skipHidden);
+				}
+				return current;
+			}
+			current = this.comments.getNext(current);
+		}
+		return undefined;
+	}
+
 	getNext(comment: HNComment, skipHidden = true): HNComment | undefined {
 		const next = this.comments.getNext(comment);
 		if (!next) {
 			return undefined;
 		}
-		if (skipHidden && next.hidden()) {
-			return this.getNext(next, skipHidden);
+		if (skipHidden) {
+			if (next.isCollapsed && this.hasChildren(next)) {
+				return this.getNextAfterCollapsedSubtree(next, skipHidden);
+			}
+			if (next.hidden()) {
+				return this.getNext(next, skipHidden);
+			}
 		}
 		return next;
 	}
@@ -54,6 +85,16 @@ export class CommentData {
 		const prev = this.comments.getPrevious(comment);
 		if (!prev) {
 			return undefined;
+		}
+		if (!skipHidden && prev.hidden()) {
+			const baseIndent = comment.getIndentLevel();
+			if (prev.getIndentLevel() > baseIndent) {
+				let current: HNComment | undefined = prev;
+				while (current && current.getIndentLevel() > baseIndent) {
+					current = this.comments.getPrevious(current);
+				}
+				return current;
+			}
 		}
 		if (skipHidden && prev.hidden()) {
 			return this.getPrevious(prev, skipHidden);

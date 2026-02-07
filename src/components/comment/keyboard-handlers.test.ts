@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CommentData } from '@/components/comment/comment-data.ts';
+import { addIndentation, createCommentRow } from '@/components/comment/constants.ts';
 import { HNComment } from '@/components/comment/hn-comment.ts';
 import { KeyboardHandlers } from '@/components/comment/keyboard-handlers.ts';
 import { createClientServices } from '@/services/manager.ts';
@@ -28,18 +29,6 @@ interface CommentSetup {
 	comments: HNComment[];
 	rows: HTMLElement[];
 }
-
-const createCommentRow = (doc: Document, id: number, options?: { collapsed?: boolean }) => {
-	const row = doc.createElement('tr');
-	row.id = `comment-${id}`;
-	row.classList.add('comtr');
-	row.classList.add('athing');
-	if (options?.collapsed) {
-		row.classList.add('coll');
-	}
-	doc.body.appendChild(row);
-	return row;
-};
 
 const createCommentData = (
 	doc: Document,
@@ -119,6 +108,104 @@ describe('commentKeyboardHandlers', () => {
 				expect(setup.commentData.getActiveComment()?.id).toBe('comment-2');
 			});
 
+			it('should skip collapsed comment children when moving down', async () => {
+				const setup = createCommentData(doc, 4, { collapsedIds: [2] });
+				const event = { shiftKey: false } as KeyboardEvent;
+				const first = setup.commentData.first();
+				if (!first) {
+					throw new Error('Expected item to exist');
+				}
+
+				addIndentation(doc, setup.rows[0], 0);
+				addIndentation(doc, setup.rows[1], 0);
+				addIndentation(doc, setup.rows[2], 1);
+				addIndentation(doc, setup.rows[3], 0);
+				setup.commentData.activate(first);
+
+				await keyboardHandlers.move(event, setup.commentData, 'down');
+
+				expect(setup.commentData.getActiveComment()?.id).toBe('comment-4');
+			});
+
+			it('should respect collapse state changes after init', async () => {
+				const setup = createCommentData(doc, 4);
+				const event = { shiftKey: false } as KeyboardEvent;
+				const first = setup.commentData.first();
+				if (!first) {
+					throw new Error('Expected item to exist');
+				}
+
+				addIndentation(doc, setup.rows[0], 0);
+				addIndentation(doc, setup.rows[1], 0);
+				addIndentation(doc, setup.rows[2], 1);
+				addIndentation(doc, setup.rows[3], 0);
+				setup.commentData.activate(first);
+
+				setup.rows[1]?.classList.add('coll');
+
+				await keyboardHandlers.move(event, setup.commentData, 'down');
+
+				expect(setup.commentData.getActiveComment()?.id).toBe('comment-4');
+			});
+
+			it('should expand collapsed parent with deep child on shift key', async () => {
+				const setup = createCommentData(doc, 4, { collapsedIds: [2] });
+				const event = { shiftKey: true } as KeyboardEvent;
+				const first = setup.commentData.first();
+				if (!first) {
+					throw new Error('Expected item to exist');
+				}
+
+				addIndentation(doc, setup.rows[0], 0);
+				addIndentation(doc, setup.rows[1], 0);
+				addIndentation(doc, setup.rows[2], 2);
+				addIndentation(doc, setup.rows[3], 0);
+				setup.commentData.activate(first);
+
+				const toggleLink = doc.createElement('a');
+				toggleLink.classList.add('togg', 'clicky');
+				toggleLink.textContent = '[2 more]';
+				setup.rows[1]?.appendChild(toggleLink);
+				const clickSpy = vi.spyOn(toggleLink, 'click');
+
+				await keyboardHandlers.move(event, setup.commentData, 'down');
+
+				expect(setup.commentData.getActiveComment()?.id).toBe('comment-2');
+				expect(clickSpy).toHaveBeenCalled();
+			});
+
+			it('should traverse into children after expansion when moving down', async () => {
+				const setup = createCommentData(doc, 4);
+				const eventShift = { shiftKey: true } as KeyboardEvent;
+				const event = { shiftKey: false } as KeyboardEvent;
+				const first = setup.commentData.first();
+				if (!first) {
+					throw new Error('Expected item to exist');
+				}
+
+				addIndentation(doc, setup.rows[0], 0);
+				addIndentation(doc, setup.rows[1], 0);
+				addIndentation(doc, setup.rows[2], 1);
+				addIndentation(doc, setup.rows[3], 0);
+				setup.rows[1]?.classList.add('coll');
+				setup.rows[2]?.classList.add('noshow');
+				setup.commentData.activate(first);
+
+				const toggleLink = doc.createElement('a');
+				toggleLink.classList.add('togg', 'clicky');
+				toggleLink.textContent = '[1 more]';
+				setup.rows[1]?.appendChild(toggleLink);
+
+				await keyboardHandlers.move(eventShift, setup.commentData, 'down');
+
+				setup.rows[1]?.classList.remove('coll');
+				setup.rows[2]?.classList.remove('noshow');
+
+				await keyboardHandlers.move(event, setup.commentData, 'down');
+
+				expect(setup.commentData.getActiveComment()?.id).toBe('comment-3');
+			});
+
 			it('should not move when already at last item', async () => {
 				const setup = createCommentData(doc, 3);
 				const event = { shiftKey: false } as KeyboardEvent;
@@ -167,6 +254,62 @@ describe('commentKeyboardHandlers', () => {
 				await keyboardHandlers.move(event, setup.commentData, 'up');
 
 				expect(setup.commentData.getActiveComment()?.id).toBe('comment-1');
+			});
+
+			it('should expand collapsed parent when moving up with shift key', async () => {
+				const setup = createCommentData(doc, 3);
+				const event = { shiftKey: true } as KeyboardEvent;
+				const third = setup.commentData.get('comment-3');
+				if (!third) {
+					throw new Error('Expected item to exist');
+				}
+
+				addIndentation(doc, setup.rows[0], 0);
+				addIndentation(doc, setup.rows[1], 1);
+				addIndentation(doc, setup.rows[2], 0);
+				setup.rows[0]?.classList.add('coll');
+				setup.rows[1]?.classList.add('noshow');
+				setup.commentData.activate(third);
+
+				const toggleLink = doc.createElement('a');
+				toggleLink.classList.add('togg', 'clicky');
+				toggleLink.textContent = '[1 more]';
+				setup.rows[0]?.appendChild(toggleLink);
+				const clickSpy = vi.spyOn(toggleLink, 'click');
+
+				await keyboardHandlers.move(event, setup.commentData, 'up');
+
+				expect(setup.commentData.getActiveComment()?.id).toBe('comment-1');
+				expect(clickSpy).toHaveBeenCalled();
+			});
+
+			it('should activate collapsed parent instead of hidden child when moving up with shift key', async () => {
+				const setup = createCommentData(doc, 4);
+				const event = { shiftKey: true } as KeyboardEvent;
+				const fourth = setup.commentData.get('comment-4');
+				if (!fourth) {
+					throw new Error('Expected item to exist');
+				}
+
+				addIndentation(doc, setup.rows[0], 0);
+				addIndentation(doc, setup.rows[1], 1);
+				addIndentation(doc, setup.rows[2], 1);
+				addIndentation(doc, setup.rows[3], 0);
+				setup.rows[0]?.classList.add('coll');
+				setup.rows[1]?.classList.add('noshow');
+				setup.rows[2]?.classList.add('noshow');
+				setup.commentData.activate(fourth);
+
+				const toggleLink = doc.createElement('a');
+				toggleLink.classList.add('togg', 'clicky');
+				toggleLink.textContent = '[2 more]';
+				setup.rows[0]?.appendChild(toggleLink);
+				const clickSpy = vi.spyOn(toggleLink, 'click');
+
+				await keyboardHandlers.move(event, setup.commentData, 'up');
+
+				expect(setup.commentData.getActiveComment()?.id).toBe('comment-1');
+				expect(clickSpy).toHaveBeenCalled();
 			});
 
 			it('should scroll to top when reaching first item', async () => {

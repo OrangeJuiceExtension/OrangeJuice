@@ -1,18 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CommentData } from '@/components/comment/comment-data.ts';
+import { addIndentation, createCommentRow } from '@/components/comment/constants.ts';
 import { HNComment } from '@/components/comment/hn-comment.ts';
-
-const createCommentRow = (doc: Document, id: number, options?: { collapsed?: boolean }) => {
-	const row = doc.createElement('tr');
-	row.id = `comment-${id}`;
-	row.classList.add('comtr');
-	row.classList.add('athing');
-	if (options?.collapsed) {
-		row.classList.add('coll');
-	}
-	doc.body.appendChild(row);
-	return row;
-};
 
 const createComments = (doc: Document, count: number, options?: { collapsedIds?: number[] }) => {
 	const collapsedIds = new Set(options?.collapsedIds ?? []);
@@ -86,6 +75,35 @@ describe('CommentData', () => {
 		const data = new CommentData(comments);
 
 		const prev = data.getPrevious(comments[2]);
+
+		expect(prev?.id).toBe('comment-1');
+	});
+
+	it('should skip collapsed subtree with mixed indent levels', () => {
+		const comments = createComments(doc, 6, { collapsedIds: [2] });
+		addIndentation(doc, comments[0].commentRow, 0);
+		addIndentation(doc, comments[1].commentRow, 0);
+		addIndentation(doc, comments[2].commentRow, 2);
+		addIndentation(doc, comments[3].commentRow, 3);
+		addIndentation(doc, comments[4].commentRow, 1);
+		addIndentation(doc, comments[5].commentRow, 0);
+		const data = new CommentData(comments);
+
+		const next = data.getNext(comments[0]);
+
+		expect(next?.id).toBe('comment-6');
+	});
+
+	it('should return collapsed parent when skipHidden is false', () => {
+		const comments = createComments(doc, 3);
+		comments[0]?.commentRow.classList.add('coll');
+		comments[1]?.commentRow.classList.add('noshow');
+		addIndentation(doc, comments[0].commentRow, 0);
+		addIndentation(doc, comments[1].commentRow, 1);
+		addIndentation(doc, comments[2].commentRow, 0);
+		const data = new CommentData(comments);
+
+		const prev = data.getPrevious(comments[2], false);
 
 		expect(prev?.id).toBe('comment-1');
 	});
