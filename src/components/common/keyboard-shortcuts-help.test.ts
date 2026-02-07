@@ -32,4 +32,16 @@ describe('keyboard shortcuts help', () => {
 		expect(hrefs.has('https://oj-hn.com')).toBe(true);
 		expect(hrefs.has('https://github.com/OrangeJuiceExtension/OrangeJuice')).toBe(true);
 	});
+
+	it('should include the email link with a subject', () => {
+		const doc = document.implementation.createHTMLDocument();
+		const help = getKeyboardShortcutsHelp(doc);
+
+		const emailLink = Array.from(help.querySelectorAll('a')).find(
+			(link) => link.textContent === 'Email'
+		);
+
+		expect(emailLink).toBeDefined();
+		expect(emailLink?.getAttribute('href')).toBe('mailto:hello@oj-hn.com?subject=Question about OJ');
+	});
 });

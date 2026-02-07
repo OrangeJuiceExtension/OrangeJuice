@@ -31,7 +31,8 @@ const SHORTCUTS_STORIES = [
 	{ key: '1-9, 0', description: 'Open story at position 1-10' },
 	{ key: 'm', description: 'Click more link' },
 	{ key: 'b', description: 'Go back (if paginated)' },
-	{ key: 'h', description: 'Toggle hide read stories' },
+	{ key: 'h', description: 'Toggle hide read stories checkbox' },
+	{ key: 'H', description: 'Hide read stories' },
 	{ key: 'esc', description: 'Unfocus story' },
 ];
 
@@ -49,6 +50,7 @@ const SHORTCUTS_COMMON = [
 
 const LOGO_PATH = '/assets/image-128.png';
 const WEBSITE_URL = 'https://oj-hn.com';
+const EMAIL = 'hello@oj-hn.com';
 const GITHUB_URL = 'https://github.com/OrangeJuiceExtension/OrangeJuice';
 
 const getLogoUrl = () => {
@@ -128,8 +130,15 @@ export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
 	githubLink.rel = 'noreferrer';
 	githubLink.target = '_blank';
 
+	const emailLink = doc.createElement('a');
+	emailLink.href = `mailto:${EMAIL}?subject=Question about OJ`;
+	emailLink.textContent = 'Email';
+	emailLink.rel = 'noreferrer';
+	emailLink.target = '_blank';
+
 	linkContainer.appendChild(siteLink);
 	linkContainer.appendChild(githubLink);
+	linkContainer.appendChild(emailLink);
 	brandColumn.appendChild(linkContainer);
 
 	const navColumn = doc.createElement('div');
