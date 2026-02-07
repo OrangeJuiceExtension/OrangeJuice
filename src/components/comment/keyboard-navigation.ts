@@ -32,7 +32,7 @@ export const keyboardNavigation = async (
 		}
 
 		tr.${focusClass} td.${focusClassDefault} {
-			background-color: white;
+			background-color: #fbfbf7;
 			--oj-top: inset 0 var(--oj-focus-w) 0 0 var(--oj-focus-color);
 			--oj-right: inset calc(-1 * var(--oj-focus-w)) 0 0 0 var(--oj-focus-color);
 			--oj-bottom: inset 0 calc(-1 * var(--oj-focus-w)) 0 0 var(--oj-focus-color);

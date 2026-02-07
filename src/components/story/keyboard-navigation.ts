@@ -43,7 +43,7 @@ export const keyboardNavigation = async (
 		  --oj-bottom: inset 0 0 0 0 transparent;
 		  --oj-left: inset 0 0 0 0 transparent;
 		  box-shadow: var(--oj-top), var(--oj-right), var(--oj-bottom), var(--oj-left);
-		  background-color: white;
+		  background-color: #fbfbf7;
 		}
 		
 		/* Top edge */
