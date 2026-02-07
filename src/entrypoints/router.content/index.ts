@@ -8,6 +8,7 @@ import { remaining } from '@/components/remaining/index.ts';
 import { story } from '@/components/story/index.ts';
 import { submit } from '@/components/submit/index.ts';
 import { user } from '@/components/user/index.ts';
+import { loginTemplate } from '@/components/user/login-template.ts';
 import { createClientServices } from '@/services/manager.ts';
 import { newActivityFetcher } from '@/utils/activity-trail.ts';
 import { dom } from '@/utils/dom.ts';
@@ -18,6 +19,7 @@ import { common } from '@/components/common/index.ts';
 
 const components: ComponentFeature[] = [
 	common,
+	loginTemplate,
 	activities,
 	remaining,
 	comments,
