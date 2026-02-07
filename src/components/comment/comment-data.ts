@@ -86,16 +86,6 @@ export class CommentData {
 		if (!prev) {
 			return undefined;
 		}
-		if (!skipHidden && prev.hidden()) {
-			const baseIndent = comment.getIndentLevel();
-			if (prev.getIndentLevel() > baseIndent) {
-				let current: HNComment | undefined = prev;
-				while (current && current.getIndentLevel() > baseIndent) {
-					current = this.comments.getPrevious(current);
-				}
-				return current;
-			}
-		}
 		if (skipHidden && prev.hidden()) {
 			return this.getPrevious(prev, skipHidden);
 		}

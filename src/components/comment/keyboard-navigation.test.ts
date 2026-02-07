@@ -60,6 +60,7 @@ const createTestContext = (commentCount = 3): TestContext => {
 	vi.spyOn(KeyboardHandlers.prototype, 'collapseToggle');
 	vi.spyOn(KeyboardHandlers.prototype, 'openReferenceLink');
 	vi.spyOn(KeyboardHandlers.prototype, 'activateElement');
+	vi.spyOn(KeyboardHandlers.prototype, 'checkActiveState');
 	vi.spyOn(lStorage, 'getItem').mockResolvedValue(null);
 
 	return { doc, comments, ctx, invalidate };
@@ -121,6 +122,19 @@ describe('keyboardNavigation', () => {
 			expect(styleElement?.textContent).toContain(`tr.${focusClass} td`);
 			expect(styleElement?.textContent).toContain(`td.${focusClassDefault}`);
 			expect(styleElement?.textContent).toContain('--oj-focus-color: #f7694c');
+
+			invalidate();
+		});
+
+		it('should re-check active state on pageshow', async () => {
+			const { doc, comments, ctx, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments);
+			vi.mocked(KeyboardHandlers.prototype.checkActiveState).mockClear();
+
+			window.dispatchEvent(new Event('pageshow'));
+
+			expect(KeyboardHandlers.prototype.checkActiveState).toHaveBeenCalled();
 
 			invalidate();
 		});

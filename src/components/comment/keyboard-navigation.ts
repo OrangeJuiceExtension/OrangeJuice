@@ -84,6 +84,10 @@ export const keyboardNavigation = async (
 	const keyboardHandlers = new KeyboardHandlers(doc);
 
 	await keyboardHandlers.checkActiveState(commentData);
+	const pageshowHandler = () => {
+		void keyboardHandlers.checkActiveState(commentData);
+	};
+	window.addEventListener('pageshow', pageshowHandler);
 
 	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: it is just complex
 	const keydownHandler = async (e: KeyboardEvent) => {
@@ -222,5 +226,6 @@ export const keyboardNavigation = async (
 		doc.removeEventListener('keydown', keydownHandler);
 		commentData.removeEventListener('click', clickToFocus);
 		doc.removeEventListener('click', documentClickHandler);
+		window.removeEventListener('pageshow', pageshowHandler);
 	});
 };

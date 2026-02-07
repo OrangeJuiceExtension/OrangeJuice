@@ -108,6 +108,26 @@ describe('commentKeyboardHandlers', () => {
 				expect(setup.commentData.getActiveComment()?.id).toBe('comment-2');
 			});
 
+			it('should click more link when at last item', async () => {
+				const setup = createCommentData(doc, 2);
+				const event = { shiftKey: false } as KeyboardEvent;
+				const last = setup.commentData.last();
+				if (!last) {
+					throw new Error('Expected item to exist');
+				}
+				setup.commentData.activate(last);
+
+				const moreLink = doc.createElement('a');
+				moreLink.className = 'morelink';
+				const clickSpy = vi.spyOn(moreLink, 'click');
+				doc.body.appendChild(moreLink);
+
+				await keyboardHandlers.move(event, setup.commentData, 'down');
+
+				expect(clickSpy).toHaveBeenCalled();
+				expect(lStorage.setItem).toHaveBeenCalledWith('oj_comment_nav_state', 'next');
+			});
+
 			it('should skip collapsed comment children when moving down', async () => {
 				const setup = createCommentData(doc, 4, { collapsedIds: [2] });
 				const event = { shiftKey: false } as KeyboardEvent;
@@ -172,6 +192,35 @@ describe('commentKeyboardHandlers', () => {
 
 				expect(setup.commentData.getActiveComment()?.id).toBe('comment-2');
 				expect(clickSpy).toHaveBeenCalled();
+			});
+
+			it('should expand parent when moving down into a hidden comment with shift key', async () => {
+				const setup = createCommentData(doc, 4);
+				const event = { shiftKey: true } as KeyboardEvent;
+				const first = setup.commentData.first();
+				if (!first) {
+					throw new Error('Expected item to exist');
+				}
+
+				addIndentation(doc, setup.rows[0], 0);
+				addIndentation(doc, setup.rows[1], 1);
+				addIndentation(doc, setup.rows[2], 1);
+				addIndentation(doc, setup.rows[3], 0);
+				setup.rows[0]?.classList.add('coll');
+				setup.rows[1]?.classList.add('noshow');
+				setup.rows[2]?.classList.add('noshow');
+				setup.commentData.activate(first);
+
+				const toggleLink = doc.createElement('a');
+				toggleLink.classList.add('togg', 'clicky');
+				toggleLink.textContent = '[2 more]';
+				setup.rows[0]?.appendChild(toggleLink);
+				const clickSpy = vi.spyOn(toggleLink, 'click');
+
+				await keyboardHandlers.move(event, setup.commentData, 'down');
+
+				expect(clickSpy).toHaveBeenCalled();
+				expect(setup.commentData.getActiveComment()?.id).toBe('comment-2');
 			});
 
 			it('should traverse into children after expansion when moving down', async () => {
@@ -256,6 +305,25 @@ describe('commentKeyboardHandlers', () => {
 				expect(setup.commentData.getActiveComment()?.id).toBe('comment-1');
 			});
 
+			it('should go back when at first item and next param exists', async () => {
+				const setup = createCommentData(doc, 2);
+				const event = { shiftKey: false } as KeyboardEvent;
+				const first = setup.commentData.first();
+				if (!first) {
+					throw new Error('Expected item to exist');
+				}
+				setup.commentData.activate(first);
+				const backSpy = vi.spyOn(window.history, 'back');
+				vi.spyOn(window, 'location', 'get').mockReturnValue(
+					new URL('https://news.ycombinator.com/item?id=1&next=2') as any
+				);
+
+				await keyboardHandlers.move(event, setup.commentData, 'up');
+
+				expect(backSpy).toHaveBeenCalled();
+				expect(lStorage.setItem).toHaveBeenCalledWith('oj_comment_nav_state', 'prev');
+			});
+
 			it('should expand collapsed parent when moving up with shift key', async () => {
 				const setup = createCommentData(doc, 3);
 				const event = { shiftKey: true } as KeyboardEvent;
@@ -283,7 +351,29 @@ describe('commentKeyboardHandlers', () => {
 				expect(clickSpy).toHaveBeenCalled();
 			});
 
-			it('should activate collapsed parent instead of hidden child when moving up with shift key', async () => {
+			it('should activate immediate previous comment when moving up with shift key', async () => {
+				const setup = createCommentData(doc, 4);
+				const event = { shiftKey: true } as KeyboardEvent;
+				const fourth = setup.commentData.get('comment-4');
+				if (!fourth) {
+					throw new Error('Expected item to exist');
+				}
+
+				addIndentation(doc, setup.rows[0], 0);
+				addIndentation(doc, setup.rows[1], 1);
+				addIndentation(doc, setup.rows[2], 1);
+				addIndentation(doc, setup.rows[3], 0);
+				setup.rows[0]?.classList.add('coll');
+				setup.rows[1]?.classList.add('noshow');
+				setup.rows[2]?.classList.add('noshow');
+				setup.commentData.activate(fourth);
+
+				await keyboardHandlers.move(event, setup.commentData, 'up');
+
+				expect(setup.commentData.getActiveComment()?.id).toBe('comment-3');
+			});
+
+			it('should expand parent when moving up into a hidden comment with shift key', async () => {
 				const setup = createCommentData(doc, 4);
 				const event = { shiftKey: true } as KeyboardEvent;
 				const fourth = setup.commentData.get('comment-4');
@@ -308,8 +398,8 @@ describe('commentKeyboardHandlers', () => {
 
 				await keyboardHandlers.move(event, setup.commentData, 'up');
 
-				expect(setup.commentData.getActiveComment()?.id).toBe('comment-1');
 				expect(clickSpy).toHaveBeenCalled();
+				expect(setup.commentData.getActiveComment()?.id).toBe('comment-3');
 			});
 
 			it('should scroll to top when reaching first item', async () => {
@@ -742,7 +832,7 @@ describe('commentKeyboardHandlers', () => {
 
 			await keyboardHandlers.openReferenceLink(
 				{
-					keyCode: 49,
+					key: '1',
 					ctrlKey: false,
 					metaKey: false,
 					shiftKey: false,
@@ -759,12 +849,60 @@ describe('commentKeyboardHandlers', () => {
 	});
 
 	describe('checkActiveState', () => {
+		it('should activate first comment after pagination navigation', async () => {
+			const setup = createCommentData(doc, 2);
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue(null);
+			vi.spyOn(lStorage, 'getItem').mockResolvedValueOnce('next');
+
+			await keyboardHandlers.checkActiveState(setup.commentData);
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-1');
+			expect(lStorage.setItem).toHaveBeenCalledWith('oj_comment_nav_state', null);
+		});
+
+		it('should activate last comment after back navigation', async () => {
+			const setup = createCommentData(doc, 3);
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue(null);
+			vi.spyOn(lStorage, 'getItem').mockResolvedValueOnce('prev');
+
+			await keyboardHandlers.checkActiveState(setup.commentData);
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-3');
+			expect(lStorage.setItem).toHaveBeenCalledWith('oj_comment_nav_state', null);
+		});
+
+		it('should activate last collapsed comment after back navigation', async () => {
+			const setup = createCommentData(doc, 3);
+			setup.rows[2]?.classList.add('coll');
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue(null);
+			vi.spyOn(lStorage, 'getItem').mockResolvedValueOnce('prev');
+
+			await keyboardHandlers.checkActiveState(setup.commentData);
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-3');
+			expect(lStorage.setItem).toHaveBeenCalledWith('oj_comment_nav_state', null);
+		});
+
+		it('should skip noshow comment when activating last comment after back navigation', async () => {
+			const setup = createCommentData(doc, 3);
+			setup.rows[2]?.classList.add('noshow');
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue(null);
+			vi.spyOn(lStorage, 'getItem').mockResolvedValueOnce('prev');
+
+			await keyboardHandlers.checkActiveState(setup.commentData);
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-2');
+			expect(lStorage.setItem).toHaveBeenCalledWith('oj_comment_nav_state', null);
+		});
+
 		it('should activate stored comment when item id is available', async () => {
 			const setup = createCommentData(doc, 2);
 			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
-			vi.spyOn(lStorage, 'getItem').mockResolvedValue({
-				'123': { commentId: 'comment-2' },
-			});
+			vi.spyOn(lStorage, 'getItem')
+				.mockResolvedValueOnce(null)
+				.mockResolvedValueOnce({
+					'123': { commentId: 'comment-2' },
+				});
 
 			await keyboardHandlers.checkActiveState(setup.commentData);
 

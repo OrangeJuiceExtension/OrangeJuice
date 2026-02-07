@@ -94,7 +94,7 @@ describe('CommentData', () => {
 		expect(next?.id).toBe('comment-6');
 	});
 
-	it('should return collapsed parent when skipHidden is false', () => {
+	it('should return immediate previous comment when skipHidden is false', () => {
 		const comments = createComments(doc, 3);
 		comments[0]?.commentRow.classList.add('coll');
 		comments[1]?.commentRow.classList.add('noshow');
@@ -105,7 +105,7 @@ describe('CommentData', () => {
 
 		const prev = data.getPrevious(comments[2], false);
 
-		expect(prev?.id).toBe('comment-1');
+		expect(prev?.id).toBe('comment-2');
 	});
 
 	it('should find closest collapsed comments from active', () => {

@@ -5,6 +5,10 @@ import { dom } from '@/utils/dom.ts';
 import lStorage from '@/utils/localStorage.ts';
 
 const ACTIVE_COMMENT_KEY = 'oj_active_comment_id';
+const NAV_STATE_KEY = 'oj_comment_nav_state';
+const NEXT_PARAM_REGEX = /[?&]next=/;
+
+type NavDirection = 'next' | 'prev';
 
 type ActiveCommentMap = Record<string, { commentId: string }>;
 
@@ -60,7 +64,18 @@ export class KeyboardHandlers {
 
 		const nextItem = this.getNextItem(commentData, direction, skipHidden);
 		if (!nextItem) {
+			if (direction === 'down') {
+				await lStorage.setItem(NAV_STATE_KEY, 'next');
+				this.clickMore();
+			} else if (direction === 'up' && this.hasNextParam()) {
+				await lStorage.setItem(NAV_STATE_KEY, 'prev');
+				window.history.back();
+			}
 			return;
+		}
+
+		if (!skipHidden && nextItem.hidden()) {
+			this.expandParentIfNeeded(commentData, nextItem);
 		}
 
 		await this.activateComment(commentData, nextItem);
@@ -119,6 +134,11 @@ export class KeyboardHandlers {
 		}
 	}
 
+	private clickMore() {
+		const moreLink = this.doc.querySelector<HTMLAnchorElement>('a.morelink');
+		moreLink?.click();
+	}
+
 	async escape(commentData: CommentData) {
 		(this.doc.activeElement as HTMLElement)?.blur();
 		commentData.deactivate();
@@ -149,7 +169,10 @@ export class KeyboardHandlers {
 			return Promise.resolve();
 		}
 
-		const targetIndex = event.keyCode - 48;
+		const targetIndex = Number.parseInt(event.key, 10);
+		if (Number.isNaN(targetIndex)) {
+			return Promise.resolve();
+		}
 		const links = activeComment.getReferenceLinks();
 
 		const link = links.find((obj) => obj.index === targetIndex);
@@ -222,8 +245,28 @@ export class KeyboardHandlers {
 	}
 
 	async checkActiveState(commentData: CommentData): Promise<void> {
+		const navState = await lStorage.getItem<NavDirection>(NAV_STATE_KEY);
+		if (navState === 'next') {
+			const first = commentData.first();
+			if (first && !first.hidden()) {
+				await this.activateComment(commentData, first);
+				await this.clearNavState();
+				return;
+			}
+		} else if (navState === 'prev') {
+			const last = this.getLastVisible(commentData);
+			if (last) {
+				await this.activateComment(commentData, last);
+				await this.clearNavState();
+				return;
+			}
+		}
+
 		const itemId = this.getItemId();
 		if (!itemId) {
+			if (navState) {
+				await this.clearNavState();
+			}
 			return;
 		}
 		const activeCommentId = await this.getStoredActiveCommentId(itemId);
@@ -231,7 +274,45 @@ export class KeyboardHandlers {
 			const comment = commentData.get(activeCommentId);
 			if (comment && !comment.hidden()) {
 				await this.activateComment(commentData, comment);
+				if (navState) {
+					await this.clearNavState();
+				}
 			}
+		}
+	}
+
+	private async clearNavState(): Promise<void> {
+		await lStorage.setItem(NAV_STATE_KEY, null);
+	}
+
+	private hasNextParam(): boolean {
+		return NEXT_PARAM_REGEX.test(window.location.search);
+	}
+
+	private getLastVisible(commentData: CommentData): HNComment | undefined {
+		let current = commentData.last();
+		while (current) {
+			const row = current.commentRow;
+			if (!(current.isDead || row.classList.contains('noshow'))) {
+				return current;
+			}
+			current = commentData.getPrevious(current, false);
+		}
+		return undefined;
+	}
+
+	private expandParentIfNeeded(commentData: CommentData, target: HNComment): void {
+		const targetIndent = target.getIndentLevel();
+		let current = commentData.getPrevious(target, false);
+		while (current) {
+			const currentIndent = current.getIndentLevel();
+			if (currentIndent < targetIndent) {
+				if (current.isCollapsed) {
+					current.collapseToggle();
+				}
+				return;
+			}
+			current = commentData.getPrevious(current, false);
 		}
 	}
 }
