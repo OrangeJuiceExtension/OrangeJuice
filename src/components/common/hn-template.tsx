@@ -1,5 +1,6 @@
 import React, { type ReactNode, useLayoutEffect, useMemo, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
+import { version } from '../../../package.json';
 
 const TEMPLATE_ROOT_ID = 'oj-hn-template-root';
 
@@ -56,6 +57,10 @@ const DefaultFooter = () => (
 			<a href="https://www.ycombinator.com/apply/">Apply to YC</a>
 			{' | '}
 			<a href="mailto:hn@ycombinator.com">Contact</a>
+			{' | '}
+			<a href="https://oj-hn.com" rel="noopener" target="_blank" title={version}>
+				Orange Juice
+			</a>
 		</span>
 	</div>
 );
