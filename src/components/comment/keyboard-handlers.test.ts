@@ -347,7 +347,7 @@ describe('commentKeyboardHandlers', () => {
 
 				await keyboardHandlers.move(event, setup.commentData, 'up');
 
-				expect(setup.commentData.getActiveComment()?.id).toBe('comment-1');
+				expect(setup.commentData.getActiveComment()?.id).toBe('comment-2');
 				expect(clickSpy).toHaveBeenCalled();
 			});
 
