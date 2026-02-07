@@ -7,7 +7,7 @@ const customWidth = 40;
 export const createGuidelinesNote = (options?: { marginBottom?: string }): HTMLDivElement => {
 	const guidelinesNote = document.createElement('div');
 	guidelinesNote.style.marginTop = '4px';
-	guidelinesNote.style.fontSize = '12px';
+	guidelinesNote.style.fontSize = '8px';
 	if (options?.marginBottom) {
 		guidelinesNote.style.marginBottom = options.marginBottom;
 	}
