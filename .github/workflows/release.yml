@@ -154,3 +154,11 @@ jobs:
             -H "Authorization: Bearer $GH_TOKEN" \
             https://api.github.com/repos/OrangeJuiceExtension/orangejuiceextension.github.io/actions/workflows/pages.yml/dispatches \
             -d '{"ref":"main"}'
+
+      - name: Delete old releases
+        uses: Nats-ji/delete-old-releases@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          remove-tags: true
+          keep-count: 10
+          keep-old-minor-releases: false
