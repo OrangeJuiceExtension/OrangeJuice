@@ -35,8 +35,8 @@ html.oj-dark-mode {
 
 body.oj-docs-page {
 	font-family:
-		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
-		sans-serif;
+		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+		Cantarell, sans-serif;
 	line-height: 1.6;
 	color: var(--text);
 	background: var(--bg);
@@ -137,6 +137,30 @@ main a:hover {
 	padding: 0.35rem 0.75rem;
 	font-size: 0.9rem;
 	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.oj-docs-theme-toggle .oj-dark-mode-icon {
+	width: 32px;
+	height: 32px;
+	display: inline-block;
+}
+
+.oj-docs-theme-toggle .oj-dark-mode-icon--sun {
+	fill: currentColor;
+	stroke: currentColor;
+	stroke-width: 1.6;
+}
+
+.oj-docs-theme-toggle .oj-dark-mode-icon--moon {
+	fill: #111;
+	stroke: none;
+}
+
+html.oj-dark-mode .oj-docs-theme-toggle .oj-dark-mode-icon--moon {
+	fill: #ffffff;
 }
 
 .container {
