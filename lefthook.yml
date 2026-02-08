@@ -1,5 +1,8 @@
+no_tty: true
+
 pre-commit:
+  parallel: true
   jobs:
-    - run: bun run build
-    - run: bun run check
+    - run: CI=true bun run build
+    - run: CI=true bun run check
       stage_fixed: true
