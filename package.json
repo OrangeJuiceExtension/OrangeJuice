@@ -7,7 +7,6 @@
 	"scripts": {
 		"dev": "wxt",
 		"dev:firefox": "wxt -b firefox",
-		"docs": "bash scripts/docs.sh",
 		"build": "wxt build",
 		"build-watch": "chokidar --initial --silent \"src/**/*\" -c \"bun run build\"",
 		"build:firefox": "wxt build -b firefox",
@@ -17,10 +16,11 @@
 		"compile": "tsc --noEmit",
 		"postinstall": "wxt prepare",
 		"test": "vitest",
-		"ci": "CI=true bun run --parallel check test build docs && CI=true bun run --parallel zip zip:firefox",
+		"ci": "CI=true bun run --parallel check test build && bun run clean && CI=true bun run --parallel zip zip:firefox",
 		"check": "ultracite check",
 		"fix": "ultracite fix",
-		"prepare": "lefthook install"
+		"prepare": "lefthook install",
+		"clean": "rm -rf .output build-docs playwright-report"
 	},
 	"dependencies": {
 		"@wxt-dev/storage": "^1.2.6",

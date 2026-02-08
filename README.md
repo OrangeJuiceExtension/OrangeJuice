@@ -1,5 +1,5 @@
 <meta name="google-site-verification" content="hdHpuNQq_ujr4eHU5wdi7yjcxFPPmoLAg3CQuxAJP4E" />
-<img src="assets/image.png"  alt="OrangeJuice" width="50%"/>
+<img src="docs/assets/image.png"  alt="OrangeJuice" width="50%"/>
 
 # Orange Juice makes Hacker News sweeter
 
@@ -21,7 +21,7 @@ I’m also interested in exploring social features. HN is already a massive soci
 
 # Features
 
-<img src="assets/screenshot-help.png" alt="OrangeJuice keyboard shortcuts help" width="%"/>
+<img src="docs/assets/screenshot-help.png" alt="OrangeJuice keyboard shortcuts help" width="%"/>
 
 Ideally, you shouldn’t really notice it at all. The features should feel subtle but natural: visible, useful, and aligned with what most users would expect the site to have supported in the first place. As we grow the feature set, it should always be with respect to the original design.
 
