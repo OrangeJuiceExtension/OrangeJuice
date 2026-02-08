@@ -133,7 +133,8 @@ describe('dom', () => {
 
 		it('should return hmac token from item page', async () => {
 			const itemDiv = document.createElement('body');
-			itemDiv.innerHTML = '<input type="hidden" name="hmac" value="537dd5ac8147db54ef6be4639acd3dd861b20549" />';
+			itemDiv.innerHTML =
+				'<input type="hidden" name="hmac" value="537dd5ac8147db54ef6be4639acd3dd861b20549" />';
 			const getPageDomSpy = vi.spyOn(dom, 'getPageDom').mockResolvedValue(itemDiv);
 
 			const token = await dom.getAuthToken('123', ActivityId.FavoriteComments);

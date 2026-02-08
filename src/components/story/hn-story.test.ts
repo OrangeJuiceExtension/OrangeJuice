@@ -4,17 +4,20 @@ import { focusClass1, focusClass2, focusClass3 } from '@/components/story/story-
 import { STORY_HIDDEN } from '@/components/story/hide-read-stories.ts';
 import { paths } from '@/utils/paths.ts';
 
-const createStoryRows = (doc: Document, options?: {
-	id?: string;
-	rank?: string;
-	title?: string;
-	href?: string;
-	points?: string;
-	author?: string;
-	postedDate?: string;
-	commentsText?: string;
-	commentsHref?: string;
-}) => {
+const createStoryRows = (
+	doc: Document,
+	options?: {
+		id?: string;
+		rank?: string;
+		title?: string;
+		href?: string;
+		points?: string;
+		author?: string;
+		postedDate?: string;
+		commentsText?: string;
+		commentsHref?: string;
+	}
+) => {
 	const storyRow = doc.createElement('tr');
 	storyRow.id = options?.id ?? '123';
 	const rank = doc.createElement('span');

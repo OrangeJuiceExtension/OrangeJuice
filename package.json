@@ -17,7 +17,8 @@
 		"compile": "tsc --noEmit",
 		"postinstall": "wxt prepare",
 		"test": "vitest",
-		"ci": "CI=true bun run test && bun run build && bun run docs && bun run zip && bun run zip:firefox"
+		"lint": "biome check --fix",
+		"ci": "CI=true bun run lint && bun run test && bun run build && bun run docs && bun run zip && bun run zip:firefox"
 	},
 	"dependencies": {
 		"@wxt-dev/storage": "^1.2.6",

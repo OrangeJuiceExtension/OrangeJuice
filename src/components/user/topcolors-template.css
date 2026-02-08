@@ -158,7 +158,9 @@
 	font-weight: 600;
 	opacity: 0;
 	transform: translateY(-6px);
-	transition: opacity 160ms ease, transform 160ms ease;
+	transition:
+		opacity 160ms ease,
+		transform 160ms ease;
 	pointer-events: none;
 	z-index: 10000;
 }

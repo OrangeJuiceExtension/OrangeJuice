@@ -12,12 +12,7 @@ const App = () => {
 		<>
 			<div>
 				<a href="https://wxt.dev" rel="noreferrer" target="_blank">
-					<img
-						alt="WXT logo"
-						className="logo"
-						height={32}
-						width={32}
-					/>
+					<img alt="WXT logo" className="logo" height={32} width={32} />
 				</a>
 				<a href="https://react.dev" rel="noreferrer" target="_blank">
 					<img
@@ -38,9 +33,7 @@ const App = () => {
 					Edit <code>src/App.tsx</code> and save to test HMR
 				</p>
 			</div>
-			<p className="read-the-docs">
-				Click on the WXT and React logos to learn more
-			</p>
+			<p className="read-the-docs">Click on the WXT and React logos to learn more</p>
 		</>
 	);
 };
