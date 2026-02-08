@@ -1,11 +1,12 @@
 import type { Adapter, Message, OnMessage, SendMessage } from 'comctx';
-import { Browser, browser } from '#imports';
+import { type Browser, browser } from '#imports';
 
 export interface MessageMeta {
 	url: string;
 	injector?: 'content' | 'popup';
 	sender?: Browser.runtime.MessageSender;
 }
+export const TAB_ID_NONE = -1;
 
 export class ProvideAdapter implements Adapter<MessageMeta> {
 	sendMessage: SendMessage<MessageMeta> = async (message) => {
@@ -25,11 +26,9 @@ export class ProvideAdapter implements Adapter<MessageMeta> {
 					// Send a message to the content-script
 					try {
 						tabs.map((tab) =>
-							browser.tabs
-								.sendMessage(tab.id ?? Browser.tabs.TAB_ID_NONE, message)
-								.catch((e) => {
-									console.log({ error: 'provider tab.sendMessage', e });
-								})
+							browser.tabs.sendMessage(tab.id ?? TAB_ID_NONE, message).catch((e) => {
+								console.log({ error: 'provider tab.sendMessage', e });
+							})
 						);
 					} catch (e) {
 						console.log({ error: 'provider content sendMessage', e });
