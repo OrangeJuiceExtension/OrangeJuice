@@ -1,5 +1,5 @@
 import '@/utils/dark-mode.css';
-import lStorage from '@/utils/localStorage.ts';
+import lStorage from '@/utils/local-storage.ts';
 
 const DARK_MODE_STORAGE_KEY = 'oj_dark_mode';
 const DARK_MODE_CLASS = 'oj-dark-mode';

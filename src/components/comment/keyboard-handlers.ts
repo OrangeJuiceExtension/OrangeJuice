@@ -2,7 +2,7 @@ import type { CommentData } from '@/components/comment/comment-data.ts';
 import type { HNComment } from '@/components/comment/hn-comment.ts';
 import { createClientServices } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
-import lStorage from '@/utils/localStorage.ts';
+import lStorage from '@/utils/local-storage.ts';
 
 const ACTIVE_COMMENT_KEY = 'oj_active_comment_id';
 const NAV_STATE_KEY = 'oj_comment_nav_state';

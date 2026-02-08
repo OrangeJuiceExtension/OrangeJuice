@@ -3,7 +3,7 @@ import type { HNStory } from '@/components/story/hn-story.ts';
 import type { StoryData } from '@/components/story/story-data.ts';
 import { createClientServices } from '@/services/manager.ts';
 import type { ReadStoriesService } from '@/services/read-stories-service.ts';
-import lStorage from '@/utils/localStorage.ts';
+import lStorage from '@/utils/local-storage.ts';
 
 const CHECKBOX_ID = 'oj-hide-read-stories';
 const STORAGE_KEY = 'oj_hide_read_stories';

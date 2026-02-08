@@ -3,7 +3,7 @@ import type { ContentScriptContext } from '#imports';
 import { hideReadStoriesOnce } from '@/components/story/hide-read-stories.ts';
 import { keyboardNavigation } from '@/components/story/keyboard-navigation.ts';
 import { StoryData } from '@/components/story/story-data.ts';
-import lStorage from '@/utils/localStorage.ts';
+import lStorage from '@/utils/local-storage.ts';
 import { paths } from '@/utils/paths.ts';
 
 vi.mock('@/components/story/hide-read-stories.ts', async (importOriginal) => {

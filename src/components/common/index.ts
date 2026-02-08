@@ -1,7 +1,7 @@
 import type { ContentScriptContext } from '#imports';
 import {
-	keyboardNavigation,
 	type KeyboardNavState,
+	keyboardNavigation,
 } from '@/components/common/keyboard-navigation.ts';
 import { openInNewTab } from '@/components/common/open-in-new-tab.ts';
 import { resizeTextarea } from '@/components/common/resize-textarea.ts';

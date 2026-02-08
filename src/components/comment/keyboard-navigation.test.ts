@@ -4,7 +4,7 @@ import type { ContentScriptContext } from '#imports';
 import { focusClass, focusClassDefault } from '@/components/comment/hn-comment.ts';
 import { KeyboardHandlers } from '@/components/comment/keyboard-handlers.ts';
 import { keyboardNavigation } from '@/components/comment/keyboard-navigation.ts';
-import lStorage from '@/utils/localStorage.ts';
+import lStorage from '@/utils/local-storage.ts';
 
 const noop = () => {
 	/* intentionally empty */

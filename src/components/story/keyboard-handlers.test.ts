@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { hideReadStoriesOnce } from '@/components/story/hide-read-stories.ts';
 import { KeyboardHandlers } from '@/components/story/keyboard-handlers.ts';
 import { StoryData } from '@/components/story/story-data.ts';
-import lStorage from '@/utils/localStorage.ts';
+import lStorage from '@/utils/local-storage.ts';
 
 const ACTIVE_STORY_KEY = 'oj_active_story_id2';
 const NAV_STATE_KEY = 'oj_page_nav_state';

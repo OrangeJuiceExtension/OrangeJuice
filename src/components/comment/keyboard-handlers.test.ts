@@ -5,7 +5,7 @@ import { HNComment } from '@/components/comment/hn-comment.ts';
 import { KeyboardHandlers } from '@/components/comment/keyboard-handlers.ts';
 import { createClientServices } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
-import lStorage from '@/utils/localStorage.ts';
+import lStorage from '@/utils/local-storage.ts';
 import { parseReferenceLinks } from '@/utils/parse-reference-links.ts';
 
 vi.mock('@/services/manager.ts', () => ({

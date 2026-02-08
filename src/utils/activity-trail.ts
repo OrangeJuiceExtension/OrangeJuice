@@ -1,7 +1,7 @@
 import { withBackoff } from '@/utils/backoff.ts';
 import { DAYS_1, DAYS_30 } from '@/utils/constants.ts';
 import { dom } from '@/utils/dom.ts';
-import lStorage from '@/utils/localStorage.ts';
+import lStorage from '@/utils/local-storage.ts';
 import { paths } from '@/utils/paths.ts';
 
 const STORAGE_KEY = 'oj_activity_trail';

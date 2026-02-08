@@ -1,5 +1,5 @@
 import type { ReadCommentsList } from '@/components/comment/highlight-unread-comments.ts';
-import lStorage from '@/utils/localStorage.ts';
+import lStorage from '@/utils/local-storage.ts';
 
 export const ojReadCommentsKey = 'oj_read_comments';
 

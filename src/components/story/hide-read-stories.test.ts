@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { browser } from '#imports';
 import { ReadStoriesService } from '@/services/read-stories-service.ts';
-import lStorage from '@/utils/localStorage.ts';
+import lStorage from '@/utils/local-storage.ts';
 import {
 	createCheckbox,
 	hideStories,

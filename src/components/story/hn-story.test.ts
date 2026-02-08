@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { STORY_HIDDEN } from '@/components/story/hide-read-stories.ts';
 import { HNStory } from '@/components/story/hn-story.ts';
 import { focusClass1, focusClass2, focusClass3 } from '@/components/story/story-data.ts';
-import { STORY_HIDDEN } from '@/components/story/hide-read-stories.ts';
 import { paths } from '@/utils/paths.ts';
 
 const createStoryRows = (

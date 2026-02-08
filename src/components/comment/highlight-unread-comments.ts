@@ -1,7 +1,7 @@
 import { ojReadCommentsKey } from '@/services/highlight-unread-comments-service.ts';
 import type { ServicesManager } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
-import lStorage from '@/utils/localStorage.ts';
+import lStorage from '@/utils/local-storage.ts';
 import { OJ_NEW_CLICKABLE_INDENT, OJ_NEW_COMMENT_INDENT } from './constants.ts';
 
 const THREE_DAYS_IN_MS = 3 * 24 * 60 * 60 * 1000;

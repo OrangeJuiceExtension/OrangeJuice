@@ -5,7 +5,7 @@ import {
 } from '@/services/highlight-unread-comments-service.ts';
 import { createClientServices, type ServicesManager } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
-import lStorage from '@/utils/localStorage.ts';
+import lStorage from '@/utils/local-storage.ts';
 import type { ReadCommentsList } from './highlight-unread-comments.ts';
 import { highlightUnreadComments } from './highlight-unread-comments.ts';
 

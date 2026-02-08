@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DAYS_1, DAYS_30 } from '@/utils/constants.ts';
-import lStorage from '@/utils/localStorage.ts';
+import lStorage from '@/utils/local-storage.ts';
 import { type ActivityDetail, ActivityId, ActivityTrail } from './activity-trail.ts';
 
-vi.mock('@/utils/localStorage.ts', () => ({
+vi.mock('@/utils/local-storage.ts', () => ({
 	default: {
 		getItem: vi.fn(async () => null),
 		setItem: vi.fn(async () => {}),
