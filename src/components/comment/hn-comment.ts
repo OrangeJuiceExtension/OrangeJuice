@@ -42,6 +42,10 @@ export class HNComment {
 		);
 	}
 
+	get isCollapsedRoot(): boolean {
+		return this.commentRow.classList.contains('coll');
+	}
+
 	get isDead(): boolean {
 		return this.commentRow.querySelector('.comhead .dead') !== null;
 	}

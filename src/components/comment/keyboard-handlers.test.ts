@@ -402,6 +402,35 @@ describe('commentKeyboardHandlers', () => {
 				expect(setup.commentData.getActiveComment()?.id).toBe('comment-3');
 			});
 
+			it('should expand the nearest collapsed ancestor when moving up into deep hidden child', async () => {
+				const setup = createCommentData(doc, 4);
+				const event = { shiftKey: true } as KeyboardEvent;
+				const fourth = setup.commentData.get('comment-4');
+				if (!fourth) {
+					throw new Error('Expected item to exist');
+				}
+
+				addIndentation(doc, setup.rows[0], 0);
+				addIndentation(doc, setup.rows[1], 1);
+				addIndentation(doc, setup.rows[2], 2);
+				addIndentation(doc, setup.rows[3], 0);
+				setup.rows[0]?.classList.add('coll');
+				setup.rows[1]?.classList.add('noshow');
+				setup.rows[2]?.classList.add('noshow');
+				setup.commentData.activate(fourth);
+
+				const toggleLink = doc.createElement('a');
+				toggleLink.classList.add('togg', 'clicky');
+				toggleLink.textContent = '[2 more]';
+				setup.rows[0]?.appendChild(toggleLink);
+				const clickSpy = vi.spyOn(toggleLink, 'click');
+
+				await keyboardHandlers.move(event, setup.commentData, 'up');
+
+				expect(clickSpy).toHaveBeenCalled();
+				expect(setup.commentData.getActiveComment()?.id).toBe('comment-3');
+			});
+
 			it('should scroll to top when reaching first item', async () => {
 				const setup = createCommentData(doc, 3);
 				const event = { shiftKey: false } as KeyboardEvent;

@@ -302,15 +302,16 @@ export class KeyboardHandlers {
 	}
 
 	private expandParentIfNeeded(commentData: CommentData, target: HNComment): void {
-		const targetIndent = target.getIndentLevel();
+		let targetIndent = target.getIndentLevel();
 		let current = commentData.getPrevious(target, false);
 		while (current) {
 			const currentIndent = current.getIndentLevel();
 			if (currentIndent < targetIndent) {
-				if (current.isCollapsed) {
+				targetIndent = currentIndent;
+				if (current.isCollapsedRoot) {
 					current.collapseToggle();
+					return;
 				}
-				return;
 			}
 			current = commentData.getPrevious(current, false);
 		}
