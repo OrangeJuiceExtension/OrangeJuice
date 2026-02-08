@@ -1,5 +1,5 @@
 import type { Adapter, Message, OnMessage, SendMessage } from 'comctx';
-import { type Browser, browser } from '#imports';
+import { Browser, browser } from '#imports';
 
 export interface MessageMeta {
 	url: string;
@@ -25,10 +25,11 @@ export class ProvideAdapter implements Adapter<MessageMeta> {
 					// Send a message to the content-script
 					try {
 						tabs.map((tab) =>
-							// biome-ignore lint/style/noNonNullAssertion: we should always have a tab id
-							browser.tabs.sendMessage(tab.id!, message).catch((e) => {
-								console.log({ error: 'provider tab.sendMessage', e });
-							})
+							browser.tabs
+								.sendMessage(tab.id ?? Browser.tabs.TAB_ID_NONE, message)
+								.catch((e) => {
+									console.log({ error: 'provider tab.sendMessage', e });
+								})
 						);
 					} catch (e) {
 						console.log({ error: 'provider content sendMessage', e });
