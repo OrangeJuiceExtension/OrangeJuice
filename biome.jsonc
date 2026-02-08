@@ -27,11 +27,7 @@
 				"noImgElement": "off"
 			},
 			"style": {
-				"noMagicNumbers": "off",
-				"useBlockStatements": {
-					"fix": "safe",
-					"level": "on"
-				}
+				"noMagicNumbers": "off"
 			},
 			"complexity": {
 				"useOptionalChain": {
