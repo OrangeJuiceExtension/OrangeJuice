@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ContentScriptContext } from '#imports';
 import { wrapBodyWithHnTemplate } from '@/components/common/hn-template.tsx';
 import { loginTemplate } from '@/components/user/login-template.ts';
 
@@ -18,7 +17,7 @@ describe('loginTemplate', () => {
 		vi.clearAllMocks();
 	});
 
-	it('wraps the login page body and removes the hide style', async () => {
+	it('wraps the login page body and removes the hide style', () => {
 		const rafSpy = vi
 			.spyOn(globalThis, 'requestAnimationFrame')
 			.mockImplementation((cb: FrameRequestCallback) => {
@@ -29,7 +28,7 @@ describe('loginTemplate', () => {
 		window.history.pushState({}, '', '/login');
 		document.body.appendChild(document.createElement('div'));
 
-		await loginTemplate.main({} as ContentScriptContext);
+		loginTemplate(document);
 
 		expect(wrapBodyWithHnTemplate).toHaveBeenCalled();
 		expect(document.getElementById('oj-login-hide-body')).toBeNull();
@@ -37,11 +36,11 @@ describe('loginTemplate', () => {
 		rafSpy.mockRestore();
 	});
 
-	it('does nothing on non-login pages', async () => {
+	it('does nothing on non-login pages', () => {
 		window.history.pushState({}, '', '/news');
 		document.body.appendChild(document.createElement('div'));
 
-		await loginTemplate.main({} as ContentScriptContext);
+		loginTemplate(document);
 
 		expect(wrapBodyWithHnTemplate).not.toHaveBeenCalled();
 		expect(document.getElementById('oj-login-hide-body')).toBeNull();

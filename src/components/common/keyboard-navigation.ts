@@ -1,5 +1,5 @@
 import type { ContentScriptContext } from '#imports';
-import { getKeyboardShortcutsHelp } from '@/components/common/keyboard-shortcuts-help.ts';
+import { getKeyboardShortcutsHelp } from '@/components/common/keyboard-shortcuts-help.tsx';
 import { showModal } from '@/components/common/modal.ts';
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
@@ -40,6 +40,7 @@ export const keyboardNavigation = (
 						doc,
 						ctx,
 						content: getKeyboardShortcutsHelp(doc),
+						variant: 'shortcuts',
 						onClose: () => {
 							state.helpModalOpen = false;
 						},

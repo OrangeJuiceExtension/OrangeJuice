@@ -32,7 +32,7 @@ export const comments: ComponentFeature = {
 		return Promise.all([
 			Promise.resolve().then(() => initCommentUX(document, allComments, comments.username)),
 			Promise.resolve().then(() => highlightUnreadComments(document, allComments, manager)),
-			Promise.resolve().then(() => indentToggle(document, allComments)),
+			Promise.resolve().then(() => indentToggle(ctx, document, allComments)),
 			Promise.resolve().then(() => changeDeadCommentsColor(document, allComments)),
 			Promise.resolve().then(() => backticksToCode(document, allComments)),
 			Promise.resolve().then(() => collapseRoot(ctx, document, allComments)),

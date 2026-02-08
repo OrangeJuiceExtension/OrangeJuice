@@ -1,11 +1,17 @@
-import { describe, expect, it } from 'vitest';
-import { getKeyboardShortcutsHelp } from '@/components/common/keyboard-shortcuts-help.ts';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { getKeyboardShortcutsHelp } from '@/components/common/keyboard-shortcuts-help.tsx';
 
 describe('keyboard shortcuts help', () => {
-	it('should include modifier icons and arrow keys in shortcuts', () => {
-		const doc = document.implementation.createHTMLDocument();
-		const help = getKeyboardShortcutsHelp(doc);
+	let help: HTMLElement;
+	const waitForRender = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
+	beforeEach(async () => {
+		const doc = document.implementation.createHTMLDocument();
+		help = getKeyboardShortcutsHelp(doc);
+		await waitForRender();
+	});
+
+	it('should include modifier icons and arrow keys in shortcuts', () => {
 		const text = help.textContent ?? '';
 
 		expect(text).toContain('(requires alt or ⌥)');
@@ -17,9 +23,6 @@ describe('keyboard shortcuts help', () => {
 	});
 
 	it('should include website and github links', () => {
-		const doc = document.implementation.createHTMLDocument();
-		const help = getKeyboardShortcutsHelp(doc);
-
 		const links = help.querySelectorAll('a');
 		const hrefs = new Set<string>();
 		for (const link of links) {
@@ -34,14 +37,13 @@ describe('keyboard shortcuts help', () => {
 	});
 
 	it('should include the email link with a subject', () => {
-		const doc = document.implementation.createHTMLDocument();
-		const help = getKeyboardShortcutsHelp(doc);
-
 		const emailLink = Array.from(help.querySelectorAll('a')).find(
 			(link) => link.textContent === 'Email'
 		);
 
 		expect(emailLink).toBeDefined();
-		expect(emailLink?.getAttribute('href')).toBe('mailto:hello@oj-hn.com?subject=Question about OJ');
+		expect(emailLink?.getAttribute('href')).toBe(
+			'mailto:hello@oj-hn.com?subject=Question about OJ'
+		);
 	});
 });

@@ -23,20 +23,13 @@ export const keyboardNavigation = async (
 			padding: var(--oj-focus-pad);
 		}
 
-		tr.${focusClass} td {
-			--oj-top: inset 0 0 0 0 transparent;
-			--oj-right: inset 0 0 0 0 transparent;
-			--oj-bottom: inset 0 0 0 0 transparent;
-			--oj-left: inset 0 0 0 0 transparent;
-			box-shadow: var(--oj-top), var(--oj-right), var(--oj-bottom), var(--oj-left);
-		}
-
 		tr.${focusClass} td.${focusClassDefault} {
 			background-color: #fbfbf7;
 			--oj-top: inset 0 var(--oj-focus-w) 0 0 var(--oj-focus-color);
 			--oj-right: inset calc(-1 * var(--oj-focus-w)) 0 0 0 var(--oj-focus-color);
 			--oj-bottom: inset 0 calc(-1 * var(--oj-focus-w)) 0 0 var(--oj-focus-color);
 			--oj-left: inset var(--oj-focus-w) 0 0 0 var(--oj-focus-color);
+			box-shadow: var(--oj-top), var(--oj-right), var(--oj-bottom), var(--oj-left);
 		}
 
 		tr.${focusClass}.morelink {
@@ -85,7 +78,7 @@ export const keyboardNavigation = async (
 
 	await keyboardHandlers.checkActiveState(commentData);
 	const pageshowHandler = () => {
-		void keyboardHandlers.checkActiveState(commentData);
+		keyboardHandlers.checkActiveState(commentData);
 	};
 	window.addEventListener('pageshow', pageshowHandler);
 

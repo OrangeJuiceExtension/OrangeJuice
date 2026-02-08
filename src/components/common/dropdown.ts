@@ -67,34 +67,52 @@ export const createDropdown = (options: DropdownOptions) => {
 
 export const createDropdownStyle = (className: string) => {
 	return `
-	.${className} {
-		display: none;
-		border: 1px solid #000;
-		margin-top: 0px;
-		position: absolute;
-		background-color: #fff;
-		white-space: nowrap;
-	}
-
-	.${className}_button {
-		user-select: none;
-	}
-
-	.${className}_button:hover {
-		cursor: pointer;
-	}
-
-	.${className}.active {
-		display: block;
-	}
-
-	.${className} a, .${className} a:visited {
-		display: block;
-		text-align: left;
-		text-decoration: underline;
-		height: 20px;
-		padding: 0 5px;
-		color: #000;
-	}
-`;
+		.${className} {
+			display: none;
+			border: 1px solid #000;
+			margin-top: 0px;
+			position: absolute;
+			background-color: #fff;
+			white-space: nowrap;
+		}
+	
+		.${className}_button {
+			user-select: none;
+			color: inherit !important;
+		}
+	
+		.${className}_button:hover {
+			cursor: pointer;
+		}
+	
+		.${className}.active {
+			display: block;
+		}
+	
+		.${className} a, .${className} a:visited {
+			display: block;
+			text-align: left;
+			text-decoration: underline;
+			height: 20px;
+			padding: 0 5px;
+			color: #000;
+		}
+	
+		.${className} a {
+			text-decoration: none !important;
+		}
+	
+		html.oj-dark-mode .${className},
+		html.oj-dark-mode .${className}.active {
+			background: rgb(44, 42, 31);
+			border-color: #e8e6e3;
+			color: #e8e6e3;
+		}
+	
+		html.oj-dark-mode .${className} a,
+		html.oj-dark-mode .${className} a:visited {
+			color: #fff2d4 !important;
+			text-decoration: none !important;
+		}
+	`;
 };

@@ -45,6 +45,12 @@ export const keyboardNavigation = async (
 		  box-shadow: var(--oj-top), var(--oj-right), var(--oj-bottom), var(--oj-left);
 		  background-color: #fbfbf7;
 		}
+
+		html.oj-dark-mode tr.${focusClass1} > td,
+		html.oj-dark-mode tr.${focusClass2} > td,
+		html.oj-dark-mode tr.${focusClass3} > td {
+		  background-color: rgb(44, 42, 31);
+		}
 		
 		/* Top edge */
 		tr.${focusClass1} > td {
@@ -75,6 +81,11 @@ export const keyboardNavigation = async (
 		.${focusClass2} .${USER_INFO_HOVER_CLASS} {
 		  box-shadow: none;
 		  background: #f6f6ef;
+		}
+
+		html.oj-dark-mode tr.${focusClass2} > td .${USER_INFO_HOVER_CLASS},
+		html.oj-dark-mode .${focusClass2} .${USER_INFO_HOVER_CLASS} {
+		  background: rgb(44, 42, 31);
 		}
 
 		tr.${focusClass2} > td .${USER_INFO_HOVER_CLASS} *,

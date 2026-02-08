@@ -8,18 +8,18 @@ import { remaining } from '@/components/remaining/index.ts';
 import { story } from '@/components/story/index.ts';
 import { submit } from '@/components/submit/index.ts';
 import { user } from '@/components/user/index.ts';
-import { loginTemplate } from '@/components/user/login-template.ts';
 import { createClientServices } from '@/services/manager.ts';
 import { newActivityFetcher } from '@/utils/activity-trail.ts';
+import { enableDarkMode } from '@/utils/dark-mode.ts';
 import { dom } from '@/utils/dom.ts';
-
 import { version } from '../../../package.json';
 import './global.css';
 import { common } from '@/components/common/index.ts';
+import { loginTemplate } from '@/components/user/login-template.ts';
+import { topcolorsTemplate } from '@/components/user/topcolors-template.tsx';
 
 const components: ComponentFeature[] = [
 	common,
-	loginTemplate,
 	activities,
 	remaining,
 	comments,
@@ -48,6 +48,10 @@ export default defineContentScript({
 		const currentUrl = window.location.href;
 		createClientServices();
 		const username = dom.getUsername(document.body);
+
+		topcolorsTemplate(document);
+		loginTemplate(document, username ?? null);
+		await enableDarkMode();
 
 		await Promise.all([
 			Promise.resolve().then(async () => {

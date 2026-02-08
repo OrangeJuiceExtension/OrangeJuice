@@ -1,0 +1,124 @@
+.oj-shortcuts-help {
+	width: 100%;
+	line-height: 1.2;
+
+	.oj-shortcuts-help__row {
+		display: flex;
+		gap: 32px;
+		align-items: flex-start;
+
+		&.oj-shortcuts-help__row--top {
+			margin-bottom: 24px;
+			align-items: center;
+		}
+	}
+
+	.oj-shortcuts-help__brand {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		text-align: center;
+	}
+
+	.oj-shortcuts-help__logo {
+		width: 128px;
+		height: 128px;
+	}
+
+	.oj-shortcuts-help__links {
+		display: flex;
+		gap: 12px;
+		color: #666;
+
+		a:any-link {
+			color: inherit !important;
+		}
+	}
+
+	.oj-shortcuts-help__column {
+		flex: 1;
+	}
+
+	.oj-shortcuts-help__heading {
+		margin-top: 0;
+		margin-bottom: 8px;
+		color: #000;
+		padding-bottom: 8px;
+		border-bottom: 1px solid #ff6600;
+	}
+
+	.oj-shortcuts-help__note {
+		font-size: 0.85em;
+		color: #666;
+		margin-top: 8px;
+		margin-bottom: 6px;
+	}
+
+	.oj-shortcuts-help__table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+
+	.oj-shortcuts-help__key {
+		padding: 3px 8px;
+		font-weight: bold;
+		width: 30%;
+		white-space: nowrap;
+	}
+
+	.oj-shortcuts-help__desc {
+		padding: 3px 8px;
+	}
+}
+
+@media (max-width: 760px) {
+	.oj-shortcuts-help {
+		.oj-shortcuts-help__row {
+			flex-direction: column;
+			gap: 16px;
+		}
+	}
+}
+
+html.oj-dark-mode .oj-shortcuts-help {
+	color: #e8e6e3;
+
+	.oj-shortcuts-help__heading {
+		color: #fff2d4;
+		border-bottom-color: #ff6600;
+	}
+
+	.oj-shortcuts-help__note {
+		color: #ac9d84;
+	}
+
+	.oj-shortcuts-help__links {
+		color: #fff2d4;
+
+		a:any-link {
+			color: #fff2d4 !important;
+		}
+
+		a:hover {
+			color: #ac9d84 !important;
+		}
+	}
+
+	.oj-shortcuts-help__table tr {
+		border-bottom: 1px solid #4a4031;
+	}
+
+	.oj-shortcuts-help__table tr:last-child {
+		border-bottom: 0;
+	}
+
+	.oj-shortcuts-help__key {
+		color: #fff2d4;
+	}
+
+	.oj-shortcuts-help__desc {
+		color: #cdbd9f;
+	}
+}

@@ -29,6 +29,17 @@ export const showUserInfoOnHover = (
 			margin-top: 2px;
 		}
 
+		html.oj-dark-mode .${USER_INFO_HOVER_CLASS},
+		html.oj-dark-mode .${USER_INFO_HOVER_CLASS} {
+			background: #302d21;
+			border-color: #e8e6e3;
+			color: #e8e6e3;
+		}
+
+		html.oj-dark-mode .${USER_INFO_HOVER_CLASS}.active {
+			background: rgb(44, 42, 31);
+		}
+
 		.${USER_INFO_HOVER_CLASS} td {
 			font-size: 10px !important;
 			vertical-align: top;
@@ -41,6 +52,10 @@ export const showUserInfoOnHover = (
 		.${USER_INFO_HOVER_CLASS} td a {
 			color: #000 !important;
 			text-decoration: none !important;
+		}
+
+		html.oj-dark-mode .${USER_INFO_HOVER_CLASS} td a {
+			color: #fff2d4 !important;
 		}
 	`;
 	doc.head.appendChild(style);

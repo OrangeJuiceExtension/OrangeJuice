@@ -1,0 +1,455 @@
+:root {
+	--primary: #ff6600;
+	--primary-dark: #e55600;
+	--bg: #ffffff;
+	--bg-alt: #fafafa;
+	--text: #1a1a1a;
+	--text-light: #6b6b6b;
+	--border: #e5e5e5;
+	--shadow: rgba(0, 0, 0, 0.1);
+	--note-bg: #fff3cd;
+	--note-border: #ffc107;
+	--note-text: #664d03;
+}
+
+html.oj-dark-mode {
+	color-scheme: dark;
+	--primary: #ff6600;
+	--primary-dark: #ff7a29;
+	--bg: rgb(41, 40, 35);
+	--bg-alt: #302921;
+	--text: #f1efec;
+	--text-light: #c7c4be;
+	--border: #3a3f41;
+	--shadow: rgba(0, 0, 0, 0.45);
+	--note-bg: rgb(44, 42, 31);
+	--note-border: #ff6600;
+	--note-text: #e8e6e3;
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body.oj-docs-page {
+	font-family:
+		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+		sans-serif;
+	line-height: 1.6;
+	color: var(--text);
+	background: var(--bg);
+}
+
+main h1 {
+	color: var(--primary);
+	margin-bottom: 1.5rem;
+	border-bottom: 2px solid var(--primary);
+	padding-bottom: 0.5rem;
+}
+
+main h2 {
+	color: var(--primary);
+	margin-top: 2rem;
+	margin-bottom: 1rem;
+}
+
+main ul {
+	list-style: none;
+	margin: 1.5rem 0;
+}
+
+main li {
+	padding: 0.5rem 0 0.5rem 1.5rem;
+	position: relative;
+}
+
+main li:before {
+	content: "•";
+	color: var(--primary);
+	font-weight: bold;
+	position: absolute;
+	left: 0;
+}
+
+main p {
+	margin: 1rem 0;
+}
+
+main a {
+	color: var(--primary);
+	text-decoration: none;
+}
+
+main a:hover {
+	text-decoration: underline;
+}
+
+.friendly-note {
+	background: var(--note-bg);
+	padding: 1rem;
+	border-radius: 8px;
+	border-left: 4px solid var(--primary);
+	margin: 2rem 0;
+}
+
+.oj-docs-topbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	margin: 1.25rem auto 0.75rem;
+	max-width: 1000px;
+	padding: 0 1rem;
+}
+
+.oj-docs-nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.oj-docs-nav__link,
+.oj-docs-theme-toggle {
+	text-decoration: none;
+	color: var(--text-light);
+	font-weight: 600;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	background: var(--bg-alt);
+}
+
+.oj-docs-nav__link {
+	font-size: 0.95rem;
+	padding: 0.35rem 0.75rem;
+}
+
+.oj-docs-nav__link:hover,
+.oj-docs-nav__link.is-active,
+.oj-docs-theme-toggle:hover {
+	color: var(--primary);
+	border-color: var(--primary);
+}
+
+.oj-docs-theme-toggle {
+	color: var(--text);
+	padding: 0.35rem 0.75rem;
+	font-size: 0.9rem;
+	cursor: pointer;
+}
+
+.container {
+	max-width: 1000px;
+	margin: 0 auto;
+	padding: 0 1.5rem;
+}
+
+header {
+	text-align: center;
+	padding: 4rem 0 3rem;
+	position: relative;
+	overflow: hidden;
+}
+
+.logo {
+	font-size: 4rem;
+	font-weight: 700;
+	color: var(--primary);
+	margin-bottom: 1rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+}
+
+.logo img {
+	width: 512px;
+	height: 512px;
+	object-fit: contain;
+}
+
+.oj-docs-logo-subtitle {
+	font-size: 1.5rem;
+}
+
+.tagline {
+	font-size: 1.5rem;
+	color: var(--text-light);
+	font-weight: 500;
+	margin-bottom: 2rem;
+}
+
+.cta-group {
+	display: flex;
+	gap: 1rem;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem 2rem;
+	border-radius: 8px;
+	font-size: 1rem;
+	font-weight: 600;
+	text-decoration: none;
+	transition: all 0.2s ease;
+	cursor: pointer;
+	border: none;
+}
+
+.btn-primary {
+	background: var(--primary);
+	color: #ffffff;
+}
+
+.btn-primary:hover {
+	background: var(--primary-dark);
+	transform: translateY(-2px);
+	box-shadow: 0 8px 24px rgba(255, 96, 0, 0.2);
+}
+
+.btn-secondary {
+	background: var(--bg-alt);
+	color: var(--text);
+	border: 2px solid var(--border);
+}
+
+.btn-secondary:hover {
+	border-color: var(--primary);
+	color: var(--primary);
+	transform: translateY(-2px);
+}
+
+.section-title {
+	font-size: 2.25rem;
+	font-weight: 700;
+	text-align: center;
+	margin-bottom: 3rem;
+	color: var(--text);
+}
+
+.features {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 2rem;
+	margin-bottom: 4rem;
+}
+
+.feature-card {
+	background: var(--bg-alt);
+	padding: 2rem;
+	border-radius: 12px;
+	border: 1px solid var(--border);
+	transition: all 0.2s ease;
+}
+
+.feature-card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+	border-color: var(--primary);
+}
+
+.feature-icon {
+	width: 48px;
+	height: 48px;
+	background: var(--primary);
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 1.5rem;
+	font-size: 1.5rem;
+	color: #ffffff;
+	font-weight: 700;
+}
+
+.feature-title {
+	font-size: 1.25rem;
+	font-weight: 600;
+	margin-bottom: 0.75rem;
+	color: var(--text);
+}
+
+.feature-desc {
+	color: var(--text-light);
+	line-height: 1.7;
+}
+
+.installation {
+	background: linear-gradient(135deg, var(--bg-alt) 0%, var(--bg) 100%);
+	border-radius: 16px;
+	padding: 3rem;
+	margin-bottom: 4rem;
+}
+
+.oj-docs-install-intro {
+	text-align: center;
+	margin-bottom: 2rem;
+	font-weight: bold;
+}
+
+.oj-docs-install-cta {
+	text-align: center;
+	margin-bottom: 3rem;
+}
+
+.oj-docs-install-heading {
+	font-size: 1.5rem;
+	font-weight: 600;
+	margin-bottom: 1rem;
+	text-align: center;
+}
+
+.oj-docs-link-primary {
+	color: var(--primary);
+}
+
+.oj-docs-code-inline {
+	background: var(--bg);
+	padding: 0.25rem 0.5rem;
+	border-radius: 4px;
+}
+
+.oj-docs-install-list {
+	margin-left: 1.25rem;
+	color: var(--text-light);
+}
+
+.install-steps {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	max-width: 600px;
+	margin: 0 auto;
+}
+
+.step {
+	display: flex;
+	gap: 1rem;
+	align-items: flex-start;
+}
+
+.step-number {
+	width: 36px;
+	height: 36px;
+	background: var(--primary);
+	color: #ffffff;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-size: 1.125rem;
+	flex-shrink: 0;
+}
+
+.step-content {
+	flex: 1;
+}
+
+.step-title {
+	font-weight: 600;
+	font-size: 1.1rem;
+	margin-bottom: 0.5rem;
+	color: var(--text);
+}
+
+.note {
+	background: var(--note-bg);
+	border-left: 4px solid var(--note-border);
+	padding: 1rem 1.25rem;
+	border-radius: 8px;
+	margin-top: 2rem;
+	font-size: 0.95rem;
+	color: var(--note-text);
+}
+
+.note.oj-docs-note {
+	margin-top: 1rem;
+}
+
+.philosophy {
+	background: var(--bg-alt);
+	border-radius: 16px;
+	padding: 3rem;
+	text-align: center;
+}
+
+.philosophy p {
+	font-size: 1.15rem;
+	color: var(--text-light);
+	max-width: 700px;
+	margin: 1rem auto;
+}
+
+footer {
+	text-align: center;
+	padding: 3rem 0;
+	border-top: 1px solid var(--border);
+	margin-top: 4rem;
+}
+
+.footer-links {
+	display: flex;
+	gap: 2rem;
+	justify-content: center;
+	flex-wrap: wrap;
+	margin-bottom: 1rem;
+}
+
+.footer-links a {
+	color: var(--text-light);
+	text-decoration: none;
+	font-size: 0.95rem;
+	transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+	color: var(--primary);
+}
+
+.footer-note {
+	color: var(--text-light);
+	font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+	header {
+		padding: 3rem 0 2rem;
+	}
+
+	.logo {
+		font-size: 3rem;
+	}
+
+	.tagline {
+		font-size: 1.25rem;
+	}
+
+	.features {
+		grid-template-columns: 1fr;
+	}
+
+	.install-steps {
+		gap: 1.25rem;
+	}
+
+	.step {
+		flex-direction: column;
+	}
+
+	.step-number {
+		width: 32px;
+		height: 32px;
+	}
+
+	.footer-links {
+		flex-direction: column;
+		gap: 1rem;
+	}
+}

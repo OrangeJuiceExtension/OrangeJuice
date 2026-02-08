@@ -24,6 +24,7 @@ web-ext.config.ts
 *.njsproj
 *.sln
 *.sw?
+.junie
 
 # Tests
 playwright-report/

@@ -41,6 +41,7 @@ Tests:
 * Be thorough and check for edge cases.
 * If the code is broken, write a failing test and fix the code.
 * Never write a passing test for broken code.
+* For React createRoot rendering, keep production code async and wait in tests for the render to flush.
 
 Reviews:
 * Call out inconsistent or nonsensical patterns briefly.

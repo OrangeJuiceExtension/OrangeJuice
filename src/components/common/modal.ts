@@ -8,10 +8,15 @@ export interface ModalOptions {
 	ctx: ContentScriptContext;
 	content: string | HTMLElement;
 	onClose?: () => void;
+	variant?: 'default' | 'shortcuts';
 }
 
 export const createModal = (options: ModalOptions): HTMLElement => {
-	const { doc, ctx, content, onClose } = options;
+	const { doc, ctx, content, onClose, variant = 'default' } = options;
+	const isDarkMode = doc.documentElement.classList.contains('oj-dark-mode');
+	const isShortcuts = variant === 'shortcuts';
+	const shortcutsBg = isDarkMode ? 'rgb(48, 41, 33)' : '#f6f6ef';
+	const shortcutsText = isDarkMode ? '#e8e6e3' : '#242424';
 
 	const overlay = doc.createElement('div');
 	overlay.style.cssText = `
@@ -29,13 +34,15 @@ export const createModal = (options: ModalOptions): HTMLElement => {
 
 	const modal = doc.createElement('div');
 	modal.style.cssText = `
-		background-color: ${HN_BACKGROUND};
-		border: 3px solid ${HN_ORANGE};
-		padding: 20px;
-		max-width: 620px;
+		background-color: ${isShortcuts ? shortcutsBg : HN_BACKGROUND};
+		border: ${isShortcuts ? '0' : `3px solid ${HN_ORANGE}`};
+		padding: ${isShortcuts ? '16px 18px' : '20px'};
+		max-width: ${isShortcuts ? '860px' : '620px'};
 		max-height: 80vh;
 		overflow-y: auto;
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		box-shadow: ${isShortcuts ? '0 14px 36px rgba(0, 0, 0, 0.28)' : '0 4px 6px rgba(0, 0, 0, 0.1)'};
+		color: ${isShortcuts ? shortcutsText : 'inherit'};
+		border-radius: ${isShortcuts ? '8px' : '0'};
 	`;
 
 	if (typeof content === 'string') {

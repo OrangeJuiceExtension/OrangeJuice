@@ -56,6 +56,9 @@ There are a number of urls which are not exposed in the regular HN ux. Add a 'mo
 ## Keyboard Navigation
 Navigate stories and comments efficiently with keyboard shortcuts.
 
+## Dark Mode
+Adds a site-wide dark mode that preserves Hacker News visual structure while improving contrast and readability across stories, comments, templates, and help dialogs.
+
 ## Enhanced Comment UX
 Improves the comment reading experience with several visual enhancements:
 - **Highlight Unread Comments**: Tracks comments you've read and highlights new ones with an orange left border. When you revisit a thread within 3 days, new comments added since your last visit are clearly marked. The highlight becomes brighter on hover for easy identification.

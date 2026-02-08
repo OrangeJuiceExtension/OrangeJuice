@@ -1,6 +1,11 @@
 import type { ContentScriptContext } from '#imports';
 
 export const addOrangeJuiceLink = (_ctx: ContentScriptContext, doc: Document, version: string) => {
+	const pathname = window.location.pathname;
+	if (pathname.startsWith('/login') || pathname.startsWith('/submit')) {
+		return;
+	}
+
 	const footer = doc.querySelector('.yclinks');
 	if (!footer) {
 		return;

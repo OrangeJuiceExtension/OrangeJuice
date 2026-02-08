@@ -1,4 +1,5 @@
 import type { ContentScriptContext } from '#imports';
+import { darkModeToggle } from '@/components/navbar/dark-mode-toggle.ts';
 import { moreLinksDropdown } from '@/components/navbar/more-links-dropdown.ts';
 import { paths } from '@/utils/paths.ts';
 import type { ComponentFeature } from '@/utils/types.ts';
@@ -8,7 +9,12 @@ export const navbar: ComponentFeature = {
 	loginRequired: true,
 	matches: [`${paths.base}/*`],
 	runAt: 'document_end',
-	main(ctx: ContentScriptContext) {
-		moreLinksDropdown(ctx, document);
+	async main(ctx: ContentScriptContext) {
+		const navbar =
+			document.querySelector<HTMLElement>('.oj-hn-nav-table') ??
+			document.querySelector<HTMLElement>('#hnmain > tbody > tr');
+
+		await darkModeToggle(ctx, document, navbar);
+		moreLinksDropdown(ctx, document, navbar);
 	},
 };

@@ -27,16 +27,33 @@ const linkDetails = [
 		description: 'Show HN new stories',
 	},
 	{
+		title: 'asknew',
+		description: 'Ask HN new stories',
+	},
+	{
 		title: 'launches',
 		description: 'Show Launch HN stories',
+	},
+	{
+		title: 'invited',
+		description: 'Invited stories',
 	},
 	{
 		title: 'classic',
 		description: 'Classic stories',
 	},
 	{
+		title: 'whoishiring',
+		href: '/submitted?id=whoishiring',
+		description: "Who's hiring",
+	},
+	{
 		title: 'bestcomments',
 		description: 'Highest-voted recent comments',
+	},
+	{
+		title: 'highlights',
+		description: 'Highlighted comments',
 	},
 	{
 		title: 'noobstories',
@@ -54,14 +71,22 @@ const linkDetails = [
 
 const COMPONENT_NAME = 'oj_more_links_dropdown';
 
-export const moreLinksDropdown = (ctx: ContentScriptContext, doc: Document) => {
-	const navbar = doc.querySelector('span.pagetop');
+export const moreLinksDropdown = (
+	ctx: ContentScriptContext,
+	doc: Document,
+	navbar: HTMLElement | null
+) => {
 	if (!navbar) {
 		return;
 	}
 
-	const pageTop = doc.querySelectorAll('span.pagetop');
-	if (pageTop.length < 2) {
+	const pathname = window.location.pathname;
+	if (pathname.startsWith('/login') || pathname.startsWith('/submit')) {
+		return;
+	}
+
+	const pageTop = navbar.querySelector<HTMLElement>('span.pagetop');
+	if (!pageTop) {
 		return;
 	}
 
@@ -84,7 +109,7 @@ export const moreLinksDropdown = (ctx: ContentScriptContext, doc: Document) => {
 		}
 
 		const linkEl = doc.createElement('a');
-		linkEl.href = link.title;
+		linkEl.href = link.href ?? link.title;
 		linkEl.innerHTML = link.title;
 		linkEl.title = link.description;
 
@@ -95,8 +120,8 @@ export const moreLinksDropdown = (ctx: ContentScriptContext, doc: Document) => {
 		moreLinksBtn.innerHTML = `more ${isOpen ? '▴' : '▾'}`;
 	};
 
-	navbar.append(moreLinkSeparator, moreLinksBtn);
-	pageTop[1].closest('table')?.parentElement?.append(dropdownEl);
+	pageTop.append(moreLinkSeparator, moreLinksBtn);
+	pageTop.closest('table')?.parentElement?.append(dropdownEl);
 
 	updateButtonText(false);
 

@@ -22,6 +22,9 @@ const allowedPaths = [
 	'/best',
 	'/launches',
 	'/flagged',
+	'/invited',
+	'/asknew',
+	'/submitted',
 ];
 
 export const story: ComponentFeature = {

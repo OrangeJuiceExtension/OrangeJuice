@@ -1,0 +1,232 @@
+html.oj-dark-mode {
+	color-scheme: dark;
+	--oj-bg: rgb(41, 40, 35);
+	--oj-panel: #1a1c1d;
+	--oj-surface: #1f2223;
+	--oj-surface-2: #232628;
+	--oj-text: #f1efec;
+	--oj-muted: #c7c4be;
+	--oj-link: #fff2d4;
+	--oj-visited: #ac9d84;
+	--oj-border: #3a3f41;
+	--oj-accent: #ff6600;
+
+	&,
+	& body {
+		background: var(--oj-bg) !important;
+		color: var(--oj-text) !important;
+	}
+
+	#hnmain,
+	[bgcolor="#f6f6ef"] {
+		background-color: #302921 !important;
+		color: var(--oj-text) !important;
+	}
+
+	#bigbox,
+	.oj-hn-page,
+	.oj-hn-body {
+		background-color: #302921 !important;
+	}
+
+	#hnmain,
+	.oj-hn-page {
+		border: 1px solid #2a2d2f;
+	}
+
+	#hnmain > tr:first-child > td,
+	#hnmain > tr:first-child > td table,
+	#hnmain > tr:first-child > td tr,
+	#hnmain > tr:first-child > td td,
+	#hnmain > tbody > tr:first-child > td,
+	#hnmain > tbody > tr:first-child > td table,
+	#hnmain > tbody > tr:first-child > td tr,
+	#hnmain > tbody > tr:first-child > td td {
+		background: var(--oj-accent) !important;
+		color: #111 !important;
+	}
+
+	.pagetop,
+	.pagetop a,
+	.yclinks,
+	.yclinks a {
+		color: var(--oj-muted) !important;
+	}
+
+	.hnname,
+	.hnname a {
+		color: var(--oj-accent) !important;
+	}
+
+	#hnmain > tr:first-child .pagetop,
+	#hnmain > tr:first-child .pagetop a,
+	#hnmain > tr:first-child .yclinks,
+	#hnmain > tr:first-child .yclinks a,
+	#hnmain > tr:first-child .hnname,
+	#hnmain > tr:first-child .hnname a,
+	#hnmain > tbody > tr:first-child .pagetop,
+	#hnmain > tbody > tr:first-child .pagetop a,
+	#hnmain > tbody > tr:first-child .yclinks,
+	#hnmain > tbody > tr:first-child .yclinks a,
+	#hnmain > tbody > tr:first-child .hnname,
+	#hnmain > tbody > tr:first-child .hnname a {
+		color: #111 !important;
+	}
+
+	.subtext,
+	.subline,
+	.hnuser,
+	.age,
+	.score,
+	.sitebit.comhead,
+	.comhead,
+	.toptext,
+	.commtext,
+	.comment .commtext {
+		color: var(--oj-muted) !important;
+	}
+
+	.title,
+	td.title,
+	.titleline {
+		color: #d9d6d0 !important;
+	}
+
+	a:link {
+		color: var(--oj-link) !important;
+	}
+
+	a:visited {
+		color: var(--oj-visited) !important;
+	}
+
+	.subline a:link,
+	.subline a:visited,
+	.rank,
+	.titleline a:visited,
+	.storylink:visited {
+		color: #ac9d84 !important;
+	}
+
+	.subline .oj_link_button {
+		color: #ac9d84 !important;
+	}
+
+	.titleline > a:link,
+	.storylink:link {
+		color: rgb(255, 242, 212) !important;
+	}
+
+	.athing,
+	.fatitem,
+	.default,
+	.comment,
+	tr.athing,
+	.comment-tree tr.athing,
+	.comment-tree .athing,
+	tr.athing.comtr {
+		background-color: transparent !important;
+	}
+
+	.votelinks,
+	.votelinks center,
+	.votearrow {
+		opacity: 0.92;
+	}
+
+	hr,
+	.comment .reply,
+	.comment .par,
+	.ind img {
+		border-color: var(--oj-border) !important;
+	}
+
+	input,
+	textarea,
+	select,
+	button {
+		background: var(--oj-surface) !important;
+		color: var(--oj-text) !important;
+		border: 1px solid var(--oj-border) !important;
+	}
+
+	.oj_link_button,
+	button.oj-dark-mode-toggle {
+		background: transparent !important;
+		border: 0 !important;
+		color: inherit !important;
+	}
+
+	input:focus,
+	textarea:focus,
+	select:focus,
+	button:focus {
+		outline: 1px solid #5f8cd8 !important;
+		outline-offset: 1px;
+	}
+
+	button.oj-dark-mode-toggle {
+		color: #111 !important;
+	}
+
+	button.oj-dark-mode-toggle:focus {
+		outline: none !important;
+	}
+
+	pre,
+	code,
+	.comment code {
+		background: var(--oj-surface-2) !important;
+		color: #ddd9d2 !important;
+		border-color: var(--oj-border) !important;
+	}
+
+	img:not(.votearrow),
+	video,
+	iframe {
+		filter: brightness(0.92) contrast(0.95);
+	}
+
+	.oj-hn-template,
+	.oj-hn-body {
+		color: #e8e6e3;
+	}
+
+	.oj-hn-nav {
+		background: #ff6600;
+		color: #111;
+
+		a,
+		a:visited,
+		.pagetop,
+		.pagetop a,
+		.yclinks,
+		.yclinks a {
+			color: #111 !important;
+		}
+
+		.hnname,
+		.hnname a,
+		.hnname a:visited {
+			color: #111 !important;
+		}
+
+		button,
+		.oj_more_links_dropdown_button,
+		.oj_profile_dropdown_button,
+		.oj-dark-mode-toggle {
+			background: transparent !important;
+			border: 0 !important;
+			color: #111 !important;
+		}
+	}
+
+	.oj-hn-footer {
+		color: #b5b2ac;
+
+		a,
+		.yclinks a {
+			color: #ac9d84;
+		}
+	}
+}

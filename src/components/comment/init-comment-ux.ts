@@ -22,13 +22,13 @@ export const initCommentUX = (doc: Document, comments: HTMLElement[], username?:
 	const style = doc.createElement('style');
 	style.textContent = `
 		.oj_comment_indent {
-			box-shadow: inset -1px 0 #ccc
+			box-shadow: inset -1px 0 #ccc;
 		}
 		.oj_op {
-			color: #ff6000 !important
+			color: #ff6000 !important;
 		}
 		.${OJ_NEW_COMMENT_INDENT} {
-			box-shadow: inset -2px 0 #ff6000
+			box-shadow: inset -2px 0 #ff6000;
 		}
 		.comment .commtext pre {
 			background: #e4e4e4;

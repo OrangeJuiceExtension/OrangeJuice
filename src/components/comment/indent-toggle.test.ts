@@ -1,18 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ContentScriptContext } from '#imports';
 import { indentToggle } from './indent-toggle.ts';
 
 describe('indentToggle', () => {
 	let mockDoc: Document;
 	let mockComments: HTMLElement[];
+	let mockCtx: ContentScriptContext;
 
 	beforeEach(() => {
 		mockDoc = document.implementation.createHTMLDocument('test');
 		mockComments = [];
+		mockCtx = { onInvalidated: vi.fn() } as unknown as ContentScriptContext;
 	});
 
 	describe('style injection', () => {
 		it('should inject custom styles into document head', () => {
-			indentToggle(mockDoc, mockComments);
+			indentToggle(mockCtx, mockDoc, mockComments);
 
 			const styleElement = mockDoc.head.querySelector('style');
 			expect(styleElement).toBeTruthy();
@@ -20,7 +23,7 @@ describe('indentToggle', () => {
 		});
 
 		it('should add hover styles for clickable indent', () => {
-			indentToggle(mockDoc, mockComments);
+			indentToggle(mockCtx, mockDoc, mockComments);
 
 			const styleElement = mockDoc.head.querySelector('style');
 			expect(styleElement?.textContent).toContain('cursor: pointer');
@@ -44,7 +47,7 @@ describe('indentToggle', () => {
 
 			mockComments = [comment];
 
-			indentToggle(mockDoc, mockComments);
+			indentToggle(mockCtx, mockDoc, mockComments);
 
 			expect(indentCell.classList.contains('oj_clickable_indent')).toBe(true);
 		});
@@ -65,7 +68,7 @@ describe('indentToggle', () => {
 
 			mockComments = [comment];
 
-			indentToggle(mockDoc, mockComments);
+			indentToggle(mockCtx, mockDoc, mockComments);
 
 			indentCell.click();
 
@@ -79,7 +82,7 @@ describe('indentToggle', () => {
 
 			mockComments = [comment1, comment2, comment3];
 
-			indentToggle(mockDoc, mockComments);
+			indentToggle(mockCtx, mockDoc, mockComments);
 
 			for (const comment of mockComments) {
 				const indentCell = comment.querySelector('td.ind');
@@ -106,7 +109,7 @@ describe('indentToggle', () => {
 
 			mockComments = [comment1, comment2];
 
-			indentToggle(mockDoc, mockComments);
+			indentToggle(mockCtx, mockDoc, mockComments);
 
 			comment1.querySelector<HTMLTableCellElement>('td.ind')?.click();
 			comment2.querySelector<HTMLTableCellElement>('td.ind')?.click();
@@ -127,7 +130,7 @@ describe('indentToggle', () => {
 
 			mockComments = [comment];
 
-			expect(() => indentToggle(mockDoc, mockComments)).not.toThrow();
+			expect(() => indentToggle(mockCtx, mockDoc, mockComments)).not.toThrow();
 
 			const indentCell = comment.querySelector('td.ind');
 			expect(indentCell).toBeFalsy();
@@ -143,7 +146,7 @@ describe('indentToggle', () => {
 
 			mockComments = [comment];
 
-			expect(() => indentToggle(mockDoc, mockComments)).not.toThrow();
+			expect(() => indentToggle(mockCtx, mockDoc, mockComments)).not.toThrow();
 
 			expect(indentCell.classList.contains('oj_clickable_indent')).toBe(false);
 		});
@@ -151,7 +154,7 @@ describe('indentToggle', () => {
 		it('should handle empty comments array', () => {
 			mockComments = [];
 
-			expect(() => indentToggle(mockDoc, mockComments)).not.toThrow();
+			expect(() => indentToggle(mockCtx, mockDoc, mockComments)).not.toThrow();
 
 			const styleElement = mockDoc.head.querySelector('style');
 			expect(styleElement).toBeTruthy();
@@ -163,7 +166,7 @@ describe('indentToggle', () => {
 
 			mockComments = [comment];
 
-			expect(() => indentToggle(mockDoc, mockComments)).not.toThrow();
+			expect(() => indentToggle(mockCtx, mockDoc, mockComments)).not.toThrow();
 		});
 
 		it('should only add clickable class when both elements exist', () => {
@@ -175,7 +178,7 @@ describe('indentToggle', () => {
 
 			mockComments = [commentWithBoth, commentWithoutToggle];
 
-			indentToggle(mockDoc, mockComments);
+			indentToggle(mockCtx, mockDoc, mockComments);
 
 			const indentWithBoth = commentWithBoth.querySelector('td.ind');
 			const indentWithoutToggle = commentWithoutToggle.querySelector('td.ind');

@@ -21,7 +21,7 @@ const paths = {
 
 	comments: ['/item', '/threads'],
 
-	specialComments: ['/bestcomments', '/noobcomments', '/newcomments'],
+	specialComments: ['/bestcomments', '/noobcomments', '/newcomments', '/highlights'],
 
 	userSpecific: ['/submitted', '/hidden', '/upvoted', '/favorites'],
 

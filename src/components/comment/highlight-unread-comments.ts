@@ -25,6 +25,10 @@ export const highlightUnreadComments = async (
 		.${OJ_NEW_COMMENT_INDENT} {
 			box-shadow: inset -3px 0 #f6b391 !important;
 		}
+
+		html.oj-dark-mode .${OJ_NEW_COMMENT_INDENT} {
+			box-shadow: inset -3px 0 #ffd5a3 !important;
+		}
 		
 		.${OJ_NEW_COMMENT_INDENT}:hover {
 			box-shadow: inset -3px 0 #ff6000 !important;
