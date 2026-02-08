@@ -108,6 +108,13 @@ html.oj-dark-mode {
 		color: #ac9d84 !important;
 	}
 
+	.oj_link_button,
+	.oj-dark-mode-toggle {
+		background: transparent !important;
+		border: 0 !important;
+		color: inherit !important;
+	}
+
 	.subline .oj_link_button {
 		color: #ac9d84 !important;
 	}
@@ -150,19 +157,16 @@ html.oj-dark-mode {
 		border: 1px solid var(--oj-border) !important;
 	}
 
-	.oj_link_button,
-	button.oj-dark-mode-toggle {
-		background: transparent !important;
-		border: 0 !important;
-		color: inherit !important;
-	}
-
 	input:focus,
 	textarea:focus,
 	select:focus,
 	button:focus {
 		outline: 1px solid #5f8cd8 !important;
 		outline-offset: 1px;
+	}
+
+	.comment textarea {
+		margin-left: 2px;
 	}
 
 	button.oj-dark-mode-toggle {
