@@ -1,7 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DAYS_1, DAYS_30 } from '@/utils/constants.ts';
 import lStorage from '@/utils/local-storage.ts';
 import { type ActivityDetail, ActivityId, ActivityTrail } from './activity-trail.ts';
+
+const FIXED_NOW = new Date('2023-01-01T00:00:00.000Z').getTime();
 
 vi.mock('@/utils/local-storage.ts', () => ({
 	default: {
@@ -350,6 +352,15 @@ describe('ActivityTrail', () => {
 	});
 
 	describe('isExpired', () => {
+		beforeEach(() => {
+			vi.useFakeTimers();
+			vi.setSystemTime(FIXED_NOW);
+		});
+
+		afterEach(() => {
+			vi.useRealTimers();
+		});
+
 		it('should return true when lastSync is 0', async () => {
 			vi.mocked(lStorage.getItem).mockResolvedValueOnce({
 				items: {},
@@ -363,7 +374,7 @@ describe('ActivityTrail', () => {
 		it('should return true when data is older than 1 day', async () => {
 			vi.mocked(lStorage.getItem).mockResolvedValueOnce({
 				items: {},
-				lastSync: Date.now() - DAYS_1 - 1000,
+				lastSync: FIXED_NOW - DAYS_1 - 1000,
 			});
 
 			const expired = await activityTrail.isExpired();
@@ -373,7 +384,7 @@ describe('ActivityTrail', () => {
 		it('should return false when data is fresh', async () => {
 			vi.mocked(lStorage.getItem).mockResolvedValueOnce({
 				items: {},
-				lastSync: Date.now() - 1000, // 1 second ago
+				lastSync: FIXED_NOW - 1000, // 1 second ago
 			});
 
 			const expired = await activityTrail.isExpired();
@@ -383,7 +394,7 @@ describe('ActivityTrail', () => {
 		it('should return false when data is exactly 1 day old', async () => {
 			vi.mocked(lStorage.getItem).mockResolvedValueOnce({
 				items: {},
-				lastSync: Date.now() - DAYS_1,
+				lastSync: FIXED_NOW - DAYS_1,
 			});
 
 			const expired = await activityTrail.isExpired();
