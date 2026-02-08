@@ -292,8 +292,7 @@ export class KeyboardHandlers {
 	private getLastVisible(commentData: CommentData): HNComment | undefined {
 		let current = commentData.last();
 		while (current) {
-			const row = current.commentRow;
-			if (!(current.isDead || row.classList.contains('noshow'))) {
+			if (current.isVisibleInThread) {
 				return current;
 			}
 			current = commentData.getPrevious(current, false);

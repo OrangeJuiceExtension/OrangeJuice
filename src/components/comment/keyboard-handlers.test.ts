@@ -924,6 +924,28 @@ describe('commentKeyboardHandlers', () => {
 			expect(lStorage.setItem).toHaveBeenCalledWith('oj_comment_nav_state', null);
 		});
 
+		it('should skip dead comment when activating last comment after back navigation', async () => {
+			const setup = createCommentData(doc, 3);
+			const deadRow = setup.rows[2];
+			if (!deadRow) {
+				throw new Error('Expected item to exist');
+			}
+			const comhead = doc.createElement('span');
+			comhead.classList.add('comhead');
+			const dead = doc.createElement('span');
+			dead.classList.add('dead');
+			comhead.appendChild(dead);
+			deadRow.appendChild(comhead);
+
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue(null);
+			vi.spyOn(lStorage, 'getItem').mockResolvedValueOnce('prev');
+
+			await keyboardHandlers.checkActiveState(setup.commentData);
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-2');
+			expect(lStorage.setItem).toHaveBeenCalledWith('oj_comment_nav_state', null);
+		});
+
 		it('should activate stored comment when item id is available', async () => {
 			const setup = createCommentData(doc, 2);
 			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');

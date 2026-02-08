@@ -46,6 +46,14 @@ export class HNComment {
 		return this.commentRow.classList.contains('coll');
 	}
 
+	get isHiddenChild(): boolean {
+		return this.commentRow.classList.contains('noshow');
+	}
+
+	get isVisibleInThread(): boolean {
+		return !(this.isDead || this.isHiddenChild);
+	}
+
 	get isDead(): boolean {
 		return this.commentRow.querySelector('.comhead .dead') !== null;
 	}
