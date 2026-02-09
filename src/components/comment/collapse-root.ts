@@ -1,10 +1,12 @@
 import type { ContentScriptContext } from '#imports';
+import type { CommentData } from '@/components/comment/comment-data.ts';
 import { dom } from '@/utils/dom';
 
 export const collapseRoot = (
 	ctx: ContentScriptContext,
 	doc: Document,
-	comments: HTMLElement[]
+	comments: HTMLElement[],
+	commentData: CommentData
 ): void => {
 	let currentRootComment: HTMLElement | undefined;
 
@@ -25,13 +27,21 @@ export const collapseRoot = (
 		toggle.style.cursor = 'pointer';
 
 		const rootComment = currentRootComment;
-		const clickHandler = () => {
+		const clickHandler = async () => {
 			const togg = rootComment.querySelector<HTMLAnchorElement>('a.togg');
 			if (togg) {
 				togg.click();
+
+				if (currentRootComment) {
+					const comm = commentData.getCommentFromElement(currentRootComment);
+					if (comm) {
+						await commentData.activate(comm);
+					}
+				}
+
+				const { x, y } = dom.elementPosition(doc, rootComment);
+				window.scrollTo(x, y);
 			}
-			const { x, y } = dom.elementPosition(doc, rootComment);
-			window.scrollTo(x, y);
 		};
 		toggle.addEventListener('click', clickHandler);
 

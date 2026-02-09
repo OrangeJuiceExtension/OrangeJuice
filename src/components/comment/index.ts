@@ -2,7 +2,9 @@ import type { ContentScriptContext } from '#imports';
 import { backticksToCode } from '@/components/comment/backticks-to-code.ts';
 import { changeDeadCommentsColor } from '@/components/comment/change-dead-comments-color.ts';
 import { collapseRoot } from '@/components/comment/collapse-root.ts';
+import { CommentData } from '@/components/comment/comment-data.ts';
 import { highlightUnreadComments } from '@/components/comment/highlight-unread-comments.ts';
+import { HNComment } from '@/components/comment/hn-comment.ts';
 import { indentToggle } from '@/components/comment/indent-toggle.ts';
 import { initCommentUX } from '@/components/comment/init-comment-ux.ts';
 import { inlineReply } from '@/components/comment/inline-reply.ts';
@@ -29,15 +31,18 @@ export const comments: ComponentFeature = {
 		const manager = createClientServices();
 
 		const allComments = dom.getAllComments(document);
+		const hnComments = allComments.map((el) => new HNComment(el));
+		const commentData = new CommentData(hnComments);
+
 		return Promise.all([
-			Promise.resolve().then(() => initCommentUX(document, allComments, comments.username)),
+			Promise.resolve().then(() => initCommentUX(document, allComments, this.username)),
 			Promise.resolve().then(() => highlightUnreadComments(document, allComments, manager)),
 			Promise.resolve().then(() => indentToggle(ctx, document, allComments)),
 			Promise.resolve().then(() => changeDeadCommentsColor(document, allComments)),
 			Promise.resolve().then(() => backticksToCode(document, allComments)),
-			Promise.resolve().then(() => collapseRoot(ctx, document, allComments)),
+			Promise.resolve().then(() => collapseRoot(ctx, document, allComments, commentData)),
 			Promise.resolve().then(() =>
-				keyboardNavigation(ctx, document, allComments, getNavState())
+				keyboardNavigation(ctx, document, allComments, commentData, getNavState())
 			),
 			Promise.resolve().then(() => inlineReply(ctx, document)),
 			Promise.resolve().then(() => replyFocusTextarea(document)),

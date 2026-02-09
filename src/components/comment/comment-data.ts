@@ -1,5 +1,13 @@
 import type { HNComment } from '@/components/comment/hn-comment.ts';
+import { dom } from '@/utils/dom.ts';
 import { IndexedList } from '@/utils/indexed-list.ts';
+import lStorage from '@/utils/local-storage.ts';
+
+const ACTIVE_COMMENT_KEY = 'oj_active_comment_id';
+const NAV_STATE_KEY = 'oj_comment_nav_state';
+
+type NavDirection = 'next' | 'prev';
+type ActiveCommentMap = Record<string, { commentId: string }>;
 
 export class CommentData {
 	private readonly comments: IndexedList<HNComment>;
@@ -26,13 +34,19 @@ export class CommentData {
 		return this.activeComment;
 	}
 
-	activate(comment: HNComment) {
-		this.deactivate();
+	async activate(comment: HNComment): Promise<void> {
+		await this.deactivate();
 		this.activeComment = comment;
 		comment.activate();
+		await this.storeActiveCommentId(comment.id);
 	}
 
-	deactivate() {
+	async deactivate(): Promise<void> {
+		this.deactivateActiveComment();
+		await this.clearStoredActiveCommentId();
+	}
+
+	private deactivateActiveComment(): void {
 		if (this.activeComment) {
 			this.activeComment.deactivate();
 			this.activeComment = undefined;
@@ -167,5 +181,59 @@ export class CommentData {
 		for (const comment of this.comments) {
 			comment.removeEventListener(type, listener);
 		}
+	}
+
+	private getItemId(): string | null {
+		return dom.getItemIdFromLocation();
+	}
+
+	async getStoredActiveCommentId(): Promise<string | undefined> {
+		const itemId = this.getItemId();
+		if (!itemId) {
+			return;
+		}
+		const stored = await lStorage.getItem<ActiveCommentMap>(ACTIVE_COMMENT_KEY);
+		const commentId = stored?.[itemId]?.commentId;
+		if (commentId) {
+			const nextStored: ActiveCommentMap = { ...(stored ?? {}), [itemId]: { commentId } };
+			await lStorage.setItem(ACTIVE_COMMENT_KEY, nextStored);
+			return commentId;
+		}
+	}
+
+	async storeActiveCommentId(commentId: string): Promise<void> {
+		const itemId = this.getItemId();
+		if (!itemId) {
+			return;
+		}
+		const stored = await lStorage.getItem<ActiveCommentMap>(ACTIVE_COMMENT_KEY);
+		const nextStored: ActiveCommentMap = { ...(stored ?? {}), [itemId]: { commentId } };
+		await lStorage.setItem(ACTIVE_COMMENT_KEY, nextStored);
+	}
+
+	async clearStoredActiveCommentId(): Promise<void> {
+		const itemId = this.getItemId();
+		if (!itemId) {
+			return;
+		}
+		const stored = await lStorage.getItem<ActiveCommentMap>(ACTIVE_COMMENT_KEY);
+		if (!stored?.[itemId]) {
+			return;
+		}
+		const nextStored: ActiveCommentMap = { ...stored };
+		delete nextStored[itemId];
+		await lStorage.setItem(ACTIVE_COMMENT_KEY, nextStored);
+	}
+
+	async getNavState(): Promise<NavDirection | null> {
+		return (await lStorage.getItem<NavDirection>(NAV_STATE_KEY)) ?? null;
+	}
+
+	async setNavState(direction: NavDirection): Promise<void> {
+		await lStorage.setItem(NAV_STATE_KEY, direction);
+	}
+
+	async clearNavState(): Promise<void> {
+		await lStorage.setItem(NAV_STATE_KEY, null);
 	}
 }

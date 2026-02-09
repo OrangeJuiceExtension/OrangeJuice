@@ -1,6 +1,6 @@
 import type { ContentScriptContext } from '#imports';
-import { CommentData } from '@/components/comment/comment-data.ts';
-import { focusClass, focusClassDefault, HNComment } from '@/components/comment/hn-comment.ts';
+import type { CommentData } from '@/components/comment/comment-data.ts';
+import { focusClass, focusClassDefault } from '@/components/comment/hn-comment.ts';
 import { KeyboardHandlers } from '@/components/comment/keyboard-handlers.ts';
 import type { KeyboardNavState } from '@/components/common/keyboard-navigation.ts';
 import { dom } from '@/utils/dom.ts';
@@ -9,6 +9,7 @@ export const keyboardNavigation = async (
 	ctx: ContentScriptContext,
 	doc: Document,
 	commentElements: HTMLElement[],
+	commentData: CommentData,
 	navState?: KeyboardNavState
 ): Promise<void> => {
 	const style = doc.createElement('style');
@@ -72,8 +73,6 @@ export const keyboardNavigation = async (
 		return false;
 	}
 
-	const comments = commentElements.map((el) => new HNComment(el));
-	const commentData = new CommentData(comments);
 	const keyboardHandlers = new KeyboardHandlers(doc);
 
 	await keyboardHandlers.checkActiveState(commentData);

@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CommentData } from '@/components/comment/comment-data.ts';
 import { addIndentation, createCommentRow } from '@/components/comment/constants.ts';
 import { HNComment } from '@/components/comment/hn-comment.ts';
+import { dom } from '@/utils/dom.ts';
+import lStorage from '@/utils/local-storage.ts';
 
 const createComments = (doc: Document, count: number, options?: { collapsedIds?: number[] }) => {
 	const collapsedIds = new Set(options?.collapsedIds ?? []);
@@ -41,14 +43,14 @@ describe('CommentData', () => {
 		expect(data.getCommentFromElement(inner)?.id).toBe('comment-1');
 	});
 
-	it('should activate and deactivate comments', () => {
+	it('should activate and deactivate comments', async () => {
 		const comments = createComments(doc, 2);
 		const data = new CommentData(comments);
 
-		data.activate(comments[0]);
+		await data.activate(comments[0]);
 		expect(data.getActiveComment()?.id).toBe('comment-1');
 
-		data.deactivate();
+		await data.deactivate();
 		expect(data.getActiveComment()).toBeUndefined();
 	});
 
@@ -108,10 +110,10 @@ describe('CommentData', () => {
 		expect(prev?.id).toBe('comment-2');
 	});
 
-	it('should find closest collapsed comments from active', () => {
+	it('should find closest collapsed comments from active', async () => {
 		const comments = createComments(doc, 4, { collapsedIds: [2, 4] });
 		const data = new CommentData(comments);
-		data.activate(comments[2]);
+		await data.activate(comments[2]);
 
 		expect(data.closestCollapsedUp()?.id).toBe('comment-2');
 		expect(data.closestCollapsedDown()?.id).toBe('comment-4');
@@ -124,10 +126,10 @@ describe('CommentData', () => {
 		expect(data.closestCollapsedUp()).toBeUndefined();
 	});
 
-	it('should proxy actions to active comment', () => {
+	it('should proxy actions to active comment', async () => {
 		const comments = createComments(doc, 1);
 		const data = new CommentData(comments);
-		data.activate(comments[0]);
+		await data.activate(comments[0]);
 		const favoriteSpy = vi.spyOn(comments[0], 'favorite');
 		const flagSpy = vi.spyOn(comments[0], 'flag');
 		const voteSpy = vi.spyOn(comments[0], 'toggleVote');
@@ -163,5 +165,37 @@ describe('CommentData', () => {
 		expect(addSpy2).toHaveBeenCalledWith('click', handler);
 		expect(removeSpy).toHaveBeenCalledWith('click', handler);
 		expect(removeSpy2).toHaveBeenCalledWith('click', handler);
+	});
+
+	it('should clear active comment id for the current item', async () => {
+		const comments = createComments(doc, 1);
+		const data = new CommentData(comments);
+		vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+		vi.spyOn(lStorage, 'getItem').mockResolvedValue({
+			'123': { commentId: 'comment-1' },
+			'456': { commentId: 'comment-2' },
+		});
+		const setItemSpy = vi.spyOn(lStorage, 'setItem').mockResolvedValue();
+
+		await data.clearStoredActiveCommentId();
+
+		expect(setItemSpy).toHaveBeenCalledWith('oj_active_comment_id', {
+			'456': { commentId: 'comment-2' },
+		});
+	});
+
+	it('should persist and clear comment nav state', async () => {
+		const comments = createComments(doc, 1);
+		const data = new CommentData(comments);
+		const setItemSpy = vi.spyOn(lStorage, 'setItem').mockResolvedValue();
+		vi.spyOn(lStorage, 'getItem').mockResolvedValue('next');
+
+		await data.setNavState('next');
+		const navState = await data.getNavState();
+		await data.clearNavState();
+
+		expect(navState).toBe('next');
+		expect(setItemSpy).toHaveBeenNthCalledWith(1, 'oj_comment_nav_state', 'next');
+		expect(setItemSpy).toHaveBeenNthCalledWith(2, 'oj_comment_nav_state', null);
 	});
 });

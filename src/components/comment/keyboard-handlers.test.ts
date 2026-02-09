@@ -63,6 +63,31 @@ describe('commentKeyboardHandlers', () => {
 		vi.spyOn(lStorage, 'setItem').mockResolvedValue();
 	});
 
+	it('should store and load active comment id for the current item', async () => {
+		const setup = createCommentData(doc, 1);
+		vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+		const getItemSpy = vi.spyOn(lStorage, 'getItem').mockResolvedValue(null);
+		const setItemSpy = vi.spyOn(lStorage, 'setItem').mockResolvedValue();
+		const first = setup.commentData.first();
+		if (!first) {
+			throw new Error('Expected item to exist');
+		}
+
+		await keyboardHandlers.activateComment(setup.commentData, first);
+
+		expect(setItemSpy).toHaveBeenCalledWith('oj_active_comment_id', {
+			'123': { commentId: 'comment-1' },
+		});
+
+		getItemSpy.mockResolvedValueOnce(null).mockResolvedValueOnce({
+			'123': { commentId: 'comment-1' },
+		});
+
+		await keyboardHandlers.checkActiveState(setup.commentData);
+
+		expect(setup.commentData.getActiveComment()?.id).toBe('comment-1');
+	});
+
 	describe('move', () => {
 		describe('when no active item', () => {
 			it('should activate first item', async () => {
@@ -101,7 +126,7 @@ describe('commentKeyboardHandlers', () => {
 				if (!first) {
 					throw new Error('Expected item to exist');
 				}
-				setup.commentData.activate(first);
+				await setup.commentData.activate(first);
 
 				await keyboardHandlers.move(event, setup.commentData, 'down');
 
@@ -115,7 +140,7 @@ describe('commentKeyboardHandlers', () => {
 				if (!last) {
 					throw new Error('Expected item to exist');
 				}
-				setup.commentData.activate(last);
+				await setup.commentData.activate(last);
 
 				const moreLink = doc.createElement('a');
 				moreLink.className = 'morelink';
@@ -140,7 +165,7 @@ describe('commentKeyboardHandlers', () => {
 				addIndentation(doc, setup.rows[1], 0);
 				addIndentation(doc, setup.rows[2], 1);
 				addIndentation(doc, setup.rows[3], 0);
-				setup.commentData.activate(first);
+				await setup.commentData.activate(first);
 
 				await keyboardHandlers.move(event, setup.commentData, 'down');
 
@@ -159,7 +184,7 @@ describe('commentKeyboardHandlers', () => {
 				addIndentation(doc, setup.rows[1], 0);
 				addIndentation(doc, setup.rows[2], 1);
 				addIndentation(doc, setup.rows[3], 0);
-				setup.commentData.activate(first);
+				await setup.commentData.activate(first);
 
 				setup.rows[1]?.classList.add('coll');
 
@@ -180,7 +205,7 @@ describe('commentKeyboardHandlers', () => {
 				addIndentation(doc, setup.rows[1], 0);
 				addIndentation(doc, setup.rows[2], 2);
 				addIndentation(doc, setup.rows[3], 0);
-				setup.commentData.activate(first);
+				await setup.commentData.activate(first);
 
 				const toggleLink = doc.createElement('a');
 				toggleLink.classList.add('togg', 'clicky');
@@ -209,7 +234,7 @@ describe('commentKeyboardHandlers', () => {
 				setup.rows[0]?.classList.add('coll');
 				setup.rows[1]?.classList.add('noshow');
 				setup.rows[2]?.classList.add('noshow');
-				setup.commentData.activate(first);
+				await setup.commentData.activate(first);
 
 				const toggleLink = doc.createElement('a');
 				toggleLink.classList.add('togg', 'clicky');
@@ -238,7 +263,7 @@ describe('commentKeyboardHandlers', () => {
 				addIndentation(doc, setup.rows[3], 0);
 				setup.rows[1]?.classList.add('coll');
 				setup.rows[2]?.classList.add('noshow');
-				setup.commentData.activate(first);
+				await setup.commentData.activate(first);
 
 				const toggleLink = doc.createElement('a');
 				toggleLink.classList.add('togg', 'clicky');
@@ -262,7 +287,7 @@ describe('commentKeyboardHandlers', () => {
 				if (!last) {
 					throw new Error('Expected item to exist');
 				}
-				setup.commentData.activate(last);
+				await setup.commentData.activate(last);
 
 				await keyboardHandlers.move(event, setup.commentData, 'down');
 
@@ -276,7 +301,7 @@ describe('commentKeyboardHandlers', () => {
 				if (!first) {
 					throw new Error('Expected item to exist');
 				}
-				setup.commentData.activate(first);
+				await setup.commentData.activate(first);
 
 				const toggleLink = doc.createElement('a');
 				toggleLink.classList.add('togg', 'clicky');
@@ -298,7 +323,7 @@ describe('commentKeyboardHandlers', () => {
 				if (!second) {
 					throw new Error('Expected item to exist');
 				}
-				setup.commentData.activate(second);
+				await setup.commentData.activate(second);
 
 				await keyboardHandlers.move(event, setup.commentData, 'up');
 
@@ -312,7 +337,7 @@ describe('commentKeyboardHandlers', () => {
 				if (!first) {
 					throw new Error('Expected item to exist');
 				}
-				setup.commentData.activate(first);
+				await setup.commentData.activate(first);
 				const backSpy = vi.spyOn(window.history, 'back');
 				vi.spyOn(window, 'location', 'get').mockReturnValue(
 					new URL('https://news.ycombinator.com/item?id=1&next=2') as any
@@ -337,7 +362,7 @@ describe('commentKeyboardHandlers', () => {
 				addIndentation(doc, setup.rows[2], 0);
 				setup.rows[0]?.classList.add('coll');
 				setup.rows[1]?.classList.add('noshow');
-				setup.commentData.activate(third);
+				await setup.commentData.activate(third);
 
 				const toggleLink = doc.createElement('a');
 				toggleLink.classList.add('togg', 'clicky');
@@ -366,7 +391,7 @@ describe('commentKeyboardHandlers', () => {
 				setup.rows[0]?.classList.add('coll');
 				setup.rows[1]?.classList.add('noshow');
 				setup.rows[2]?.classList.add('noshow');
-				setup.commentData.activate(fourth);
+				await setup.commentData.activate(fourth);
 
 				await keyboardHandlers.move(event, setup.commentData, 'up');
 
@@ -388,7 +413,7 @@ describe('commentKeyboardHandlers', () => {
 				setup.rows[0]?.classList.add('coll');
 				setup.rows[1]?.classList.add('noshow');
 				setup.rows[2]?.classList.add('noshow');
-				setup.commentData.activate(fourth);
+				await setup.commentData.activate(fourth);
 
 				const toggleLink = doc.createElement('a');
 				toggleLink.classList.add('togg', 'clicky');
@@ -417,7 +442,7 @@ describe('commentKeyboardHandlers', () => {
 				setup.rows[0]?.classList.add('coll');
 				setup.rows[1]?.classList.add('noshow');
 				setup.rows[2]?.classList.add('noshow');
-				setup.commentData.activate(fourth);
+				await setup.commentData.activate(fourth);
 
 				const toggleLink = doc.createElement('a');
 				toggleLink.classList.add('togg', 'clicky');
@@ -438,7 +463,7 @@ describe('commentKeyboardHandlers', () => {
 				if (!second) {
 					throw new Error('Expected item to exist');
 				}
-				setup.commentData.activate(second);
+				await setup.commentData.activate(second);
 				vi.spyOn(dom, 'elementInScrollView').mockReturnValue(true);
 
 				await keyboardHandlers.move(event, setup.commentData, 'up');
@@ -456,7 +481,7 @@ describe('commentKeyboardHandlers', () => {
 				if (!first) {
 					throw new Error('Expected item to exist');
 				}
-				setup.commentData.activate(first);
+				await setup.commentData.activate(first);
 				vi.spyOn(dom, 'elementInScrollView').mockReturnValue(false);
 				const scrollSpy = vi
 					.spyOn(HTMLElement.prototype, 'scrollIntoView')
@@ -474,7 +499,7 @@ describe('commentKeyboardHandlers', () => {
 				if (!first) {
 					throw new Error('Expected item to exist');
 				}
-				setup.commentData.activate(first);
+				await setup.commentData.activate(first);
 				vi.spyOn(dom, 'elementInScrollView').mockReturnValue(true);
 				const scrollSpy = vi
 					.spyOn(HTMLElement.prototype, 'scrollIntoView')
@@ -494,7 +519,7 @@ describe('commentKeyboardHandlers', () => {
 			if (!first) {
 				throw new Error('Expected item to exist');
 			}
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 
 			await keyboardHandlers.escape(setup.commentData);
 
@@ -511,7 +536,7 @@ describe('commentKeyboardHandlers', () => {
 			const defaultCell = doc.createElement('td');
 			defaultCell.classList.add('default');
 			row.appendChild(defaultCell);
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 
 			await keyboardHandlers.escape(setup.commentData);
 
@@ -529,7 +554,7 @@ describe('commentKeyboardHandlers', () => {
 				'123': { commentId: 'comment-1' },
 				'456': { commentId: 'comment-2' },
 			});
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 
 			await keyboardHandlers.escape(setup.commentData);
 
@@ -571,7 +596,7 @@ describe('commentKeyboardHandlers', () => {
 	});
 
 	describe('reply', () => {
-		it('should click reply button when it exists', () => {
+		it('should click reply button when it exists', async () => {
 			const setup = createCommentData(doc, 1);
 			const row = setup.rows[0];
 			const first = setup.commentData.first();
@@ -581,7 +606,7 @@ describe('commentKeyboardHandlers', () => {
 			const replyBtn = doc.createElement('a');
 			replyBtn.href = 'reply?id=123';
 			row.appendChild(replyBtn);
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 			const clickSpy = vi.spyOn(replyBtn, 'click');
 
 			keyboardHandlers.reply(setup.commentData);
@@ -589,13 +614,13 @@ describe('commentKeyboardHandlers', () => {
 			expect(clickSpy).toHaveBeenCalled();
 		});
 
-		it('should return undefined when no reply button exists', () => {
+		it('should return undefined when no reply button exists', async () => {
 			const setup = createCommentData(doc, 1);
 			const first = setup.commentData.first();
 			if (!first) {
 				throw new Error('Expected item to exist');
 			}
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 
 			const result = keyboardHandlers.reply(setup.commentData);
 
@@ -604,7 +629,7 @@ describe('commentKeyboardHandlers', () => {
 	});
 
 	describe('favorite', () => {
-		it('should click favorite link when it exists', () => {
+		it('should click favorite link when it exists', async () => {
 			const setup = createCommentData(doc, 1);
 			const row = setup.rows[0];
 			const first = setup.commentData.first();
@@ -614,7 +639,7 @@ describe('commentKeyboardHandlers', () => {
 			const faveLink = doc.createElement('button');
 			faveLink.classList.add('oj_favorite_link');
 			row.appendChild(faveLink);
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 			const clickSpy = vi.spyOn(faveLink, 'click');
 
 			keyboardHandlers.favorite(setup.commentData);
@@ -622,20 +647,20 @@ describe('commentKeyboardHandlers', () => {
 			expect(clickSpy).toHaveBeenCalled();
 		});
 
-		it('should not throw when no favorite link exists', () => {
+		it('should not throw when no favorite link exists', async () => {
 			const setup = createCommentData(doc, 1);
 			const first = setup.commentData.first();
 			if (!first) {
 				throw new Error('Expected item to exist');
 			}
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 
 			expect(() => keyboardHandlers.favorite(setup.commentData)).not.toThrow();
 		});
 	});
 
 	describe('flag', () => {
-		it('should click flag link when it exists', () => {
+		it('should click flag link when it exists', async () => {
 			const setup = createCommentData(doc, 1);
 			const row = setup.rows[0];
 			const first = setup.commentData.first();
@@ -645,7 +670,7 @@ describe('commentKeyboardHandlers', () => {
 			const flagLink = doc.createElement('a');
 			flagLink.classList.add('oj_flag_link');
 			row.appendChild(flagLink);
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 			const clickSpy = vi.spyOn(flagLink, 'click');
 
 			keyboardHandlers.flag(setup.commentData);
@@ -653,20 +678,20 @@ describe('commentKeyboardHandlers', () => {
 			expect(clickSpy).toHaveBeenCalled();
 		});
 
-		it('should not throw when no flag link exists', () => {
+		it('should not throw when no flag link exists', async () => {
 			const setup = createCommentData(doc, 1);
 			const first = setup.commentData.first();
 			if (!first) {
 				throw new Error('Expected item to exist');
 			}
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 
 			expect(() => keyboardHandlers.flag(setup.commentData)).not.toThrow();
 		});
 	});
 
 	describe('collapseToggle', () => {
-		it('should click collapse link when it exists', () => {
+		it('should click collapse link when it exists', async () => {
 			const setup = createCommentData(doc, 1);
 			const row = setup.rows[0];
 			const first = setup.commentData.first();
@@ -677,7 +702,7 @@ describe('commentKeyboardHandlers', () => {
 			toggleLink.classList.add('togg', 'clicky');
 			toggleLink.textContent = '[–]';
 			row.appendChild(toggleLink);
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 			const clickSpy = vi.spyOn(toggleLink, 'click');
 
 			keyboardHandlers.collapseToggle(setup.commentData);
@@ -685,13 +710,13 @@ describe('commentKeyboardHandlers', () => {
 			expect(clickSpy).toHaveBeenCalled();
 		});
 
-		it('should not throw when no toggle link exists', () => {
+		it('should not throw when no toggle link exists', async () => {
 			const setup = createCommentData(doc, 1);
 			const first = setup.commentData.first();
 			if (!first) {
 				throw new Error('Expected item to exist');
 			}
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 
 			expect(() => keyboardHandlers.collapseToggle(setup.commentData)).not.toThrow();
 		});
@@ -709,7 +734,7 @@ describe('commentKeyboardHandlers', () => {
 			nextLink.textContent = 'next';
 			nextLink.href = '#comment-2';
 			row.appendChild(nextLink);
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 			const clickSpy = vi.spyOn(nextLink, 'click');
 
 			await keyboardHandlers.navigateToThreadLink(setup.commentData, 'next');
@@ -729,7 +754,7 @@ describe('commentKeyboardHandlers', () => {
 			prevLink.textContent = 'prev';
 			prevLink.href = '#comment-1';
 			row.appendChild(prevLink);
-			setup.commentData.activate(second);
+			await setup.commentData.activate(second);
 			const clickSpy = vi.spyOn(prevLink, 'click');
 
 			await keyboardHandlers.navigateToThreadLink(setup.commentData, 'prev');
@@ -744,7 +769,7 @@ describe('commentKeyboardHandlers', () => {
 			if (!first) {
 				throw new Error('Expected item to exist');
 			}
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 
 			await expect(
 				keyboardHandlers.navigateToThreadLink(setup.commentData, 'next')
@@ -775,7 +800,7 @@ describe('commentKeyboardHandlers', () => {
 	});
 
 	describe('votes', () => {
-		it('should click upvote button when no unvote exists', () => {
+		it('should click upvote button when no unvote exists', async () => {
 			const setup = createCommentData(doc, 1);
 			const row = setup.rows[0];
 			const first = setup.commentData.first();
@@ -786,7 +811,7 @@ describe('commentKeyboardHandlers', () => {
 			upvoteBtn.classList.add('votearrow');
 			upvoteBtn.title = 'upvote';
 			row.appendChild(upvoteBtn);
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 			const clickSpy = vi.spyOn(upvoteBtn, 'click');
 
 			keyboardHandlers.upvote(setup.commentData);
@@ -794,7 +819,7 @@ describe('commentKeyboardHandlers', () => {
 			expect(clickSpy).toHaveBeenCalled();
 		});
 
-		it('should click downvote button when no unvote exists', () => {
+		it('should click downvote button when no unvote exists', async () => {
 			const setup = createCommentData(doc, 1);
 			const row = setup.rows[0];
 			const first = setup.commentData.first();
@@ -805,7 +830,7 @@ describe('commentKeyboardHandlers', () => {
 			downvoteBtn.classList.add('votearrow');
 			downvoteBtn.title = 'downvote';
 			row.appendChild(downvoteBtn);
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 			const clickSpy = vi.spyOn(downvoteBtn, 'click');
 
 			keyboardHandlers.downvote(setup.commentData);
@@ -813,7 +838,7 @@ describe('commentKeyboardHandlers', () => {
 			expect(clickSpy).toHaveBeenCalled();
 		});
 
-		it('should click unvote button when it exists', () => {
+		it('should click unvote button when it exists', async () => {
 			const setup = createCommentData(doc, 1);
 			const row = setup.rows[0];
 			const first = setup.commentData.first();
@@ -823,7 +848,7 @@ describe('commentKeyboardHandlers', () => {
 			const unvoteBtn = doc.createElement('a');
 			unvoteBtn.id = 'un_123';
 			row.appendChild(unvoteBtn);
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 			const clickSpy = vi.spyOn(unvoteBtn, 'click');
 
 			keyboardHandlers.upvote(setup.commentData);
@@ -849,7 +874,7 @@ describe('commentKeyboardHandlers', () => {
 			const commtext = doc.createElement('span');
 			commtext.classList.add('commtext');
 			row.appendChild(commtext);
-			setup.commentData.activate(first);
+			await setup.commentData.activate(first);
 			const createTab = vi.fn(() => Promise.resolve());
 			vi.mocked(createClientServices).mockReturnValue({
 				getBrowserTabService: () => ({ createTab }),
@@ -948,6 +973,21 @@ describe('commentKeyboardHandlers', () => {
 
 		it('should activate stored comment when item id is available', async () => {
 			const setup = createCommentData(doc, 2);
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem')
+				.mockResolvedValueOnce(null)
+				.mockResolvedValueOnce({
+					'123': { commentId: 'comment-2' },
+				});
+
+			await keyboardHandlers.checkActiveState(setup.commentData);
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-2');
+		});
+
+		it('should activate stored collapsed root comment when item id is available', async () => {
+			const setup = createCommentData(doc, 2);
+			setup.rows[1]?.classList.add('coll');
 			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
 			vi.spyOn(lStorage, 'getItem')
 				.mockResolvedValueOnce(null)

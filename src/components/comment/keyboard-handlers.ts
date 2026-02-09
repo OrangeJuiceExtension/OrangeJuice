@@ -2,56 +2,14 @@ import type { CommentData } from '@/components/comment/comment-data.ts';
 import type { HNComment } from '@/components/comment/hn-comment.ts';
 import { createClientServices } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
-import lStorage from '@/utils/local-storage.ts';
 
-const ACTIVE_COMMENT_KEY = 'oj_active_comment_id';
-const NAV_STATE_KEY = 'oj_comment_nav_state';
 const NEXT_PARAM_REGEX = /[?&]next=/;
-
-type NavDirection = 'next' | 'prev';
-
-type ActiveCommentMap = Record<string, { commentId: string }>;
 
 export class KeyboardHandlers {
 	private readonly doc: Document;
 
 	constructor(doc: Document) {
 		this.doc = doc;
-	}
-
-	private getItemId(): string | null {
-		return dom.getItemIdFromLocation();
-	}
-
-	private async getStoredActiveCommentId(itemId: string): Promise<string | null> {
-		const stored = await lStorage.getItem<ActiveCommentMap>(ACTIVE_COMMENT_KEY);
-		const commentId = stored?.[itemId]?.commentId;
-		if (commentId) {
-			return commentId;
-		}
-		const legacy = await lStorage.getItem<string>(`${ACTIVE_COMMENT_KEY}:${itemId}`);
-		if (!legacy) {
-			return null;
-		}
-		const nextStored: ActiveCommentMap = { ...(stored ?? {}), [itemId]: { commentId: legacy } };
-		await lStorage.setItem(ACTIVE_COMMENT_KEY, nextStored);
-		return legacy;
-	}
-
-	private async setStoredActiveCommentId(itemId: string, commentId: string): Promise<void> {
-		const stored = await lStorage.getItem<ActiveCommentMap>(ACTIVE_COMMENT_KEY);
-		const nextStored: ActiveCommentMap = { ...(stored ?? {}), [itemId]: { commentId } };
-		await lStorage.setItem(ACTIVE_COMMENT_KEY, nextStored);
-	}
-
-	private async removeStoredActiveCommentId(itemId: string): Promise<void> {
-		const stored = await lStorage.getItem<ActiveCommentMap>(ACTIVE_COMMENT_KEY);
-		if (!stored?.[itemId]) {
-			return;
-		}
-		const nextStored: ActiveCommentMap = { ...stored };
-		delete nextStored[itemId];
-		await lStorage.setItem(ACTIVE_COMMENT_KEY, nextStored);
 	}
 
 	async move(event: KeyboardEvent, commentData: CommentData, direction: 'up' | 'down') {
@@ -65,10 +23,10 @@ export class KeyboardHandlers {
 		const nextItem = this.getNextItem(commentData, direction, skipHidden);
 		if (!nextItem) {
 			if (direction === 'down') {
-				await lStorage.setItem(NAV_STATE_KEY, 'next');
+				await commentData.setNavState('next');
 				this.clickMore();
 			} else if (direction === 'up' && this.hasNextParam()) {
-				await lStorage.setItem(NAV_STATE_KEY, 'prev');
+				await commentData.setNavState('prev');
 				window.history.back();
 			}
 			return;
@@ -141,19 +99,11 @@ export class KeyboardHandlers {
 
 	async escape(commentData: CommentData) {
 		(this.doc.activeElement as HTMLElement)?.blur();
-		commentData.deactivate();
-		const itemId = this.getItemId();
-		if (itemId) {
-			await this.removeStoredActiveCommentId(itemId);
-		}
+		await commentData.deactivate();
 	}
 
 	async activateComment(commentData: CommentData, comment: HNComment) {
-		commentData.activate(comment);
-		const itemId = this.getItemId();
-		if (itemId) {
-			await this.setStoredActiveCommentId(itemId, comment.id);
-		}
+		await commentData.activate(comment);
 	}
 
 	async activateElement(commentData: CommentData, toActivate: HTMLElement) {
@@ -245,44 +195,37 @@ export class KeyboardHandlers {
 	}
 
 	async checkActiveState(commentData: CommentData): Promise<void> {
-		const navState = await lStorage.getItem<NavDirection>(NAV_STATE_KEY);
+		const navState = await commentData.getNavState();
 		if (navState === 'next') {
 			const first = commentData.first();
-			if (first && !first.hidden()) {
+			if (first?.isVisibleInThread) {
 				await this.activateComment(commentData, first);
-				await this.clearNavState();
+				await commentData.clearNavState();
 				return;
 			}
 		} else if (navState === 'prev') {
 			const last = this.getLastVisible(commentData);
 			if (last) {
 				await this.activateComment(commentData, last);
-				await this.clearNavState();
+				await commentData.clearNavState();
 				return;
 			}
 		}
 
-		const itemId = this.getItemId();
-		if (!itemId) {
+		const activeCommentId = await commentData.getStoredActiveCommentId();
+		if (!activeCommentId) {
 			if (navState) {
-				await this.clearNavState();
+				await commentData.clearNavState();
 			}
 			return;
 		}
-		const activeCommentId = await this.getStoredActiveCommentId(itemId);
-		if (activeCommentId) {
-			const comment = commentData.get(activeCommentId);
-			if (comment && !comment.hidden()) {
-				await this.activateComment(commentData, comment);
-				if (navState) {
-					await this.clearNavState();
-				}
+		const comment = commentData.get(activeCommentId);
+		if (comment?.isVisibleInThread) {
+			await this.activateComment(commentData, comment);
+			if (navState) {
+				await commentData.clearNavState();
 			}
 		}
-	}
-
-	private async clearNavState(): Promise<void> {
-		await lStorage.setItem(NAV_STATE_KEY, null);
 	}
 
 	private hasNextParam(): boolean {

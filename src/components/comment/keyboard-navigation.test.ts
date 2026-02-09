@@ -1,7 +1,9 @@
 /** biome-ignore-all lint/performance/noDelete: tests */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ContentScriptContext } from '#imports';
-import { focusClass, focusClassDefault } from '@/components/comment/hn-comment.ts';
+import { CommentData } from '@/components/comment/comment-data.ts';
+import { addIndentation, createCommentRow } from '@/components/comment/constants.ts';
+import { focusClass, focusClassDefault, HNComment } from '@/components/comment/hn-comment.ts';
 import { KeyboardHandlers } from '@/components/comment/keyboard-handlers.ts';
 import { keyboardNavigation } from '@/components/comment/keyboard-navigation.ts';
 import lStorage from '@/utils/local-storage.ts';
@@ -14,20 +16,28 @@ interface TestContext {
 	doc: Document;
 	comments: HTMLElement[];
 	ctx: ContentScriptContext;
+	commentData: CommentData;
 	invalidate: () => void;
 }
 
-const createCommentRow = (doc: Document, id: number): HTMLElement => {
-	const tr = doc.createElement('tr');
-	tr.id = `item-${id}`;
-	tr.classList.add('comtr');
-	tr.classList.add('athing');
-	doc.body.appendChild(tr);
-	return tr;
+const createComments = (
+	doc: Document,
+	count: number
+): { rows: HTMLElement[]; commentData: CommentData } => {
+	const rows: HTMLElement[] = [];
+	const comments: HNComment[] = [];
+	for (let index = 0; index < count; index += 1) {
+		const row = createCommentRow(doc, index + 1);
+		row.id = `item-${index + 1}`;
+		addIndentation(doc, row, 0);
+		const defaultCell = doc.createElement('td');
+		defaultCell.className = 'default';
+		row.appendChild(defaultCell);
+		rows.push(row);
+		comments.push(new HNComment(row));
+	}
+	return { rows, commentData: new CommentData(comments) };
 };
-
-const createComments = (doc: Document, count: number): HTMLElement[] =>
-	Array.from({ length: count }, (_, index) => createCommentRow(doc, index + 1));
 
 const createContext = (): { ctx: ContentScriptContext; invalidate: () => void } => {
 	let invalidateCallback = noop;
@@ -45,7 +55,7 @@ const createContext = (): { ctx: ContentScriptContext; invalidate: () => void } 
 
 const createTestContext = (commentCount = 3): TestContext => {
 	const doc = document.implementation.createHTMLDocument();
-	const comments = createComments(doc, commentCount);
+	const { rows: comments, commentData } = createComments(doc, commentCount);
 	const { ctx, invalidate } = createContext();
 	vi.spyOn(doc.body, 'scrollTo').mockImplementation(noop);
 	vi.spyOn(KeyboardHandlers.prototype, 'move');
@@ -63,7 +73,7 @@ const createTestContext = (commentCount = 3): TestContext => {
 	vi.spyOn(KeyboardHandlers.prototype, 'checkActiveState');
 	vi.spyOn(lStorage, 'getItem').mockResolvedValue(null);
 
-	return { doc, comments, ctx, invalidate };
+	return { doc, comments, ctx, commentData, invalidate };
 };
 
 const dispatchKeydown = (doc: Document, key: string, options: Partial<KeyboardEvent> = {}) => {
@@ -95,6 +105,18 @@ const getComment = (comments: HTMLElement[], index: number): HTMLElement => {
 	return comment;
 };
 
+const activateFirstComment = async (
+	commentData: CommentData,
+	comments: HTMLElement[]
+): Promise<void> => {
+	const firstRow = getComment(comments, 0);
+	const firstComment = commentData.get(firstRow.id);
+	if (!firstComment) {
+		throw new Error('Expected first comment to exist');
+	}
+	await commentData.activate(firstComment);
+};
+
 const setActiveElement = (doc: Document, element: HTMLElement) => {
 	Object.defineProperty(doc, 'activeElement', {
 		configurable: true,
@@ -113,9 +135,9 @@ describe('keyboardNavigation', () => {
 
 	describe('initialization', () => {
 		it('should inject focus styles into document head', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 
 			const styleElement = doc.head.querySelector('style');
 			expect(styleElement).toBeDefined();
@@ -127,9 +149,9 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should re-check active state on pageshow', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			vi.mocked(KeyboardHandlers.prototype.checkActiveState).mockClear();
 
 			window.dispatchEvent(new Event('pageshow'));
@@ -140,9 +162,9 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should register onInvalidated callback', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 
 			expect(ctx.onInvalidated).toHaveBeenCalledWith(expect.any(Function));
 
@@ -168,10 +190,10 @@ describe('keyboardNavigation', () => {
 		describe('runs a bunch of tests in a loop', () => {
 			for (const { name, key, handler } of keyHandlerTests) {
 				it(name, async () => {
-					const { doc, comments, ctx, invalidate } = createTestContext();
+					const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-					await keyboardNavigation(ctx, doc, comments);
-					getComment(comments, 0).click();
+					await keyboardNavigation(ctx, doc, comments, commentData);
+					await activateFirstComment(commentData, comments);
 
 					dispatchKeydown(doc, key, { shiftKey: key === key.toUpperCase() });
 
@@ -185,9 +207,9 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('Escape should call escape handler', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			dispatchKeydown(doc, 'Escape');
 
 			expect(KeyboardHandlers.prototype.escape).toHaveBeenCalled();
@@ -196,9 +218,9 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('escape should call escape handler', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			dispatchKeydown(doc, 'escape');
 
 			expect(KeyboardHandlers.prototype.escape).toHaveBeenCalled();
@@ -207,10 +229,10 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('c should call collapseToggle', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
-			getComment(comments, 0).click();
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			await activateFirstComment(commentData, comments);
 			dispatchKeydown(doc, 'c');
 
 			expect(KeyboardHandlers.prototype.collapseToggle).toHaveBeenCalled();
@@ -218,10 +240,27 @@ describe('keyboardNavigation', () => {
 			invalidate();
 		});
 
-		it('t should scroll to top', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+		it('j should deactivate the previously active comment when moving down', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+			const firstComment = getComment(comments, 0);
+			const secondComment = getComment(comments, 1);
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			await activateFirstComment(commentData, comments);
+			dispatchKeydown(doc, 'j');
+
+			await vi.waitFor(() => {
+				expect(secondComment.classList.contains(focusClass)).toBe(true);
+			});
+			expect(firstComment.classList.contains(focusClass)).toBe(false);
+
+			invalidate();
+		});
+
+		it('t should scroll to top', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			dispatchKeydown(doc, 't');
 
 			expect(doc.body.scrollTo).toHaveBeenCalledWith(0, 0);
@@ -230,13 +269,13 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('b should go back when paginated', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 			const backSpy = vi.spyOn(window.history, 'back');
 			const locationSpy = vi
 				.spyOn(window, 'location', 'get')
 				.mockReturnValue(new URL('https://news.ycombinator.com/item?id=1&p=2') as any);
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			dispatchKeydown(doc, 'b');
 
 			expect(backSpy).toHaveBeenCalled();
@@ -250,10 +289,10 @@ describe('keyboardNavigation', () => {
 
 			for (const num of numbers) {
 				it(`${num} should call openReferenceLink`, async () => {
-					const { doc, comments, ctx, invalidate } = createTestContext();
+					const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-					await keyboardNavigation(ctx, doc, comments);
-					getComment(comments, 0).click();
+					await keyboardNavigation(ctx, doc, comments, commentData);
+					await activateFirstComment(commentData, comments);
 					dispatchKeydown(doc, num);
 
 					expect(KeyboardHandlers.prototype.openReferenceLink).toHaveBeenCalled();
@@ -266,10 +305,10 @@ describe('keyboardNavigation', () => {
 
 	describe('escape with reply open', () => {
 		it('should click reply button when reply is stored', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
-			getComment(comments, 0).click();
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			await activateFirstComment(commentData, comments);
 
 			const replyBtn = doc.createElement('a');
 			replyBtn.href = 'reply?id=123';
@@ -285,9 +324,10 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should clear reply after clicking', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			await activateFirstComment(commentData, comments);
 			const replyBtn = doc.createElement('a');
 			replyBtn.href = 'reply?id=123';
 			vi.spyOn(replyBtn, 'click');
@@ -318,9 +358,9 @@ describe('keyboardNavigation', () => {
 
 		for (const { key, handler } of requiresActiveItemTests) {
 			it(`${key} should not trigger without active item`, async () => {
-				const { doc, comments, ctx, invalidate } = createTestContext();
+				const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-				await keyboardNavigation(ctx, doc, comments);
+				await keyboardNavigation(ctx, doc, comments, commentData);
 				dispatchKeydown(doc, key);
 
 				expect(
@@ -346,9 +386,9 @@ describe('keyboardNavigation', () => {
 
 		for (const { key, handler } of comboKeyTests) {
 			it(`${key} should not trigger with metaKey`, async () => {
-				const { doc, comments, ctx, invalidate } = createTestContext();
+				const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-				await keyboardNavigation(ctx, doc, comments);
+				await keyboardNavigation(ctx, doc, comments, commentData);
 				dispatchKeydown(doc, key, { metaKey: true });
 
 				expect(
@@ -359,9 +399,9 @@ describe('keyboardNavigation', () => {
 			});
 
 			it(`${key} should not trigger with ctrlKey`, async () => {
-				const { doc, comments, ctx, invalidate } = createTestContext();
+				const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-				await keyboardNavigation(ctx, doc, comments);
+				await keyboardNavigation(ctx, doc, comments, commentData);
 				dispatchKeydown(doc, key, { ctrlKey: true });
 
 				expect(
@@ -373,9 +413,9 @@ describe('keyboardNavigation', () => {
 		}
 
 		it('Escape should not trigger with combo key', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			dispatchKeydown(doc, 'Escape', { metaKey: true });
 
 			expect(KeyboardHandlers.prototype.escape).not.toHaveBeenCalled();
@@ -386,12 +426,12 @@ describe('keyboardNavigation', () => {
 
 	describe('prevent() method', () => {
 		it('should trigger handlers when a non-reply textarea is focused', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 			const textarea = doc.createElement('textarea');
 			doc.body.appendChild(textarea);
 			setActiveElement(doc, textarea);
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			getComment(comments, 0).click();
 			dispatchKeydown(doc, 'j');
 
@@ -402,14 +442,14 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should not trigger handlers when reply textarea is focused', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 			const tr = doc.createElement('tr');
 			const textarea = doc.createElement('textarea');
 			tr.appendChild(textarea);
 			doc.body.appendChild(tr);
 			setActiveElement(doc, textarea);
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			getComment(comments, 0).click();
 			dispatchKeydown(doc, 'j');
 
@@ -421,12 +461,12 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should not trigger handlers when input is focused', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 			const input = doc.createElement('input');
 			doc.body.appendChild(input);
 			setActiveElement(doc, input);
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			getComment(comments, 0).click();
 			dispatchKeydown(doc, 'k');
 
@@ -438,14 +478,14 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should blur anchor and trigger handlers when anchor is focused', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 			const anchor = doc.createElement('a');
 			anchor.href = '#';
 			doc.body.appendChild(anchor);
 			const blurSpy = vi.spyOn(anchor, 'blur');
 			setActiveElement(doc, anchor);
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			getComment(comments, 0).click();
 			dispatchKeydown(doc, 'j');
 
@@ -457,12 +497,12 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should activate comment when clicking while a non-reply textarea is focused', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 			const textarea = doc.createElement('textarea');
 			doc.body.appendChild(textarea);
 			setActiveElement(doc, textarea);
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			const comment = getComment(comments, 0);
 			dispatchClick(comment, comment);
 
@@ -474,12 +514,12 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should activate comment when clicking while input is focused', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 			const input = doc.createElement('input');
 			doc.body.appendChild(input);
 			setActiveElement(doc, input);
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			const comment = getComment(comments, 0);
 			dispatchClick(comment, comment);
 
@@ -493,9 +533,9 @@ describe('keyboardNavigation', () => {
 
 	describe('click handler', () => {
 		it('should activate item when comment is clicked', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			const comment = getComment(comments, 0);
 			dispatchClick(comment, comment);
 
@@ -507,10 +547,10 @@ describe('keyboardNavigation', () => {
 
 	describe('document click handler', () => {
 		it('should deactivate comment when clicking outside comments area', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
-			getComment(comments, 0).click();
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			await activateFirstComment(commentData, comments);
 			vi.mocked(KeyboardHandlers.prototype.escape).mockClear();
 
 			const outsideElement = doc.createElement('div');
@@ -523,11 +563,11 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should not deactivate comment when clicking inside comments area', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			const comment = getComment(comments, 0);
-			comment.click();
+			await activateFirstComment(commentData, comments);
 			vi.mocked(KeyboardHandlers.prototype.escape).mockClear();
 
 			const insideElement = doc.createElement('span');
@@ -540,10 +580,10 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should not deactivate when clicking on a textarea', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
-			getComment(comments, 0).click();
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			await activateFirstComment(commentData, comments);
 			vi.mocked(KeyboardHandlers.prototype.escape).mockClear();
 
 			const textarea = doc.createElement('textarea');
@@ -556,10 +596,10 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should not deactivate when clicking on an input', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
-			getComment(comments, 0).click();
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			await activateFirstComment(commentData, comments);
 			vi.mocked(KeyboardHandlers.prototype.escape).mockClear();
 
 			const input = doc.createElement('input');
@@ -572,9 +612,9 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should not deactivate when no comment is active', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 
 			const outsideElement = doc.createElement('div');
 			doc.body.appendChild(outsideElement);
@@ -588,11 +628,11 @@ describe('keyboardNavigation', () => {
 
 	describe('cleanup on invalidation', () => {
 		it('should remove keydown listener on invalidation', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 			const addSpy = vi.spyOn(doc, 'addEventListener');
 			const removeSpy = vi.spyOn(doc, 'removeEventListener');
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			const keydownHandler = addSpy.mock.calls[0]?.[1];
 
 			invalidate();
@@ -601,11 +641,11 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should remove click listeners from comments on invalidation', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 			const comment = getComment(comments, 0);
 			const removeSpy = vi.spyOn(comment, 'removeEventListener');
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 
 			invalidate();
 
@@ -614,11 +654,11 @@ describe('keyboardNavigation', () => {
 		});
 
 		it('should remove document click listener on invalidation', async () => {
-			const { doc, comments, ctx, invalidate } = createTestContext();
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 			const addSpy = vi.spyOn(doc, 'addEventListener');
 			const removeSpy = vi.spyOn(doc, 'removeEventListener');
 
-			await keyboardNavigation(ctx, doc, comments);
+			await keyboardNavigation(ctx, doc, comments, commentData);
 			const documentClickHandler = addSpy.mock.calls.find((call) => call[0] === 'click')?.[1];
 
 			invalidate();
