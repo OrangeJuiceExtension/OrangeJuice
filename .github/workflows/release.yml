@@ -163,5 +163,4 @@ jobs:
           keep-count: 10
           keep-old-minor-releases: false
           keep-old-minor-releases-count: 10
-          keep-old-minor-releases-by: 'minor'
-
+          keep-old-minor-releases-by: 'patch'
