@@ -33,7 +33,11 @@ export const showUserInfoOnHover = (
 		html.oj-dark-mode .${USER_INFO_HOVER_CLASS} {
 			background: #302d21;
 			border-color: #e8e6e3;
-			color: #e8e6e3;
+			color: var(--oj-muted) !important;
+		}
+
+		html.oj-dark-mode .${USER_INFO_HOVER_CLASS} td {
+			color: var(--oj-muted) !important;
 		}
 
 		html.oj-dark-mode .${USER_INFO_HOVER_CLASS}.active {

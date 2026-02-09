@@ -1,5 +1,4 @@
 html.oj-dark-mode {
-	color-scheme: dark;
 	--oj-bg: rgb(41, 40, 35);
 	--oj-panel: #1a1c1d;
 	--oj-surface: #1f2223;
@@ -31,7 +30,7 @@ html.oj-dark-mode {
 
 	#hnmain,
 	.oj-hn-page {
-		border: 1px solid #2a2d2f;
+		border-color: #2a2d2f !important;
 	}
 
 	#hnmain > tr:first-child > td,
@@ -111,7 +110,6 @@ html.oj-dark-mode {
 	.oj_link_button,
 	.oj-dark-mode-toggle {
 		background: transparent !important;
-		border: 0 !important;
 		color: inherit !important;
 	}
 
@@ -135,12 +133,6 @@ html.oj-dark-mode {
 		background-color: transparent !important;
 	}
 
-	.votelinks,
-	.votelinks center,
-	.votearrow {
-		opacity: 0.92;
-	}
-
 	hr,
 	.comment .reply,
 	.comment .par,
@@ -148,33 +140,24 @@ html.oj-dark-mode {
 		border-color: var(--oj-border) !important;
 	}
 
+	button {
+		background-color: var(--oj-surface) !important;
+		color: var(--oj-text) !important;
+		border-color: var(--oj-border) !important;
+	}
+
+	/* Preserve native input-control sizing and behavior; only change text color. */
 	input,
 	textarea,
 	select,
-	button {
-		background: var(--oj-surface) !important;
+	input[type="submit"],
+	input[type="button"],
+	input[type="reset"] {
 		color: var(--oj-text) !important;
-		border: 1px solid var(--oj-border) !important;
-	}
-
-	input:focus,
-	textarea:focus,
-	select:focus,
-	button:focus {
-		outline: 1px solid #5f8cd8 !important;
-		outline-offset: 1px;
-	}
-
-	.comment textarea {
-		margin-left: 2px;
 	}
 
 	button.oj-dark-mode-toggle {
 		color: #111 !important;
-	}
-
-	button.oj-dark-mode-toggle:focus {
-		outline: none !important;
 	}
 
 	pre,
@@ -183,12 +166,6 @@ html.oj-dark-mode {
 		background: var(--oj-surface-2) !important;
 		color: #ddd9d2 !important;
 		border-color: var(--oj-border) !important;
-	}
-
-	img:not(.votearrow),
-	video,
-	iframe {
-		filter: brightness(0.92) contrast(0.95);
 	}
 
 	.oj-hn-template,
@@ -220,7 +197,6 @@ html.oj-dark-mode {
 		.oj_profile_dropdown_button,
 		.oj-dark-mode-toggle {
 			background: transparent !important;
-			border: 0 !important;
 			color: #111 !important;
 		}
 	}
