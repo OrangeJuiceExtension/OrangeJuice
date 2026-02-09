@@ -2,8 +2,15 @@ import DOMPurify from 'dompurify';
 import type { ContentScriptContext } from '#imports';
 import { createDropdown, createDropdownStyle } from '@/components/common/dropdown';
 
-const getLinks = (user: string) => {
-	return [
+interface DropdownLink {
+	title: string;
+	path: string;
+}
+
+const TRAILING_PIPE_REGEX = /\|\s*$/;
+
+const getLinks = (user: string, logoutPath?: string): DropdownLink[] => {
+	const links: DropdownLink[] = [
 		{
 			title: 'profile',
 			path: `/user?id=${user}`,
@@ -45,6 +52,35 @@ const getLinks = (user: string) => {
 			path: `/favorites?id=${user}&comments=t`,
 		},
 	];
+
+	if (logoutPath) {
+		links.push({
+			title: 'logout',
+			path: logoutPath,
+		});
+	}
+
+	return links;
+};
+
+const removeTopLogoutLink = (pageTop: Element): string | undefined => {
+	const logoutLink = pageTop.querySelector<HTMLAnchorElement>('a[href*="logout"]');
+	if (!logoutLink) {
+		return undefined;
+	}
+
+	const logoutPath = logoutLink.getAttribute('href') ?? undefined;
+	const previousSibling = logoutLink.previousSibling;
+	if (previousSibling && previousSibling.nodeType === Node.TEXT_NODE) {
+		previousSibling.textContent = (previousSibling.textContent ?? '')
+			.replace(TRAILING_PIPE_REGEX, '')
+			.trimEnd();
+		if (!previousSibling.textContent) {
+			previousSibling.remove();
+		}
+	}
+	logoutLink.remove();
+	return logoutPath;
 };
 
 const COMPONENT_NAME = 'oj_profile_dropdown';
@@ -65,6 +101,7 @@ export const profileLinksDropdown = (ctx: ContentScriptContext, doc: Document) =
 	}
 
 	const userName = DOMPurify.sanitize(userLink.innerText);
+	const logoutPath = removeTopLogoutLink(pageTop[1]);
 
 	const style = doc.createElement('style');
 	style.innerHTML = createDropdownStyle(COMPONENT_NAME);
@@ -79,7 +116,7 @@ export const profileLinksDropdown = (ctx: ContentScriptContext, doc: Document) =
 
 	userLink.classList.add(`${COMPONENT_NAME}_button`);
 
-	for (const link of getLinks(userName)) {
+	for (const link of getLinks(userName, logoutPath)) {
 		const anchorEl = doc.createElement('a') as HTMLAnchorElement;
 		anchorEl.href = link.path;
 		anchorEl.innerHTML = link.title;

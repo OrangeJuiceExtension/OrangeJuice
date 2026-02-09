@@ -18,6 +18,11 @@ const createPageTop = (doc: Document, username: string): HTMLElement => {
 	userLink.href = `user?id=${username}`;
 
 	span.appendChild(userLink);
+	span.appendChild(doc.createTextNode(' (1234) | '));
+	const logoutLink = doc.createElement('a');
+	logoutLink.href = 'logout';
+	logoutLink.textContent = 'logout';
+	span.appendChild(logoutLink);
 	td.appendChild(span);
 	tr.appendChild(td);
 	table.appendChild(tr);
@@ -101,7 +106,7 @@ describe('profileLinksDropdown', () => {
 		expect(dropdown).not.toBeNull();
 
 		const links = dropdown?.querySelectorAll('a');
-		expect(links?.length).toBe(10);
+		expect(links?.length).toBe(11);
 
 		const expectedLinks = [
 			{ title: 'profile', path: 'user?id=testuser' },
@@ -114,12 +119,26 @@ describe('profileLinksDropdown', () => {
 			{ title: 'upvoted comments', path: 'upvoted?id=testuser&comments=t' },
 			{ title: 'favorite submissions', path: 'favorites?id=testuser' },
 			{ title: 'favorite comments', path: 'favorites?id=testuser&comments=t' },
+			{ title: 'logout', path: 'logout' },
 		];
 
 		for (const [index, link] of expectedLinks.entries()) {
 			expect(links?.[index].innerHTML).toBe(link.title);
 			expect(links?.[index].href).toContain(link.path);
 		}
+	});
+
+	it('should remove logout from top nav and trailing separator', () => {
+		const doc = document.implementation.createHTMLDocument();
+		createPageTop(doc, 'testuser');
+		createPageTop(doc, 'testuser');
+
+		profileLinksDropdown(MOCK_CONTEXT, doc);
+
+		const pagetops = doc.querySelectorAll('span.pagetop');
+		const topUserBar = pagetops[1];
+		expect(topUserBar?.textContent).not.toContain('logout');
+		expect(topUserBar?.textContent?.trim().endsWith('|')).toBe(false);
 	});
 
 	it('should append arrow indicator to username', () => {
