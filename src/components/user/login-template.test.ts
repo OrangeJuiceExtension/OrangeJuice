@@ -12,37 +12,71 @@ vi.mock('@/components/common/hn-template.tsx', () => ({
 }));
 
 describe('loginTemplate', () => {
+	const createFnidInput = (doc: Document): void => {
+		const input = doc.createElement('input');
+		input.type = 'hidden';
+		input.name = 'fnid';
+		doc.body.appendChild(input);
+	};
+
 	beforeEach(() => {
 		document.body.innerHTML = '';
 		vi.clearAllMocks();
 	});
 
-	it('wraps the login page body and removes the hide style', () => {
-		const rafSpy = vi
-			.spyOn(globalThis, 'requestAnimationFrame')
-			.mockImplementation((cb: FrameRequestCallback) => {
-				cb(0);
-				return 0 as unknown as number;
-			});
+	const testCases: {
+		name: string;
+		pathname: string;
+		username: string | null;
+		hasFnid: boolean;
+		shouldWrap: boolean;
+	}[] = [
+		{
+			name: 'wraps the login page body',
+			pathname: '/login',
+			username: null,
+			hasFnid: false,
+			shouldWrap: true,
+		},
+		{
+			name: 'wraps submit when logged out',
+			pathname: '/submit',
+			username: null,
+			hasFnid: false,
+			shouldWrap: true,
+		},
+		{
+			name: 'skips submit when fnid is present',
+			pathname: '/submit',
+			username: null,
+			hasFnid: true,
+			shouldWrap: false,
+		},
+		{
+			name: 'does nothing on non-login pages',
+			pathname: '/news',
+			username: null,
+			hasFnid: false,
+			shouldWrap: false,
+		},
+	];
 
-		window.history.pushState({}, '', '/login');
-		document.body.appendChild(document.createElement('div'));
+	for (const testCase of testCases) {
+		it(testCase.name, () => {
+			window.history.pushState({}, '', testCase.pathname);
+			document.body.appendChild(document.createElement('div'));
 
-		loginTemplate(document);
+			if (testCase.hasFnid) {
+				createFnidInput(document);
+			}
 
-		expect(wrapBodyWithHnTemplate).toHaveBeenCalled();
-		expect(document.getElementById('oj-login-hide-body')).toBeNull();
+			loginTemplate(document, testCase.username);
 
-		rafSpy.mockRestore();
-	});
-
-	it('does nothing on non-login pages', () => {
-		window.history.pushState({}, '', '/news');
-		document.body.appendChild(document.createElement('div'));
-
-		loginTemplate(document);
-
-		expect(wrapBodyWithHnTemplate).not.toHaveBeenCalled();
-		expect(document.getElementById('oj-login-hide-body')).toBeNull();
-	});
+			if (testCase.shouldWrap) {
+				expect(wrapBodyWithHnTemplate).toHaveBeenCalled();
+			} else {
+				expect(wrapBodyWithHnTemplate).not.toHaveBeenCalled();
+			}
+		});
+	}
 });
