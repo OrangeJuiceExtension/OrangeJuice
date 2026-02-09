@@ -99,6 +99,16 @@ const LIGHTBOX_ID = 'oj-docs-lightbox';
 		});
 	};
 
+	const initCopyrightYear = () => {
+		const year = String(new Date().getFullYear());
+		for (const el of document.querySelectorAll('.oj-docs-copyright-year')) {
+			if (!(el instanceof HTMLElement)) {
+				continue;
+			}
+			el.textContent = year;
+		}
+	};
+
 	const createLightbox = () => {
 		const existing = document.getElementById(LIGHTBOX_ID);
 		if (existing instanceof HTMLDivElement) {
@@ -196,12 +206,14 @@ const LIGHTBOX_ID = 'oj-docs-lightbox';
 			'DOMContentLoaded',
 			() => {
 				initTopbar();
+				initCopyrightYear();
 				initImageLightbox();
 			},
 			{ once: true }
 		);
 	} else {
 		initTopbar();
+		initCopyrightYear();
 		initImageLightbox();
 	}
 })();

@@ -124,11 +124,39 @@ main a:hover {
 	padding: 0.35rem 0.75rem;
 }
 
+.oj-docs-nav__link--github {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	background: var(--primary);
+	color: #ffffff;
+	border-color: var(--primary);
+}
+
+.oj-docs-nav__link--github:hover {
+	background: var(--primary-dark);
+	color: #ffffff;
+	border-color: var(--primary-dark);
+}
+
+.oj-docs-github-icon {
+	width: 16px;
+	height: 16px;
+	display: inline-block;
+	fill: currentColor;
+}
+
 .oj-docs-nav__link:hover,
 .oj-docs-nav__link.is-active,
 .oj-docs-theme-toggle:hover {
 	color: var(--primary);
 	border-color: var(--primary);
+}
+
+.oj-docs-nav__link--github:hover {
+	background: var(--primary-dark);
+	color: #ffffff;
+	border-color: var(--primary-dark);
 }
 
 .oj-docs-theme-toggle {
@@ -214,8 +242,20 @@ header {
 .cta-group {
 	display: flex;
 	gap: 1rem;
-	justify-content: center;
 	flex-wrap: wrap;
+	justify-content: center;
+}
+
+.btn-github {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.btn-github-icon {
+	width: 18px;
+	height: 18px;
+	fill: currentColor;
 }
 
 .section {
