@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-import { App } from './app.tsx';
+import { App } from './popup-app.tsx';
 import './style.css';
 
 // biome-ignore lint/style/noNonNullAssertion: none

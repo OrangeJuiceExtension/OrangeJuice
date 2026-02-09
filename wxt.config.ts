@@ -1,7 +1,6 @@
 /// <reference types="vitest/config" />
 
 import tailwindcss from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react';
 import { defineConfig, defineWebExtConfig } from 'wxt';
 
 // See https://wxt.dev/api/config.html
@@ -45,6 +44,6 @@ export default defineConfig({
 		host_permissions: ['https://squeeze.oj-hn.com/*'],
 	},
 	vite: () => ({
-		plugins: [react(), tailwindcss()],
+		plugins: [tailwindcss()],
 	}),
 });

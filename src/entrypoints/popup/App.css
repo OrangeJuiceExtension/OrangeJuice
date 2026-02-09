@@ -1,42 +1,58 @@
-#root {
-	max-width: 1280px;
-	margin: 0 auto;
-	padding: 2rem;
+.oj-popup {
+	--popup-bg: #f6f6ef;
+	--popup-surface: #fbfbf4;
+	--popup-text: #242424;
+	--popup-muted: #6b6b6b;
+	--popup-border: #d7d7c8;
+	--popup-accent: #ff6600;
+	min-width: 380px;
+	min-height: 420px;
+	padding: 16px;
+	background: var(--popup-bg);
+	color: var(--popup-text);
+	display: grid;
+	place-items: center;
+	font-family:
+		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+		Cantarell, sans-serif;
+}
+
+.oj-popup--dark {
+	--popup-bg: rgb(41, 40, 35);
+	--popup-surface: rgb(44, 42, 31);
+	--popup-text: #f1efec;
+	--popup-muted: #c7c4be;
+	--popup-border: #3a3f41;
+	--popup-accent: #ff6600;
+}
+
+.oj-popup__card {
+	width: 70%;
+	border: 1px solid var(--popup-border);
+	border-radius: 12px;
+	margin: 0 12px;
+	padding: 18px 16px;
+	background: var(--popup-surface);
 	text-align: center;
 }
 
-.logo {
-	height: 6em;
-	padding: 1.5em;
-	will-change: filter;
-	transition: filter 300ms;
-}
-.logo:hover {
-	filter: drop-shadow(0 0 2em #54bc4ae0);
-}
-.logo.react:hover {
-	filter: drop-shadow(0 0 2em #61dafbaa);
+.oj-popup__logo {
+	display: block;
+	margin: 0 auto 12px;
+	width: 96px;
+	height: 96px;
 }
 
-@keyframes logo-spin {
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
+.oj-popup__title {
+	margin: 0 0 8px;
+	font-size: 1.65rem;
+	line-height: 1.1;
+	color: var(--popup-accent);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-	a:nth-of-type(2) .logo {
-		animation: logo-spin infinite 20s linear;
-	}
-}
-
-.card {
-	padding: 2em;
-}
-
-.read-the-docs {
-	color: #888;
+.oj-popup__text {
+	margin: 0;
+	font-size: 0.95rem;
+	line-height: 1.5;
+	color: var(--popup-muted);
 }
