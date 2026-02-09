@@ -3,6 +3,11 @@ no_tty: true
 pre-commit:
   parallel: true
   jobs:
-    - run: CI=true bun run build
     - run: CI=true bun run check
       stage_fixed: true
+
+pre-push:
+  parallel: true
+  jobs:
+    - run: CI=true bun run build
+    - run: CI=true bun run test
