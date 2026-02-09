@@ -4,7 +4,6 @@ import { comments } from '@/components/comment/index.ts';
 import { footer } from '@/components/footer/index.ts';
 import { navbar } from '@/components/navbar/index.ts';
 import { past } from '@/components/past/index.ts';
-import { remaining } from '@/components/remaining/index.ts';
 import { story } from '@/components/story/index.ts';
 import { submit } from '@/components/submit/index.ts';
 import { user } from '@/components/user/index.ts';
@@ -21,7 +20,6 @@ import { topcolorsTemplate } from '@/components/user/topcolors-template.tsx';
 const components: ComponentFeature[] = [
 	common,
 	activities,
-	remaining,
 	comments,
 	submit,
 	user,

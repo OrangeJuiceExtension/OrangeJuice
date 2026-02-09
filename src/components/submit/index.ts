@@ -1,5 +1,6 @@
 import type { ContentScriptContext } from '#imports';
 import { fetchTitle } from '@/components/submit/fetch-title.ts';
+import { remaining } from '@/components/submit/remaining.ts';
 import { paths } from '@/utils/paths.ts';
 import type { ComponentFeature } from '@/utils/types.ts';
 
@@ -9,6 +10,9 @@ export const submit: ComponentFeature = {
 	matches: [`${paths.base}/submit`],
 	runAt: 'document_end',
 	main(ctx: ContentScriptContext) {
-		return Promise.all([Promise.resolve().then(() => fetchTitle(ctx, document))]);
+		return Promise.all([
+			Promise.resolve().then(() => fetchTitle(ctx, document)),
+			Promise.resolve().then(() => remaining(ctx, document)),
+		]);
 	},
 };

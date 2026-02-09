@@ -10,7 +10,7 @@ vi.mock('@/services/manager.ts', () => ({
 }));
 
 const fixtureHtml = readFileSync(
-	join(import.meta.dirname, '..', 'remaining', '__fixtures__', 'hn-submit-page.html'),
+	join(import.meta.dirname, '__fixtures__', 'hn-submit-page.html'),
 	'utf-8'
 );
 
