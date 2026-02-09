@@ -4,7 +4,7 @@ import type { ContentScriptContext } from '#imports';
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 
-const validPaths = [...paths.comments, '/user'];
+const validPaths = [...paths.comments, '/user', '/submit'];
 
 export const resizeTextarea = (ctx: ContentScriptContext, doc: Document): void => {
 	if (!validPaths.some((p) => document.location.pathname.startsWith(p))) {
