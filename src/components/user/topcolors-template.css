@@ -165,6 +165,18 @@
 	z-index: 10000;
 }
 
+.oj-topcolors__toast-content {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.oj-topcolors__toast-swatch {
+	width: 16px;
+	height: 16px;
+	flex: 0 0 auto;
+}
+
 .oj-topcolors__toast--visible {
 	opacity: 1;
 	transform: translateY(0);

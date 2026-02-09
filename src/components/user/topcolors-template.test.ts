@@ -67,4 +67,43 @@ describe('topcolorsTemplate', () => {
 		const toast = document.getElementById('oj-topcolors-toast');
 		expect(toast?.textContent).toBe('Copied #fa61ff');
 	});
+
+	it('shows copied toast with matching swatch shape and color', async () => {
+		window.history.pushState({}, '', '/topcolors');
+
+		document.body.innerHTML = `
+			<div id="bigbox">
+				<table><tbody>
+					<tr><td>
+						<table><tbody>
+							<tr><td>#fa61ff</td><td bgcolor="#fa61ff"></td></tr>
+						</tbody></table>
+					</td></tr>
+				</tbody></table>
+			</div>
+		`;
+
+		const writeText = vi.fn().mockResolvedValue(undefined);
+		Object.defineProperty(navigator, 'clipboard', {
+			value: { writeText },
+			configurable: true,
+		});
+
+		const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.45);
+
+		topcolorsTemplate(document);
+		await flushEffects();
+
+		const firstCard = document.querySelector('.oj-topcolors__card') as HTMLAnchorElement;
+		firstCard.click();
+		await flushEffects();
+
+		const toast = document.getElementById('oj-topcolors-toast');
+		const swatch = toast?.querySelector('.oj-topcolors__toast-swatch') as HTMLElement | null;
+		expect(swatch).toBeTruthy();
+		expect(swatch?.classList.contains('oj-topcolors__swatch--diamond')).toBe(true);
+		expect(swatch?.style.backgroundColor).toBe('#fa61ff');
+
+		randomSpy.mockRestore();
+	});
 });

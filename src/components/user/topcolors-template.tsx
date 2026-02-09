@@ -10,7 +10,10 @@ interface TopColor {
 }
 
 const SWATCH_SHAPES = ['circle', 'pill', 'diamond', 'squircle', 'hex'] as const;
+type SwatchShape = (typeof SWATCH_SHAPES)[number];
+
 const HEX_REGEX = /#?([0-9a-f]{6})/i;
+
 const TOAST_ID = 'oj-topcolors-toast';
 const TOAST_VISIBLE_CLASS = 'oj-topcolors__toast--visible';
 const TOAST_HIDE_DELAY_MS = 1400;
@@ -30,7 +33,7 @@ const normalizeHex = (value: string): string | null => {
 	return `#${match[1].toLowerCase()}`;
 };
 
-const showCopyToast = (doc: Document, value: string) => {
+const showCopyToast = (doc: Document, value: string, shape: SwatchShape) => {
 	let toast = doc.getElementById(TOAST_ID) as HTMLDivElement | null;
 	if (!toast) {
 		toast = doc.createElement('div');
@@ -39,7 +42,20 @@ const showCopyToast = (doc: Document, value: string) => {
 		doc.body.appendChild(toast);
 	}
 
-	toast.textContent = `Copied ${value}`;
+	toast.replaceChildren();
+
+	const toastContent = doc.createElement('span');
+	toastContent.className = 'oj-topcolors__toast-content';
+
+	const swatch = doc.createElement('span');
+	swatch.className = `oj-topcolors__swatch oj-topcolors__swatch--${shape} oj-topcolors__toast-swatch`;
+	swatch.style.backgroundColor = value;
+
+	const label = doc.createElement('span');
+	label.textContent = `Copied ${value}`;
+
+	toastContent.append(swatch, label);
+	toast.appendChild(toastContent);
 	toast.classList.add(TOAST_VISIBLE_CLASS);
 
 	if (toastTimeout) {
@@ -149,7 +165,7 @@ const TopcolorsTemplate = ({ colors }: { colors: TopColor[] }) => (
 								event.preventDefault();
 								const didCopy = await copyToClipboard(document, color.hex);
 								if (didCopy) {
-									showCopyToast(document, color.hex);
+									showCopyToast(document, color.hex, shape);
 								}
 							}}
 						>
