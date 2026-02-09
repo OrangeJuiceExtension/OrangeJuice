@@ -72,6 +72,7 @@ export const createDropdownStyle = (className: string) => {
 			border: 1px solid #000;
 			margin-top: 0px;
 			position: absolute;
+			z-index: 11000;
 			background-color: #fff;
 			white-space: nowrap;
 		}
