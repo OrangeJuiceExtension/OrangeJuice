@@ -159,3 +159,9 @@ I'd love someone to take this on.
 Not much testing has been done while logged out. This isn't a focus for now since the real benefits come from being logged in, but it's something to keep in mind as the project matures.
 
 Make sure to run `bunx playwright install` before running tests.
+
+
+# Stars
+
+[![Star History Chart](https://api.star-history.com/svg?repos=OrangeJuiceExtension/OrangeJuice&type=Date)](https://www.star-history.com/#OrangeJuiceExtension/OrangeJuice/&Date)
+
