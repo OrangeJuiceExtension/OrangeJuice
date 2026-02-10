@@ -1,6 +1,10 @@
 import DOMPurify from 'dompurify';
 import type { ContentScriptContext } from '#imports';
-import { createDropdown, createDropdownStyle } from '@/components/common/dropdown';
+import {
+	createDropdown,
+	createDropdownStyle,
+	NAVBAR_DROPDOWN_CLASS,
+} from '@/components/common/dropdown';
 
 interface DropdownLink {
 	title: string;
@@ -108,7 +112,7 @@ export const profileLinksDropdown = (ctx: ContentScriptContext, doc: Document) =
 	doc.head.appendChild(style);
 
 	const dropdownEl = doc.createElement('div') as HTMLDivElement;
-	dropdownEl.classList.add(COMPONENT_NAME);
+	dropdownEl.classList.add(COMPONENT_NAME, NAVBAR_DROPDOWN_CLASS);
 
 	const updateUserLinkText = (isOpen: boolean) => {
 		userLink.innerHTML = `${userName} ${isOpen ? '▴' : '▾'}`;

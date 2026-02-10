@@ -45,10 +45,11 @@ export default defineContentScript({
 	async main(ctx: ContentScriptContext): Promise<void> {
 		const currentUrl = window.location.href;
 		createClientServices();
-		const username = dom.getUsername(document.body);
+		const username = await dom.getUsername(document.body);
 
-		topcolorsTemplate(document);
+		await topcolorsTemplate(document);
 		loginTemplate(document, username ?? null);
+		dom.ensureTopBarReadableText(document);
 		await enableDarkMode();
 
 		await Promise.all([

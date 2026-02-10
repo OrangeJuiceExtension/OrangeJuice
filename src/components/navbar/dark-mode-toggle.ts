@@ -54,7 +54,6 @@ export const darkModeToggle = async (
 			background: transparent !important;
 			border: 0 !important;
 			padding: 0;
-			margin-left: 2px;
 			cursor: pointer;
 			vertical-align: middle;
 			color: inherit !important;
@@ -70,11 +69,11 @@ export const darkModeToggle = async (
 			stroke-width: 1.6;
 		}
 		.${COMPONENT_NAME} .oj-dark-mode-icon--moon {
-			fill: #111;
+			fill: currentColor;
 			stroke: none;
 		}
 		.${COMPONENT_NAME}[data-mode='dark'] .oj-dark-mode-icon--moon {
-			fill: #111 !important;
+			fill: currentColor !important;
 			stroke: none !important;
 		}
 	`;

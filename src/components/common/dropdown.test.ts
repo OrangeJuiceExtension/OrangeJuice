@@ -243,6 +243,46 @@ describe('createDropdown', () => {
 		expect(onToggle).toHaveBeenCalledWith(false);
 	});
 
+	it('should close an already-open dropdown before opening another', () => {
+		const secondTriggerElement = doc.createElement('a');
+		const secondDropdownElement = doc.createElement('div');
+		doc.body.append(secondTriggerElement, secondDropdownElement);
+
+		createDropdown({
+			triggerElement,
+			dropdownElement,
+			doc,
+			ctx: MOCK_CONTEXT,
+		});
+		createDropdown({
+			triggerElement: secondTriggerElement,
+			dropdownElement: secondDropdownElement,
+			doc,
+			ctx: MOCK_CONTEXT,
+		});
+
+		vi.spyOn(triggerElement, 'getBoundingClientRect').mockReturnValue({ left: 100 } as DOMRect);
+		vi.spyOn(secondTriggerElement, 'getBoundingClientRect').mockReturnValue({
+			left: 200,
+		} as DOMRect);
+
+		const firstClickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+		Object.defineProperty(firstClickEvent, 'preventDefault', { value: vi.fn() });
+		Object.defineProperty(firstClickEvent, 'stopPropagation', { value: vi.fn() });
+		triggerElement.dispatchEvent(firstClickEvent);
+
+		expect(dropdownElement.classList.contains('active')).toBe(true);
+		expect(secondDropdownElement.classList.contains('active')).toBe(false);
+
+		const secondClickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+		Object.defineProperty(secondClickEvent, 'preventDefault', { value: vi.fn() });
+		Object.defineProperty(secondClickEvent, 'stopPropagation', { value: vi.fn() });
+		secondTriggerElement.dispatchEvent(secondClickEvent);
+
+		expect(dropdownElement.classList.contains('active')).toBe(false);
+		expect(secondDropdownElement.classList.contains('active')).toBe(true);
+	});
+
 	it('should clean up event listeners on context invalidation', () => {
 		createDropdown({
 			triggerElement,

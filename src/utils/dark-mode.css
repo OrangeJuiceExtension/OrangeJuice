@@ -33,45 +33,6 @@ html.oj-dark-mode {
 		border-color: #2a2d2f !important;
 	}
 
-	#hnmain > tr:first-child > td,
-	#hnmain > tr:first-child > td table,
-	#hnmain > tr:first-child > td tr,
-	#hnmain > tr:first-child > td td,
-	#hnmain > tbody > tr:first-child > td,
-	#hnmain > tbody > tr:first-child > td table,
-	#hnmain > tbody > tr:first-child > td tr,
-	#hnmain > tbody > tr:first-child > td td {
-		background: var(--oj-accent) !important;
-		color: #111 !important;
-	}
-
-	.pagetop,
-	.pagetop a,
-	.yclinks,
-	.yclinks a {
-		color: var(--oj-muted) !important;
-	}
-
-	.hnname,
-	.hnname a {
-		color: var(--oj-accent) !important;
-	}
-
-	#hnmain > tr:first-child .pagetop,
-	#hnmain > tr:first-child .pagetop a,
-	#hnmain > tr:first-child .yclinks,
-	#hnmain > tr:first-child .yclinks a,
-	#hnmain > tr:first-child .hnname,
-	#hnmain > tr:first-child .hnname a,
-	#hnmain > tbody > tr:first-child .pagetop,
-	#hnmain > tbody > tr:first-child .pagetop a,
-	#hnmain > tbody > tr:first-child .yclinks,
-	#hnmain > tbody > tr:first-child .yclinks a,
-	#hnmain > tbody > tr:first-child .hnname,
-	#hnmain > tbody > tr:first-child .hnname a {
-		color: #111 !important;
-	}
-
 	.subtext,
 	.subline,
 	.hnuser,
@@ -156,10 +117,6 @@ html.oj-dark-mode {
 		color: var(--oj-text) !important;
 	}
 
-	button.oj-dark-mode-toggle {
-		color: #111 !important;
-	}
-
 	pre,
 	code,
 	.comment code {
@@ -173,40 +130,31 @@ html.oj-dark-mode {
 		color: #e8e6e3;
 	}
 
-	.oj-hn-nav {
-		background: #ff6600;
-		color: #111;
-
-		a,
-		a:visited,
-		.pagetop,
-		.pagetop a,
-		.yclinks,
-		.yclinks a {
-			color: #111 !important;
-		}
-
-		.hnname,
-		.hnname a,
-		.hnname a:visited {
-			color: #111 !important;
-		}
-
-		button,
-		.oj_more_links_dropdown_button,
-		.oj_profile_dropdown_button,
-		.oj-dark-mode-toggle {
-			background: transparent !important;
-			color: #111 !important;
-		}
-	}
-
 	.oj-hn-footer {
 		color: #b5b2ac;
 
 		a,
 		.yclinks a {
 			color: #ac9d84;
+		}
+	}
+}
+
+html.oj-topbar-readable {
+	#hnmain > tr:first-child,
+	#hnmain > tbody > tr:first-child {
+		> td,
+		.pagetop,
+		.pagetop a,
+		.yclinks,
+		.yclinks a,
+		.hnname,
+		.hnname a,
+		button,
+		.oj_more_links_dropdown_button,
+		.oj_profile_dropdown_button,
+		.oj-dark-mode-toggle {
+			color: var(--oj-topbar-fg) !important;
 		}
 	}
 }

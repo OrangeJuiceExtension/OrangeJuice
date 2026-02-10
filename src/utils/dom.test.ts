@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ActivityId } from './activity-trail.ts';
-import { dom } from './dom.ts';
+import { dom, USERNAME_STORAGE_KEY } from './dom.ts';
+import lStorage from './local-storage.ts';
 
 const loggedInHtml = readFileSync(
 	join(import.meta.dirname, '__fixtures__', 'hn-logged-in.html'),
@@ -15,52 +16,162 @@ const loggedOutHtml = readFileSync(
 
 describe('dom', () => {
 	describe('getUsername', () => {
-		it('should return username when logged in', () => {
+		beforeEach(async () => {
+			await lStorage.setItem(USERNAME_STORAGE_KEY, null);
+		});
+
+		it('should return username when logged in', async () => {
 			document.body.innerHTML = loggedInHtml;
 
-			const username = dom.getUsername(document.body);
+			const username = await dom.getUsername(document.body);
 
 			expect(username).toBe('testuser');
 		});
 
-		it('should return username without down arrow', () => {
+		it('should return username without down arrow', async () => {
 			document.body.innerHTML = `
 				<span class="pagetop">
 					<a href="user?id=testuser" id="me">testuser ▾</a>
 				</span>
 			`;
 
-			const username = dom.getUsername(document.body);
+			const username = await dom.getUsername(document.body);
 
 			expect(username).toBe('testuser');
 		});
 
-		it('should return username without up arrow', () => {
+		it('should return username without up arrow', async () => {
 			document.body.innerHTML = `
 				<span class="pagetop">
 					<a href="user?id=testuser" id="me">testuser ▴</a>
 				</span>
 			`;
 
-			const username = dom.getUsername(document.body);
+			const username = await dom.getUsername(document.body);
 
 			expect(username).toBe('testuser');
 		});
 
-		it('should return undefined when logged out', () => {
+		it('should return undefined when logged out', async () => {
 			document.body.innerHTML = loggedOutHtml;
 
-			const username = dom.getUsername(document.body);
+			const username = await dom.getUsername(document.body);
 
 			expect(username).toBeUndefined();
 		});
 
-		it('should return undefined when pagetop is missing', () => {
+		it('should return undefined when pagetop is missing', async () => {
 			document.body.innerHTML = '<div>No pagetop here</div>';
 
-			const username = dom.getUsername(document.body);
+			const username = await dom.getUsername(document.body);
 
 			expect(username).toBeUndefined();
+		});
+
+		it('should read username from storage when page does not include username link', async () => {
+			await lStorage.setItem(USERNAME_STORAGE_KEY, 'saved-user');
+			document.body.innerHTML = '<div>No pagetop here</div>';
+
+			const username = await dom.getUsername(document.body);
+
+			expect(username).toBe('saved-user');
+		});
+
+		it('should persist username to storage after reading from page', async () => {
+			document.body.innerHTML = `
+				<span class="pagetop">
+					<a href="user?id=storeduser" id="me">storeduser ▾</a>
+				</span>
+			`;
+
+			const username = await dom.getUsername(document.body);
+
+			expect(username).toBe('storeduser');
+			expect(await lStorage.getItem<string>(USERNAME_STORAGE_KEY)).toBe('storeduser');
+		});
+
+		it('should update stored username when page username differs', async () => {
+			await lStorage.setItem(USERNAME_STORAGE_KEY, 'saved-user');
+			document.body.innerHTML = `
+				<span class="pagetop">
+					<a href="user?id=currentuser" id="me">currentuser ▾</a>
+				</span>
+			`;
+
+			const username = await dom.getUsername(document.body);
+
+			expect(username).toBe('currentuser');
+			expect(await lStorage.getItem<string>(USERNAME_STORAGE_KEY)).toBe('currentuser');
+		});
+	});
+
+	describe('ensureTopBarReadableText', () => {
+		beforeEach(() => {
+			document.documentElement.classList.remove('oj-topbar-readable');
+			document.documentElement.style.removeProperty('--oj-topbar-fg');
+		});
+
+		it('adds topbar readability class and light color variable for dark bgcolor', () => {
+			document.body.innerHTML = `
+				<table id="hnmain">
+					<tbody>
+						<tr>
+							<td bgcolor="#111111">
+								<span class="pagetop"><a href="/news">news</a></span>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			`;
+
+			dom.ensureTopBarReadableText(document);
+
+			expect(document.documentElement.classList.contains('oj-topbar-readable')).toBe(true);
+			expect(document.documentElement.style.getPropertyValue('--oj-topbar-fg')).toBe(
+				'#f1efec'
+			);
+		});
+
+		it('adds topbar readability class and dark color variable for light bgcolor', () => {
+			document.body.innerHTML = `
+				<table id="hnmain">
+					<tbody>
+						<tr>
+							<td bgcolor="#ffcc88">
+								<span class="pagetop"><a href="/news">news</a></span>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			`;
+
+			dom.ensureTopBarReadableText(document);
+
+			expect(document.documentElement.classList.contains('oj-topbar-readable')).toBe(true);
+			expect(document.documentElement.style.getPropertyValue('--oj-topbar-fg')).toBe(
+				'#111111'
+			);
+		});
+
+		it('removes topbar readability class and variable when bgcolor is missing', () => {
+			document.documentElement.classList.add('oj-topbar-readable');
+			document.documentElement.style.setProperty('--oj-topbar-fg', '#f1efec');
+			document.body.innerHTML = `
+				<table id="hnmain">
+					<tbody>
+						<tr>
+							<td>
+								<span class="pagetop"><a href="/news">news</a></span>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			`;
+
+			dom.ensureTopBarReadableText(document);
+
+			expect(document.documentElement.classList.contains('oj-topbar-readable')).toBe(false);
+			expect(document.documentElement.style.getPropertyValue('--oj-topbar-fg')).toBe('');
 		});
 	});
 

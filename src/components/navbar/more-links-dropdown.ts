@@ -1,5 +1,9 @@
 import type { ContentScriptContext } from '#imports';
-import { createDropdown, createDropdownStyle } from '@/components/common/dropdown';
+import {
+	createDropdown,
+	createDropdownStyle,
+	NAVBAR_DROPDOWN_CLASS,
+} from '@/components/common/dropdown';
 
 const linkDetails = [
 	{
@@ -101,7 +105,7 @@ export const moreLinksDropdown = (
 	moreLinksBtn.classList.add(`${COMPONENT_NAME}_button`);
 
 	const dropdownEl = doc.createElement('div') as HTMLDivElement;
-	dropdownEl.classList.add(COMPONENT_NAME);
+	dropdownEl.classList.add(COMPONENT_NAME, NAVBAR_DROPDOWN_CLASS);
 
 	for (const link of linkDetails) {
 		if (window.location.pathname === `/${link.title}`) {

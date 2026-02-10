@@ -39,7 +39,7 @@
 		grid-template-columns: 36px auto 1fr;
 		align-items: center;
 		gap: 10px;
-		padding: 4px 8px;
+		padding: 4px 36px 4px 8px;
 		border: 1px solid #d7d7c8;
 		border-radius: 6px;
 		background: #fbfbf4;
@@ -48,8 +48,45 @@
 		height: 28px;
 	}
 
+	.oj-topcolors__card-shell {
+		position: relative;
+	}
+
 	.oj-topcolors__card:hover {
 		background: #f5f5eb;
+	}
+
+	.oj-topcolors__save-button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+		padding: 0;
+		border: 0;
+		border-radius: 4px;
+		background: transparent;
+		color: #6c6555;
+		cursor: pointer;
+		position: absolute;
+		top: 50%;
+		right: 6px;
+		transform: translateY(-50%);
+	}
+
+	.oj-topcolors__save-button:hover {
+		background: #ecece0;
+	}
+
+	.oj-topcolors__save-button:focus-visible {
+		outline: 2px solid #ff6600;
+		outline-offset: 1px;
+	}
+
+	.oj-topcolors__save-icon {
+		width: 12px;
+		height: 12px;
+		stroke-width: 1.4;
 	}
 
 	.oj-topcolors__rank {
@@ -206,6 +243,22 @@ html.oj-dark-mode .oj-topcolors {
 
 	.oj-topcolors__hex {
 		color: #ac9d84;
+	}
+
+	.oj-topcolors__save-button {
+		color: #ac9d84;
+		background: transparent !important;
+		background-color: transparent !important;
+	}
+
+	.oj-topcolors__save-button:hover {
+		background: transparent !important;
+		background-color: transparent !important;
+	}
+
+	.oj-topcolors__save-button:active {
+		background: transparent !important;
+		background-color: transparent !important;
 	}
 }
 
