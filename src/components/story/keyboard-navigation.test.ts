@@ -207,6 +207,40 @@ describe('story keyboard navigation', () => {
 		}
 	});
 
+	it('should persist active story when selecting by click', async () => {
+		window.history.pushState({}, '', '/news');
+		Object.defineProperty(window, 'location', {
+			value: {
+				href: 'https://news.ycombinator.com/news',
+				pathname: '/news',
+				search: '',
+			},
+			writable: true,
+			configurable: true,
+		});
+		const storyData = createStoryData(doc);
+		const first = storyData.first();
+		if (!first) {
+			throw new Error('Expected story to exist');
+		}
+
+		await keyboardNavigation(ctx, doc, storyData, { helpModalOpen: false });
+
+		first.storyRow.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+		await vi.waitFor(() => {
+			expect(storyData.getActiveStory()?.id).toBe(first.id);
+		});
+
+		await vi.waitFor(() => {
+			expect(lStorage.setItem).toHaveBeenCalledWith(
+				'oj_active_story_id2',
+				expect.objectContaining({
+					'/news': first.id,
+				})
+			);
+		});
+	});
+
 	it('should deselect active story when clicking outside', async () => {
 		const storyData = createStoryData(doc);
 		const first = storyData.first();

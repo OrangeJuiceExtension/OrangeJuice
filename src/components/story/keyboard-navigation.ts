@@ -213,8 +213,8 @@ export const keyboardNavigation = async (
 	};
 	doc.addEventListener('keydown', keydownHandler);
 
-	const clickToFocus = (e: MouseEvent) => {
-		keyboardHandlers.activateElement(storyData, e.target as HTMLElement);
+	const clickToFocus = async (e: MouseEvent) => {
+		await keyboardHandlers.activateElement(storyData, e.target as HTMLElement);
 	};
 
 	storyData.addEventListener('click', clickToFocus);

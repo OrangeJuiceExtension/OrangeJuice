@@ -94,12 +94,12 @@ export class KeyboardHandlers {
 	}
 
 	// Activate item
-	activateElement(storyData: StoryData, toActivate: HTMLElement) {
+	async activateElement(storyData: StoryData, toActivate: HTMLElement): Promise<void> {
 		const story = storyData.getStoryFromElement(toActivate);
 		if (!story) {
 			return;
 		}
-		storyData.activate(story);
+		await this.activateStory(storyData, story);
 	}
 
 	favorite(storyData: StoryData) {
