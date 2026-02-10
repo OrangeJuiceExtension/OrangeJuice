@@ -1,5 +1,6 @@
 import type { ContentScriptContext } from '#imports';
 import { backticksToCode } from '@/components/comment/backticks-to-code.ts';
+import { commentBeautifulMermaid } from '@/components/comment/beautiful-mermaid.ts';
 import { changeDeadCommentsColor } from '@/components/comment/change-dead-comments-color.ts';
 import { collapseRoot } from '@/components/comment/collapse-root.ts';
 import { CommentData } from '@/components/comment/comment-data.ts';
@@ -16,7 +17,7 @@ import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 import type { ComponentFeature } from '@/utils/types.ts';
 
-const validPaths = [...paths.comments, ...paths.specialComments];
+const validPaths = [...paths.comments, ...paths.specialComments, '/edit'];
 
 export const comments: ComponentFeature = {
 	id: 'comments',
@@ -40,6 +41,7 @@ export const comments: ComponentFeature = {
 			Promise.resolve().then(() => indentToggle(ctx, document, allComments)),
 			Promise.resolve().then(() => changeDeadCommentsColor(document, allComments)),
 			Promise.resolve().then(() => backticksToCode(document, allComments)),
+			Promise.resolve().then(() => commentBeautifulMermaid(ctx, document, allComments)),
 			Promise.resolve().then(() => collapseRoot(ctx, document, allComments, commentData)),
 			Promise.resolve().then(() =>
 				keyboardNavigation(ctx, document, allComments, commentData, getNavState())

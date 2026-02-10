@@ -1,6 +1,12 @@
 import linkifyHtml from 'linkify-html';
 import type { ContentScriptContext } from '#imports';
 import { apiModule } from '@/utils/api.ts';
+import {
+	ensureMermaidStyles,
+	normalizeCodeWrappedMermaidBlocks,
+	renderMermaidInElement,
+	rerenderMermaidBlocksInElement,
+} from '@/utils/mermaid.ts';
 
 const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 export const USER_INFO_HOVER_CLASS = 'oj_user_info_hover';
@@ -10,6 +16,7 @@ export const showUserInfoOnHover = (
 	doc: Document,
 	username?: string
 ) => {
+	ensureMermaidStyles(doc);
 	const style = doc.createElement('style');
 	style.textContent = `
 		.${USER_INFO_HOVER_CLASS} {
@@ -45,21 +52,7 @@ export const showUserInfoOnHover = (
 		}
 
 		.${USER_INFO_HOVER_CLASS} td {
-			font-size: 10px !important;
 			vertical-align: top;
-		}
-		
-		.${USER_INFO_HOVER_CLASS} td:nth-child(2) {
-			word-break: break-word;
-		}
-		
-		.${USER_INFO_HOVER_CLASS} td a {
-			color: #000 !important;
-			text-decoration: none !important;
-		}
-
-		html.oj-dark-mode .${USER_INFO_HOVER_CLASS} td a {
-			color: #fff2d4 !important;
 		}
 	`;
 	doc.head.appendChild(style);
@@ -78,6 +71,7 @@ export const showUserInfoOnHover = (
 		const userName = user.innerText.trim().split(' ')[0];
 		if (cachedData.has(userName)) {
 			userDivBox.innerHTML = cachedData.get(userName)?.innerHTML || '';
+			await rerenderMermaidBlocksInElement(userDivBox, doc);
 			return;
 		}
 
@@ -111,7 +105,7 @@ export const showUserInfoOnHover = (
 						</tr>
 						${
 							userInfo.about
-								? `<tr><td>about:</td><td>${userInfo.about}</td></tr>`
+								? '<tr><td>about:</td><td data-oj-about-cell="true"></td></tr>'
 								: ''
 						}
 					</tbody>
@@ -119,6 +113,27 @@ export const showUserInfoOnHover = (
 			`;
 
 		userDivBox.innerHTML = linkifyHtml(table, { attributes: { rel: 'noopener' } });
+		if (userInfo.about) {
+			const aboutCell = userDivBox.querySelector<HTMLElement>(
+				'td[data-oj-about-cell="true"]'
+			);
+			if (aboutCell) {
+				aboutCell.innerHTML = userInfo.about;
+				await normalizeCodeWrappedMermaidBlocks(aboutCell);
+			}
+		}
+		const aboutRows = Array.from(userDivBox.querySelectorAll('tr'));
+		for (const row of aboutRows) {
+			const cells = row.querySelectorAll('td');
+			if (cells.length < 2 || cells[0]?.innerText.trim() !== 'about:') {
+				continue;
+			}
+			await renderMermaidInElement(cells[1], doc);
+			cells[1].innerHTML = linkifyHtml(cells[1].innerHTML, {
+				attributes: { rel: 'noopener' },
+			});
+			break;
+		}
 		cachedData.set(userName, userDivBox);
 	};
 
@@ -206,11 +221,32 @@ export const showUserInfoOnHover = (
 
 	doc.addEventListener('mousemove', onMouseMove);
 
+	const themeObserver = new MutationObserver(() => {
+		if (popover) {
+			rerenderMermaidBlocksInElement(popover, doc).catch((error: unknown) => {
+				console.error('Failed to rerender hover mermaid blocks after theme change:', error);
+			});
+		}
+		for (const cachedPopover of cachedData.values()) {
+			rerenderMermaidBlocksInElement(cachedPopover, doc).catch((error: unknown) => {
+				console.error(
+					'Failed to rerender cached hover mermaid blocks after theme change:',
+					error
+				);
+			});
+		}
+	});
+	themeObserver.observe(doc.documentElement, {
+		attributes: true,
+		attributeFilter: ['class'],
+	});
+
 	ctx.onInvalidated(() => {
 		for (const user of allUsers) {
 			user.removeEventListener('mouseover', onMouseOver);
 		}
 		doc.removeEventListener('mousemove', onMouseMove);
+		themeObserver.disconnect();
 	});
 
 	for (const user of allUsers) {

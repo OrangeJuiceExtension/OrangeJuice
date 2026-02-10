@@ -3,6 +3,8 @@ import type { ContentScriptContext } from '#imports';
 import { apiModule } from '@/utils/api';
 import { showUserInfoOnHover } from './show-user-info-hover';
 
+const renderMermaidMock = vi.fn();
+
 vi.mock('@/utils/api', () => {
 	const getUserInfo = vi.fn();
 	return {
@@ -14,7 +16,16 @@ vi.mock('@/utils/api', () => {
 });
 
 vi.mock('linkify-html', () => ({
-	default: (html: string) => html,
+	default: (html: string) =>
+		html.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" rel="noopener">$1</a>'),
+}));
+
+vi.mock('beautiful-mermaid', () => ({
+	renderMermaid: (code: string, options?: unknown) => renderMermaidMock(code, options),
+	THEMES: {
+		'github-light': { bg: '#ffffff', fg: '#111111' },
+		'github-dark': { bg: '#0d1117', fg: '#e6edf3' },
+	},
 }));
 
 describe('showUserInfoOnHover', () => {
@@ -25,6 +36,7 @@ describe('showUserInfoOnHover', () => {
 		document.body.innerHTML = '';
 		document.head.innerHTML = '';
 		cleanupFunctions = [];
+		renderMermaidMock.mockReset();
 
 		mockCtx = {
 			onInvalidated: vi.fn((callback: () => void) => {
@@ -60,7 +72,9 @@ describe('showUserInfoOnHover', () => {
 	it('should inject styles into the document head', () => {
 		showUserInfoOnHover(mockCtx, document);
 
-		const style = document.querySelector('style');
+		const style = Array.from(document.querySelectorAll('style')).find((item) =>
+			item.textContent?.includes('.oj_user_info_hover')
+		);
 		expect(style).toBeTruthy();
 		expect(style?.textContent).toContain('.oj_user_info_hover');
 		expect(style?.textContent).toContain('position: absolute');
@@ -174,17 +188,21 @@ describe('showUserInfoOnHover', () => {
 		// First mouseover
 		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 		await vi.waitFor(() => {
-			expect(document.querySelector('.oj_user_info_hover')).toBeTruthy();
+			const popover = document.querySelector('.oj_user_info_hover');
+			expect(popover?.textContent).toContain('testuser');
 		});
 
 		// Hide popover by moving mouse away
-		document.dispatchEvent(
-			new MouseEvent('mousemove', {
-				bubbles: true,
-				clientX: 9999,
-				clientY: 9999,
-			})
-		);
+		const hideEvent = new MouseEvent('mousemove', {
+			bubbles: true,
+			clientX: 9999,
+			clientY: 9999,
+		});
+		Object.defineProperty(hideEvent, 'target', {
+			value: document.body,
+			enumerable: true,
+		});
+		document.dispatchEvent(hideEvent);
 
 		await vi.waitFor(() => {
 			expect(document.querySelector('.oj_user_info_hover.active')).toBeFalsy();
@@ -212,13 +230,16 @@ describe('showUserInfoOnHover', () => {
 			expect(document.querySelector('.oj_user_info_hover.active')).toBeTruthy();
 		});
 
-		document.dispatchEvent(
-			new MouseEvent('mousemove', {
-				bubbles: true,
-				clientX: 9999,
-				clientY: 9999,
-			})
-		);
+		const hideEvent = new MouseEvent('mousemove', {
+			bubbles: true,
+			clientX: 9999,
+			clientY: 9999,
+		});
+		Object.defineProperty(hideEvent, 'target', {
+			value: document.body,
+			enumerable: true,
+		});
+		document.dispatchEvent(hideEvent);
 
 		await vi.waitFor(() => {
 			expect(document.querySelector('.oj_user_info_hover.active')).toBeFalsy();
@@ -298,13 +319,16 @@ describe('showUserInfoOnHover', () => {
 			expect(popover?.textContent).toContain('1000');
 		});
 
-		document.dispatchEvent(
-			new MouseEvent('mousemove', {
-				bubbles: true,
-				clientX: 9999,
-				clientY: 9999,
-			})
-		);
+		const hideEvent = new MouseEvent('mousemove', {
+			bubbles: true,
+			clientX: 9999,
+			clientY: 9999,
+		});
+		Object.defineProperty(hideEvent, 'target', {
+			value: document.body,
+			enumerable: true,
+		});
+		document.dispatchEvent(hideEvent);
 
 		await vi.waitFor(() => {
 			expect(document.querySelector('.oj_user_info_hover.active')).toBeFalsy();
@@ -400,5 +424,84 @@ describe('showUserInfoOnHover', () => {
 			const expectedDate = Intl.DateTimeFormat().format(testDate);
 			expect(popover?.textContent).toContain(expectedDate);
 		});
+	});
+
+	it('should render mermaid in about section', async () => {
+		const userLink = createUserLink('mermaiduser');
+		mockUserInfo('mermaiduser', {
+			about: '<mermaid>\\nflowchart TD\\n  A --> B\\n</mermaid>',
+		});
+		renderMermaidMock.mockResolvedValue('<svg id="about-mermaid"></svg>');
+
+		showUserInfoOnHover(mockCtx, document);
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+		await vi.waitFor(() => {
+			const popover = document.querySelector('.oj_user_info_hover');
+			expect(popover?.innerHTML).toContain('about-mermaid');
+		});
+
+		expect(renderMermaidMock).toHaveBeenCalledWith(
+			expect.stringContaining('flowchart TD'),
+			expect.objectContaining({ bg: '#ffffff' })
+		);
+	});
+
+	it('should render mermaid when about is code-wrapped mermaid text', async () => {
+		const userLink = createUserLink('wrappedmermaiduser');
+		mockUserInfo('wrappedmermaiduser', {
+			about: '<pre><code>&lt;mermaid&gt;\\nflowchart TD\\n  A --&gt; B\\n&lt;/mermaid&gt;</code></pre>',
+		});
+		renderMermaidMock.mockResolvedValue('<svg id="about-code-mermaid"></svg>');
+
+		showUserInfoOnHover(mockCtx, document);
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+		await vi.waitFor(() => {
+			const popover = document.querySelector('.oj_user_info_hover');
+			expect(popover?.innerHTML).toContain('about-code-mermaid');
+			expect(popover?.querySelector('pre')).toBeNull();
+			expect(popover?.querySelector('code')).toBeNull();
+		});
+	});
+
+	it('should keep plain url text linkified when rendering mermaid in about', async () => {
+		const userLink = createUserLink('linkifiedmermaiduser');
+		mockUserInfo('linkifiedmermaiduser', {
+			about: 'https://oj-hn.com<p></p><mermaid>flowchart TD\\n  A --&gt; B</mermaid>',
+		});
+		renderMermaidMock.mockResolvedValue('<svg id="about-link-mermaid"></svg>');
+
+		showUserInfoOnHover(mockCtx, document);
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+		await vi.waitFor(() => {
+			const popover = document.querySelector('.oj_user_info_hover');
+			const aboutLink = popover?.querySelector('a[href*="oj-hn.com"]');
+			expect(aboutLink).toBeTruthy();
+			expect(popover?.innerHTML).toContain('about-link-mermaid');
+		});
+	});
+
+	it('should use dark mermaid theme in hover when dark mode is active', async () => {
+		document.documentElement.classList.add('oj-dark-mode');
+		const userLink = createUserLink('darkmermaiduser');
+		mockUserInfo('darkmermaiduser', {
+			about: '<mermaid>\\nflowchart TD\\n  A --> B\\n</mermaid>',
+		});
+		renderMermaidMock.mockResolvedValue('<svg id="about-dark-mermaid"></svg>');
+
+		showUserInfoOnHover(mockCtx, document);
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+		await vi.waitFor(() => {
+			const popover = document.querySelector('.oj_user_info_hover');
+			expect(popover?.innerHTML).toContain('about-dark-mermaid');
+		});
+
+		expect(renderMermaidMock).toHaveBeenCalledWith(
+			expect.stringContaining('flowchart TD'),
+			expect.objectContaining({ bg: '#0d1117' })
+		);
 	});
 });
