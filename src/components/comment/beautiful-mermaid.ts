@@ -1,112 +1,104 @@
 import type { ContentScriptContext } from '#imports';
+import type { HNComment } from '@/components/comment/hn-comment.ts';
+import { getErrorMessage } from '@/utils/error.ts';
 import {
+	createMermaidSvgNodeFromMarkup,
 	ensureMermaidStyles,
-	extractMermaidCodesFromText,
-	normalizeCodeWrappedMermaidBlocks,
-	renderMermaidCode,
-	renderMermaidInElement,
+	extractMermaidFromText,
+	MERMAID,
+	renderMermaidsInPreCodeElements,
 	rerenderMermaidBlocksInElement,
 } from '@/utils/mermaid.ts';
 
-const BM_PREVIEW_CLASS = 'oj-comment-bm-preview';
-const BM_PREVIEW_STYLE_ID = 'oj-comment-bm-preview-style';
+const MERMAID_PREVIEW_CLASS = `oj-comment-${MERMAID}-preview`;
+const MERMAID_PREVIEW_STYLE_ID = `oj-comment-${MERMAID}-preview-style`;
 const COMMENT_TEXTAREA_SELECTOR = 'textarea[name="text"]';
+const MERMAID_PREVIEW_ERROR_CLASS = `oj-comment-${MERMAID}-preview-error`;
 
-const ensureStyles = (doc: Document): void => {
-	if (doc.getElementById(BM_PREVIEW_STYLE_ID)) {
+const ensurePreviewStyles = (doc: Document): void => {
+	if (doc.getElementById(MERMAID_PREVIEW_STYLE_ID)) {
 		return;
 	}
 	const style = doc.createElement('style');
-	style.id = BM_PREVIEW_STYLE_ID;
+	style.id = MERMAID_PREVIEW_STYLE_ID;
 	style.textContent = `
-		.${BM_PREVIEW_CLASS} {
-			display: block;
-			vertical-align: top;
-			margin: 10px 0px 5px 0px;
-			overflow: auto;
-		}
-
-		.${BM_PREVIEW_CLASS} svg {
-			max-width: 100%;
-			height: auto;
-		}
-
-		@media (max-width: 900px) {
-			.${BM_PREVIEW_CLASS} {
-				display: block;
-				max-width: 100%;
-				margin: 10px 0 0;
-			}
+		.${MERMAID_PREVIEW_ERROR_CLASS} {
+			color: red;
 		}
 	`;
 	doc.head.appendChild(style);
 };
 
-const renderCommentBlocks = async (comments: HTMLElement[]): Promise<void> => {
+const renderCommentBlocks = async (comments: HNComment[]): Promise<void> => {
 	for (const comment of comments) {
-		const commtext = comment.querySelector<HTMLElement>('.commtext');
+		const commtext = comment.commentRow.querySelector<HTMLElement>('.commtext');
 		if (!commtext) {
 			continue;
 		}
-		await normalizeCodeWrappedMermaidBlocks(commtext);
-		const hasMermaidElement = commtext.querySelector('mermaid') !== null;
-		if (!hasMermaidElement) {
-			continue;
-		}
-		await renderMermaidInElement(commtext, commtext.ownerDocument);
+		await renderMermaidsInPreCodeElements(commtext);
 	}
 };
 
 const ensurePreviewElement = (textarea: HTMLTextAreaElement): HTMLDivElement => {
-	const existing = textarea.parentElement?.querySelector<HTMLDivElement>(`.${BM_PREVIEW_CLASS}`);
+	const existing = textarea.parentElement?.querySelector<HTMLDivElement>(
+		`.${MERMAID_PREVIEW_CLASS}`
+	);
 	if (existing) {
 		return existing;
 	}
 	const preview = textarea.ownerDocument.createElement('div');
-	preview.className = BM_PREVIEW_CLASS;
+	preview.className = MERMAID_PREVIEW_CLASS;
 	textarea.insertAdjacentElement('afterend', preview);
 	return preview;
 };
 
 const setupTextareaPreview = (
 	textarea: HTMLTextAreaElement,
-	cleanupCallbacks: Array<() => void>,
-	previewRerenderCallbacks: Array<() => void>
+	cleanupCallbacks: (() => void)[],
+	previewRerenderCallbacks: (() => void)[]
 ): void => {
 	const preview = ensurePreviewElement(textarea);
 	let latestRunId = 0;
 
 	const updatePreview = async (): Promise<void> => {
-		const bmCodes = extractMermaidCodesFromText(textarea.value);
-		if (bmCodes.length === 0) {
+		const mermaids = extractMermaidFromText(textarea.value);
+		if (mermaids.length === 0) {
 			preview.replaceChildren();
 			return;
 		}
 
+		// It’s a simple stale-result guard. updatePreview() is async and can overlap on rapid input; latestRunId/runId
+		// ensures only the most recent invocation is allowed to update the preview. If an older run finishes after a
+		// newer one, it exits early so stale SVGs or error text don’t overwrite the latest render.
 		const runId = latestRunId + 1;
 		latestRunId = runId;
 		try {
-			const svgs: string[] = [];
-			for (const bmCode of bmCodes) {
-				const svg = await renderMermaidCode(bmCode, textarea.ownerDocument);
-				svgs.push(svg);
+			const svgNodes: SVGElement[] = [];
+			for (const mermaid of mermaids) {
+				const svgs = await createMermaidSvgNodeFromMarkup(mermaid, textarea.ownerDocument);
+				if (!svgs) {
+					continue;
+				}
+				svgNodes.push(svgs);
 			}
 			if (runId !== latestRunId) {
 				return;
 			}
-			preview.innerHTML = svgs.join('');
-		} catch (error) {
+			preview.classList.remove(MERMAID_PREVIEW_ERROR_CLASS);
+			preview.replaceChildren(...svgNodes);
+		} catch (error: unknown) {
 			if (runId !== latestRunId) {
 				return;
 			}
-			console.error('Failed to render beautiful-mermaid preview:', error);
-			preview.textContent = 'Could not render beautiful-mermaid diagram.';
+			console.error('Failed to render Mermaid preview:', error);
+			preview.textContent = `Could not render Mermaid diagram. ${getErrorMessage(error)}`;
+			preview.classList.add(MERMAID_PREVIEW_ERROR_CLASS);
 		}
 	};
 
 	const triggerUpdate = (): void => {
 		updatePreview().catch((error: unknown) => {
-			console.error('Failed to update beautiful-mermaid preview:', error);
+			console.error({ msg: 'Failed to update Mermaid preview:', error });
 		});
 	};
 
@@ -118,10 +110,16 @@ const setupTextareaPreview = (
 	triggerUpdate();
 };
 
+/**
+ * To be honest, I'm not sure if this is the best way to do this. Right now, we listen to
+ * all the changes to the textarea and rerender the preview with MutationObservers, but
+ * it might just be better to set up and tear things down each time. All of this feels a bit
+ * more complicated than it needs to be.
+ */
 export const commentBeautifulMermaid = async (
 	ctx: ContentScriptContext,
 	doc: Document,
-	comments: HTMLElement[]
+	comments: HNComment[]
 ): Promise<void> => {
 	const path = window.location.pathname;
 
@@ -130,13 +128,13 @@ export const commentBeautifulMermaid = async (
 		return;
 	}
 
-	ensureMermaidStyles(doc);
-	ensureStyles(doc);
-	await renderCommentBlocks(comments);
-
-	const cleanupCallbacks: Array<() => void> = [];
-	const previewRerenderCallbacks: Array<() => void> = [];
+	const cleanupCallbacks: (() => void)[] = [];
+	const previewRerenderCallbacks: (() => void)[] = [];
 	const seenTextareas = new WeakSet<HTMLTextAreaElement>();
+
+	ensureMermaidStyles(doc);
+	ensurePreviewStyles(doc);
+	await renderCommentBlocks(comments);
 
 	const attachTextarea = (textarea: HTMLTextAreaElement): void => {
 		if (seenTextareas.has(textarea)) {
@@ -167,14 +165,14 @@ export const commentBeautifulMermaid = async (
 
 	attachTextareasInContainer(doc);
 
-	const observer = new MutationObserver((mutations) => {
+	const bodyObserver = new MutationObserver((mutations) => {
 		for (const mutation of mutations) {
 			for (const addedNode of mutation.addedNodes) {
 				attachTextareasFromAddedNode(addedNode);
 			}
 		}
 	});
-	observer.observe(doc.body, { childList: true, subtree: true });
+	bodyObserver.observe(doc.body, { childList: true, subtree: true });
 
 	const themeObserver = new MutationObserver(() => {
 		rerenderMermaidBlocksInElement(doc, doc).catch((error: unknown) => {
@@ -184,14 +182,16 @@ export const commentBeautifulMermaid = async (
 			rerender();
 		}
 	});
+
 	themeObserver.observe(doc.documentElement, {
 		attributes: true,
 		attributeFilter: ['class'],
 	});
 
 	ctx.onInvalidated(() => {
-		observer.disconnect();
+		bodyObserver.disconnect();
 		themeObserver.disconnect();
+
 		for (const cleanup of cleanupCallbacks) {
 			cleanup();
 		}

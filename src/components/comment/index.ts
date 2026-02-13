@@ -41,7 +41,7 @@ export const comments: ComponentFeature = {
 			Promise.resolve().then(() => indentToggle(ctx, document, allComments)),
 			Promise.resolve().then(() => changeDeadCommentsColor(document, allComments)),
 			Promise.resolve().then(() => backticksToCode(document, allComments)),
-			Promise.resolve().then(() => commentBeautifulMermaid(ctx, document, allComments)),
+			Promise.resolve().then(() => commentBeautifulMermaid(ctx, document, hnComments)),
 			Promise.resolve().then(() => collapseRoot(ctx, document, allComments, commentData)),
 			Promise.resolve().then(() =>
 				keyboardNavigation(ctx, document, allComments, commentData, getNavState())
