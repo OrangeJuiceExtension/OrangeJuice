@@ -40,7 +40,7 @@ export default defineConfig({
 			96: '/icon/orange_juice_icon_96x96.png',
 			128: '/icon/orange_juice_icon_128x128.png',
 		},
-		permissions: ['history', 'storage', 'tabs', 'webNavigation'],
+		permissions: ['history', 'storage', 'tabs'],
 		host_permissions: ['https://squeeze.oj-hn.com/*'],
 	},
 	vite: () => ({
