@@ -117,6 +117,33 @@ describe('Story KeyboardHandlers', () => {
 		}
 	});
 
+	it('should skip dead or hidden HN rows when activating from next-page nav state', async () => {
+		const bigbox = doc.createElement('div');
+		const rows = createStoryRows(doc, 3);
+		const storyData = new StoryData(bigbox, rows);
+		const firstRow = rows[0];
+		if (!firstRow) {
+			throw new Error('Expected story row to exist');
+		}
+		firstRow.classList.add('noshow');
+
+		vi.mocked(lStorage.getItem).mockImplementation((key) => {
+			if (key === ACTIVE_STORY_KEY) {
+				return Promise.resolve({ '/news?p=2': 'missing' });
+			}
+			if (key === NAV_STATE_KEY) {
+				return Promise.resolve('next');
+			}
+			return Promise.resolve(null);
+		});
+
+		const keyboardHandlers = new KeyboardHandlers(doc);
+		await keyboardHandlers.checkNavState(storyData);
+
+		expect(storyData.getActiveStory()?.id).toBe('2');
+		expect(lStorage.setItem).toHaveBeenCalledWith(NAV_STATE_KEY, null);
+	});
+
 	it('should clear stored active story when missing on page', async () => {
 		const bigbox = doc.createElement('div');
 		const rows = createStoryRows(doc, 2);
@@ -233,5 +260,51 @@ describe('Story KeyboardHandlers', () => {
 
 		expect(storyData.getActiveStory()).toBeUndefined();
 		expect(hideReadStoriesOnce).toHaveBeenCalledWith(storyData);
+	});
+
+	describe('goBack', () => {
+		it('should navigate to first page when current page is 2', () => {
+			let href = 'https://news.ycombinator.com/news?p=2';
+			Object.defineProperty(window, 'location', {
+				value: {
+					get href() {
+						return href;
+					},
+					set href(value: string) {
+						href = value;
+					},
+					search: '?p=2',
+				},
+				writable: true,
+				configurable: true,
+			});
+
+			const keyboardHandlers = new KeyboardHandlers(doc);
+			keyboardHandlers.goBack();
+
+			expect(window.location.href).toBe('/news');
+		});
+
+		it('should decrement page when current page is greater than 2', () => {
+			let href = 'https://news.ycombinator.com/news?p=5';
+			Object.defineProperty(window, 'location', {
+				value: {
+					get href() {
+						return href;
+					},
+					set href(value: string) {
+						href = value;
+					},
+					search: '?p=5',
+				},
+				writable: true,
+				configurable: true,
+			});
+
+			const keyboardHandlers = new KeyboardHandlers(doc);
+			keyboardHandlers.goBack();
+
+			expect(window.location.href).toBe('/news?p=4');
+		});
 	});
 });

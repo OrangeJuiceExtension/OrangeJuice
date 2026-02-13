@@ -237,9 +237,15 @@ export const keyboardNavigation = async (
 
 	doc.addEventListener('click', documentClickHandler);
 
+	const pageshowHandler = async (): Promise<void> => {
+		await keyboardHandlers.checkNavState(storyData);
+	};
+	window.addEventListener('pageshow', pageshowHandler);
+
 	ctx.onInvalidated(() => {
 		doc.removeEventListener('keydown', keydownHandler);
 		storyData.removeEventListener('click', clickToFocus);
 		doc.removeEventListener('click', documentClickHandler);
+		window.removeEventListener('pageshow', pageshowHandler);
 	});
 };

@@ -6,6 +6,9 @@ import { StoryData } from '@/components/story/story-data.ts';
 import lStorage from '@/utils/local-storage.ts';
 import { paths } from '@/utils/paths.ts';
 
+const ACTIVE_STORY_KEY = 'oj_active_story_id2';
+const NAV_STATE_KEY = 'oj_page_nav_state';
+
 vi.mock('@/components/story/hide-read-stories.ts', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('@/components/story/hide-read-stories.ts')>();
 	return {
@@ -303,6 +306,32 @@ describe('story keyboard navigation', () => {
 
 		await vi.waitFor(() => {
 			expect(storyData.getActiveStory()?.id).toBe('2');
+		});
+	});
+
+	it('should activate last story on pageshow when nav state is prev', async () => {
+		window.history.pushState({}, '', '/news?p=1');
+		const storyData = createStoryData(doc);
+		let navState: 'prev' | null = null;
+
+		vi.mocked(lStorage.getItem).mockImplementation((key) => {
+			if (key === ACTIVE_STORY_KEY) {
+				return Promise.resolve({});
+			}
+			if (key === NAV_STATE_KEY) {
+				return Promise.resolve(navState);
+			}
+			return Promise.resolve(null);
+		});
+
+		await keyboardNavigation(ctx, doc, storyData, { helpModalOpen: false });
+		expect(storyData.getActiveStory()).toBeUndefined();
+
+		navState = 'prev';
+		window.dispatchEvent(new Event('pageshow'));
+
+		await vi.waitFor(() => {
+			expect(storyData.getActiveStory()?.id).toBe('3');
 		});
 	});
 });

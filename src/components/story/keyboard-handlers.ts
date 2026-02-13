@@ -173,7 +173,18 @@ export class KeyboardHandlers {
 
 	goBack() {
 		if (PAGE_PARAM_REGEX.test(window.location.search)) {
-			window.history.back();
+			const currentUrl = new URL(window.location.href);
+			const currentPage = Number.parseInt(currentUrl.searchParams.get('p') ?? '', 10);
+			if (Number.isNaN(currentPage) || currentPage < 2) {
+				window.history.back();
+				return;
+			}
+			if (currentPage === 2) {
+				currentUrl.searchParams.delete('p');
+			} else {
+				currentUrl.searchParams.set('p', `${currentPage - 1}`);
+			}
+			window.location.href = `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`;
 		}
 	}
 

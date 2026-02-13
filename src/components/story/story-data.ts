@@ -4,6 +4,10 @@ import { IndexedList } from '@/utils/indexed-list.ts';
 export const focusClass1 = 'oj_focused_story';
 export const focusClass2 = 'oj_focused_story_details';
 export const focusClass3 = 'oj_focused_story_spacer';
+const NOSHOW_CLASS = 'noshow';
+const DEAD_CLASS = 'dead';
+const DEADMARK_SELECTOR = '.deadmark';
+const DISPLAY_NONE = 'none';
 
 /**
  * This allows us to navigate and track a list of stories.
@@ -37,7 +41,7 @@ export class StoryData {
 
 	getNext(current: HNStory, skipHidden = true): HNStory | undefined {
 		let next = this.storiesList.getNext(current);
-		while (next && skipHidden && next.hidden()) {
+		while (next && skipHidden && this.shouldSkipForNavigation(next)) {
 			next = this.storiesList.getNext(next);
 		}
 		return next;
@@ -45,7 +49,7 @@ export class StoryData {
 
 	getPrevious(current: HNStory, skipHidden = true): HNStory | undefined {
 		let prev = this.storiesList.getPrevious(current);
-		while (prev && skipHidden && prev.hidden()) {
+		while (prev && skipHidden && this.shouldSkipForNavigation(prev)) {
 			prev = this.storiesList.getPrevious(prev);
 		}
 		return prev;
@@ -57,7 +61,7 @@ export class StoryData {
 		if (!first) {
 			return undefined;
 		}
-		if (!first.hidden()) {
+		if (!this.shouldSkipForNavigation(first)) {
 			return first;
 		}
 		return this.getNext(first, true);
@@ -69,10 +73,30 @@ export class StoryData {
 		if (!last) {
 			return undefined;
 		}
-		if (!last.hidden()) {
+		if (!this.shouldSkipForNavigation(last)) {
 			return last;
 		}
 		return this.getPrevious(last, true);
+	}
+
+	private shouldSkipForNavigation(story: HNStory): boolean {
+		if (story.hidden()) {
+			return true;
+		}
+		const row = story.storyRow;
+		if (
+			row.classList.contains(NOSHOW_CLASS) ||
+			row.classList.contains(DEAD_CLASS) ||
+			row.querySelector(DEADMARK_SELECTOR)
+		) {
+			return true;
+		}
+		if (row.style.display === DISPLAY_NONE) {
+			return true;
+		}
+		const doc = row.ownerDocument;
+		const display = doc.defaultView?.getComputedStyle(row).display;
+		return display === DISPLAY_NONE;
 	}
 
 	first(): HNStory | undefined {
