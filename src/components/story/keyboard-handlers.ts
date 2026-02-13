@@ -189,13 +189,15 @@ export class KeyboardHandlers {
 		await hideReadStoriesOnce(storyData);
 
 		const activeStory = storyData.getActiveStory();
-		if (activeStory) {
-			const nextStory = storyData.getNext(activeStory, true);
-			if (nextStory) {
-				await this.activateStory(storyData, nextStory);
-			} else {
-				await this.escape(storyData);
-			}
+		if (!activeStory?.hidden()) {
+			return;
+		}
+
+		const nextStory = storyData.getNext(activeStory, true);
+		if (nextStory) {
+			await this.activateStory(storyData, nextStory);
+		} else {
+			await this.escape(storyData);
 		}
 	}
 

@@ -165,7 +165,25 @@ describe('Story KeyboardHandlers', () => {
 		expect(storyData.getActiveStory()).toBeUndefined();
 	});
 
-	it('should activate next visible story before hiding read stories', async () => {
+	it('should keep active story when active story is not hidden after hiding read stories', async () => {
+		const bigbox = doc.createElement('div');
+		const rows = createStoryRows(doc, 3);
+		const storyData = new StoryData(bigbox, rows);
+		const firstStory = storyData.get('1');
+		if (!firstStory) {
+			throw new Error('Expected story to exist');
+		}
+		storyData.activate(firstStory);
+
+		const keyboardHandlers = new KeyboardHandlers(doc);
+
+		await keyboardHandlers.hideReadStoriesNow(storyData);
+
+		expect(storyData.getActiveStory()?.id).toBe('1');
+		expect(hideReadStoriesOnce).toHaveBeenCalledWith(storyData);
+	});
+
+	it('should activate next visible story when active story is hidden after hiding read stories', async () => {
 		const bigbox = doc.createElement('div');
 		const rows = createStoryRows(doc, 3);
 		const storyData = new StoryData(bigbox, rows);
@@ -180,6 +198,11 @@ describe('Story KeyboardHandlers', () => {
 		storyData.activate(firstStory);
 		secondStory.hide();
 
+		vi.mocked(hideReadStoriesOnce).mockImplementation(() => {
+			firstStory.hide();
+			return Promise.resolve();
+		});
+
 		const keyboardHandlers = new KeyboardHandlers(doc);
 
 		await keyboardHandlers.hideReadStoriesNow(storyData);
@@ -188,7 +211,7 @@ describe('Story KeyboardHandlers', () => {
 		expect(hideReadStoriesOnce).toHaveBeenCalledWith(storyData);
 	});
 
-	it('should escape when no next story exists before hiding read stories', async () => {
+	it('should escape when active hidden story has no next visible story', async () => {
 		const bigbox = doc.createElement('div');
 		const rows = createStoryRows(doc, 2);
 		const storyData = new StoryData(bigbox, rows);
@@ -197,6 +220,10 @@ describe('Story KeyboardHandlers', () => {
 			throw new Error('Expected story to exist');
 		}
 		storyData.activate(lastStory);
+		vi.mocked(hideReadStoriesOnce).mockImplementation(() => {
+			lastStory.hide();
+			return Promise.resolve();
+		});
 
 		vi.mocked(lStorage.getItem).mockResolvedValueOnce({ '/news?p=1': '2' });
 
