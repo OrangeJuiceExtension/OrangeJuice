@@ -259,13 +259,39 @@ describe('story keyboard navigation', () => {
 		expect(storyData.getActiveStory()).toBeUndefined();
 	});
 
-	it('should hide read stories when pressing H', async () => {
+	it('should hide read stories when pressing H without moving active story if active is not hidden', async () => {
 		const storyData = createStoryData(doc);
 		const first = storyData.first();
 		if (!first) {
 			throw new Error('Expected story to exist');
 		}
 		storyData.activate(first);
+
+		await keyboardNavigation(ctx, doc, storyData, { helpModalOpen: false });
+
+		doc.dispatchEvent(new KeyboardEvent('keydown', { key: 'H', shiftKey: true }));
+
+		await vi.waitFor(() => {
+			expect(hideReadStoriesOnce).toHaveBeenCalledWith(storyData);
+		});
+
+		await vi.waitFor(() => {
+			expect(storyData.getActiveStory()?.id).toBe('1');
+		});
+	});
+
+	it('should move to next story on H when active story becomes hidden', async () => {
+		const storyData = createStoryData(doc);
+		const first = storyData.first();
+		if (!first) {
+			throw new Error('Expected story to exist');
+		}
+		storyData.activate(first);
+
+		vi.mocked(hideReadStoriesOnce).mockImplementation(() => {
+			first.hide();
+			return Promise.resolve();
+		});
 
 		await keyboardNavigation(ctx, doc, storyData, { helpModalOpen: false });
 
