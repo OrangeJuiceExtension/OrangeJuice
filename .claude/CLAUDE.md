@@ -15,7 +15,8 @@ Agents must follow:
 ### Environment
 - Reference DOM: https://news.hackernews.com
 - Package manager: bun (never anything else)
-- Tests: bun run test (not any other service test, like pnpm or node).
+- Tests: `bun run test` (not any other service test, like pnpm or node).
+- It is always ok to run `bun run`
 
 ### Code style
 - Prefer for...of over forEach.
