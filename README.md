@@ -28,6 +28,7 @@ This is not a complete list of features, but rather a selection that showcases t
 | Feature | Light | Dark |
 | --- | --- | --- |
 | Inline Reply + Quote Selection | ![Inline reply light](docs/assets/inline-reply-light.png) | ![Inline reply dark](docs/assets/inline-reply-dark.png) |
+| Mermaid Diagram Rendering | [![Mermaid rendering light](docs/assets/mermaid-light.png)](docs/assets/mermaid-light.png) | [![Mermaid rendering dark](docs/assets/mermaid-dark.png)](docs/assets/mermaid-dark.png) |
 | Unread Comment Highlighting | ![Unread comments light](docs/assets/unread-light.png) | ![Unread comments dark](docs/assets/unread-dark.png) |
 | Hide Read Stories | ![Hide read stories light](docs/assets/hide-read-light.png) | ![Hide read stories dark](docs/assets/hide-read-dark.png) |
 | Keyboard Navigation | ![Keyboard navigation light](docs/assets/screenshot-help-light.png) | ![Keyboard navigation dark](docs/assets/screenshot-help-dark.png) |
@@ -81,6 +82,16 @@ Improves the comment reading experience with several visual enhancements:
 - **Backticks to code**: Converts all backticks in comments to HTML code elements
 - **Collapse root button**: Adds a "collapse root" button to thread pages that allows you to collapse all top-level comments at once, making it easier to navigate long comment threads and focus on specific sub-discussions.
 - **Auto-resize textarea**: Automatically adjusts the height of comment textareas based on their content, ensuring that users can see their entire comment without scrolling.
+
+### Mermaid notes
+Mermaid diagrams render automatically when wrapped in a `<mermaid>` block, with two leading spaces on every line inside the block. The spaces are represented by dots in the example below.
+
+```html
+..<mermaid>
+    graph TD
+    A[Start] --> B[Finish]
+..</mermaid>
+```
 </details>
 
 # Installation
@@ -164,4 +175,3 @@ Make sure to run `bunx playwright install` before running tests.
 # Stars
 
 [![Star History Chart](https://api.star-history.com/svg?repos=OrangeJuiceExtension/OrangeJuice&type=Date)](https://www.star-history.com/#OrangeJuiceExtension/OrangeJuice/&Date)
-
