@@ -39,13 +39,56 @@ const urlMatchesPattern = (url: string, pattern: string): boolean => {
 	return new RegExp(`^${regexPattern}$`).test(url);
 };
 
+const startActivityFetcher = async (username: string | undefined): Promise<void> => {
+	try {
+		if (!username) {
+			return;
+		}
+
+		const activityFetcher = newActivityFetcher(username);
+		await activityFetcher.start();
+	} catch (e) {
+		console.error({ error: 'Failed to start activity fetcher', e });
+	}
+};
+
+const runComponent = async (
+	component: ComponentFeature,
+	ctx: ContentScriptContext,
+	currentUrl: string,
+	username: string | undefined
+): Promise<void> => {
+	const hasMatchingPattern =
+		Array.isArray(component.matches) &&
+		component.matches.some((pattern) => urlMatchesPattern(currentUrl, pattern));
+	if (!hasMatchingPattern) {
+		return;
+	}
+
+	component.version = version;
+	component.username = username;
+
+	try {
+		await component.main(ctx);
+	} catch (e) {
+		console.error({
+			error: 'Failed to run component',
+			e,
+			stack: (e as Error).stack,
+			component: component.id,
+		});
+	}
+};
+
 export default defineContentScript({
 	matches: ['https://news.ycombinator.com/*'],
 	runAt: 'document_end',
 	async main(ctx: ContentScriptContext): Promise<void> {
-		const currentUrl = window.location.href;
 		createClientServices();
+
+		const currentUrl = window.location.href;
 		const username = await dom.getUsername(document.body);
+		const componentUsername = username ?? undefined;
 
 		await topcolorsTemplate(document);
 		loginTemplate(document, username ?? null);
@@ -53,42 +96,9 @@ export default defineContentScript({
 		await enableDarkMode();
 
 		await Promise.all([
-			Promise.resolve().then(async () => {
-				try {
-					if (username) {
-						const activityFetcher = newActivityFetcher(username);
-						await activityFetcher.start();
-					}
-				} catch (e) {
-					console.error({ error: 'Failed to start activity fetcher', e });
-					return;
-				}
-			}),
+			startActivityFetcher(username),
 			...components.map((component) =>
-				Promise.resolve().then(async () => {
-					let shouldRun = false;
-					for (const pattern of component?.matches as string[]) {
-						if (urlMatchesPattern(currentUrl, pattern)) {
-							shouldRun = true;
-							break;
-						}
-					}
-
-					if (shouldRun) {
-						try {
-							component.version = version;
-							component.username = username;
-							await component.main(ctx);
-						} catch (e) {
-							console.error({
-								error: 'Failed to run component',
-								e,
-								stack: (e as Error).stack,
-								component: component.id,
-							});
-						}
-					}
-				})
+				runComponent(component, ctx, currentUrl, componentUsername)
 			),
 		]);
 	},
