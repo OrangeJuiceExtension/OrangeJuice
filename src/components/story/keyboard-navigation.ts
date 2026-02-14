@@ -20,7 +20,7 @@ export const keyboardNavigation = async (
 	style.textContent = `
 		:root {
 		  --oj-focus-color: #f7694c;
-		  --oj-focus-w: 2px;
+		  --oj-focus-w: 1px;
 		}
 		
 		tr.athing > td:last-child {
