@@ -163,25 +163,17 @@ jobs:
           KEEP_COUNT=10
 
           RELEASES_JSON=$(gh api "repos/$REPO/releases?per_page=100")
-          TAGS_JSON=$(gh api "repos/$REPO/tags?per_page=100")
-
           echo "Current releases (newest first):"
           echo "$RELEASES_JSON" | jq -r '.[] | "\(.created_at)\t\(.tag_name)\t\(.name // "")"'
 
+          echo "$RELEASES_JSON" \
+            | jq -r --argjson keep "$KEEP_COUNT" 'sort_by(.created_at) | reverse | .[$keep:][] | .tag_name' \
+            | xargs -r -I{} sh -c 'echo "Deleting old release and tag: {}"; gh release delete "{}" --cleanup-tag --yes'
+
+          TAGS_JSON=$(gh api "repos/$REPO/tags?per_page=100")
           echo "Current tags (newest first):"
           echo "$TAGS_JSON" | jq -r '.[] | .name'
 
-          RELEASE_COUNT=$(echo "$RELEASES_JSON" | jq 'length')
-          if [ "$RELEASE_COUNT" -le "$KEEP_COUNT" ]; then
-            echo "Release count ($RELEASE_COUNT) is within keep limit ($KEEP_COUNT)."
-            exit 0
-          fi
-
-          TAGS_TO_DELETE=$(echo "$RELEASES_JSON" | jq -r --argjson keep "$KEEP_COUNT" '
-            sort_by(.created_at) | reverse | .[$keep:][] | .tag_name
-          ')
-
-          for tag in $TAGS_TO_DELETE; do
-            echo "Deleting release and tag: $tag"
-            gh release delete "$tag" --cleanup-tag --yes
-          done
+          echo "$TAGS_JSON" \
+            | jq -r --argjson keep "$KEEP_COUNT" '.[ $keep: ][] | .name | @uri' \
+            | xargs -r -I{} sh -c 'echo "Deleting extra tag ref: {}"; gh api -X DELETE "repos/'"$REPO"'/git/refs/tags/{}"'
