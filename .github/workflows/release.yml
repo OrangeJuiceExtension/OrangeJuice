@@ -156,12 +156,9 @@ jobs:
             -d '{"ref":"main"}'
 
       - name: Delete old releases
-        uses: Nats-ji/delete-old-releases@v1
+        uses: jay2610/delete-older-releases@1.0.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          remove-tags: true
-          keep-count: 10
-          keep-old-minor-releases: false
-          keep-old-minor-releases-count: 10
-          keep-old-minor-releases-by: 'patch'
-          semver-loose: true
+          keep_latest: 10
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
