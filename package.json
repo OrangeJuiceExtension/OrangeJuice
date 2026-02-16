@@ -17,8 +17,8 @@
 		"postinstall": "wxt prepare",
 		"test": "vitest",
 		"ci": "CI=true bun run --parallel check test build && bun run clean && CI=true bun run --parallel zip zip:firefox",
-		"check": "ultracite check",
-		"fix": "ultracite fix",
+		"check": "bun ./node_modules/ultracite/dist/index.js check",
+		"fix": "bun ./node_modules/ultracite/dist/index.js fix",
 		"prepare": "lefthook install",
 		"clean": "rm -rf .output build-docs playwright-report"
 	},
@@ -36,7 +36,7 @@
 		"zod": "^4.3.6"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.3.15",
+		"@biomejs/biome": "2.4.0",
 		"@playwright/test": "^1.58.2",
 		"@tailwindcss/vite": "^4.1.18",
 		"@testing-library/dom": "^10.4.1",
@@ -54,7 +54,7 @@
 		"postcss-preset-env": "^11.1.3",
 		"sharp": "^0.34.5",
 		"typescript": "^5.9.3",
-		"ultracite": "7.2.0",
+		"ultracite": "7.2.1",
 		"vitest": "^4.0.18",
 		"vitest-localstorage-mock": "^0.1.2",
 		"wxt": "^0.20.17"
