@@ -15,6 +15,7 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - name: Guard against release loop
