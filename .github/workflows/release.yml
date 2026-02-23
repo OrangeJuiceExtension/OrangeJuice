@@ -157,7 +157,7 @@ jobs:
             -d '{"ref":"main"}'
 
       - name: Publish to Chrome Web Store
-        run: publish-extension --chrome-zip .output/orangejuice-${{ steps.bump.outputs.new_version }}-chrome.zip
+        run: ./node_modules/.bin/publish-extension --chrome-zip .output/orangejuice-${{ steps.bump.outputs.new_version }}-chrome.zip
 
       - name: Prune old releases and tags
         env:
