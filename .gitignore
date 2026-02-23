@@ -30,6 +30,6 @@ web-ext.config.ts
 playwright-report/
 test-results/
 
-bpp-keys.jsonc
+.env.submit*
 
 build-docs
