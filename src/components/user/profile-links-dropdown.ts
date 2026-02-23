@@ -7,8 +7,8 @@ import {
 } from '@/components/common/dropdown';
 
 interface DropdownLink {
-	title: string;
 	path: string;
+	title: string;
 }
 
 const TRAILING_PIPE_REGEX = /\|\s*$/;

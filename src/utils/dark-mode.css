@@ -12,14 +12,14 @@ html.oj-dark-mode {
 
 	&,
 	& body {
-		background: var(--oj-bg) !important;
 		color: var(--oj-text) !important;
+		background: var(--oj-bg) !important;
 	}
 
 	#hnmain,
 	[bgcolor="#f6f6ef"] {
-		background-color: #302921 !important;
 		color: var(--oj-text) !important;
+		background-color: #302921 !important;
 	}
 
 	#bigbox,
@@ -70,8 +70,8 @@ html.oj-dark-mode {
 
 	.oj_link_button,
 	.oj-dark-mode-toggle {
-		background: transparent !important;
 		color: inherit !important;
+		background: transparent !important;
 	}
 
 	.subline .oj_link_button {
@@ -102,8 +102,8 @@ html.oj-dark-mode {
 	}
 
 	button {
-		background-color: var(--oj-surface) !important;
 		color: var(--oj-text) !important;
+		background-color: var(--oj-surface) !important;
 		border-color: var(--oj-border) !important;
 	}
 
@@ -120,8 +120,8 @@ html.oj-dark-mode {
 	pre,
 	code,
 	.comment code {
-		background: var(--oj-surface-2) !important;
 		color: #ddd9d2 !important;
+		background: var(--oj-surface-2) !important;
 		border-color: var(--oj-border) !important;
 	}
 

@@ -1,8 +1,8 @@
 const indexMarkerRegex = /^\[?(\d+)[\]:.]?[:.]?$/;
 
 export interface ReferenceLinks {
-	index: number;
 	href: string;
+	index: number;
 }
 
 export function parseReferenceLinks(activeItem: HTMLElement): ReferenceLinks[] {

@@ -37,10 +37,10 @@ export const ActivityTypes: ActivityType[] = [
 type HNItemId = string;
 
 export interface ActivityDetail {
-	id: HNItemId;
-	type: ActivityType;
 	auth?: string;
 	exp: number;
+	id: HNItemId;
+	type: ActivityType;
 }
 
 type StoredActivityDetail = Omit<ActivityDetail, 'type'>;

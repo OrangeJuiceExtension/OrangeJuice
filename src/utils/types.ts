@@ -38,8 +38,8 @@ export const SavedItemTypes = [
 ];
 
 export interface SavedItem {
-	id: string;
 	auth?: string;
+	id: string;
 	type: SavedItemType;
 }
 

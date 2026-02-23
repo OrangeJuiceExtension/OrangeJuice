@@ -2,9 +2,9 @@ import type { Adapter, Message, OnMessage, SendMessage } from 'comctx';
 import { type Browser, browser } from '#imports';
 
 export interface MessageMeta {
-	url: string;
 	injector?: 'content' | 'popup';
 	sender?: Browser.runtime.MessageSender;
+	url: string;
 }
 export const TAB_ID_NONE = -1;
 

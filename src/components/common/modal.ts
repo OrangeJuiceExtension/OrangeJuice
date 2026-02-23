@@ -4,9 +4,9 @@ const HN_ORANGE = '#ff6600';
 const HN_BACKGROUND = '#f6f6ef';
 
 export interface ModalOptions {
-	doc: Document;
-	ctx: ContentScriptContext;
 	content: string | HTMLElement;
+	ctx: ContentScriptContext;
+	doc: Document;
 	onClose?: () => void;
 	variant?: 'default' | 'shortcuts';
 }

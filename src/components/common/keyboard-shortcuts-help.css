@@ -8,14 +8,14 @@
 		align-items: flex-start;
 
 		&.oj-shortcuts-help__row--top {
-			margin-bottom: 24px;
 			align-items: center;
+			margin-bottom: 24px;
 		}
 	}
 
 	.oj-shortcuts-help__brand {
-		flex: 1;
 		display: flex;
+		flex: 1;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
@@ -42,18 +42,18 @@
 	}
 
 	.oj-shortcuts-help__heading {
+		padding-bottom: 8px;
 		margin-top: 0;
 		margin-bottom: 8px;
 		color: #000;
-		padding-bottom: 8px;
 		border-bottom: 1px solid #ff6600;
 	}
 
 	.oj-shortcuts-help__note {
-		font-size: 0.85em;
-		color: #666;
 		margin-top: 8px;
 		margin-bottom: 6px;
+		font-size: 0.85em;
+		color: #666;
 	}
 
 	.oj-shortcuts-help__table {
@@ -62,9 +62,9 @@
 	}
 
 	.oj-shortcuts-help__key {
+		width: 30%;
 		padding: 3px 8px;
 		font-weight: bold;
-		width: 30%;
 		white-space: nowrap;
 	}
 

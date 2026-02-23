@@ -13,7 +13,6 @@
 }
 
 html.oj-dark-mode {
-	color-scheme: dark;
 	--primary: #ff6600;
 	--primary-dark: #ff7a29;
 	--bg: rgb(41, 40, 35);
@@ -25,12 +24,13 @@ html.oj-dark-mode {
 	--note-bg: rgb(44, 42, 31);
 	--note-border: #ff6600;
 	--note-text: #e8e6e3;
+	color-scheme: dark;
 }
 
 * {
-	margin: 0;
-	padding: 0;
 	box-sizing: border-box;
+	padding: 0;
+	margin: 0;
 }
 
 body.oj-docs-page {
@@ -43,33 +43,33 @@ body.oj-docs-page {
 }
 
 main h1 {
-	color: var(--primary);
-	margin-bottom: 1.5rem;
-	border-bottom: 2px solid var(--primary);
 	padding-bottom: 0.5rem;
+	margin-bottom: 1.5rem;
+	color: var(--primary);
+	border-bottom: 2px solid var(--primary);
 }
 
 main h2 {
-	color: var(--primary);
 	margin-bottom: 1rem;
+	color: var(--primary);
 }
 
 main ul {
-	list-style: none;
 	margin: 1.5rem 0;
+	list-style: none;
 }
 
 main li {
-	padding: 0.5rem 0 0.5rem 1.5rem;
 	position: relative;
+	padding: 0.5rem 0 0.5rem 1.5rem;
 }
 
 main li:before {
-	content: "•";
-	color: var(--primary);
-	font-weight: bold;
 	position: absolute;
 	left: 0;
+	font-weight: bold;
+	color: var(--primary);
+	content: "•";
 }
 
 main p {
@@ -86,21 +86,21 @@ main a:hover {
 }
 
 .friendly-note {
-	background: var(--note-bg);
 	padding: 1rem;
-	border-radius: 8px;
-	border-left: 4px solid var(--primary);
 	margin: 2rem 0;
+	background: var(--note-bg);
+	border-left: 4px solid var(--primary);
+	border-radius: 8px;
 }
 
 .oj-docs-topbar {
 	display: flex;
+	gap: 1rem;
 	align-items: center;
 	justify-content: space-between;
-	gap: 1rem;
-	margin: 1.25rem auto 0.75rem;
 	max-width: 1000px;
 	padding: 0 1rem;
+	margin: 1.25rem auto 0.75rem;
 }
 
 .oj-docs-nav {
@@ -111,38 +111,38 @@ main a:hover {
 
 .oj-docs-nav__link,
 .oj-docs-theme-toggle {
-	text-decoration: none;
-	color: var(--text-light);
 	font-weight: 600;
+	color: var(--text-light);
+	text-decoration: none;
+	background: var(--bg-alt);
 	border: 1px solid var(--border);
 	border-radius: 999px;
-	background: var(--bg-alt);
 }
 
 .oj-docs-nav__link {
-	font-size: 0.95rem;
 	padding: 0.35rem 0.75rem;
+	font-size: 0.95rem;
 }
 
 .oj-docs-nav__link--github {
 	display: inline-flex;
-	align-items: center;
 	gap: 0.45rem;
-	background: var(--primary);
+	align-items: center;
 	color: #ffffff;
+	background: var(--primary);
 	border-color: var(--primary);
 }
 
 .oj-docs-nav__link--github:hover {
-	background: var(--primary-dark);
 	color: #ffffff;
+	background: var(--primary-dark);
 	border-color: var(--primary-dark);
 }
 
 .oj-docs-github-icon {
+	display: inline-block;
 	width: 16px;
 	height: 16px;
-	display: inline-block;
 	fill: currentColor;
 }
 
@@ -154,25 +154,25 @@ main a:hover {
 }
 
 .oj-docs-nav__link--github:hover {
-	background: var(--primary-dark);
 	color: #ffffff;
+	background: var(--primary-dark);
 	border-color: var(--primary-dark);
 }
 
 .oj-docs-theme-toggle {
-	color: var(--text);
-	padding: 0.35rem 0.75rem;
-	font-size: 0.9rem;
-	cursor: pointer;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	padding: 0.35rem 0.75rem;
+	font-size: 0.9rem;
+	color: var(--text);
+	cursor: pointer;
 }
 
 .oj-docs-theme-toggle .oj-dark-mode-icon {
+	display: inline-block;
 	width: 32px;
 	height: 32px;
-	display: inline-block;
 }
 
 .oj-docs-theme-toggle .oj-dark-mode-icon--sun {
@@ -192,27 +192,27 @@ html.oj-dark-mode .oj-docs-theme-toggle .oj-dark-mode-icon--moon {
 
 .container {
 	max-width: 1000px;
-	margin: 0 auto;
 	padding: 0 1.5rem;
+	margin: 0 auto;
 }
 
 header {
-	text-align: center;
-	padding: 4rem 0 3rem;
 	position: relative;
+	padding: 4rem 0 3rem;
 	overflow: hidden;
+	text-align: center;
 }
 
 .logo {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	align-items: center;
+	justify-content: center;
+	margin-bottom: 1rem;
 	font-size: 4rem;
 	font-weight: 700;
 	color: var(--primary);
-	margin-bottom: 1rem;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 0.5rem;
 }
 
 .logo img {
@@ -226,30 +226,30 @@ header {
 }
 
 .tagline {
-	font-size: 1.5rem;
-	color: var(--text-light);
-	font-weight: 500;
 	margin-bottom: 2rem;
+	font-size: 1.5rem;
+	font-weight: 500;
+	color: var(--text-light);
 }
 
 .hero-why {
 	max-width: 760px;
 	margin: 0 auto 2rem;
-	color: var(--text-light);
 	font-size: 1.05rem;
+	color: var(--text-light);
 }
 
 .cta-group {
 	display: flex;
-	gap: 1rem;
 	flex-wrap: wrap;
+	gap: 1rem;
 	justify-content: center;
 }
 
 .btn-github {
 	display: inline-flex;
-	align-items: center;
 	gap: 0.5rem;
+	align-items: center;
 }
 
 .btn-github-icon {
@@ -267,54 +267,55 @@ header {
 	align-items: center;
 	justify-content: center;
 	padding: 1rem 2rem;
-	border-radius: 8px;
 	font-size: 1rem;
 	font-weight: 600;
 	text-decoration: none;
-	transition: all 0.2s ease;
 	cursor: pointer;
 	border: none;
+	border-radius: 8px;
+	transition: all 0.2s ease;
 }
 
 .btn-primary {
-	background: var(--primary);
 	color: #ffffff;
+	background: var(--primary);
 }
 
 .btn-primary:hover {
 	background: var(--primary-dark);
-	transform: translateY(-2px);
 	box-shadow: 0 8px 24px rgba(255, 96, 0, 0.2);
+	transform: translateY(-2px);
 }
 
 .btn-secondary {
-	background: var(--bg-alt);
 	color: var(--text);
+	background: var(--bg-alt);
 	border: 2px solid var(--border);
 }
 
 .btn-secondary:hover {
-	border-color: var(--primary);
 	color: var(--primary);
+	border-color: var(--primary);
 	transform: translateY(-2px);
 }
 
 .section-title {
+	margin-bottom: 3rem;
 	font-size: 2.25rem;
 	font-weight: 700;
-	text-align: center;
-	margin-bottom: 3rem;
 	color: var(--text);
+	text-align: center;
 }
 
 .section-intro {
-	color: var(--text-light);
 	max-width: 760px;
 	margin: 0 auto 2rem;
+	color: var(--text-light);
 	text-align: center;
 }
 
 .why-install {
+	padding: 1.75rem 2rem 2.25rem;
 	background:
 		radial-gradient(
 			circle at top,
@@ -322,9 +323,8 @@ header {
 			transparent 48%
 		),
 		linear-gradient(135deg, var(--bg-alt) 0%, var(--bg) 100%);
-	border-radius: 16px;
-	padding: 1.75rem 2rem 2.25rem;
 	border: 1px solid var(--border);
+	border-radius: 16px;
 }
 
 .why-grid {
@@ -339,10 +339,10 @@ header {
 }
 
 .why-card {
+	padding: 1.25rem;
 	background: var(--bg);
 	border: 1px solid var(--border);
 	border-radius: 12px;
-	padding: 1.25rem;
 	box-shadow: 0 8px 20px var(--shadow);
 	transition: transform 0.2s ease;
 }
@@ -363,15 +363,15 @@ header {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: 999px;
-	background: linear-gradient(90deg, var(--primary), var(--primary-dark));
-	color: #fff;
 	padding: 0.3rem 0.8rem;
 	margin-bottom: 0.75rem;
 	font-size: 0.78rem;
 	font-weight: 800;
-	letter-spacing: 0.08em;
+	color: #fff;
 	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+	border-radius: 999px;
 	box-shadow: 0 8px 18px rgba(255, 102, 0, 0.25);
 }
 
@@ -381,10 +381,10 @@ header {
 }
 
 .feature-showcase {
-	background: var(--bg-alt);
-	border-radius: 16px;
 	padding: 1.75rem 2rem 2.25rem;
+	background: var(--bg-alt);
 	border: 1px solid var(--border);
+	border-radius: 16px;
 }
 
 .feature-showcase .section-title {
@@ -402,15 +402,14 @@ header {
 }
 
 .showcase-card {
+	padding: 1.5rem;
 	background: var(--bg);
 	border: 1px solid var(--border);
 	border-radius: 12px;
-	padding: 1.5rem;
 }
 
 .showcase-card--more {
 	padding: 1.1rem 1.5rem;
-	border: 1px solid rgba(255, 102, 0, 0.5);
 	background:
 		radial-gradient(
 			circle at 50% 0%,
@@ -418,17 +417,18 @@ header {
 			rgba(255, 102, 0, 0.02) 55%
 		),
 		var(--bg);
+	border: 1px solid rgba(255, 102, 0, 0.5);
 	box-shadow: 0 12px 28px rgba(255, 102, 0, 0.18);
 }
 
 .showcase-more {
 	margin: 0;
-	text-align: center;
 	font-size: clamp(1.05rem, 2.2vw, 1.35rem);
 	font-weight: 800;
-	letter-spacing: 0.02em;
 	color: #ff7a29;
+	text-align: center;
 	text-transform: uppercase;
+	letter-spacing: 0.02em;
 }
 
 .screenshot-pair {
@@ -446,8 +446,8 @@ header {
 	display: block;
 	width: 100%;
 	height: auto;
-	border-radius: 8px;
 	border: 1px solid var(--border);
+	border-radius: 8px;
 	box-shadow: 0 8px 20px var(--shadow);
 }
 
@@ -468,10 +468,16 @@ header {
 }
 
 .screenshot-placeholder {
-	min-height: 180px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	width: 100%;
-	border-radius: 8px;
-	border: 2px dashed var(--border);
+	min-height: 180px;
+	padding: 1rem;
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: var(--text-light);
+	text-align: center;
 	background:
 		radial-gradient(
 			circle at 20% 10%,
@@ -479,14 +485,8 @@ header {
 			transparent 45%
 		),
 		linear-gradient(120deg, var(--bg-alt), var(--bg));
-	color: var(--text-light);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 1rem;
-	text-align: center;
-	font-size: 0.95rem;
-	font-weight: 600;
+	border: 2px dashed var(--border);
+	border-radius: 8px;
 }
 
 .shot figcaption {
@@ -496,6 +496,7 @@ header {
 }
 
 .trust-section {
+	padding: 2.25rem 2rem;
 	background:
 		radial-gradient(
 			circle at top right,
@@ -505,7 +506,6 @@ header {
 		linear-gradient(135deg, var(--bg-alt) 0%, var(--bg) 100%);
 	border: 1px solid var(--border);
 	border-radius: 16px;
-	padding: 2.25rem 2rem;
 }
 
 .trust-section .section-title {
@@ -523,10 +523,10 @@ header {
 }
 
 .trust-card {
+	padding: 1.25rem;
 	background: var(--bg);
 	border: 1px solid var(--border);
 	border-radius: 12px;
-	padding: 1.25rem;
 	box-shadow: 0 8px 20px var(--shadow);
 }
 
@@ -556,8 +556,8 @@ body.oj-docs-lightbox-open {
 	z-index: 1;
 	width: min(96vw, 1440px);
 	max-height: 92vh;
-	margin: 4vh auto;
 	padding: 0.5rem;
+	margin: 4vh auto;
 	background: var(--bg);
 	border: 1px solid var(--border);
 	border-radius: 12px;
@@ -566,19 +566,19 @@ body.oj-docs-lightbox-open {
 
 .oj-docs-lightbox__close {
 	display: inline-flex;
+	padding: 0.4rem 0.8rem;
 	margin: 0 0 0.5rem auto;
-	background: var(--bg-alt);
+	font-weight: 600;
 	color: var(--text);
+	cursor: pointer;
+	background: var(--bg-alt);
 	border: 1px solid var(--border);
 	border-radius: 999px;
-	padding: 0.4rem 0.8rem;
-	font-weight: 600;
-	cursor: pointer;
 }
 
 .oj-docs-lightbox__close:hover {
-	border-color: var(--primary);
 	color: var(--primary);
+	border-color: var(--primary);
 }
 
 .oj-docs-lightbox__close:focus-visible {
@@ -603,46 +603,48 @@ body.oj-docs-lightbox-open {
 }
 
 .feature-card {
-	background: var(--bg-alt);
 	padding: 2rem;
-	border-radius: 12px;
+	background: var(--bg-alt);
 	border: 1px solid var(--border);
+	border-radius: 12px;
 	transition: all 0.2s ease;
 }
 
 .feature-card:hover {
-	transform: translateY(-4px);
-	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
 	border-color: var(--primary);
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+	transform: translateY(-4px);
 }
 
 .feature-icon {
-	width: 48px;
-	height: 48px;
-	background: var(--primary);
-	border-radius: 12px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	width: 48px;
+	height: 48px;
 	margin-bottom: 1.5rem;
 	font-size: 1.5rem;
-	color: #ffffff;
 	font-weight: 700;
+	color: #ffffff;
+	background: var(--primary);
+	border-radius: 12px;
 }
 
 .feature-title {
+	margin-bottom: 0.75rem;
 	font-size: 1.25rem;
 	font-weight: 600;
-	margin-bottom: 0.75rem;
 	color: var(--text);
 }
 
 .feature-desc {
-	color: var(--text-light);
 	line-height: 1.7;
+	color: var(--text-light);
 }
 
 .installation {
+	padding: 3rem;
+	margin-bottom: 4rem;
 	background:
 		radial-gradient(
 			circle at top,
@@ -650,29 +652,27 @@ body.oj-docs-lightbox-open {
 			transparent 46%
 		),
 		linear-gradient(135deg, var(--bg-alt) 0%, var(--bg) 100%);
-	border-radius: 16px;
-	padding: 3rem;
-	margin-bottom: 4rem;
 	border: 1px solid var(--border);
+	border-radius: 16px;
 }
 
 .install-hero {
-	text-align: center;
 	margin-bottom: 1rem;
+	text-align: center;
 }
 
 .install-kicker {
 	display: inline-block;
-	margin: 0 0 0.6rem;
 	padding: 0.25rem 0.75rem;
-	border-radius: 999px;
-	background: rgba(255, 102, 0, 0.14);
-	border: 1px solid rgba(255, 102, 0, 0.28);
-	color: var(--primary-dark);
+	margin: 0 0 0.6rem;
 	font-size: 0.78rem;
 	font-weight: 800;
-	letter-spacing: 0.08em;
+	color: var(--primary-dark);
 	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	background: rgba(255, 102, 0, 0.14);
+	border: 1px solid rgba(255, 102, 0, 0.28);
+	border-radius: 999px;
 }
 
 .oj-dark-mode .install-kicker {
@@ -684,27 +684,27 @@ body.oj-docs-lightbox-open {
 }
 
 .installation .section-title a {
-	color: var(--text);
-	text-decoration: none;
 	display: inline-block;
 	padding: 0 0 0.25rem;
 	font-size: clamp(2rem, 4.2vw, 2.8rem);
 	font-weight: 800;
 	line-height: 1.05;
-	border-bottom: 3px solid rgba(255, 102, 0, 0.65);
+	color: var(--text);
+	text-decoration: none;
 	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+	border-bottom: 3px solid rgba(255, 102, 0, 0.65);
 }
 
 .oj-docs-install-intro {
-	text-align: center;
 	margin-bottom: 2rem;
 	font-weight: 700;
+	text-align: center;
 }
 
 .oj-docs-install-secondary {
-	text-align: center;
 	margin: 0 0 2.5rem;
 	color: var(--text-light);
+	text-align: center;
 }
 
 .oj-docs-install-secondary a {
@@ -712,14 +712,14 @@ body.oj-docs-lightbox-open {
 }
 
 .oj-docs-install-cta {
-	text-align: center;
 	margin-bottom: 3rem;
+	text-align: center;
 }
 
 .oj-docs-install-heading {
+	margin-bottom: 1rem;
 	font-size: 1.5rem;
 	font-weight: 600;
-	margin-bottom: 1rem;
 	text-align: center;
 }
 
@@ -728,8 +728,8 @@ body.oj-docs-lightbox-open {
 }
 
 .oj-docs-code-inline {
-	background: var(--bg);
 	padding: 0.25rem 0.5rem;
+	background: var(--bg);
 	border-radius: 4px;
 }
 
@@ -753,17 +753,17 @@ body.oj-docs-lightbox-open {
 }
 
 .step-number {
-	width: 36px;
-	height: 36px;
-	background: var(--primary);
-	color: #ffffff;
-	border-radius: 50%;
 	display: flex;
+	flex-shrink: 0;
 	align-items: center;
 	justify-content: center;
-	font-weight: 700;
+	width: 36px;
+	height: 36px;
 	font-size: 1.125rem;
-	flex-shrink: 0;
+	font-weight: 700;
+	color: #ffffff;
+	background: var(--primary);
+	border-radius: 50%;
 }
 
 .step-content {
@@ -771,20 +771,20 @@ body.oj-docs-lightbox-open {
 }
 
 .step-title {
-	font-weight: 600;
-	font-size: 1.1rem;
 	margin: 0 0 0.5rem;
+	font-size: 1.1rem;
+	font-weight: 600;
 	color: var(--text);
 }
 
 .note {
-	background: var(--note-bg);
-	border-left: 4px solid var(--note-border);
 	padding: 1rem 1.25rem;
-	border-radius: 8px;
 	margin-top: 2rem;
 	font-size: 0.95rem;
 	color: var(--note-text);
+	background: var(--note-bg);
+	border-left: 4px solid var(--note-border);
+	border-radius: 8px;
 }
 
 .note.oj-docs-note {
@@ -792,38 +792,38 @@ body.oj-docs-lightbox-open {
 }
 
 .philosophy {
-	background: var(--bg-alt);
-	border-radius: 16px;
 	padding: 3rem;
 	text-align: center;
+	background: var(--bg-alt);
+	border-radius: 16px;
 }
 
 .philosophy p {
-	font-size: 1.15rem;
-	color: var(--text-light);
 	max-width: 700px;
 	margin: 1rem auto;
+	font-size: 1.15rem;
+	color: var(--text-light);
 }
 
 footer {
-	text-align: center;
 	padding: 3rem 0;
-	border-top: 1px solid var(--border);
 	margin-top: 4rem;
+	text-align: center;
+	border-top: 1px solid var(--border);
 }
 
 .footer-links {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 2rem;
 	justify-content: center;
-	flex-wrap: wrap;
 	margin-bottom: 1rem;
 }
 
 .footer-links a {
+	font-size: 0.95rem;
 	color: var(--text-light);
 	text-decoration: none;
-	font-size: 0.95rem;
 	transition: color 0.2s ease;
 }
 
@@ -832,8 +832,8 @@ footer {
 }
 
 .footer-note {
-	color: var(--text-light);
 	font-size: 0.9rem;
+	color: var(--text-light);
 }
 
 @media (max-width: 768px) {

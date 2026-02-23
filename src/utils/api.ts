@@ -36,10 +36,10 @@ export const apiModule = {
 // about	The user's optional self-description. HTML.
 // submitted	List of the user's stories, polls and comments.
 export interface HNUser {
-	id: string;
-	created: number;
-	karma: number;
 	about?: string;
+	created: number;
+	id: string;
+	karma: number;
 	submitted: number[];
 }
 
@@ -60,19 +60,19 @@ export interface HNUser {
 // 	parts	A list of related pollopts, in display order.
 // 	descendants	In the case of stories or polls, the total comment count.
 export interface HNItemInfo {
-	id: number;
-	deleted?: boolean;
-	type: 'job' | 'story' | 'comment' | 'poll' | 'pollopt';
 	by?: string;
-	time: number;
-	text?: string;
 	dead?: boolean;
-	parent?: number;
-	poll?: number;
-	kids?: number[];
-	url?: string;
-	score?: number;
-	title?: string;
-	parts?: number[];
+	deleted?: boolean;
 	descendants?: number;
+	id: number;
+	kids?: number[];
+	parent?: number;
+	parts?: number[];
+	poll?: number;
+	score?: number;
+	text?: string;
+	time: number;
+	title?: string;
+	type: 'job' | 'story' | 'comment' | 'poll' | 'pollopt';
+	url?: string;
 }

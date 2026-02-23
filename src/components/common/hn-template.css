@@ -15,10 +15,10 @@ body {
 }
 
 .oj-hn-nav {
-	background: #ff6600;
 	padding: 2px 4px 2px 2px;
 	font-weight: normal;
 	color: #000;
+	background: #ff6600;
 
 	a {
 		color: #000;
@@ -44,8 +44,8 @@ body {
 }
 
 .oj-hn-login-cell {
-	text-align: right;
 	padding-right: 4px;
+	text-align: right;
 }
 
 .pagetop {
@@ -54,14 +54,14 @@ body {
 }
 
 .oj-hn-body {
-	background: #f6f6ef;
 	padding: 16px 0 16px 16px;
+	background: #f6f6ef;
 }
 
 .oj-hn-footer {
-	color: #828282;
-	font-size: 8pt;
 	padding: 12px 0 20px;
+	font-size: 8pt;
+	color: #828282;
 
 	a {
 		color: #828282;

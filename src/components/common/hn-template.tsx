@@ -7,9 +7,9 @@ import './hn-template.css';
 const TEMPLATE_ROOT_ID = 'oj-hn-template-root';
 
 interface HnTemplateProps {
-	nav?: ReactNode;
-	footer?: ReactNode;
 	bodyRef?: React.Ref<HTMLTableCellElement>;
+	footer?: ReactNode;
+	nav?: ReactNode;
 }
 
 const DefaultNav = () => (
@@ -95,9 +95,9 @@ export const HnTemplate = ({ nav, footer, bodyRef }: HnTemplateProps) => (
 );
 
 interface HnTemplateRootProps {
-	nav?: ReactNode;
-	footer?: ReactNode;
 	bodyNodes: Node[];
+	footer?: ReactNode;
+	nav?: ReactNode;
 }
 
 const HnTemplateRoot = ({ nav, footer, bodyNodes }: HnTemplateRootProps) => {
@@ -118,8 +118,8 @@ const HnTemplateRoot = ({ nav, footer, bodyNodes }: HnTemplateRootProps) => {
 };
 
 interface WrapOptions {
-	nav?: ReactNode;
 	footer?: ReactNode;
+	nav?: ReactNode;
 }
 
 export const wrapBodyWithHnTemplate = (doc: Document, options: WrapOptions = {}): void => {

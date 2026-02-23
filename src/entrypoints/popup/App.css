@@ -5,16 +5,16 @@
 	--popup-muted: #6b6b6b;
 	--popup-border: #d7d7c8;
 	--popup-accent: #ff6600;
+	display: grid;
+	place-items: center;
 	min-width: 380px;
 	min-height: 420px;
 	padding: 16px;
-	background: var(--popup-bg);
-	color: var(--popup-text);
-	display: grid;
-	place-items: center;
 	font-family:
 		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
 		Cantarell, sans-serif;
+	color: var(--popup-text);
+	background: var(--popup-bg);
 }
 
 .oj-popup--dark {
@@ -28,19 +28,19 @@
 
 .oj-popup__card {
 	width: 70%;
+	padding: 18px 16px;
+	margin: 0 12px;
+	text-align: center;
+	background: var(--popup-surface);
 	border: 1px solid var(--popup-border);
 	border-radius: 12px;
-	margin: 0 12px;
-	padding: 18px 16px;
-	background: var(--popup-surface);
-	text-align: center;
 }
 
 .oj-popup__logo {
 	display: block;
-	margin: 0 auto 12px;
 	width: 96px;
 	height: 96px;
+	margin: 0 auto 12px;
 }
 
 .oj-popup__title {

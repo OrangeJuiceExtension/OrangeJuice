@@ -4,18 +4,18 @@ import { dom } from '@/utils/dom';
 export const NAVBAR_DROPDOWN_CLASS = 'oj-nav-dropdown';
 
 interface OpenDropdownState {
-	element: HTMLDivElement;
 	close: () => void;
+	element: HTMLDivElement;
 }
 
 let openDropdownState: OpenDropdownState | undefined;
 
 export interface DropdownOptions {
-	triggerElement: HTMLElement;
-	dropdownElement: HTMLDivElement;
-	doc: Document;
 	ctx: ContentScriptContext;
+	doc: Document;
+	dropdownElement: HTMLDivElement;
 	onToggle?: (isOpen: boolean) => void;
+	triggerElement: HTMLElement;
 }
 
 export const createDropdown = (options: DropdownOptions) => {

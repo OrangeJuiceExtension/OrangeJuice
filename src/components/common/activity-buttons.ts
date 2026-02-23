@@ -26,9 +26,9 @@ export const idExtractors = new Map<
 ]);
 
 export interface ActivityButtonConfig {
-	componentType: 'favorite' | 'flag' | 'vote';
 	buttonClass: string;
 	buttonLabels: { active: string; inactive: string };
+	componentType: 'favorite' | 'flag' | 'vote';
 }
 
 const activityTypeFromClassList = (

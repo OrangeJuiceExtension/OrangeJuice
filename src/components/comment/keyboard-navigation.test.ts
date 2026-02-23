@@ -13,10 +13,10 @@ const noop = () => {
 };
 
 interface TestContext {
-	doc: Document;
+	commentData: CommentData;
 	comments: HTMLElement[];
 	ctx: ContentScriptContext;
-	commentData: CommentData;
+	doc: Document;
 	invalidate: () => void;
 }
 
