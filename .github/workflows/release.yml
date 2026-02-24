@@ -157,6 +157,11 @@ jobs:
             -d '{"ref":"main"}'
 
       - name: Publish to Chrome Web Store
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
         run: ./node_modules/.bin/publish-extension --chrome-zip .output/orangejuice-${{ steps.bump.outputs.new_version }}-chrome.zip
 
       - name: Prune old releases and tags
