@@ -8,6 +8,7 @@ describe('keyboard shortcuts help', () => {
 	beforeEach(async () => {
 		const doc = document.implementation.createHTMLDocument();
 		help = getKeyboardShortcutsHelp(doc);
+		doc.body.appendChild(help);
 		await waitForRender();
 	});
 
