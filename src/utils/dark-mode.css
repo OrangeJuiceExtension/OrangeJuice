@@ -141,8 +141,8 @@ html.oj-dark-mode {
 }
 
 html.oj-topbar-readable {
-	#hnmain > tr:first-child,
-	#hnmain > tbody > tr:first-child {
+	#hnmain > tbody > tr:first-child,
+	#hnmain > tr:first-child {
 		> td,
 		.pagetop,
 		.pagetop a,

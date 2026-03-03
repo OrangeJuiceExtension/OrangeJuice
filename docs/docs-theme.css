@@ -375,11 +375,6 @@ header {
 	box-shadow: 0 8px 18px rgba(255, 102, 0, 0.25);
 }
 
-.why-card .feature-title {
-	margin-bottom: 0.55rem;
-	font-size: 1.45rem;
-}
-
 .feature-showcase {
 	padding: 1.75rem 2rem 2.25rem;
 	background: var(--bg-alt);
@@ -635,6 +630,11 @@ body.oj-docs-lightbox-open {
 	font-size: 1.25rem;
 	font-weight: 600;
 	color: var(--text);
+}
+
+.why-card .feature-title {
+	margin-bottom: 0.55rem;
+	font-size: 1.45rem;
 }
 
 .feature-desc {
