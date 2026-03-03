@@ -70,17 +70,6 @@ export class KeyboardHandlers {
 			: commentData.getPrevious(activeComment, skipHidden);
 	}
 
-	handleCollapsedToggle(commentData: CommentData, direction: 'up' | 'down') {
-		const closest =
-			direction === 'up'
-				? commentData.closestCollapsedUp()
-				: commentData.closestCollapsedDown();
-
-		if (closest) {
-			closest.collapseToggle();
-		}
-	}
-
 	handleScrolling(commentData: CommentData, nextItem: HNComment, direction: 'up' | 'down') {
 		const activeComment = commentData.getActiveComment();
 		if (!dom.elementInScrollView(nextItem.commentRow) && activeComment) {
