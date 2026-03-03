@@ -775,6 +775,58 @@ describe('commentKeyboardHandlers', () => {
 				keyboardHandlers.navigateToThreadLink(setup.commentData, 'next')
 			).resolves.toBeUndefined();
 		});
+
+		it('should properly deactivate previous comment when navigating to prev link', async () => {
+			const setup = createCommentData(doc, 3);
+			const firstRow = setup.rows[0];
+			const secondRow = setup.rows[1];
+			const first = setup.commentData.first();
+			const second = setup.commentData.get('comment-2');
+			if (!(firstRow && secondRow && first && second)) {
+				throw new Error('Expected items to exist');
+			}
+
+			const prevLink = doc.createElement('a');
+			prevLink.textContent = 'prev';
+			prevLink.href = '#comment-1';
+			secondRow.appendChild(prevLink);
+
+			await setup.commentData.activate(second);
+			expect(secondRow.classList.contains('oj_focused_comment')).toBe(true);
+			expect(firstRow.classList.contains('oj_focused_comment')).toBe(false);
+
+			await keyboardHandlers.navigateToThreadLink(setup.commentData, 'prev');
+
+			expect(firstRow.classList.contains('oj_focused_comment')).toBe(true);
+			expect(secondRow.classList.contains('oj_focused_comment')).toBe(false);
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-1');
+		});
+
+		it('should properly deactivate previous comment when navigating to next link', async () => {
+			const setup = createCommentData(doc, 3);
+			const firstRow = setup.rows[0];
+			const secondRow = setup.rows[1];
+			const first = setup.commentData.first();
+			const second = setup.commentData.get('comment-2');
+			if (!(firstRow && secondRow && first && second)) {
+				throw new Error('Expected items to exist');
+			}
+
+			const nextLink = doc.createElement('a');
+			nextLink.textContent = 'next';
+			nextLink.href = '#comment-2';
+			firstRow.appendChild(nextLink);
+
+			await setup.commentData.activate(first);
+			expect(firstRow.classList.contains('oj_focused_comment')).toBe(true);
+			expect(secondRow.classList.contains('oj_focused_comment')).toBe(false);
+
+			await keyboardHandlers.navigateToThreadLink(setup.commentData, 'next');
+
+			expect(secondRow.classList.contains('oj_focused_comment')).toBe(true);
+			expect(firstRow.classList.contains('oj_focused_comment')).toBe(false);
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-2');
+		});
 	});
 
 	describe('next', () => {

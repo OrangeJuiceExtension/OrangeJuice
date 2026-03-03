@@ -156,13 +156,8 @@ export class KeyboardHandlers {
 			const targetId = link.href.split('#')[1];
 			const targetComment = commentData.get(targetId);
 			if (targetComment) {
+				await commentData.deactivate();
 				await this.activateComment(commentData, targetComment);
-			}
-		} else if (linkText === 'prev') {
-			this.doc.body.scrollTo(0, 0);
-			const first = commentData.first();
-			if (first) {
-				await this.activateComment(commentData, first);
 			}
 		}
 	}
