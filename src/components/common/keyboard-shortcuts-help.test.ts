@@ -37,7 +37,9 @@ describe('keyboard shortcuts help', () => {
 		expect(hrefs.has('https://github.com/OrangeJuiceExtension/OrangeJuice')).toBe(true);
 	});
 
-	it('should include the email link with a subject', () => {
+	it('should include the email link with a subject', async () => {
+		await waitForRender();
+
 		const emailLink = Array.from(help.querySelectorAll('a')).find(
 			(link) => link.textContent === 'Email'
 		);
