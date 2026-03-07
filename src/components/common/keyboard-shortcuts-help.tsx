@@ -4,8 +4,8 @@ import './keyboard-shortcuts-help.css';
 const SHORTCUTS_COMMENTS = [
 	{ key: 'j / J', description: 'Move down / expands collapsed' },
 	{ key: 'k / K', description: 'Move up / expands collapsed' },
-	{ key: 'n', description: 'Go to next sibling comment' },
-	{ key: 'p', description: 'Go to previous sibling comment' },
+	{ key: 'N', description: 'Go to next sibling comment' },
+	{ key: 'P', description: 'Go to previous sibling comment' },
 	{ key: 'c', description: 'Collapse/expand comment thread' },
 	{ key: 'r', description: 'Reply to selected comment' },
 	{ key: 'u', description: 'Upvote selected comment' },

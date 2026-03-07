@@ -21,6 +21,8 @@ describe('keyboard shortcuts help', () => {
 		expect(text).toContain('→');
 		expect(text).toContain('↑');
 		expect(text).toContain('↓');
+		expect(text).toContain('N');
+		expect(text).toContain('P');
 	});
 
 	it('should include website and github links', () => {

@@ -132,13 +132,13 @@ export const keyboardNavigation = async (
 					keyboardHandlers.flag(commentData);
 				}
 				break;
-			case 'n':
-				if (!combo && commentData.getActiveComment()) {
+			case 'N':
+				if ((!combo || e.shiftKey) && commentData.getActiveComment()) {
 					await keyboardHandlers.next(commentData);
 				}
 				break;
-			case 'p':
-				if (!combo && commentData.getActiveComment()) {
+			case 'P':
+				if ((!combo || e.shiftKey) && commentData.getActiveComment()) {
 					await keyboardHandlers.previous(commentData);
 				}
 				break;
