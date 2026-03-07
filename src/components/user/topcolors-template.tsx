@@ -86,7 +86,7 @@ const copyToClipboard = async (_doc: Document, value: string): Promise<boolean> 
 };
 
 const formatTopColorForUserForm = (value: string): string => {
-	return value.replace('#', '').toUpperCase();
+	return normalizeHex(value) ?? value;
 };
 
 const getUserSettingsForm = async (
