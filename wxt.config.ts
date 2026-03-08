@@ -30,7 +30,6 @@ export default defineConfig({
 	}),
 	manifest: {
 		name: 'Orange Juice',
-		author: { email: 'hello@oj-hn.com' },
 		homepage_url: 'https://oj-hn.com',
 		description: 'Orange Juice makes Hacker News sweeter',
 		icons: {
