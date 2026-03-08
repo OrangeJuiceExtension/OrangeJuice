@@ -23,6 +23,8 @@ describe('keyboard shortcuts help', () => {
 		expect(text).toContain('↓');
 		expect(text).toContain('N');
 		expect(text).toContain('P');
+		expect(text).toContain('p');
+		expect(text).toContain('n');
 	});
 
 	it('should include website and github links', () => {

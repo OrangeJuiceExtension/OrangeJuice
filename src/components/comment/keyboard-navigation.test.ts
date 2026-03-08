@@ -65,6 +65,8 @@ const createTestContext = (commentCount = 3): TestContext => {
 	vi.spyOn(KeyboardHandlers.prototype, 'flag');
 	vi.spyOn(KeyboardHandlers.prototype, 'next');
 	vi.spyOn(KeyboardHandlers.prototype, 'previous');
+	vi.spyOn(KeyboardHandlers.prototype, 'moveAtSameIndent');
+	vi.spyOn(KeyboardHandlers.prototype, 'moveAtSameOrHigherIndent');
 	vi.spyOn(KeyboardHandlers.prototype, 'upvote');
 	vi.spyOn(KeyboardHandlers.prototype, 'downvote');
 	vi.spyOn(KeyboardHandlers.prototype, 'collapseToggle');
@@ -175,11 +177,21 @@ describe('keyboardNavigation', () => {
 	describe('keyboard shortcuts', () => {
 		const keyHandlerTests = [
 			{ name: 'j should move down', key: 'j', handler: 'move' },
-			{ name: 'J should move down', key: 'J', handler: 'move' },
 			{ name: 'k should move up', key: 'k', handler: 'move' },
-			{ name: 'K should move up', key: 'K', handler: 'move' },
-			{ name: 'N should call next', key: 'N', handler: 'next' },
-			{ name: 'P should call previous', key: 'P', handler: 'previous' },
+			{
+				name: 'J should jump down by thread level',
+				key: 'J',
+				handler: 'moveAtSameOrHigherIndent',
+			},
+			{
+				name: 'K should jump up by thread level',
+				key: 'K',
+				handler: 'moveAtSameOrHigherIndent',
+			},
+			{ name: 'n should move down with expand behavior', key: 'n', handler: 'move' },
+			{ name: 'p should move up with expand behavior', key: 'p', handler: 'move' },
+			{ name: 'N should move down at same indent', key: 'N', handler: 'moveAtSameIndent' },
+			{ name: 'P should move up at same indent', key: 'P', handler: 'moveAtSameIndent' },
 			{ name: 'u should call upvote', key: 'u', handler: 'upvote' },
 			{ name: 'd should call downvote', key: 'd', handler: 'downvote' },
 			{ name: 'r should call reply', key: 'r', handler: 'reply' },
@@ -193,7 +205,16 @@ describe('keyboardNavigation', () => {
 					const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
 					await keyboardNavigation(ctx, doc, comments, commentData);
-					await activateFirstComment(commentData, comments);
+					if (key === 'k') {
+						const secondRow = getComment(comments, 1);
+						const secondComment = commentData.get(secondRow.id);
+						if (!secondComment) {
+							throw new Error('Expected second comment to exist');
+						}
+						await commentData.activate(secondComment);
+					} else {
+						await activateFirstComment(commentData, comments);
+					}
 
 					dispatchKeydown(doc, key, { shiftKey: key === key.toUpperCase() });
 
@@ -254,6 +275,45 @@ describe('keyboardNavigation', () => {
 			});
 			expect(firstComment.classList.contains(focusClass)).toBe(false);
 
+			invalidate();
+		});
+
+		it('k should keep top comment active and not navigate back', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+			const backSpy = vi.spyOn(window.history, 'back');
+			const locationSpy = vi
+				.spyOn(window, 'location', 'get')
+				.mockReturnValue(new URL('https://news.ycombinator.com/item?id=1&next=2') as any);
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			await activateFirstComment(commentData, comments);
+			dispatchKeydown(doc, 'k');
+
+			expect(commentData.getActiveComment()?.id).toBe('item-1');
+			expect(backSpy).not.toHaveBeenCalled();
+
+			locationSpy.mockRestore();
+			invalidate();
+		});
+
+		it('k should restore active comment if another handler clears it', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+			const originalMove = KeyboardHandlers.prototype.move;
+			const moveMock = vi
+				.spyOn(KeyboardHandlers.prototype, 'move')
+				.mockImplementationOnce(async (_event, data) => {
+					await data.deactivate();
+				});
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			await activateFirstComment(commentData, comments);
+			dispatchKeydown(doc, 'k');
+
+			await vi.waitFor(() => {
+				expect(commentData.getActiveComment()?.id).toBe('item-1');
+			});
+
+			moveMock.mockImplementation(originalMove);
 			invalidate();
 		});
 
@@ -348,8 +408,12 @@ describe('keyboardNavigation', () => {
 			{ key: 'r', handler: 'reply' },
 			{ key: 'f', handler: 'favorite' },
 			{ key: 'x', handler: 'flag' },
-			{ key: 'N', handler: 'next' },
-			{ key: 'P', handler: 'previous' },
+			{ key: 'J', handler: 'moveAtSameOrHigherIndent' },
+			{ key: 'K', handler: 'moveAtSameOrHigherIndent' },
+			{ key: 'N', handler: 'moveAtSameIndent' },
+			{ key: 'P', handler: 'moveAtSameIndent' },
+			{ key: 'p', handler: 'move' },
+			{ key: 'n', handler: 'move' },
 			{ key: 'u', handler: 'upvote' },
 			{ key: 'd', handler: 'downvote' },
 			{ key: 'c', handler: 'collapseToggle' },
@@ -377,8 +441,12 @@ describe('keyboardNavigation', () => {
 			{ key: 'r', handler: 'reply' },
 			{ key: 'f', handler: 'favorite' },
 			{ key: 'x', handler: 'flag' },
-			{ key: 'N', handler: 'next' },
-			{ key: 'P', handler: 'previous' },
+			{ key: 'J', handler: 'moveAtSameOrHigherIndent' },
+			{ key: 'K', handler: 'moveAtSameOrHigherIndent' },
+			{ key: 'N', handler: 'moveAtSameIndent' },
+			{ key: 'P', handler: 'moveAtSameIndent' },
+			{ key: 'p', handler: 'move' },
+			{ key: 'n', handler: 'move' },
 			{ key: 'u', handler: 'upvote' },
 			{ key: 'd', handler: 'downvote' },
 			{ key: 'c', handler: 'collapseToggle' },

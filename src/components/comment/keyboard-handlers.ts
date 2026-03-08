@@ -13,14 +13,18 @@ export class KeyboardHandlers {
 	}
 
 	async move(event: KeyboardEvent, commentData: CommentData, direction: 'up' | 'down') {
+		const activeComment = commentData.getActiveComment();
 		const skipHidden = !event.shiftKey;
 
-		if (!commentData.getActiveComment()) {
+		if (!activeComment) {
 			await this.activateFirstItem(commentData, skipHidden);
 			return;
 		}
 
-		const nextItem = this.getNextItem(commentData, direction, skipHidden);
+		const nextItem =
+			direction === 'down'
+				? commentData.getNext(activeComment, skipHidden)
+				: commentData.getPrevious(activeComment, skipHidden);
 		if (!nextItem) {
 			if (direction === 'down') {
 				await commentData.setNavState('next');
@@ -168,6 +172,43 @@ export class KeyboardHandlers {
 
 	async previous(commentData: CommentData) {
 		await this.navigateToThreadLink(commentData, 'prev');
+	}
+
+	async moveAtSameIndent(commentData: CommentData, direction: 'up' | 'down') {
+		const activeComment = commentData.getActiveComment();
+		if (!activeComment) {
+			return;
+		}
+		const nextItem = commentData.getNextAtSameIndent(activeComment, direction);
+		if (!nextItem) {
+			activeComment.activate();
+			return;
+		}
+		await this.activateComment(commentData, nextItem);
+		this.handleScrolling(commentData, nextItem, direction);
+	}
+
+	async moveAtSameOrHigherIndent(commentData: CommentData, direction: 'up' | 'down') {
+		const activeComment = commentData.getActiveComment();
+		if (!activeComment) {
+			return;
+		}
+
+		const baseIndent = activeComment.getIndentLevel();
+		let candidate = this.getNextItem(commentData, direction, true);
+		while (candidate) {
+			if (candidate.getIndentLevel() <= baseIndent) {
+				await this.activateComment(commentData, candidate);
+				this.handleScrolling(commentData, candidate, direction);
+				return;
+			}
+			candidate =
+				direction === 'down'
+					? commentData.getNext(candidate, true)
+					: commentData.getPrevious(candidate, true);
+		}
+
+		return;
 	}
 
 	upvote(commentData: CommentData) {

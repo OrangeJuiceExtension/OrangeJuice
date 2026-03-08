@@ -126,6 +126,62 @@ describe('CommentData', () => {
 		expect(data.closestCollapsedUp()).toBeUndefined();
 	});
 
+	it('should find next comment at same indent level when moving down', () => {
+		const comments = createComments(doc, 6);
+		addIndentation(doc, comments[0].commentRow, 0);
+		addIndentation(doc, comments[1].commentRow, 1);
+		addIndentation(doc, comments[2].commentRow, 2);
+		addIndentation(doc, comments[3].commentRow, 1);
+		addIndentation(doc, comments[4].commentRow, 2);
+		addIndentation(doc, comments[5].commentRow, 0);
+		const data = new CommentData(comments);
+
+		const next = data.getNextAtSameIndent(comments[1], 'down');
+
+		expect(next?.id).toBe('comment-4');
+	});
+
+	it('should find previous comment at same indent level when moving up', () => {
+		const comments = createComments(doc, 6);
+		addIndentation(doc, comments[0].commentRow, 0);
+		addIndentation(doc, comments[1].commentRow, 1);
+		addIndentation(doc, comments[2].commentRow, 2);
+		addIndentation(doc, comments[3].commentRow, 1);
+		addIndentation(doc, comments[4].commentRow, 2);
+		addIndentation(doc, comments[5].commentRow, 0);
+		const data = new CommentData(comments);
+
+		const prev = data.getNextAtSameIndent(comments[3], 'up');
+
+		expect(prev?.id).toBe('comment-2');
+	});
+
+	it('should stop at end when no lower same-indent comment exists', () => {
+		const comments = createComments(doc, 4);
+		addIndentation(doc, comments[0].commentRow, 0);
+		addIndentation(doc, comments[1].commentRow, 1);
+		addIndentation(doc, comments[2].commentRow, 2);
+		addIndentation(doc, comments[3].commentRow, 1);
+		const data = new CommentData(comments);
+
+		const next = data.getNextAtSameIndent(comments[3], 'down');
+
+		expect(next).toBeUndefined();
+	});
+
+	it('should stop at start when no upper same-indent comment exists', () => {
+		const comments = createComments(doc, 4);
+		addIndentation(doc, comments[0].commentRow, 0);
+		addIndentation(doc, comments[1].commentRow, 1);
+		addIndentation(doc, comments[2].commentRow, 2);
+		addIndentation(doc, comments[3].commentRow, 1);
+		const data = new CommentData(comments);
+
+		const previous = data.getNextAtSameIndent(comments[1], 'up');
+
+		expect(previous).toBeUndefined();
+	});
+
 	it('should proxy actions to active comment', async () => {
 		const comments = createComments(doc, 1);
 		const data = new CommentData(comments);

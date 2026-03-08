@@ -88,18 +88,39 @@ export const keyboardNavigation = async (
 		}
 
 		const combo = dom.isComboKey(e);
+		const nonShiftCombo = e.ctrlKey || e.metaKey || e.altKey;
 
 		switch (e.key) {
-			case 'J':
 			case 'j':
-				if (!combo || e.shiftKey) {
+				if (!combo) {
 					await keyboardHandlers.move(e, commentData, 'down');
 				}
 				break;
-			case 'K':
 			case 'k':
-				if (!combo || e.shiftKey) {
+				if (!combo) {
+					const activeComment = commentData.getActiveComment();
+					if (activeComment && !commentData.getPrevious(activeComment, true)) {
+						activeComment.activate();
+						break;
+					}
 					await keyboardHandlers.move(e, commentData, 'up');
+					if (activeComment && !commentData.getActiveComment()) {
+						await keyboardHandlers.activateComment(commentData, activeComment);
+					}
+				}
+				break;
+			case 'J':
+				if (!nonShiftCombo && commentData.getActiveComment()) {
+					await keyboardHandlers.moveAtSameOrHigherIndent(commentData, 'down');
+				}
+				break;
+			case 'K':
+				if (!nonShiftCombo && commentData.getActiveComment()) {
+					const activeComment = commentData.getActiveComment();
+					await keyboardHandlers.moveAtSameOrHigherIndent(commentData, 'up');
+					if (activeComment && !commentData.getActiveComment()) {
+						await keyboardHandlers.activateComment(commentData, activeComment);
+					}
 				}
 				break;
 			case 'Escape':
@@ -132,14 +153,32 @@ export const keyboardNavigation = async (
 					keyboardHandlers.flag(commentData);
 				}
 				break;
+			case 'n':
+				if (!nonShiftCombo && commentData.getActiveComment()) {
+					await keyboardHandlers.move(
+						{ ...e, shiftKey: true } as KeyboardEvent,
+						commentData,
+						'down'
+					);
+				}
+				break;
+			case 'p':
+				if (!nonShiftCombo && commentData.getActiveComment()) {
+					await keyboardHandlers.move(
+						{ ...e, shiftKey: true } as KeyboardEvent,
+						commentData,
+						'up'
+					);
+				}
+				break;
 			case 'N':
-				if ((!combo || e.shiftKey) && commentData.getActiveComment()) {
-					await keyboardHandlers.next(commentData);
+				if (!nonShiftCombo && commentData.getActiveComment()) {
+					await keyboardHandlers.moveAtSameIndent(commentData, 'down');
 				}
 				break;
 			case 'P':
-				if ((!combo || e.shiftKey) && commentData.getActiveComment()) {
-					await keyboardHandlers.previous(commentData);
+				if (!nonShiftCombo && commentData.getActiveComment()) {
+					await keyboardHandlers.moveAtSameIndent(commentData, 'up');
 				}
 				break;
 			case 'u':

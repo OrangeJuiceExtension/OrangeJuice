@@ -2,10 +2,10 @@ import { createRoot } from 'react-dom/client';
 import './keyboard-shortcuts-help.css';
 
 const SHORTCUTS_COMMENTS = [
-	{ key: 'j / J', description: 'Move down / expands collapsed' },
-	{ key: 'k / K', description: 'Move up / expands collapsed' },
-	{ key: 'N', description: 'Go to next sibling comment' },
-	{ key: 'P', description: 'Go to previous sibling comment' },
+	{ key: 'j / J', description: 'Move down by one / jump to same or higher-level comment' },
+	{ key: 'k / K', description: 'Move up by one / jump to same or higher-level comment' },
+	{ key: 'n / p', description: 'Move down / up and expand collapsed comments' },
+	{ key: 'N / P', description: 'Move down / up at same indent level' },
 	{ key: 'c', description: 'Collapse/expand comment thread' },
 	{ key: 'r', description: 'Reply to selected comment' },
 	{ key: 'u', description: 'Upvote selected comment' },

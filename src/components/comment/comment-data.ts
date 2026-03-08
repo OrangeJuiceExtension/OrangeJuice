@@ -106,6 +106,28 @@ export class CommentData {
 		return prev;
 	}
 
+	getNextAtSameIndent(
+		comment: HNComment,
+		direction: 'up' | 'down',
+		skipHidden = true
+	): HNComment | undefined {
+		const baseIndent = comment.getIndentLevel();
+		let current =
+			direction === 'down'
+				? this.getNext(comment, skipHidden)
+				: this.getPrevious(comment, skipHidden);
+		while (current) {
+			if (current.getIndentLevel() === baseIndent) {
+				return current;
+			}
+			current =
+				direction === 'down'
+					? this.getNext(current, skipHidden)
+					: this.getPrevious(current, skipHidden);
+		}
+		return undefined;
+	}
+
 	first(): HNComment | undefined {
 		return this.comments.first();
 	}

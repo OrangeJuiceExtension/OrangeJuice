@@ -851,6 +851,182 @@ describe('commentKeyboardHandlers', () => {
 		});
 	});
 
+	describe('moveAtSameIndent', () => {
+		it('should move down to the next comment at the same indent', async () => {
+			const setup = createCommentData(doc, 6);
+			const first = setup.commentData.first();
+			if (!first) {
+				throw new Error('Expected item to exist');
+			}
+
+			addIndentation(doc, setup.rows[0], 0);
+			addIndentation(doc, setup.rows[1], 1);
+			addIndentation(doc, setup.rows[2], 2);
+			addIndentation(doc, setup.rows[3], 1);
+			addIndentation(doc, setup.rows[4], 2);
+			addIndentation(doc, setup.rows[5], 0);
+			await setup.commentData.activate(first);
+
+			await keyboardHandlers.moveAtSameIndent(setup.commentData, 'down');
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-6');
+		});
+
+		it('should move up to the previous comment at the same indent', async () => {
+			const setup = createCommentData(doc, 6);
+			const fourth = setup.commentData.get('comment-4');
+			if (!fourth) {
+				throw new Error('Expected item to exist');
+			}
+
+			addIndentation(doc, setup.rows[0], 0);
+			addIndentation(doc, setup.rows[1], 1);
+			addIndentation(doc, setup.rows[2], 2);
+			addIndentation(doc, setup.rows[3], 1);
+			addIndentation(doc, setup.rows[4], 2);
+			addIndentation(doc, setup.rows[5], 0);
+			await setup.commentData.activate(fourth);
+
+			await keyboardHandlers.moveAtSameIndent(setup.commentData, 'up');
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-2');
+		});
+
+		it('should not throw when no active comment exists', async () => {
+			const setup = createCommentData(doc, 3);
+
+			await expect(
+				keyboardHandlers.moveAtSameIndent(setup.commentData, 'down')
+			).resolves.toBeUndefined();
+		});
+
+		it('should keep current comment when no same-indent comment exists in direction', async () => {
+			const setup = createCommentData(doc, 4);
+			const fourth = setup.commentData.get('comment-4');
+			if (!fourth) {
+				throw new Error('Expected item to exist');
+			}
+
+			addIndentation(doc, setup.rows[0], 0);
+			addIndentation(doc, setup.rows[1], 1);
+			addIndentation(doc, setup.rows[2], 2);
+			addIndentation(doc, setup.rows[3], 1);
+			await setup.commentData.activate(fourth);
+
+			await keyboardHandlers.moveAtSameIndent(setup.commentData, 'down');
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-4');
+		});
+
+		it('should keep top comment active when moving up at start boundary', async () => {
+			const setup = createCommentData(doc, 4);
+			const second = setup.commentData.get('comment-2');
+			const secondRow = setup.rows[1];
+			if (!(second && secondRow)) {
+				throw new Error('Expected item to exist');
+			}
+
+			addIndentation(doc, setup.rows[0], 0);
+			addIndentation(doc, setup.rows[1], 1);
+			addIndentation(doc, setup.rows[2], 2);
+			addIndentation(doc, setup.rows[3], 1);
+			await setup.commentData.activate(second);
+			secondRow.classList.remove('oj_focused_comment');
+
+			await keyboardHandlers.moveAtSameIndent(setup.commentData, 'up');
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-2');
+			expect(secondRow.classList.contains('oj_focused_comment')).toBe(true);
+		});
+	});
+
+	describe('moveAtSameOrHigherIndent', () => {
+		it('should move down to the next comment at same level', async () => {
+			const setup = createCommentData(doc, 6);
+			const second = setup.commentData.get('comment-2');
+			if (!second) {
+				throw new Error('Expected item to exist');
+			}
+
+			addIndentation(doc, setup.rows[0], 0);
+			addIndentation(doc, setup.rows[1], 1);
+			addIndentation(doc, setup.rows[2], 2);
+			addIndentation(doc, setup.rows[3], 1);
+			addIndentation(doc, setup.rows[4], 2);
+			addIndentation(doc, setup.rows[5], 0);
+			await setup.commentData.activate(second);
+
+			await keyboardHandlers.moveAtSameOrHigherIndent(setup.commentData, 'down');
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-4');
+		});
+
+		it('should move down to the next higher-level parent when same level does not exist', async () => {
+			const setup = createCommentData(doc, 5);
+			const third = setup.commentData.get('comment-3');
+			if (!third) {
+				throw new Error('Expected item to exist');
+			}
+
+			addIndentation(doc, setup.rows[0], 0);
+			addIndentation(doc, setup.rows[1], 1);
+			addIndentation(doc, setup.rows[2], 2);
+			addIndentation(doc, setup.rows[3], 3);
+			addIndentation(doc, setup.rows[4], 1);
+			await setup.commentData.activate(third);
+
+			await keyboardHandlers.moveAtSameOrHigherIndent(setup.commentData, 'down');
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-5');
+		});
+
+		it('should move up to the previous same-or-higher level comment', async () => {
+			const setup = createCommentData(doc, 6);
+			const fifth = setup.commentData.get('comment-5');
+			if (!fifth) {
+				throw new Error('Expected item to exist');
+			}
+
+			addIndentation(doc, setup.rows[0], 0);
+			addIndentation(doc, setup.rows[1], 1);
+			addIndentation(doc, setup.rows[2], 2);
+			addIndentation(doc, setup.rows[3], 1);
+			addIndentation(doc, setup.rows[4], 2);
+			addIndentation(doc, setup.rows[5], 0);
+			await setup.commentData.activate(fifth);
+
+			await keyboardHandlers.moveAtSameOrHigherIndent(setup.commentData, 'up');
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-4');
+		});
+
+		it('should keep current comment when no same-or-higher comment exists in direction', async () => {
+			const setup = createCommentData(doc, 4);
+			const fourth = setup.commentData.get('comment-4');
+			if (!fourth) {
+				throw new Error('Expected item to exist');
+			}
+
+			addIndentation(doc, setup.rows[0], 0);
+			addIndentation(doc, setup.rows[1], 1);
+			addIndentation(doc, setup.rows[2], 2);
+			addIndentation(doc, setup.rows[3], 3);
+			await setup.commentData.activate(fourth);
+
+			await keyboardHandlers.moveAtSameOrHigherIndent(setup.commentData, 'down');
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-4');
+		});
+
+		it('should not throw when no active comment exists', async () => {
+			const setup = createCommentData(doc, 3);
+
+			await expect(
+				keyboardHandlers.moveAtSameOrHigherIndent(setup.commentData, 'down')
+			).resolves.toBeUndefined();
+		});
+	});
+
 	describe('votes', () => {
 		it('should click upvote button when no unvote exists', async () => {
 			const setup = createCommentData(doc, 1);
