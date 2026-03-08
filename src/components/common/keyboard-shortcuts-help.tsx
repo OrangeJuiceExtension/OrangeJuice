@@ -1,4 +1,5 @@
 import { createRoot } from 'react-dom/client';
+import { browser } from '#imports';
 import './keyboard-shortcuts-help.css';
 
 const SHORTCUTS_COMMENTS = [
@@ -51,14 +52,12 @@ const SHORTCUTS_COMMON = [
 	{ key: 'esc', description: 'Hide help dialog' },
 ];
 
-const LOGO_PATH = '/assets/image-128.png';
+const LOGO_PATH = '/icon/orange_juice_icon_128x128.png';
 const WEBSITE_URL = 'https://oj-hn.com';
 const EMAIL = 'hello@oj-hn.com';
 const GITHUB_URL = 'https://github.com/OrangeJuiceExtension/OrangeJuice';
 
-const getLogoUrl = () => {
-	return `${WEBSITE_URL}${LOGO_PATH}`;
-};
+const getLogoUrl = (): string => browser.runtime?.getURL?.(LOGO_PATH) ?? LOGO_PATH;
 
 const KeyboardShortcutsTable = ({
 	shortcuts,

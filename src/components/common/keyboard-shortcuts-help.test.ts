@@ -41,6 +41,13 @@ describe('keyboard shortcuts help', () => {
 		expect(hrefs.has('https://github.com/OrangeJuiceExtension/OrangeJuice')).toBe(true);
 	});
 
+	it('should use a bundled extension logo path', () => {
+		const logo = help.querySelector<HTMLImageElement>('img[alt="Orange Juice logo"]');
+		const src = logo?.getAttribute('src') ?? '';
+		expect(src.startsWith('chrome-extension://')).toBe(true);
+		expect(src.endsWith('/icon/orange_juice_icon_128x128.png')).toBe(true);
+	});
+
 	it('should include the email link with a subject', async () => {
 		await waitForRender();
 

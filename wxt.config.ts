@@ -42,6 +42,12 @@ export default defineConfig({
 		},
 		permissions: ['history', 'storage', 'tabs'],
 		host_permissions: ['https://squeeze.oj-hn.com/*'],
+		web_accessible_resources: [
+			{
+				matches: ['https://news.ycombinator.com/*'],
+				resources: ['icon/orange_juice_icon_128x128.png'],
+			},
+		],
 	},
 	vite: () => ({
 		plugins: [tailwindcss()],
