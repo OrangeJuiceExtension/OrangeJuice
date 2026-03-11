@@ -157,6 +157,7 @@ jobs:
             -d '{"ref":"main"}'
 
       - name: Publish to Chrome Web Store
+        continue-on-error: true
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
