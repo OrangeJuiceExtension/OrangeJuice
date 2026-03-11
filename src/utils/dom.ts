@@ -5,6 +5,7 @@ import { paths } from '@/utils/paths';
 export const USERNAME_STORAGE_KEY = 'oj_username';
 const TOP_BAR_READABLE_CLASS = 'oj-topbar-readable';
 const TOP_BAR_COLOR_VARIABLE = '--oj-topbar-fg';
+const TOP_BAR_CELL_CLASS = 'oj-topbar-cell';
 const DARK_COLOR_LUMINANCE_THRESHOLD = 0.22;
 const TOP_BAR_DARK_TEXT_COLOR = '#111111';
 const TOP_BAR_LIGHT_TEXT_COLOR = '#f1efec';
@@ -160,6 +161,12 @@ const isDarkColor = (value: string): boolean => {
 };
 
 const getTopBarCell = (doc: Document): HTMLTableCellElement | undefined => {
+	const firstPageTop = doc.querySelector<HTMLElement>('span.pagetop');
+	const pageTopCell = firstPageTop?.closest<HTMLTableCellElement>('td[bgcolor]');
+	if (pageTopCell) {
+		return pageTopCell;
+	}
+
 	const cell =
 		doc.querySelector<HTMLTableCellElement>('#hnmain > tbody > tr:first-child > td[bgcolor]') ??
 		doc.querySelector<HTMLTableCellElement>('#hnmain > tr:first-child > td[bgcolor]');
@@ -169,6 +176,10 @@ const getTopBarCell = (doc: Document): HTMLTableCellElement | undefined => {
 const removeTopBarTextOverride = (doc: Document): void => {
 	doc.documentElement.classList.remove(TOP_BAR_READABLE_CLASS);
 	doc.documentElement.style.removeProperty(TOP_BAR_COLOR_VARIABLE);
+
+	for (const cell of doc.querySelectorAll<HTMLElement>(`.${TOP_BAR_CELL_CLASS}`)) {
+		cell.classList.remove(TOP_BAR_CELL_CLASS);
+	}
 };
 
 const ensureTopBarReadableText = (doc: Document): void => {
@@ -182,6 +193,7 @@ const ensureTopBarReadableText = (doc: Document): void => {
 	const textColor = isDarkColor(backgroundColor)
 		? TOP_BAR_LIGHT_TEXT_COLOR
 		: TOP_BAR_DARK_TEXT_COLOR;
+	topBarCell.classList.add(TOP_BAR_CELL_CLASS);
 	doc.documentElement.classList.add(TOP_BAR_READABLE_CLASS);
 	doc.documentElement.style.setProperty(TOP_BAR_COLOR_VARIABLE, textColor);
 };

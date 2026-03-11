@@ -141,20 +141,18 @@ html.oj-dark-mode {
 }
 
 html.oj-topbar-readable {
-	#hnmain > tbody > tr:first-child,
-	#hnmain > tr:first-child {
-		> td,
-		.pagetop,
-		.pagetop a,
-		.yclinks,
-		.yclinks a,
-		.hnname,
-		.hnname a,
-		button,
-		.oj_more_links_dropdown_button,
-		.oj_profile_dropdown_button,
-		.oj-dark-mode-toggle {
-			color: var(--oj-topbar-fg) !important;
-		}
+	.oj-topbar-cell,
+	.oj-topbar-cell
+		:is(
+			a,
+			button,
+			.pagetop,
+			.yclinks,
+			.hnname,
+			.oj_more_links_dropdown_button,
+			.oj_profile_dropdown_button,
+			.oj-dark-mode-toggle
+		) {
+		color: var(--oj-topbar-fg) !important;
 	}
 }

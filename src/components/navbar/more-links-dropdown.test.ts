@@ -1,5 +1,17 @@
+import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { navbar } from './index';
+
+const loadFixture = (fixtureName: string): void => {
+	const fixturePath = `${import.meta.dirname}/__fixtures__/${fixtureName}`;
+	const html = readFileSync(fixturePath, 'utf8')
+		.replaceAll(/<link\b[^>]*>/g, '')
+		.replaceAll(/<script\b[^>]*>[\s\S]*?<\/script>/g, '');
+	const parsed = new DOMParser().parseFromString(html, 'text/html');
+
+	document.head.innerHTML = parsed.head.innerHTML;
+	document.body.innerHTML = parsed.body.innerHTML;
+};
 
 describe('navbar more-links', () => {
 	let mockContext: any;
@@ -191,5 +203,22 @@ describe('navbar more-links', () => {
 		}
 
 		expect(documentRemoveEventListenerSpy).toHaveBeenCalledWith('click', expect.any(Function));
+	});
+
+	it('should attach navbar features when the page starts with a black top row', async () => {
+		loadFixture('hn-black.html');
+		window.history.pushState({}, '', '/news');
+
+		await navbar.main(mockContext);
+
+		const pageTops = document.querySelectorAll<HTMLElement>('span.pagetop');
+		const navLinks = pageTops[0];
+		const loginLinks = pageTops[1];
+
+		expect(navLinks.querySelector('.oj_more_links_dropdown_button')?.textContent).toBe(
+			'more ▾'
+		);
+		expect(document.querySelector('.oj_more_links_dropdown')).toBeTruthy();
+		expect(loginLinks.querySelector<HTMLButtonElement>('.oj-dark-mode-toggle')).toBeTruthy();
 	});
 });

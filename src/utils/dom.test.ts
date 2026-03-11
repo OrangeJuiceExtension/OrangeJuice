@@ -13,6 +13,12 @@ const loggedOutHtml = readFileSync(
 	join(import.meta.dirname, '__fixtures__', 'hn-logged-out.html'),
 	'utf-8'
 );
+const blackTopBarHtml = readFileSync(
+	join(import.meta.dirname, '..', 'components', 'navbar', '__fixtures__', 'hn-black.html'),
+	'utf-8'
+)
+	.replaceAll(/<link\b[^>]*>/g, '')
+	.replaceAll(/<script\b[^>]*>[\s\S]*?<\/script>/g, '');
 
 describe('dom', () => {
 	describe('getUsername', () => {
@@ -155,6 +161,9 @@ describe('dom', () => {
 
 		it('removes topbar readability class and variable when bgcolor is missing', () => {
 			document.documentElement.classList.add('oj-topbar-readable');
+			for (const cell of document.querySelectorAll('.oj-topbar-cell')) {
+				cell.classList.remove('oj-topbar-cell');
+			}
 			document.documentElement.style.setProperty('--oj-topbar-fg', '#f1efec');
 			document.body.innerHTML = `
 				<table id="hnmain">
@@ -172,6 +181,24 @@ describe('dom', () => {
 
 			expect(document.documentElement.classList.contains('oj-topbar-readable')).toBe(false);
 			expect(document.documentElement.style.getPropertyValue('--oj-topbar-fg')).toBe('');
+		});
+
+		it('targets the actual navbar cell when a black spacer row comes first', () => {
+			document.body.innerHTML = blackTopBarHtml;
+
+			dom.ensureTopBarReadableText(document);
+
+			const topBarCell = document.querySelector<HTMLTableCellElement>('td.oj-topbar-cell');
+			expect(topBarCell?.getAttribute('bgcolor')).toBe('#aabbff');
+			expect(
+				document
+					.querySelector('td[bgcolor="#000000"]')
+					?.classList.contains('oj-topbar-cell')
+			).toBe(false);
+			expect(document.documentElement.classList.contains('oj-topbar-readable')).toBe(true);
+			expect(document.documentElement.style.getPropertyValue('--oj-topbar-fg')).toBe(
+				'#111111'
+			);
 		});
 	});
 
