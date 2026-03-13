@@ -16,7 +16,7 @@ export class IndexedList<T> implements Iterable<T> {
 
 	get(key: string): T | undefined {
 		const index = this.indexMap.get(key);
-		return index !== undefined ? this.items[index] : undefined;
+		return index === undefined ? undefined : this.items[index];
 	}
 
 	getNext(current: T): T | undefined {

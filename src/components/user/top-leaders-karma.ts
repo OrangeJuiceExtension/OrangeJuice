@@ -34,7 +34,7 @@ export const topLeadersKarma = async (doc: Document) => {
 
 	for (const [index, { anchor }] of anchorData.entries()) {
 		const userInfo = userInfoResults[index];
-		if (userInfo && anchor.parentElement && anchor.parentElement.nextElementSibling) {
+		if (userInfo && anchor.parentElement?.nextElementSibling) {
 			// @ts-expect-error
 			anchor.parentElement.nextElementSibling.textContent = userInfo.karma;
 		}
