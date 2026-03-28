@@ -28,11 +28,11 @@ This is not a complete list of features, but rather a selection that showcases t
 | Feature | Light | Dark |
 | --- | --- | --- |
 | Inline Reply + Quote Selection | ![Inline reply light](docs/assets/inline-reply-light.png) | ![Inline reply dark](docs/assets/inline-reply-dark.png) |
-| Mermaid Diagram Rendering | [![Mermaid rendering light](docs/assets/mermaid-light.png)](docs/assets/mermaid-light.png) | [![Mermaid rendering dark](docs/assets/mermaid-dark.png)](docs/assets/mermaid-dark.png) |
 | Unread Comment Highlighting | ![Unread comments light](docs/assets/unread-light.png) | ![Unread comments dark](docs/assets/unread-dark.png) |
+| Hover User Details | ![User info hover light](docs/assets/user-info-hover-light.png) | ![User info hover dark](docs/assets/user-info-hover-dark.png) |
 | Hide Read Stories | ![Hide read stories light](docs/assets/hide-read-light.png) | ![Hide read stories dark](docs/assets/hide-read-dark.png) |
 | Keyboard Navigation | ![Keyboard navigation light](docs/assets/screenshot-help-light.png) | ![Keyboard navigation dark](docs/assets/screenshot-help-dark.png) |
-| Hover User Details | ![User info hover light](docs/assets/user-info-hover-light.png) | ![User info hover dark](docs/assets/user-info-hover-dark.png) |
+| Mermaid Diagram Rendering | [![Mermaid rendering light](docs/assets/mermaid-light.png)](docs/assets/mermaid-light.png) | [![Mermaid rendering dark](docs/assets/mermaid-dark.png)](docs/assets/mermaid-dark.png) |
 
 Ideally, you shouldn’t really notice it at all. The features should feel subtle but natural: visible, useful, and aligned with what most users would expect the site to have supported in the first place. As we grow the feature set, it should always be with respect to the original design.
 
