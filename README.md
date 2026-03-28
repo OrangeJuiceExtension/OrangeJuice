@@ -96,19 +96,21 @@ Mermaid diagrams render automatically when wrapped in a `<mermaid>` block, with 
 
 # Installation
 
-For now, I recommend installing from GitHub releases. Things are moving fast and I’m making fixes and tweaks frequently. I’ll update this once the web stores are updated on a more regular cadence.
+Default to installing from the Chrome Web Store.
 
 ## From the Chrome webstore
 
 https://chromewebstore.google.com/detail/orange-juice/jojpnpkbdjfpjjgjhdccgpbifipacaii
 
-Unfortunately, this is very slow to update. I'm hoping this improves in the future.
+Chrome Web Store updates can be slow and may take several days to show up. If you want the newest fixes immediately, install from the latest GitHub release instead.
 
 ## From the Firefox webstore
 
 Coming soon.
 
 ## From latest github release
+
+Use this if you want updates faster than the Chrome Web Store review cycle.
 
 1. **Download the latest release**
 
