@@ -8,7 +8,7 @@ export function updateCharacterCount(titleInput: HTMLInputElement, doc: Document
 
 	const inputListener = () => {
 		const length = titleInput.value.length;
-		span.innerHTML =
+		span.textContent =
 			length <= TITLE_LENGTH_LIMIT ? `${TITLE_LENGTH_LIMIT - length} remaining` : '';
 	};
 	titleInput.addEventListener('input', inputListener);

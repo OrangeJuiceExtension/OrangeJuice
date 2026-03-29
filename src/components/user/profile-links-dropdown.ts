@@ -1,4 +1,3 @@
-import DOMPurify from 'dompurify';
 import type { ContentScriptContext } from '#imports';
 import {
 	createDropdown,
@@ -104,18 +103,18 @@ export const profileLinksDropdown = (ctx: ContentScriptContext, doc: Document) =
 		return false;
 	}
 
-	const userName = DOMPurify.sanitize(userLink.innerText);
+	const userName = userLink.innerText.trim();
 	const logoutPath = removeTopLogoutLink(pageTop[1]);
 
 	const style = doc.createElement('style');
-	style.innerHTML = createDropdownStyle(COMPONENT_NAME);
+	style.textContent = createDropdownStyle(COMPONENT_NAME);
 	doc.head.appendChild(style);
 
 	const dropdownEl = doc.createElement('div') as HTMLDivElement;
 	dropdownEl.classList.add(COMPONENT_NAME, NAVBAR_DROPDOWN_CLASS);
 
 	const updateUserLinkText = (isOpen: boolean) => {
-		userLink.innerHTML = `${userName} ${isOpen ? '▴' : '▾'}`;
+		userLink.textContent = `${userName} ${isOpen ? '▴' : '▾'}`;
 	};
 
 	userLink.classList.add(`${COMPONENT_NAME}_button`);
@@ -123,7 +122,7 @@ export const profileLinksDropdown = (ctx: ContentScriptContext, doc: Document) =
 	for (const link of getLinks(userName, logoutPath)) {
 		const anchorEl = doc.createElement('a') as HTMLAnchorElement;
 		anchorEl.href = link.path;
-		anchorEl.innerHTML = link.title;
+		anchorEl.textContent = link.title;
 		dropdownEl.append(anchorEl);
 	}
 

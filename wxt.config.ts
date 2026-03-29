@@ -34,14 +34,18 @@ export default defineConfig({
 		description: 'Orange Juice makes Hacker News sweeter',
 		browser_specific_settings: {
 			gecko: {
+				id: 'hello@oj-hn.com',
+				// Firefox supports this, but WXT's manifest type does not include it.
 				data_collection_permissions: {
 					required: ['none'],
 				},
 			},
-		},
+			// biome-ignore lint/suspicious/noExplicitAny: https://github.com/wxt-dev/wxt/pull/1976
+		} as any,
 		icons: {
 			16: '/icon/orange_juice_icon_16x16.png',
-			24: '/icon/orange_juice_icon_32x32.png',
+			24: '/icon/orange_juice_icon_24x24.png',
+			32: '/icon/orange_juice_icon_32x32.png',
 			48: '/icon/orange_juice_icon_48x48.png',
 			96: '/icon/orange_juice_icon_96x96.png',
 			128: '/icon/orange_juice_icon_128x128.png',

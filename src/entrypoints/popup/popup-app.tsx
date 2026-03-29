@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import lStorage from '@/utils/local-storage.ts';
 import './App.css';
 
@@ -7,47 +6,43 @@ const LOGO_PATH = 'https://oj-hn.com/assets/image-128.png';
 
 type PopupTheme = 'dark' | 'light';
 
-const App = () => {
-	const [theme, setTheme] = useState<PopupTheme>('light');
-
-	useEffect(() => {
-		let isMounted = true;
-
-		const readTheme = async (): Promise<void> => {
-			const storedTheme = await lStorage.getItem<PopupTheme>(DARK_MODE_STORAGE_KEY);
-			if (!(isMounted && storedTheme)) {
-				return;
-			}
-
-			if (storedTheme === 'dark' || storedTheme === 'light') {
-				setTheme(storedTheme);
-			}
-		};
-
-		readTheme().catch(() => undefined);
-
-		return () => {
-			isMounted = false;
-		};
-	}, []);
-
-	return (
-		<main className={`oj-popup oj-popup--${theme}`}>
-			<section className="oj-popup__card">
-				<img
-					alt="Orange Juice logo"
-					className="oj-popup__logo"
-					height={128}
-					src={LOGO_PATH}
-					width={128}
-				/>
-				<h1 className="oj-popup__title">Coming Soon</h1>
-				<p className="oj-popup__text">
-					The Orange Juice popup is on the way. Suggestions welcome!
-				</p>
-			</section>
-		</main>
-	);
+const isPopupTheme = (value: unknown): value is PopupTheme => {
+	return value === 'dark' || value === 'light';
 };
 
-export { App };
+const createPopupContent = (doc: Document): HTMLElement => {
+	const main = doc.createElement('main');
+	main.className = 'oj-popup oj-popup--light';
+
+	const card = doc.createElement('section');
+	card.className = 'oj-popup__card';
+
+	const logo = doc.createElement('img');
+	logo.alt = 'Orange Juice logo';
+	logo.className = 'oj-popup__logo';
+	logo.height = 128;
+	logo.src = LOGO_PATH;
+	logo.width = 128;
+
+	const title = doc.createElement('h1');
+	title.className = 'oj-popup__title';
+	title.textContent = 'Coming Soon';
+
+	const text = doc.createElement('p');
+	text.className = 'oj-popup__text';
+	text.textContent = 'The Orange Juice popup is on the way. Suggestions welcome!';
+
+	card.append(logo, title, text);
+	main.append(card);
+	return main;
+};
+
+export const renderPopupApp = async (doc: Document, root: HTMLElement): Promise<void> => {
+	const popup = createPopupContent(doc);
+	root.replaceChildren(popup);
+
+	const storedTheme = await lStorage.getItem<PopupTheme>(DARK_MODE_STORAGE_KEY);
+	if (isPopupTheme(storedTheme)) {
+		popup.className = `oj-popup oj-popup--${storedTheme}`;
+	}
+};

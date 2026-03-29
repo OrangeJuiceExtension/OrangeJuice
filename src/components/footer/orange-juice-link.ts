@@ -28,7 +28,7 @@ export const addOrangeJuiceLink = (_ctx: ContentScriptContext, doc: Document, ve
 
 	// Create separator
 	const separator = doc.createElement('span');
-	separator.innerHTML = ' | ';
+	separator.textContent = ' | ';
 
 	// Create an Orange Juice link
 	const ojLink = doc.createElement('a') as HTMLAnchorElement;

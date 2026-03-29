@@ -1,4 +1,3 @@
-import { flushSync } from 'react-dom';
 import { describe, expect, it } from 'vitest';
 import { wrapBodyWithHnTemplate } from '@/components/common/hn-template.tsx';
 import { version } from '../../../package.json';
@@ -11,9 +10,7 @@ describe('wrapBodyWithHnTemplate', () => {
 		content.textContent = 'Login';
 		doc.body.appendChild(content);
 
-		flushSync(() => {
-			wrapBodyWithHnTemplate(doc);
-		});
+		wrapBodyWithHnTemplate(doc);
 
 		const bodySlot = doc.querySelector('.oj-hn-body');
 		expect(bodySlot).toBeTruthy();
@@ -24,9 +21,7 @@ describe('wrapBodyWithHnTemplate', () => {
 		const doc = document.implementation.createHTMLDocument();
 		doc.body.appendChild(doc.createElement('div'));
 
-		flushSync(() => {
-			wrapBodyWithHnTemplate(doc);
-		});
+		wrapBodyWithHnTemplate(doc);
 
 		const nav = doc.querySelector('.oj-hn-nav');
 		const footer = doc.querySelector('.oj-hn-footer');
@@ -45,14 +40,13 @@ describe('wrapBodyWithHnTemplate', () => {
 		content.textContent = 'Content';
 		doc.body.appendChild(content);
 
-		flushSync(() => {
-			wrapBodyWithHnTemplate(doc, {
-				nav: <div>Custom Nav</div>,
-			});
-		});
+		const nav = doc.createElement('div');
+		nav.textContent = 'Custom Nav';
 
-		const nav = doc.querySelector('.oj-hn-nav');
-		expect(nav?.textContent).toContain('Custom Nav');
+		wrapBodyWithHnTemplate(doc, { nav });
+
+		const navContainer = doc.querySelector('.oj-hn-nav');
+		expect(navContainer?.textContent).toContain('Custom Nav');
 	});
 
 	it('renders custom footer when provided', () => {
@@ -61,13 +55,12 @@ describe('wrapBodyWithHnTemplate', () => {
 		content.textContent = 'Content';
 		doc.body.appendChild(content);
 
-		flushSync(() => {
-			wrapBodyWithHnTemplate(doc, {
-				footer: <div>Custom Footer</div>,
-			});
-		});
+		const footer = doc.createElement('div');
+		footer.textContent = 'Custom Footer';
 
-		const footer = doc.querySelector('.oj-hn-footer');
-		expect(footer?.textContent).toContain('Custom Footer');
+		wrapBodyWithHnTemplate(doc, { footer });
+
+		const footerContainer = doc.querySelector('.oj-hn-footer');
+		expect(footerContainer?.textContent).toContain('Custom Footer');
 	});
 });

@@ -95,11 +95,11 @@ export const moreLinksDropdown = (
 	}
 
 	const style = doc.createElement('style');
-	style.innerHTML = createDropdownStyle(COMPONENT_NAME);
+	style.textContent = createDropdownStyle(COMPONENT_NAME);
 	doc.head.appendChild(style);
 
 	const moreLinkSeparator = doc.createElement('span');
-	moreLinkSeparator.innerHTML = ' | ';
+	moreLinkSeparator.textContent = ' | ';
 
 	const moreLinksBtn = doc.createElement('a');
 	moreLinksBtn.classList.add(`${COMPONENT_NAME}_button`);
@@ -114,14 +114,14 @@ export const moreLinksDropdown = (
 
 		const linkEl = doc.createElement('a');
 		linkEl.href = link.href ?? link.title;
-		linkEl.innerHTML = link.title;
+		linkEl.textContent = link.title;
 		linkEl.title = link.description;
 
 		dropdownEl.append(linkEl);
 	}
 
 	const updateButtonText = (isOpen: boolean) => {
-		moreLinksBtn.innerHTML = `more ${isOpen ? '▴' : '▾'}`;
+		moreLinksBtn.textContent = `more ${isOpen ? '▴' : '▾'}`;
 	};
 
 	pageTop.append(moreLinkSeparator, moreLinksBtn);

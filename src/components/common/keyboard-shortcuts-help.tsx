@@ -1,4 +1,3 @@
-import { createRoot } from 'react-dom/client';
 import { browser } from '#imports';
 import './keyboard-shortcuts-help.css';
 
@@ -17,7 +16,7 @@ const SHORTCUTS_COMMENTS = [
 	{ key: 't', description: 'Scroll to top of page' },
 	{ key: 'b', description: 'Go back (if paginated)' },
 	{ key: 'esc', description: 'Unfocus comment or close reply box' },
-];
+] as const;
 
 const SHORTCUTS_STORIES = [
 	{ key: '↑ / ↓', description: 'Move up / down' },
@@ -38,7 +37,7 @@ const SHORTCUTS_STORIES = [
 	{ key: 'h', description: 'Toggle hide read stories checkbox' },
 	{ key: 'H', description: 'Hide read stories' },
 	{ key: 'esc', description: 'Unfocus story' },
-];
+] as const;
 
 const SHORTCUTS_COMMON = [
 	{ key: 'H', description: 'Home' },
@@ -50,7 +49,7 @@ const SHORTCUTS_COMMON = [
 	{ key: 'T', description: 'Threads' },
 	{ key: '?', description: 'Show help dialog' },
 	{ key: 'esc', description: 'Hide help dialog' },
-];
+] as const;
 
 const LOGO_PATH = '/icon/orange_juice_icon_128x128.png';
 const WEBSITE_URL = 'https://oj-hn.com';
@@ -59,72 +58,95 @@ const GITHUB_URL = 'https://github.com/OrangeJuiceExtension/OrangeJuice';
 
 const getLogoUrl = (): string => browser.runtime?.getURL?.(LOGO_PATH) ?? LOGO_PATH;
 
-const KeyboardShortcutsTable = ({
-	shortcuts,
-}: {
-	shortcuts: { key: string; description: string }[];
-}) => (
-	<table className="oj-shortcuts-help__table">
-		<tbody>
-			{shortcuts.map(({ key, description }) => (
-				<tr key={`${key}-${description}`}>
-					<td className="oj-shortcuts-help__key">{key}</td>
-					<td className="oj-shortcuts-help__desc">{description}</td>
-				</tr>
-			))}
-		</tbody>
-	</table>
-);
+const appendShortcutTable = (
+	doc: Document,
+	parent: HTMLElement,
+	shortcuts: ReadonlyArray<{ key: string; description: string }>
+): void => {
+	const table = doc.createElement('table');
+	table.className = 'oj-shortcuts-help__table';
+	const tbody = doc.createElement('tbody');
 
-export const KeyboardShortcutsHelp = () => (
-	<div className="oj-shortcuts-help">
-		<div className="oj-shortcuts-help__row oj-shortcuts-help__row--top">
-			<div className="oj-shortcuts-help__brand">
-				<img
-					alt="Orange Juice logo"
-					className="oj-shortcuts-help__logo"
-					height={128}
-					src={getLogoUrl()}
-					width={128}
-				/>
-				<div className="oj-shortcuts-help__links">
-					<a href={WEBSITE_URL} rel="noreferrer" target="_blank">
-						Website
-					</a>
-					<a href={GITHUB_URL} rel="noreferrer" target="_blank">
-						GitHub
-					</a>
-					<a
-						href={`mailto:${EMAIL}?subject=Question about OJ`}
-						rel="noreferrer"
-						target="_blank"
-					>
-						Email
-					</a>
-				</div>
-			</div>
-			<div className="oj-shortcuts-help__column">
-				<h2 className="oj-shortcuts-help__heading">Navigation shortcuts</h2>
-				<div className="oj-shortcuts-help__note">(requires alt or ⌥)</div>
-				<KeyboardShortcutsTable shortcuts={SHORTCUTS_COMMON} />
-			</div>
-		</div>
-		<div className="oj-shortcuts-help__row">
-			<div className="oj-shortcuts-help__column">
-				<h2 className="oj-shortcuts-help__heading">Stories shortcuts</h2>
-				<KeyboardShortcutsTable shortcuts={SHORTCUTS_STORIES} />
-			</div>
-			<div className="oj-shortcuts-help__column">
-				<h2 className="oj-shortcuts-help__heading">Comments shortcuts</h2>
-				<KeyboardShortcutsTable shortcuts={SHORTCUTS_COMMENTS} />
-			</div>
-		</div>
-	</div>
-);
+	for (const { key, description } of shortcuts) {
+		const row = doc.createElement('tr');
+		const keyCell = doc.createElement('td');
+		keyCell.className = 'oj-shortcuts-help__key';
+		keyCell.textContent = key;
+		const descCell = doc.createElement('td');
+		descCell.className = 'oj-shortcuts-help__desc';
+		descCell.textContent = description;
+		row.append(keyCell, descCell);
+		tbody.append(row);
+	}
+
+	table.append(tbody);
+	parent.append(table);
+};
+
+const createExternalLink = (doc: Document, href: string, label: string): HTMLAnchorElement => {
+	const link = doc.createElement('a');
+	link.href = href;
+	link.rel = 'noreferrer';
+	link.target = '_blank';
+	link.textContent = label;
+	return link;
+};
+
+const createColumn = (doc: Document, heading: string): HTMLDivElement => {
+	const column = doc.createElement('div');
+	column.className = 'oj-shortcuts-help__column';
+	const title = doc.createElement('h2');
+	title.className = 'oj-shortcuts-help__heading';
+	title.textContent = heading;
+	column.append(title);
+	return column;
+};
 
 export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
 	const container = doc.createElement('div');
-	const reactRoot = createRoot(container);
-	reactRoot.render(<KeyboardShortcutsHelp />);
+	container.className = 'oj-shortcuts-help';
+
+	const topRow = doc.createElement('div');
+	topRow.className = 'oj-shortcuts-help__row oj-shortcuts-help__row--top';
+
+	const brand = doc.createElement('div');
+	brand.className = 'oj-shortcuts-help__brand';
+	const logo = doc.createElement('img');
+	logo.alt = 'Orange Juice logo';
+	logo.className = 'oj-shortcuts-help__logo';
+	logo.height = 128;
+	logo.src = getLogoUrl();
+	logo.width = 128;
+
+	const links = doc.createElement('div');
+	links.className = 'oj-shortcuts-help__links';
+	links.append(
+		createExternalLink(doc, WEBSITE_URL, 'Website'),
+		createExternalLink(doc, GITHUB_URL, 'GitHub'),
+		createExternalLink(doc, `mailto:${EMAIL}?subject=Question about OJ`, 'Email')
+	);
+	brand.append(logo, links);
+
+	const navColumn = createColumn(doc, 'Navigation shortcuts');
+	const note = doc.createElement('div');
+	note.className = 'oj-shortcuts-help__note';
+	note.textContent = '(requires alt or ⌥)';
+	navColumn.append(note);
+	appendShortcutTable(doc, navColumn, SHORTCUTS_COMMON);
+
+	topRow.append(brand, navColumn);
+
+	const bottomRow = doc.createElement('div');
+	bottomRow.className = 'oj-shortcuts-help__row';
+
+	const storiesColumn = createColumn(doc, 'Stories shortcuts');
+	appendShortcutTable(doc, storiesColumn, SHORTCUTS_STORIES);
+
+	const commentsColumn = createColumn(doc, 'Comments shortcuts');
+	appendShortcutTable(doc, commentsColumn, SHORTCUTS_COMMENTS);
+
+	bottomRow.append(storiesColumn, commentsColumn);
+	container.append(topRow, bottomRow);
+
 	return container;
 };

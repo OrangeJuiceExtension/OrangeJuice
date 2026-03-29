@@ -7,25 +7,41 @@ import {
 
 const COMPONENT_NAME = 'oj-dark-mode-toggle';
 
-const iconMarkup = (mode: DarkModePreference) => {
+const createSvgIcon = (doc: Document, mode: DarkModePreference): SVGSVGElement => {
+	const svgNamespace = 'http://www.w3.org/2000/svg';
+	const svg = doc.createElementNS(svgNamespace, 'svg');
+	svg.setAttribute(
+		'class',
+		`oj-dark-mode-icon oj-dark-mode-icon--${mode === 'dark' ? 'moon' : 'sun'}`
+	);
+	svg.setAttribute('aria-hidden', 'true');
+	svg.setAttribute('viewBox', '0 0 24 24');
+
 	if (mode === 'dark') {
-		return `
-			<svg class="oj-dark-mode-icon oj-dark-mode-icon--moon" aria-hidden="true" viewBox="0 0 24 24">
-				<path d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.599.748-3.752A9.753 9.753 0 0 0 2.25 11.25c0 5.385 4.365 9.75 9.75 9.75a9.753 9.753 0 0 0 9.752-5.998Z" />
-			</svg>
-		`;
+		const path = doc.createElementNS(svgNamespace, 'path');
+		path.setAttribute(
+			'd',
+			'M21.752 15.002A9.718 9.718 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.599.748-3.752A9.753 9.753 0 0 0 2.25 11.25c0 5.385 4.365 9.75 9.75 9.75a9.753 9.753 0 0 0 9.752-5.998Z'
+		);
+		svg.append(path);
+		return svg;
 	}
 
-	return `
-		<svg class="oj-dark-mode-icon oj-dark-mode-icon--sun" aria-hidden="true" viewBox="0 0 24 24">
-			<path d="M12 6.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11z" />
-			<path d="M12 2.5v2.25M12 19.25v2.25M4.75 12H2.5M21.5 12h-2.25M5.47 5.47 3.88 3.88M20.12 20.12l-1.59-1.59M18.53 5.47l1.59-1.59M3.88 20.12l1.59-1.59" />
-		</svg>
-	`;
+	const diskPath = doc.createElementNS(svgNamespace, 'path');
+	diskPath.setAttribute('d', 'M12 6.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11z');
+
+	const raysPath = doc.createElementNS(svgNamespace, 'path');
+	raysPath.setAttribute(
+		'd',
+		'M12 2.5v2.25M12 19.25v2.25M4.75 12H2.5M21.5 12h-2.25M5.47 5.47 3.88 3.88M20.12 20.12l-1.59-1.59M18.53 5.47l1.59-1.59M3.88 20.12l1.59-1.59'
+	);
+
+	svg.append(diskPath, raysPath);
+	return svg;
 };
 
 const updateButton = (button: HTMLButtonElement, mode: DarkModePreference) => {
-	button.innerHTML = iconMarkup(mode);
+	button.replaceChildren(createSvgIcon(button.ownerDocument, mode));
 	button.setAttribute('data-mode', mode);
 	button.setAttribute('aria-pressed', mode === 'dark' ? 'true' : 'false');
 	button.title = mode === 'dark' ? 'Dark mode on' : 'Dark mode off';
@@ -49,7 +65,7 @@ export const darkModeToggle = async (
 	}
 
 	const style = doc.createElement('style');
-	style.innerHTML = `
+	style.textContent = `
 		.${COMPONENT_NAME} {
 			background: transparent !important;
 			border: 0 !important;

@@ -72,11 +72,17 @@ export const createMermaidSvgNodeFromMarkup = async (
 	doc: Document
 ): Promise<SVGElement | undefined> => {
 	const result = await renderMermaid(mermaid, getRenderTheme(doc));
+	if (!result) {
+		return undefined;
+	}
 
-	const container = doc.createElement('div');
-	container.innerHTML = result;
+	const parsed = new DOMParser().parseFromString(result, 'text/html');
+	const svgRoot = parsed.querySelector('svg');
+	if (!svgRoot) {
+		return undefined;
+	}
 
-	const svg = container.firstElementChild as SVGElement | null;
+	const svg = doc.importNode(svgRoot, true) as SVGElement;
 	if (svg) {
 		svg.setAttribute(MERMAID_CODE_ATTRIBUTE, mermaid);
 		svg.classList.add(MERMAID_SVG_CLASS);

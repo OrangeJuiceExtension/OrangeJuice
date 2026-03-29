@@ -1,4 +1,3 @@
-import DOMPurify from 'dompurify';
 import type { ContentScriptContext } from '#imports';
 import { parseDate } from '@/utils/date.ts';
 import { dom } from '@/utils/dom.ts';
@@ -71,9 +70,7 @@ export const chooseDate = (ctx: ContentScriptContext, doc: Document) => {
 	};
 
 	const dayChangeHandler = () => {
-		const day = DOMPurify.sanitize(
-			`${yearSelect.value}-${monthSelect.value}-${daySelect.value}`
-		);
+		const day = `${yearSelect.value}-${monthSelect.value}-${daySelect.value}`;
 		window.location.href = `/front?day=${day}`;
 	};
 

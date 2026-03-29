@@ -1,6 +1,7 @@
 import linkifyHtml from 'linkify-html';
 import type { ContentScriptContext } from '#imports';
 import { apiModule } from '@/utils/api.ts';
+import { cloneChildNodesInto, replaceChildrenWithSanitizedHtml } from '@/utils/html.ts';
 
 const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 export const USER_INFO_HOVER_CLASS = 'oj_user_info_hover';
@@ -62,8 +63,9 @@ export const showUserInfoOnHover = (
 
 	const populateUserDiv = async (user: HTMLAnchorElement, userDivBox: HTMLDivElement) => {
 		const userName = user.innerText.trim().split(' ')[0];
-		if (cachedData.has(userName)) {
-			userDivBox.innerHTML = cachedData.get(userName)?.innerHTML || '';
+		const cachedUserDiv = cachedData.get(userName);
+		if (cachedUserDiv) {
+			cloneChildNodesInto(cachedUserDiv, userDivBox);
 			return;
 		}
 
@@ -76,55 +78,49 @@ export const showUserInfoOnHover = (
 		const renderedDate = Intl.DateTimeFormat().format(userDate);
 		const isNewUser = Date.now() - userDate.getTime() < ONE_MONTH_MS;
 
-		const table = `
-				<table>
-					<tbody>
-						<tr>
-							<td>user:</td>
-							<td><font${isNewUser ? ' color="#3c963c"' : ''}>${userInfo.id}</font></td>
-						</tr>
-						<tr>
-							<td>created:</td>
-							<td>${renderedDate}</td>
-						</tr>
-						<tr>
-							<td>karma:</td>
-							<td>${userInfo.karma}</td>
-						</tr>
-						<tr>
-							<td>submitted:</td>
-							<td>${userInfo.submitted.length}</td>
-						</tr>
-						${
-							userInfo.about
-								? '<tr><td>about:</td><td data-oj-about-cell="true"></td></tr>'
-								: ''
-						}
-					</tbody>
-				</table>
-			`;
+		const table = doc.createElement('table');
+		const tbody = doc.createElement('tbody');
+		table.append(tbody);
 
-		userDivBox.innerHTML = linkifyHtml(table, { attributes: { rel: 'noopener' } });
+		const appendRow = (label: string, value: string | Node, options?: { green?: boolean }) => {
+			const row = doc.createElement('tr');
+			const labelCell = doc.createElement('td');
+			labelCell.textContent = label;
+			const valueCell = doc.createElement('td');
+
+			if (typeof value === 'string') {
+				if (options?.green) {
+					const font = doc.createElement('font');
+					font.setAttribute('color', '#3c963c');
+					font.textContent = value;
+					valueCell.append(font);
+				} else {
+					valueCell.textContent = value;
+				}
+			} else {
+				valueCell.append(value);
+			}
+
+			row.append(labelCell, valueCell);
+			tbody.append(row);
+			return valueCell;
+		};
+
+		appendRow('user:', userInfo.id, { green: isNewUser });
+		appendRow('created:', renderedDate);
+		appendRow('karma:', `${userInfo.karma}`);
+		appendRow('submitted:', `${userInfo.submitted.length}`);
+
 		if (userInfo.about) {
-			const aboutCell = userDivBox.querySelector<HTMLElement>(
-				'td[data-oj-about-cell="true"]'
+			const aboutCell = appendRow('about:', '');
+			replaceChildrenWithSanitizedHtml(
+				aboutCell,
+				linkifyHtml(userInfo.about, { attributes: { rel: 'noopener' } })
 			);
-			if (aboutCell) {
-				aboutCell.innerHTML = userInfo.about;
-			}
 		}
-		const aboutRows = Array.from(userDivBox.querySelectorAll('tr'));
-		for (const row of aboutRows) {
-			const cells = row.querySelectorAll('td');
-			if (cells.length < 2 || cells[0]?.innerText.trim() !== 'about:') {
-				continue;
-			}
-			cells[1].innerHTML = linkifyHtml(cells[1].innerHTML, {
-				attributes: { rel: 'noopener' },
-			});
-			break;
-		}
-		cachedData.set(userName, userDivBox);
+
+		userDivBox.replaceChildren(table);
+		cachedData.set(userName, userDivBox.cloneNode(true) as HTMLDivElement);
 	};
 
 	const createUserDiv = (doc: Document) => {

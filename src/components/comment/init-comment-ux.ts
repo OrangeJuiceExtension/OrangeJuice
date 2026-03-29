@@ -11,10 +11,24 @@ export const createGuidelinesNote = (options?: { marginBottom?: string }): HTMLD
 	if (options?.marginBottom) {
 		guidelinesNote.style.marginBottom = options.marginBottom;
 	}
-	guidelinesNote.innerHTML =
-		"HN's approach to " +
-		'<a href="newswelcome.html" target="_blank" rel="noopener"><u>comments</u></a> ' +
-		'and site <a href="newsguidelines.html#comments" target="_blank" rel="noopener"><u>guidelines</u></a>.';
+
+	const commentsLink = document.createElement('a');
+	commentsLink.href = 'newswelcome.html';
+	commentsLink.target = '_blank';
+	commentsLink.rel = 'noopener';
+	const commentsUnderline = document.createElement('u');
+	commentsUnderline.textContent = 'comments';
+	commentsLink.append(commentsUnderline);
+
+	const guidelinesLink = document.createElement('a');
+	guidelinesLink.href = 'newsguidelines.html#comments';
+	guidelinesLink.target = '_blank';
+	guidelinesLink.rel = 'noopener';
+	const guidelinesUnderline = document.createElement('u');
+	guidelinesUnderline.textContent = 'guidelines';
+	guidelinesLink.append(guidelinesUnderline);
+
+	guidelinesNote.append("HN's approach to ", commentsLink, ' and site ', guidelinesLink, '.');
 	return guidelinesNote;
 };
 

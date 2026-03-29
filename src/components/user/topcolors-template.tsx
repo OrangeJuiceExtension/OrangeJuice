@@ -1,4 +1,3 @@
-import { createRoot } from 'react-dom/client';
 import { hideBody, showBody } from '@/components/common/hide-body.ts';
 import { dom } from '@/utils/dom.ts';
 import './topcolors-template.css';
@@ -26,10 +25,11 @@ const TOAST_VISIBLE_CLASS = 'oj-topcolors__toast--visible';
 const TOAST_HIDE_DELAY_MS = 1400;
 const TOP_COLOR_FIELD_NAME = 'topc';
 const FORM_SKIP_INPUT_TYPES = new Set(['button', 'file', 'image', 'reset', 'submit']);
+const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 
 let toastTimeout: number | undefined;
 
-const pickRandomShape = (): (typeof SWATCH_SHAPES)[number] => {
+const pickRandomShape = (): SwatchShape => {
 	const index = Math.floor(Math.random() * SWATCH_SHAPES.length);
 	return SWATCH_SHAPES[index];
 };
@@ -255,85 +255,118 @@ const findContentContainer = (doc: Document): HTMLElement | null => {
 	return null;
 };
 
-const TopcolorsTemplate = ({
-	colors,
-	saveTarget,
-}: {
-	colors: TopColor[];
-	saveTarget?: TopColorSaveTarget;
-}) => (
-	<section className="oj-topcolors">
-		<header className="oj-topcolors__intro">
-			<h1 className="oj-topcolors__title">Top Colors</h1>
-			<p className="oj-topcolors__subtitle">
-				Browse Hacker News themes by color. {colors.length} colors available.
-			</p>
-		</header>
-		<ol className="oj-topcolors__list">
-			{colors.map((color, index) => {
-				const shape = pickRandomShape();
+const createSaveIcon = (doc: Document): SVGSVGElement => {
+	const svg = doc.createElementNS(SVG_NAMESPACE, 'svg');
+	svg.setAttribute('aria-hidden', 'true');
+	svg.setAttribute('class', 'oj-topcolors__save-icon');
+	svg.setAttribute('focusable', 'false');
+	svg.setAttribute('viewBox', '0 0 16 16');
 
-				return (
-					<li className="oj-topcolors__item" key={color.hex}>
-						<div className="oj-topcolors__card-shell">
-							<a
-								className="oj-topcolors__card"
-								href={color.href}
-								onClick={async (event) => {
-									event.preventDefault();
-									const didCopy = await copyToClipboard(document, color.hex);
-									if (didCopy) {
-										showCopyToast(document, color.hex, shape);
-									}
-								}}
-							>
-								<span className="oj-topcolors__rank">{index + 1}</span>
-								<span
-									className={`oj-topcolors__swatch oj-topcolors__swatch--${shape}`}
-									style={{ backgroundColor: color.hex }}
-								/>
-								<span className="oj-topcolors__meta">
-									<span className="oj-topcolors__hex">{color.hex}</span>
-								</span>
-							</a>
-							{saveTarget ? (
-								<button
-									aria-label={`Save ${color.hex} as top color`}
-									className="oj-topcolors__save-button"
-									onClick={async (event) => {
-										event.preventDefault();
-										event.stopPropagation();
-										await submitTopColor(saveTarget, color.hex);
-									}}
-									title={`Save ${color.hex}`}
-									type="button"
-								>
-									<svg
-										aria-hidden="true"
-										className="oj-topcolors__save-icon"
-										focusable="false"
-										viewBox="0 0 16 16"
-									>
-										<path
-											d="M2 2h9l3 3v9H2z"
-											fill="none"
-											stroke="currentColor"
-										/>
-										<path
-											d="M5 2h5v4H5zM5 9h6v4H5z"
-											fill="none"
-											stroke="currentColor"
-										/>
-									</svg>
-								</button>
-							) : null}
-						</div>
-					</li>
-				);
-			})}
-		</ol>
-	</section>
-);
+	const outerPath = doc.createElementNS(SVG_NAMESPACE, 'path');
+	outerPath.setAttribute('d', 'M2 2h9l3 3v9H2z');
+	outerPath.setAttribute('fill', 'none');
+	outerPath.setAttribute('stroke', 'currentColor');
+
+	const innerPath = doc.createElementNS(SVG_NAMESPACE, 'path');
+	innerPath.setAttribute('d', 'M5 2h5v4H5zM5 9h6v4H5z');
+	innerPath.setAttribute('fill', 'none');
+	innerPath.setAttribute('stroke', 'currentColor');
+
+	svg.append(outerPath, innerPath);
+	return svg;
+};
+
+const createTopColorItem = (
+	doc: Document,
+	color: TopColor,
+	index: number,
+	saveTarget?: TopColorSaveTarget
+): HTMLLIElement => {
+	const shape = pickRandomShape();
+	const item = doc.createElement('li');
+	item.className = 'oj-topcolors__item';
+
+	const shell = doc.createElement('div');
+	shell.className = 'oj-topcolors__card-shell';
+
+	const card = doc.createElement('a');
+	card.className = 'oj-topcolors__card';
+	card.href = color.href;
+	card.addEventListener('click', async (event) => {
+		event.preventDefault();
+		const didCopy = await copyToClipboard(doc, color.hex);
+		if (didCopy) {
+			showCopyToast(doc, color.hex, shape);
+		}
+	});
+
+	const rank = doc.createElement('span');
+	rank.className = 'oj-topcolors__rank';
+	rank.textContent = `${index + 1}`;
+
+	const swatch = doc.createElement('span');
+	swatch.className = `oj-topcolors__swatch oj-topcolors__swatch--${shape}`;
+	swatch.style.backgroundColor = color.hex;
+
+	const meta = doc.createElement('span');
+	meta.className = 'oj-topcolors__meta';
+	const hex = doc.createElement('span');
+	hex.className = 'oj-topcolors__hex';
+	hex.textContent = color.hex;
+	meta.append(hex);
+
+	card.append(rank, swatch, meta);
+	shell.append(card);
+
+	if (saveTarget) {
+		const saveButton = doc.createElement('button');
+		saveButton.setAttribute('aria-label', `Save ${color.hex} as top color`);
+		saveButton.className = 'oj-topcolors__save-button';
+		saveButton.title = `Save ${color.hex}`;
+		saveButton.type = 'button';
+		saveButton.append(createSaveIcon(doc));
+		saveButton.addEventListener('click', async (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			await submitTopColor(saveTarget, color.hex);
+		});
+		shell.append(saveButton);
+	}
+
+	item.append(shell);
+	return item;
+};
+
+const createTopcolorsTemplate = (
+	doc: Document,
+	colors: TopColor[],
+	saveTarget?: TopColorSaveTarget
+): HTMLElement => {
+	const section = doc.createElement('section');
+	section.className = 'oj-topcolors';
+
+	const intro = doc.createElement('header');
+	intro.className = 'oj-topcolors__intro';
+
+	const title = doc.createElement('h1');
+	title.className = 'oj-topcolors__title';
+	title.textContent = 'Top Colors';
+
+	const subtitle = doc.createElement('p');
+	subtitle.className = 'oj-topcolors__subtitle';
+	subtitle.textContent = `Browse Hacker News themes by color. ${colors.length} colors available.`;
+
+	intro.append(title, subtitle);
+
+	const list = doc.createElement('ol');
+	list.className = 'oj-topcolors__list';
+	for (const [index, color] of colors.entries()) {
+		list.append(createTopColorItem(doc, color, index, saveTarget));
+	}
+
+	section.append(intro, list);
+	return section;
+};
 
 export const topcolorsTemplate = async (doc: Document): Promise<void> => {
 	if (!window.location.pathname.startsWith('/topcolors')) {
@@ -364,8 +397,8 @@ export const topcolorsTemplate = async (doc: Document): Promise<void> => {
 	container.replaceChildren();
 	const root = doc.createElement('div');
 	root.id = TOPCOLORS_ROOT_ID;
+	root.append(createTopcolorsTemplate(doc, colors, saveTarget));
 	container.appendChild(root);
-	createRoot(root).render(<TopcolorsTemplate colors={colors} saveTarget={saveTarget} />);
 
 	showBody(doc);
 };
