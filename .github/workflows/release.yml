@@ -165,6 +165,14 @@ jobs:
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
         run: ./node_modules/.bin/publish-extension --chrome-zip .output/orangejuice-${{ steps.bump.outputs.new_version }}-chrome.zip
 
+      - name: Publish to Firefox Web Store
+        continue-on-error: true
+        env:
+          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+        run: ./node_modules/.bin/publish-extension --firefox-zip .output/orangejuice-${{ steps.bump.outputs.new_version }}-firefox.zip
+
       - name: Prune old releases and tags
         env:
           GH_TOKEN: ${{ github.token }}
