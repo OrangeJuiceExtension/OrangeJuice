@@ -51,7 +51,7 @@ Agents must follow:
     - Invalid: `<div><td></td></div>`
     - Valid: `<div><table><tbody><tr><td></td></tr></tbody></table></div>`
 - **Check code format**: `bun run check`
-- **Format and fix code**: `bun run fix`
+- **Format and fix code**: `bun run fix` and `bun run compile`
 - Always `await` promises in async functions - don't forget to use the return value
 - Use `async/await` syntax instead of promise chains for better readability
 - Handle errors appropriately in async code with try-catch blocks
