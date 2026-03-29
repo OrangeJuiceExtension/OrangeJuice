@@ -229,7 +229,10 @@ describe('hide_read_stories', () => {
 			story2.postedDate = '2024-01-19T10:00:00';
 			story2.commentsCount = 42;
 
-			const stories = [story1, story2];
+			const stories = [
+				{ id: story1.id, url: story1.url },
+				{ id: story2.id, url: story2.url },
+			];
 
 			mockGetVisits.mockResolvedValueOnce([{ visitTime: 1_234_567_890, transition: 'link' }]);
 			mockGetVisits.mockResolvedValueOnce([]);
@@ -261,7 +264,7 @@ describe('hide_read_stories', () => {
 			story.postedDate = '2024-01-19T12:00:00';
 			story.commentsCount = 15;
 
-			const stories = [story];
+			const stories = [{ id: story.id, url: story.url }];
 
 			const visitData = { visitTime: 1_234_567_890, transition: 'link' };
 			mockGetVisits.mockResolvedValueOnce([visitData]);
@@ -291,7 +294,7 @@ describe('hide_read_stories', () => {
 			story.postedDate = '2024-01-19T10:00:00';
 			story.commentsCount = 42;
 
-			const stories = [story];
+			const stories = [{ id: story.id, url: story.url }];
 
 			mockGetVisits.mockResolvedValueOnce([]);
 
@@ -329,7 +332,11 @@ describe('hide_read_stories', () => {
 			const story3 = new HNStory(storyRow3);
 			story3.url = 'https://example.com/3';
 
-			const stories = [story1, story2, story3];
+			const stories = [
+				{ id: story1.id, url: story1.url },
+				{ id: story2.id, url: story2.url },
+				{ id: story3.id, url: story3.url },
+			];
 
 			const visit1 = { visitTime: 1000, transition: 'link' };
 			const visit3 = { visitTime: 3000, transition: 'typed' };

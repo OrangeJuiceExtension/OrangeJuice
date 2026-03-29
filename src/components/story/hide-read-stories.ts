@@ -2,7 +2,7 @@ import type { ContentScriptContext } from '#imports';
 import type { HNStory } from '@/components/story/hn-story.ts';
 import type { StoryData } from '@/components/story/story-data.ts';
 import { createClientServices } from '@/services/manager.ts';
-import type { ReadStoriesService } from '@/services/read-stories-service.ts';
+import type { ReadStoriesService, ReadStoryLookup } from '@/services/read-stories-service.ts';
 import lStorage from '@/utils/local-storage.ts';
 
 const CHECKBOX_ID = 'oj-hide-read-stories';
@@ -81,7 +81,11 @@ const getVisitedStories = async (
 	hnStories: HNStory[]
 ): Promise<HNStory[]> => {
 	try {
-		const response = await service.getVisits(hnStories);
+		const storiesToLookup: ReadStoryLookup[] = hnStories.map((story) => ({
+			id: story.id,
+			url: story.url,
+		}));
+		const response = await service.getVisits(storiesToLookup);
 		if (!response) {
 			return [];
 		}
