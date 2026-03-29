@@ -32,6 +32,13 @@ export default defineConfig({
 		name: 'Orange Juice',
 		homepage_url: 'https://oj-hn.com',
 		description: 'Orange Juice makes Hacker News sweeter',
+		browser_specific_settings: {
+			gecko: {
+				data_collection_permissions: {
+					required: ['none'],
+				},
+			},
+		},
 		icons: {
 			16: '/icon/orange_juice_icon_16x16.png',
 			24: '/icon/orange_juice_icon_32x32.png',
