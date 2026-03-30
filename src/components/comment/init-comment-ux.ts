@@ -15,7 +15,7 @@ export const createGuidelinesNote = (options?: { marginBottom?: string }): HTMLD
 	const commentsLink = document.createElement('a');
 	commentsLink.href = 'newswelcome.html';
 	commentsLink.target = '_blank';
-	commentsLink.rel = 'noopener';
+	commentsLink.rel = 'noopener noreferrer';
 	const commentsUnderline = document.createElement('u');
 	commentsUnderline.textContent = 'comments';
 	commentsLink.append(commentsUnderline);
@@ -23,7 +23,7 @@ export const createGuidelinesNote = (options?: { marginBottom?: string }): HTMLD
 	const guidelinesLink = document.createElement('a');
 	guidelinesLink.href = 'newsguidelines.html#comments';
 	guidelinesLink.target = '_blank';
-	guidelinesLink.rel = 'noopener';
+	guidelinesLink.rel = 'noopener noreferrer';
 	const guidelinesUnderline = document.createElement('u');
 	guidelinesUnderline.textContent = 'guidelines';
 	guidelinesLink.append(guidelinesUnderline);

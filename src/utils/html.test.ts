@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
 	cloneChildNodesInto,
 	createSanitizedFragment,
+	linkifyTextNodes,
 	replaceChildrenWithSanitizedHtml,
 } from './html.ts';
 
@@ -30,6 +31,18 @@ describe('html utils', () => {
 			expect(link?.ownerDocument).toBe(document);
 			expect((link as HTMLAnchorElement | null)?.href).toContain('/item?id=1');
 		});
+
+		it('removes unsafe markup from HTML text', () => {
+			const fragment = createSanitizedFragment(
+				document,
+				'<p>Hello</p><script>alert(1)</script><img src="x" onerror="alert(1)">'
+			);
+			const container = document.createElement('div');
+			container.append(fragment);
+
+			expect(container.querySelector('script')).toBeNull();
+			expect(container.querySelector('img')?.getAttribute('onerror')).toBeNull();
+		});
 	});
 
 	describe('replaceChildrenWithSanitizedHtml', () => {
@@ -44,6 +57,32 @@ describe('html utils', () => {
 
 			expect(element.innerHTML).toBe('<span class="new">new</span><em>content</em>');
 			expect(fragment.childNodes).toHaveLength(0);
+		});
+	});
+
+	describe('linkifyTextNodes', () => {
+		it('linkifies plain URLs without reparsing HTML strings', () => {
+			const element = document.createElement('div');
+			element.append('Visit https://example.com for details');
+
+			linkifyTextNodes(element, { openInNewTab: true });
+
+			const link = element.querySelector('a');
+			expect(link?.href).toBe('https://example.com/');
+			expect(link?.target).toBe('_blank');
+			expect(link?.rel).toBe('noopener noreferrer');
+		});
+
+		it('skips text inside existing anchors', () => {
+			const element = document.createElement('div');
+			const link = document.createElement('a');
+			link.href = 'https://example.com';
+			link.textContent = 'https://example.com';
+			element.append(link);
+
+			linkifyTextNodes(element, { openInNewTab: true });
+
+			expect(element.querySelectorAll('a')).toHaveLength(1);
 		});
 	});
 

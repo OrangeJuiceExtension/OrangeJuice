@@ -167,7 +167,11 @@ describe('story keyboard navigation', () => {
 			doc.dispatchEvent(event);
 
 			if (testCase.expectedOpen) {
-				expect(openSpy).toHaveBeenCalledWith(testCase.expectedOpen, '_blank');
+				expect(openSpy).toHaveBeenCalledWith(
+					testCase.expectedOpen,
+					'_blank',
+					'noopener,noreferrer'
+				);
 			} else {
 				expect(openSpy).not.toHaveBeenCalled();
 			}

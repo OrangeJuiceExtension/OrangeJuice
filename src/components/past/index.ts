@@ -4,6 +4,11 @@ import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 import type { ComponentFeature } from '@/utils/types.ts';
 
+const formatDatePart = (value: string): string => {
+	const parsed = Number.parseInt(value, 10);
+	return Number.isFinite(parsed) ? `${parsed}` : '1';
+};
+
 export const updateMonthAndDayOptions = (
 	yearSelect: HTMLSelectElement,
 	monthSelect: HTMLSelectElement,
@@ -70,8 +75,13 @@ export const chooseDate = (ctx: ContentScriptContext, doc: Document) => {
 	};
 
 	const dayChangeHandler = () => {
-		const day = `${yearSelect.value}-${monthSelect.value}-${daySelect.value}`;
-		window.location.href = `/front?day=${day}`;
+		const url = new URL('/front', paths.base);
+		const year = formatDatePart(yearSelect.value);
+		const month = formatDatePart(monthSelect.value);
+		const day = formatDatePart(daySelect.value);
+
+		url.searchParams.set('day', `${year}-${month}-${day}`);
+		window.location.href = `${url.pathname}${url.search}`;
 	};
 
 	yearSelect.addEventListener('change', yearChangeHandler);

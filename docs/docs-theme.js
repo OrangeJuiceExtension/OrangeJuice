@@ -1,6 +1,36 @@
 const REG = /\/+$/;
 const STORAGE_KEY = 'oj_docs_dark_mode';
 const LIGHTBOX_ID = 'oj-docs-lightbox';
+const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+
+const createSvgIcon = (isDark) => {
+	const svg = document.createElementNS(SVG_NAMESPACE, 'svg');
+	svg.setAttribute(
+		'class',
+		isDark
+			? 'oj-dark-mode-icon oj-dark-mode-icon--moon'
+			: 'oj-dark-mode-icon oj-dark-mode-icon--sun'
+	);
+	svg.setAttribute('aria-hidden', 'true');
+	svg.setAttribute('viewBox', '0 0 24 24');
+
+	const paths = isDark
+		? [
+				'M21.752 15.002A9.718 9.718 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.599.748-3.752A9.753 9.753 0 0 0 2.25 11.25c0 5.385 4.365 9.75 9.75 9.75a9.753 9.753 0 0 0 9.752-5.998Z',
+			]
+		: [
+				'M12 6.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11z',
+				'M12 2.5v2.25M12 19.25v2.25M4.75 12H2.5M21.5 12h-2.25M5.47 5.47 3.88 3.88M20.12 20.12l-1.59-1.59M18.53 5.47l1.59-1.59M3.88 20.12l1.59-1.59',
+			];
+
+	for (const pathData of paths) {
+		const path = document.createElementNS(SVG_NAMESPACE, 'path');
+		path.setAttribute('d', pathData);
+		svg.append(path);
+	}
+
+	return svg;
+};
 
 (() => {
 	const root = document.documentElement;
@@ -35,26 +65,9 @@ const LIGHTBOX_ID = 'oj-docs-lightbox';
 	const storedTheme = readStoredTheme();
 	applyThemeClass(storedTheme ?? readSystemTheme());
 
-	const iconMarkup = (isDark) => {
-		if (isDark) {
-			return `
-				<svg class="oj-dark-mode-icon oj-dark-mode-icon--moon" aria-hidden="true" viewBox="0 0 24 24">
-					<path d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.599.748-3.752A9.753 9.753 0 0 0 2.25 11.25c0 5.385 4.365 9.75 9.75 9.75a9.753 9.753 0 0 0 9.752-5.998Z" />
-				</svg>
-			`;
-		}
-
-		return `
-			<svg class="oj-dark-mode-icon oj-dark-mode-icon--sun" aria-hidden="true" viewBox="0 0 24 24">
-				<path d="M12 6.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11z" />
-				<path d="M12 2.5v2.25M12 19.25v2.25M4.75 12H2.5M21.5 12h-2.25M5.47 5.47 3.88 3.88M20.12 20.12l-1.59-1.59M18.53 5.47l1.59-1.59M3.88 20.12l1.59-1.59" />
-			</svg>
-		`;
-	};
-
 	const updateToggle = (button) => {
 		const isDark = root.classList.contains('oj-dark-mode');
-		button.innerHTML = iconMarkup(isDark);
+		button.replaceChildren(createSvgIcon(isDark));
 		button.setAttribute('data-mode', isDark ? 'dark' : 'light');
 		button.setAttribute('aria-pressed', isDark ? 'true' : 'false');
 		button.title = isDark ? 'Click to turn dark mode off' : 'Click to turn dark mode on';
@@ -119,13 +132,29 @@ const LIGHTBOX_ID = 'oj-docs-lightbox';
 		lightbox.id = LIGHTBOX_ID;
 		lightbox.className = 'oj-docs-lightbox';
 		lightbox.setAttribute('aria-hidden', 'true');
-		lightbox.innerHTML = `
-			<div class="oj-docs-lightbox__backdrop" data-lightbox-close="true"></div>
-			<div class="oj-docs-lightbox__dialog" role="dialog" aria-modal="true" aria-label="Full-size screenshot">
-				<button type="button" class="oj-docs-lightbox__close" aria-label="Close image preview">Close</button>
-				<img class="oj-docs-lightbox__image" alt="">
-			</div>
-		`;
+
+		const backdrop = document.createElement('div');
+		backdrop.className = 'oj-docs-lightbox__backdrop';
+		backdrop.dataset.lightboxClose = 'true';
+
+		const dialog = document.createElement('div');
+		dialog.className = 'oj-docs-lightbox__dialog';
+		dialog.setAttribute('role', 'dialog');
+		dialog.setAttribute('aria-modal', 'true');
+		dialog.setAttribute('aria-label', 'Full-size screenshot');
+
+		const closeButton = document.createElement('button');
+		closeButton.type = 'button';
+		closeButton.className = 'oj-docs-lightbox__close';
+		closeButton.setAttribute('aria-label', 'Close image preview');
+		closeButton.textContent = 'Close';
+
+		const image = document.createElement('img');
+		image.className = 'oj-docs-lightbox__image';
+		image.alt = '';
+
+		dialog.append(closeButton, image);
+		lightbox.append(backdrop, dialog);
 
 		document.body.append(lightbox);
 		return lightbox;

@@ -4,6 +4,7 @@ import {
 	createDropdownStyle,
 	NAVBAR_DROPDOWN_CLASS,
 } from '@/components/common/dropdown';
+import { paths } from '@/utils/paths.ts';
 
 interface DropdownLink {
 	path: string;
@@ -11,20 +12,53 @@ interface DropdownLink {
 }
 
 const TRAILING_PIPE_REGEX = /\|\s*$/;
+const SAFE_PROTOCOLS = new Set(['http:', 'https:']);
+
+const createUserPath = (
+	pathname: string,
+	user: string,
+	extraParams?: Record<string, string>
+): string => {
+	const url = new URL(pathname, paths.base);
+	url.searchParams.set('id', user);
+
+	if (extraParams) {
+		for (const [key, value] of Object.entries(extraParams)) {
+			url.searchParams.set(key, value);
+		}
+	}
+
+	return `${url.pathname}${url.search}`;
+};
+
+const getSafeRelativePath = (path: string): string | undefined => {
+	try {
+		const resolved = new URL(path, paths.base);
+		if (!SAFE_PROTOCOLS.has(resolved.protocol)) {
+			return undefined;
+		}
+		if (resolved.origin !== new URL(paths.base).origin) {
+			return undefined;
+		}
+		return `${resolved.pathname}${resolved.search}${resolved.hash}`;
+	} catch {
+		return undefined;
+	}
+};
 
 const getLinks = (user: string, logoutPath?: string): DropdownLink[] => {
 	const links: DropdownLink[] = [
 		{
 			title: 'profile',
-			path: `/user?id=${user}`,
+			path: createUserPath('/user', user),
 		},
 		{
 			title: 'submissions',
-			path: `/submitted?id=${user}`,
+			path: createUserPath('/submitted', user),
 		},
 		{
 			title: 'comments',
-			path: `/threads?id=${user}`,
+			path: createUserPath('/threads', user),
 		},
 		{
 			title: 'hidden',
@@ -32,34 +66,35 @@ const getLinks = (user: string, logoutPath?: string): DropdownLink[] => {
 		},
 		{
 			title: 'flagged submissions',
-			path: `/flagged?id=${user}`,
+			path: createUserPath('/flagged', user),
 		},
 		{
 			title: 'flagged comments',
-			path: `/flagged?id=${user}&kind=comment`,
+			path: createUserPath('/flagged', user, { kind: 'comment' }),
 		},
 		{
 			title: 'upvoted submissions',
-			path: `/upvoted?id=${user}`,
+			path: createUserPath('/upvoted', user),
 		},
 		{
 			title: 'upvoted comments',
-			path: `/upvoted?id=${user}&comments=t`,
+			path: createUserPath('/upvoted', user, { comments: 't' }),
 		},
 		{
 			title: 'favorite submissions',
-			path: `/favorites?id=${user}`,
+			path: createUserPath('/favorites', user),
 		},
 		{
 			title: 'favorite comments',
-			path: `/favorites?id=${user}&comments=t`,
+			path: createUserPath('/favorites', user, { comments: 't' }),
 		},
 	];
 
-	if (logoutPath) {
+	const safeLogoutPath = logoutPath ? getSafeRelativePath(logoutPath) : undefined;
+	if (safeLogoutPath) {
 		links.push({
 			title: 'logout',
-			path: logoutPath,
+			path: safeLogoutPath,
 		});
 	}
 

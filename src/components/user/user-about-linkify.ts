@@ -1,6 +1,5 @@
-import linkifyHtml from 'linkify-html';
 import type { ContentScriptContext } from '#imports';
-import { replaceChildrenWithSanitizedHtml } from '@/utils/html.ts';
+import { linkifyTextNodes } from '@/utils/html.ts';
 
 export const userAboutLinkify = (_ctx: ContentScriptContext, doc: Document) => {
 	if (window.location.pathname.startsWith('/user')) {
@@ -21,15 +20,7 @@ export const userAboutLinkify = (_ctx: ContentScriptContext, doc: Document) => {
 			if (row.nextElementSibling.getElementsByTagName('textarea').length) {
 				break;
 			}
-			replaceChildrenWithSanitizedHtml(
-				row.nextElementSibling,
-				linkifyHtml(row.nextElementSibling.innerHTML, {
-					attributes: {
-						rel: 'noopener',
-						target: '_blank',
-					},
-				})
-			);
+			linkifyTextNodes(row.nextElementSibling, { openInNewTab: true });
 			break;
 		}
 	}

@@ -3,6 +3,7 @@ import type { HNStory } from '@/components/story/hn-story.ts';
 import type { StoryData } from '@/components/story/story-data.ts';
 import { dom } from '@/utils/dom.ts';
 import lStorage from '@/utils/local-storage.ts';
+import { navigateToSafeUrl, openSafeUrlInNewTab } from '@/utils/navigation.ts';
 
 const PAGE_PARAM_REGEX = /[?&]p=\d+/;
 const CHECKBOX_ID = 'oj-hide-read-stories';
@@ -121,7 +122,7 @@ export class KeyboardHandlers {
 	open(storyData: StoryData) {
 		const activeStory = storyData.getActiveStory();
 		if (activeStory?.url) {
-			window.open(activeStory.url, '_blank');
+			openSafeUrlInNewTab(activeStory.url);
 		}
 	}
 
@@ -129,10 +130,10 @@ export class KeyboardHandlers {
 		const activeStory = storyData.getActiveStory();
 		if (activeStory?.url) {
 			if (openInNewTab) {
-				window.open(activeStory.url, '_blank');
+				openSafeUrlInNewTab(activeStory.url);
 				return;
 			}
-			window.location.href = activeStory.url;
+			navigateToSafeUrl(activeStory.url);
 		}
 	}
 
@@ -140,18 +141,18 @@ export class KeyboardHandlers {
 		const activeStory = storyData.getActiveStory();
 		if (activeStory?.commentsUrl) {
 			if (openInNewTab) {
-				window.open(activeStory.commentsUrl, '_blank');
+				openSafeUrlInNewTab(activeStory.commentsUrl);
 				return;
 			}
-			window.location.href = activeStory.commentsUrl;
+			navigateToSafeUrl(activeStory.commentsUrl);
 		}
 	}
 
 	openWithComments(storyData: StoryData) {
 		const activeStory = storyData.getActiveStory();
-		if (activeStory?.url) {
-			window.open(activeStory.url, '_blank');
-			window.open(activeStory.commentsUrl, '_blank');
+		if (activeStory?.url && activeStory.commentsUrl) {
+			openSafeUrlInNewTab(activeStory.url);
+			openSafeUrlInNewTab(activeStory.commentsUrl);
 		}
 	}
 
@@ -159,7 +160,7 @@ export class KeyboardHandlers {
 		const position = key === '0' ? 10 : Number.parseInt(key, 10);
 		const story = storyData.getByPosition(position);
 		if (story?.url) {
-			window.open(story.url, '_blank');
+			openSafeUrlInNewTab(story.url);
 		}
 	}
 

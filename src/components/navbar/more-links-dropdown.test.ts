@@ -2,15 +2,27 @@ import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { navbar } from './index';
 
-const loadFixture = (fixtureName: string): void => {
-	const fixturePath = `${import.meta.dirname}/__fixtures__/${fixtureName}`;
-	const html = readFileSync(fixturePath, 'utf8')
-		.replaceAll(/<link\b[^>]*>/g, '')
-		.replaceAll(/<script\b[^>]*>[\s\S]*?<\/script>/g, '');
+const stripFixtureElements = (html: string): Document => {
 	const parsed = new DOMParser().parseFromString(html, 'text/html');
 
-	document.head.innerHTML = parsed.head.innerHTML;
-	document.body.innerHTML = parsed.body.innerHTML;
+	for (const element of parsed.querySelectorAll('link, script')) {
+		element.remove();
+	}
+
+	return parsed;
+};
+
+const loadFixture = (fixtureName: string): void => {
+	const fixturePath = `${import.meta.dirname}/__fixtures__/${fixtureName}`;
+	const html = readFileSync(fixturePath, 'utf8');
+	const parsed = stripFixtureElements(html);
+
+	document.head.replaceChildren(
+		...Array.from(parsed.head.childNodes, (node) => node.cloneNode(true))
+	);
+	document.body.replaceChildren(
+		...Array.from(parsed.body.childNodes, (node) => node.cloneNode(true))
+	);
 };
 
 describe('navbar more-links', () => {

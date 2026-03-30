@@ -128,6 +128,41 @@ describe('profileLinksDropdown', () => {
 		}
 	});
 
+	it('should encode user names before building href values', () => {
+		const doc = document.implementation.createHTMLDocument();
+		createPageTop(doc, 'test user&x=<img>');
+		createPageTop(doc, 'test user&x=<img>');
+
+		profileLinksDropdown(MOCK_CONTEXT, doc);
+
+		const dropdownLinks = Array.from(
+			doc.querySelectorAll<HTMLAnchorElement>('.oj_profile_dropdown a')
+		);
+		const profileLink = dropdownLinks.find((link) => link.textContent === 'profile');
+
+		expect(profileLink?.href).toContain('/user?id=test+user%26x%3D%3Cimg%3E');
+	});
+
+	it('should ignore unsafe logout href values', () => {
+		const doc = document.implementation.createHTMLDocument();
+		createPageTop(doc, 'testuser');
+		const secondPageTop = createPageTop(doc, 'testuser');
+		const logoutLink = secondPageTop.querySelector<HTMLAnchorElement>('a[href="logout"]');
+		if (!logoutLink) {
+			throw new Error('Expected logout link');
+		}
+		logoutLink.setAttribute('href', 'javascript:alert(1)');
+
+		profileLinksDropdown(MOCK_CONTEXT, doc);
+
+		const dropdownLinks = Array.from(
+			doc.querySelectorAll<HTMLAnchorElement>('.oj_profile_dropdown a')
+		);
+		const titles = dropdownLinks.map((link) => link.textContent);
+
+		expect(titles).not.toContain('logout');
+	});
+
 	it('should remove logout from top nav and trailing separator', () => {
 		const doc = document.implementation.createHTMLDocument();
 		createPageTop(doc, 'testuser');

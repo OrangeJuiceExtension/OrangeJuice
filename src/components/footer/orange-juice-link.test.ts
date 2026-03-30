@@ -55,7 +55,7 @@ describe('footer orange-juice-link', () => {
 		footer.main(mockContext);
 
 		const ojLink = document.querySelector('a[href="https://oj-hn.com/"]');
-		expect(ojLink?.getAttribute('rel')).toBe('noreferrer');
+		expect(ojLink?.getAttribute('rel')).toBe('noopener noreferrer');
 		expect(ojLink?.getAttribute('target')).toBe('_blank');
 		expect(ojLink?.textContent).toBe('Orange Juice');
 	});
@@ -74,7 +74,7 @@ describe('footer orange-juice-link', () => {
 
 		// Check that separator exists between contact and Orange Juice link
 		expect(html).toContain(
-			'<a href="/contact">Contact</a><span> | </span><a href="https://oj-hn.com/" title="" rel="noreferrer" target="_blank">Orange Juice</a> | <a href="/apply">Apply</a>'
+			'<a href="/contact">Contact</a><span> | </span><a href="https://oj-hn.com/" title="" rel="noopener noreferrer" target="_blank">Orange Juice</a> | <a href="/apply">Apply</a>'
 		);
 	});
 

@@ -1,7 +1,6 @@
-import linkifyHtml from 'linkify-html';
 import type { ContentScriptContext } from '#imports';
 import { apiModule } from '@/utils/api.ts';
-import { cloneChildNodesInto, replaceChildrenWithSanitizedHtml } from '@/utils/html.ts';
+import { cloneChildNodesInto, createSanitizedFragment, linkifyTextNodes } from '@/utils/html.ts';
 
 const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 export const USER_INFO_HOVER_CLASS = 'oj_user_info_hover';
@@ -113,10 +112,9 @@ export const showUserInfoOnHover = (
 
 		if (userInfo.about) {
 			const aboutCell = appendRow('about:', '');
-			replaceChildrenWithSanitizedHtml(
-				aboutCell,
-				linkifyHtml(userInfo.about, { attributes: { rel: 'noopener' } })
-			);
+			const aboutContent = createSanitizedFragment(doc, userInfo.about);
+			linkifyTextNodes(aboutContent, { openInNewTab: true });
+			aboutCell.replaceChildren(aboutContent);
 		}
 
 		userDivBox.replaceChildren(table);

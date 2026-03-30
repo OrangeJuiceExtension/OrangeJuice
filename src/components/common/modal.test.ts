@@ -28,7 +28,7 @@ describe('modal', () => {
 			const overlay = createModal({ doc, ctx, content });
 
 			expect(overlay).toBeDefined();
-			expect(overlay.querySelector('p')?.textContent).toBe('Test content');
+			expect(overlay.querySelector('p')?.textContent).toBe('<p>Test content</p>');
 		});
 
 		it('should create modal with HTML element content', () => {

@@ -5,6 +5,16 @@ import { ActivityId } from './activity-trail.ts';
 import { dom, USERNAME_STORAGE_KEY } from './dom.ts';
 import lStorage from './local-storage.ts';
 
+const stripFixtureElements = (html: string): string => {
+	const parsed = new DOMParser().parseFromString(html, 'text/html');
+
+	for (const element of parsed.querySelectorAll('link, script')) {
+		element.remove();
+	}
+
+	return parsed.body.innerHTML;
+};
+
 const loggedInHtml = readFileSync(
 	join(import.meta.dirname, '__fixtures__', 'hn-logged-in.html'),
 	'utf-8'
@@ -16,9 +26,8 @@ const loggedOutHtml = readFileSync(
 const blackTopBarHtml = readFileSync(
 	join(import.meta.dirname, '..', 'components', 'navbar', '__fixtures__', 'hn-black.html'),
 	'utf-8'
-)
-	.replaceAll(/<link\b[^>]*>/g, '')
-	.replaceAll(/<script\b[^>]*>[\s\S]*?<\/script>/g, '');
+);
+const sanitizedBlackTopBarHtml = stripFixtureElements(blackTopBarHtml);
 
 describe('dom', () => {
 	describe('getUsername', () => {
@@ -184,7 +193,7 @@ describe('dom', () => {
 		});
 
 		it('targets the actual navbar cell when a black spacer row comes first', () => {
-			document.body.innerHTML = blackTopBarHtml;
+			document.body.innerHTML = sanitizedBlackTopBarHtml;
 
 			dom.ensureTopBarReadableText(document);
 

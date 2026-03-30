@@ -6,13 +6,13 @@ export const openInNewTab = (_ctx: ContentScriptContext, doc: Document) => {
 	const anchors = doc.querySelectorAll('.titleline > a') as NodeListOf<HTMLAnchorElement>;
 	for (const anchor of anchors) {
 		anchor.target = '_blank';
-		anchor.rel = 'noopener';
+		anchor.rel = 'noopener noreferrer';
 	}
 
 	for (const anchor of doc.querySelectorAll<HTMLAnchorElement>('.subline a')) {
 		if (anchor.innerText.includes('comment')) {
 			anchor.target = '_blank';
-			anchor.rel = 'noopener';
+			anchor.rel = 'noopener noreferrer';
 		}
 	}
 };

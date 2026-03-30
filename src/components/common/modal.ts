@@ -1,5 +1,4 @@
 import type { ContentScriptContext } from '#imports';
-import { replaceChildrenWithSanitizedHtml } from '@/utils/html.ts';
 
 const HN_ORANGE = '#ff6600';
 const HN_BACKGROUND = '#f6f6ef';
@@ -47,7 +46,9 @@ export const createModal = (options: ModalOptions): HTMLElement => {
 	`;
 
 	if (typeof content === 'string') {
-		replaceChildrenWithSanitizedHtml(modal, content);
+		const text = doc.createElement('p');
+		text.textContent = content;
+		modal.append(text);
 	} else {
 		modal.appendChild(content);
 	}

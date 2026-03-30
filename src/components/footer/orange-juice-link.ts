@@ -35,7 +35,7 @@ export const addOrangeJuiceLink = (_ctx: ContentScriptContext, doc: Document, ve
 	ojLink.href = 'https://oj-hn.com/';
 	ojLink.textContent = 'Orange Juice';
 	ojLink.setAttribute('title', version);
-	ojLink.rel = 'noreferrer';
+	ojLink.rel = 'noopener noreferrer';
 	ojLink.target = '_blank';
 
 	// Insert after a contact link

@@ -13,11 +13,6 @@ vi.mock('@/utils/api', () => {
 	};
 });
 
-vi.mock('linkify-html', () => ({
-	default: (html: string) =>
-		html.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" rel="noopener">$1</a>'),
-}));
-
 describe('showUserInfoOnHover', () => {
 	let mockCtx: ContentScriptContext;
 	let cleanupFunctions: Array<() => void>;
@@ -105,7 +100,7 @@ describe('showUserInfoOnHover', () => {
 
 	it('should display about section when user has about text', async () => {
 		const userLink = createUserLink('testuser');
-		mockUserInfo('testuser', { about: 'I love programming' });
+		mockUserInfo('testuser', { about: 'I love programming at https://example.com' });
 
 		showUserInfoOnHover(mockCtx, document);
 
@@ -114,6 +109,10 @@ describe('showUserInfoOnHover', () => {
 		await vi.waitFor(() => {
 			const popover = document.querySelector('.oj_user_info_hover');
 			expect(popover?.textContent).toContain('I love programming');
+			const link = popover?.querySelector<HTMLAnchorElement>('a');
+			expect(link?.href).toBe('https://example.com/');
+			expect(link?.target).toBe('_blank');
+			expect(link?.rel).toBe('noopener noreferrer');
 		});
 	});
 

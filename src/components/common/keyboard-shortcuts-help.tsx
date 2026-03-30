@@ -86,7 +86,7 @@ const appendShortcutTable = (
 const createExternalLink = (doc: Document, href: string, label: string): HTMLAnchorElement => {
 	const link = doc.createElement('a');
 	link.href = href;
-	link.rel = 'noreferrer';
+	link.rel = 'noopener noreferrer';
 	link.target = '_blank';
 	link.textContent = label;
 	return link;

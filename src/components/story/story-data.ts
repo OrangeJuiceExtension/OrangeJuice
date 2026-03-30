@@ -1,5 +1,6 @@
 import { HNStory } from '@/components/story/hn-story.ts';
 import { IndexedList } from '@/utils/indexed-list.ts';
+import { navigateToSafeUrl } from '@/utils/navigation.ts';
 
 export const focusClass1 = 'oj_focused_story';
 export const focusClass2 = 'oj_focused_story_details';
@@ -189,8 +190,7 @@ export class StoryData {
 		}
 		const url = activeStory.commentsUrl;
 		if (url) {
-			window.location.href = `${url}#reply`;
-			return true;
+			return navigateToSafeUrl(`${url}#reply`);
 		}
 		return false;
 	}

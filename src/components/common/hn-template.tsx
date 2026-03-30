@@ -93,7 +93,7 @@ const createDefaultFooter = (doc: Document): HTMLDivElement => {
 	}
 
 	const orangeJuiceLink = createAnchor(doc, 'https://oj-hn.com', 'Orange Juice');
-	orangeJuiceLink.rel = 'noopener';
+	orangeJuiceLink.rel = 'noopener noreferrer';
 	orangeJuiceLink.target = '_blank';
 	orangeJuiceLink.title = version;
 	links.append(' | ', orangeJuiceLink);
