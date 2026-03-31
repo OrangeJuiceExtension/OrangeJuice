@@ -167,6 +167,7 @@ jobs:
 
       - name: Publish to Firefox Web Store
         continue-on-error: true
+        timeout-minutes: 2
         env:
           FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
           FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
