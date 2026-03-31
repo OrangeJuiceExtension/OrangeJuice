@@ -10,7 +10,7 @@
 		"build": "wxt build",
 		"build-watch": "chokidar --initial --silent \"src/**/*\" -c \"bun run build\"",
 		"build:firefox": "wxt build -b firefox",
-		"webext:firefox:lint": "web-ext -s .output/firefox-mv2/ lint",
+		"webext:firefox:lint": "web-ext -w -s .output/firefox-mv2/ lint",
 		"icons": "bun run scripts/generate-icons.ts",
 		"zip": "wxt zip",
 		"zip:firefox": "wxt zip -b firefox",
