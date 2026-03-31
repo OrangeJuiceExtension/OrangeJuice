@@ -2,7 +2,7 @@ import type { HNItemInfo, HNUser } from '@/utils/api.ts';
 import lStorage from '@/utils/local-storage.ts';
 
 const FOLLOWING_CACHE_STORAGE_KEY = 'oj_following_cache';
-const FOLLOWING_CACHE_TTL_MS = 5 * 60 * 1000;
+const FOLLOWING_CACHE_TTL_MS = 60 * 60 * 1000;
 const UI_STATE_KEY = '__ui';
 
 type CachedFollowingItemStorage = Omit<HNItemInfo, 'by'> & {
