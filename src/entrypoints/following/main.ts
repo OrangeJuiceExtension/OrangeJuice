@@ -4,6 +4,7 @@ import { showUserInfoOnHover } from '@/components/user/show-user-info-hover.ts';
 import { enableDarkMode } from '@/utils/dark-mode.ts';
 import { USERNAME_STORAGE_KEY } from '@/utils/dom.ts';
 import lStorage from '@/utils/local-storage.ts';
+import '../router.content/global.css';
 
 const noopContext = {
 	onInvalidated: () => undefined,

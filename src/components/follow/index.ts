@@ -8,8 +8,14 @@ import { profileLinksDropdown } from '@/components/user/profile-links-dropdown.t
 import { showUserInfoOnHover } from '@/components/user/show-user-info-hover.ts';
 import { apiModule, type HNItemInfo, type HNUser } from '@/utils/api.ts';
 import { dom } from '@/utils/dom.ts';
-import { getFollowedUsers, toggleFollowedUser } from '@/utils/followed-users.ts';
-import { getCachedFollowingSection, setCachedFollowingSection } from '@/utils/following-cache.ts';
+import { getFollowedUsers, setFollowedUsers, toggleFollowedUser } from '@/utils/followed-users.ts';
+import {
+	clearCachedFollowingSection,
+	getCachedFollowingSection,
+	isFollowingSectionExpanded,
+	setCachedFollowingSection,
+	setFollowingSectionExpanded,
+} from '@/utils/following-cache.ts';
 import { createSanitizedFragment } from '@/utils/html.ts';
 import { paths } from '@/utils/paths.ts';
 import type { ComponentFeature } from '@/utils/types.ts';
@@ -19,14 +25,22 @@ const FOLLOWING_PATH = '/following';
 const FOLLOW_BUTTON_CLASS = 'oj-follow-button';
 const FOLLOW_BUTTON_CONTAINER_CLASS = 'oj-follow-button-wrap';
 const FOLLOW_ICON_CLASS = 'oj-follow-icon';
+const FOLLOW_ICON_BUTTON_CLASS = 'oj-follow-icon-button';
 const FOLLOW_ICON_PATHS = {
 	false: '/icon/follow-plus.svg',
 	true: '/icon/follow-check.svg',
 } as const;
+const REFRESH_ICON_PATH = '/icon/refresh.svg';
+const SECTION_TOGGLE_BUTTON_CLASS = 'oj-following__section-toggle';
 const FOLLOW_STYLE_ID = 'oj-follow-style';
 const FOLLOWING_ROOT_ID = 'oj-following-root';
+const FOLLOWING_SUMMARY_ITEM_CLASS = 'oj-following__summary-item';
+const FOLLOWING_SUMMARY_INSERTION_CLASS = 'oj-following__summary-insertion';
 const EXTERNAL_PROTOCOLS = new Set(['http:', 'https:']);
 const TITLE_FALLBACK = '(untitled)';
+const MINUTE_MS = 60 * 1000;
+const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
 const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
 	dateStyle: 'medium',
 	timeStyle: 'short',
@@ -39,7 +53,11 @@ interface FollowedUserSection {
 	username: string;
 }
 
-type FollowedDisplayItem = HNItemInfo & { storyTitle?: string };
+type FollowedDisplayItem = HNItemInfo & {
+	storyId?: number;
+	storyTitle?: string;
+	storyUrl?: string;
+};
 
 interface FollowingRenderOptions {
 	currentUsername?: string;
@@ -54,7 +72,8 @@ const FOLLOW_STYLES = `
 		margin-left: 3px;
 	}
 
-	.${FOLLOW_BUTTON_CLASS} {
+	.${FOLLOW_BUTTON_CLASS},
+	.${FOLLOW_ICON_BUTTON_CLASS} {
 		align-items: center;
 		border: 1px solid transparent;
 		background: transparent;
@@ -77,13 +96,16 @@ const FOLLOW_STYLES = `
 		color: #c46a20;
 	}
 
-	.${FOLLOW_BUTTON_CLASS}:disabled {
+	.${FOLLOW_BUTTON_CLASS}:disabled,
+	.${FOLLOW_ICON_BUTTON_CLASS}:disabled {
 		cursor: progress;
 		opacity: 0.65;
 	}
 
 	.${FOLLOW_BUTTON_CLASS}:hover,
-	.${FOLLOW_BUTTON_CLASS}:focus-visible {
+	.${FOLLOW_BUTTON_CLASS}:focus-visible,
+	.${FOLLOW_ICON_BUTTON_CLASS}:hover,
+	.${FOLLOW_ICON_BUTTON_CLASS}:focus-visible {
 		border-color: rgba(255, 102, 0, 0.14);
 		background: rgba(255, 102, 0, 0.05);
 		color: #8f6a3f;
@@ -132,19 +154,90 @@ const FOLLOW_STYLES = `
 
 	.oj-following__summary {
 		color: #828282;
-		font-size: 8pt;
+		display: flex;
+		font-size: 10pt;
+		flex-wrap: wrap;
+		gap: 0 6px;
 		margin-top: 6px;
+	}
+
+	.oj-following__summary[data-drag-active="true"] {
+		cursor: grabbing;
+	}
+
+	.${FOLLOWING_SUMMARY_ITEM_CLASS} {
+		align-items: center;
+		display: inline-flex;
+	}
+
+	.${FOLLOWING_SUMMARY_INSERTION_CLASS} {
+		background: #ff6600;
+		border-radius: 999px;
+		display: none;
+		flex: 0 0 2px;
+		margin: 0 2px;
+		min-height: 12px;
+	}
+
+	.oj-following__summary[data-drag-active="true"] .${FOLLOWING_SUMMARY_INSERTION_CLASS} {
+		display: inline-flex;
+	}
+
+	.${FOLLOWING_SUMMARY_ITEM_CLASS}:not(:last-child)::after {
+		content: ",";
+		margin-left: 0;
 	}
 
 	.oj-following__summary a,
 	.oj-following__summary a:visited {
 		color: #828282;
+		cursor: grab;
 		text-decoration: none;
+		user-select: none;
+	}
+
+	.oj-following__summary a:active {
+		cursor: grabbing;
+	}
+
+	.${FOLLOWING_SUMMARY_ITEM_CLASS}[data-drag-over="true"] a {
+		text-decoration: underline;
+	}
+
+	.${FOLLOWING_SUMMARY_ITEM_CLASS}[data-dragging="true"] {
+		background: rgba(255, 102, 0, 0.08);
+		border-radius: 999px;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+		opacity: 1;
+		padding: 0 4px;
+		transform: translateY(-1px);
+	}
+
+	.${FOLLOWING_SUMMARY_ITEM_CLASS}[data-dragging="true"] a,
+	.${FOLLOWING_SUMMARY_ITEM_CLASS}[data-dragging="true"] a:visited {
+		color: #5f5f5f;
 	}
 
 	.oj-following__summary a:hover,
 	.oj-following__summary a:focus-visible {
 		text-decoration: underline;
+	}
+
+	.oj-following__loading {
+		align-items: center;
+		color: #828282;
+		display: flex;
+		flex-direction: column;
+		font-size: 9pt;
+		gap: 8px;
+		justify-content: center;
+		padding: 24px 18px 28px;
+		text-align: center;
+	}
+
+	.oj-following__loading .loader1 {
+		display: inline-block;
+		margin: 0;
 	}
 
 	.oj-following__empty,
@@ -161,10 +254,28 @@ const FOLLOW_STYLES = `
 	}
 
 	.oj-following__section-header {
-		align-items: center;
+		align-items: flex-start;
 		display: flex;
 		gap: 8px;
 		padding: 0 18px 4px;
+	}
+
+	.${SECTION_TOGGLE_BUTTON_CLASS} {
+		background: transparent;
+		border: 0;
+		color: #828282;
+		cursor: pointer;
+		font: inherit;
+		font-size: 16px;
+		line-height: 1;
+		margin-top: 1px;
+		padding: 0;
+		width: 16px;
+	}
+
+	.${SECTION_TOGGLE_BUTTON_CLASS}:hover,
+	.${SECTION_TOGGLE_BUTTON_CLASS}:focus-visible {
+		color: #5f5f5f;
 	}
 
 	.oj-following__user-meta {
@@ -197,7 +308,7 @@ const FOLLOW_STYLES = `
 		border-collapse: collapse;
 		margin-left: 18px;
 		margin-top: 6px;
-		width: 100%;
+		width: calc(100% - 40px);
 	}
 
 	.oj-following__title-cell {
@@ -214,6 +325,12 @@ const FOLLOW_STYLES = `
 	.oj-following__title-cell a:hover,
 	.oj-following__title-cell a:focus-visible {
 		text-decoration: underline;
+	}
+
+	.oj-following__comment-discuss,
+	.oj-following__comment-discuss:visited {
+		color: #828282 !important;
+		font-size: 8pt;
 	}
 
 	.oj-following__meta {
@@ -249,13 +366,17 @@ const FOLLOW_STYLES = `
 
 	.oj-following__comment {
 		font-size: 9pt;
-		line-height: 1.4;
-		padding: 10px 0 6px 18px;
+		line-height: 1.2;
+		overflow-wrap: anywhere;
+		padding: 10px 0 6px 26px;
+		word-break: break-word;
 	}
 
 	.oj-following__comment a,
 	.oj-following__comment a:visited {
 		color: inherit;
+		overflow-wrap: anywhere;
+		word-break: break-word;
 	}
 
 	.oj-following__comment p:first-child {
@@ -272,6 +393,26 @@ const FOLLOW_STYLES = `
 		color: #857965;
 	}
 
+	html.oj-dark-mode .${FOLLOW_ICON_BUTTON_CLASS} {
+		background: transparent;
+		border-color: transparent;
+		color: #857965;
+	}
+
+	html.oj-dark-mode .${SECTION_TOGGLE_BUTTON_CLASS} {
+		color: var(--oj-fg-secondary);
+	}
+
+	html.oj-dark-mode .${FOLLOWING_SUMMARY_ITEM_CLASS}[data-dragging="true"] {
+		background: rgba(255, 149, 44, 0.14);
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+	}
+
+	html.oj-dark-mode .${FOLLOWING_SUMMARY_ITEM_CLASS}[data-dragging="true"] a,
+	html.oj-dark-mode .${FOLLOWING_SUMMARY_ITEM_CLASS}[data-dragging="true"] a:visited {
+		color: var(--oj-fg-secondary);
+	}
+
 	html.oj-dark-mode .${FOLLOW_BUTTON_CLASS}[data-following="true"] {
 		background: rgba(255, 149, 44, 0.1);
 		border-color: rgba(255, 149, 44, 0.16);
@@ -279,13 +420,16 @@ const FOLLOW_STYLES = `
 	}
 
 	html.oj-dark-mode .${FOLLOW_BUTTON_CLASS}:hover,
-	html.oj-dark-mode .${FOLLOW_BUTTON_CLASS}:focus-visible {
+	html.oj-dark-mode .${FOLLOW_BUTTON_CLASS}:focus-visible,
+	html.oj-dark-mode .${FOLLOW_ICON_BUTTON_CLASS}:hover,
+	html.oj-dark-mode .${FOLLOW_ICON_BUTTON_CLASS}:focus-visible {
 		background: rgba(255, 149, 44, 0.06);
 		border-color: rgba(255, 149, 44, 0.12);
 		color: #c2a37d;
 	}
 
 	html.oj-dark-mode .oj-following__subtitle,
+	html.oj-dark-mode .oj-following__loading,
 	html.oj-dark-mode .oj-following__user-meta,
 	html.oj-dark-mode .oj-following__meta {
 		color: var(--oj-fg-secondary);
@@ -294,6 +438,7 @@ const FOLLOW_STYLES = `
 	html.oj-dark-mode .oj-following__comment {
 		color: var(--oj-muted);
 	}
+
 `;
 
 const isFollowingPage = (): boolean => window.location.pathname === FOLLOWING_PATH;
@@ -339,9 +484,22 @@ const getFollowIconUrl = (isFollowing: boolean): string =>
 	browser.runtime?.getURL?.(FOLLOW_ICON_PATHS[`${isFollowing}`]) ??
 	FOLLOW_ICON_PATHS[`${isFollowing}`];
 
+const getRefreshIconUrl = (): string =>
+	browser.runtime?.getURL?.(REFRESH_ICON_PATH) ?? REFRESH_ICON_PATH;
+
 const createFollowIcon = (doc: Document, isFollowing: boolean): HTMLSpanElement => {
 	const icon = doc.createElement('span');
 	const iconUrl = getFollowIconUrl(isFollowing);
+	icon.className = FOLLOW_ICON_CLASS;
+	icon.setAttribute('aria-hidden', 'true');
+	icon.style.maskImage = `url("${iconUrl}")`;
+	icon.style.webkitMaskImage = `url("${iconUrl}")`;
+	return icon;
+};
+
+const createRefreshIcon = (doc: Document): HTMLSpanElement => {
+	const icon = doc.createElement('span');
+	const iconUrl = getRefreshIconUrl();
 	icon.className = FOLLOW_ICON_CLASS;
 	icon.setAttribute('aria-hidden', 'true');
 	icon.style.maskImage = `url("${iconUrl}")`;
@@ -358,6 +516,16 @@ const createFollowButton = (
 	button.className = FOLLOW_BUTTON_CLASS;
 	button.type = 'button';
 	setButtonState(button, username, isFollowing);
+	return button;
+};
+
+const createRefreshButton = (doc: Document, username: string): HTMLButtonElement => {
+	const button = doc.createElement('button');
+	button.className = FOLLOW_ICON_BUTTON_CLASS;
+	button.type = 'button';
+	button.title = `Refresh ${username}`;
+	button.setAttribute('aria-label', `Refresh ${username}`);
+	button.append(createRefreshIcon(doc));
 	return button;
 };
 
@@ -383,6 +551,23 @@ const collectChrome = (doc: Document): { footer?: Node; nav?: Node } => {
 const formatTimestamp = (unixTime: number): string =>
 	DATE_FORMATTER.format(new Date(unixTime * 1000));
 
+const formatRelativeTimestamp = (unixTime: number): string => {
+	const elapsedMs = Math.max(Date.now() - unixTime * 1000, 0);
+
+	if (elapsedMs < HOUR_MS) {
+		const minutes = Math.max(1, Math.floor(elapsedMs / MINUTE_MS));
+		return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+	}
+
+	if (elapsedMs < DAY_MS) {
+		const hours = Math.floor(elapsedMs / HOUR_MS);
+		return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+	}
+
+	const days = Math.floor(elapsedMs / DAY_MS);
+	return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+};
+
 const setAnchorHref = (anchor: HTMLAnchorElement, href: string): void => {
 	anchor.href = href;
 
@@ -401,13 +586,18 @@ const setAnchorHref = (anchor: HTMLAnchorElement, href: string): void => {
 	}
 };
 
+const setAnchorOpenInNewTab = (anchor: HTMLAnchorElement): void => {
+	anchor.target = '_blank';
+	anchor.rel = 'noopener noreferrer';
+};
+
 const appendSanitizedHtml = (element: Element, html: string): void => {
 	element.replaceChildren(createSanitizedFragment(element.ownerDocument, html));
 };
 
 const createMetaContent = (doc: Document, item: HNItemInfo): DocumentFragment => {
 	const fragment = doc.createDocumentFragment();
-	fragment.append(formatTimestamp(item.time));
+	fragment.append(`${formatTimestamp(item.time)} (${formatRelativeTimestamp(item.time)})`);
 
 	if (typeof item.score === 'number') {
 		fragment.append(` · ${item.score} points`);
@@ -415,16 +605,221 @@ const createMetaContent = (doc: Document, item: HNItemInfo): DocumentFragment =>
 
 	const discussionLink = doc.createElement('a');
 	discussionLink.href = getHnUrl(`/item?id=${item.id}`);
-	discussionLink.textContent =
-		typeof item.descendants === 'number'
-			? `${item.descendants} ${item.descendants === 1 ? 'comment' : 'comments'}`
-			: 'discuss';
+	if (item.type === 'comment') {
+		discussionLink.textContent = 'reply';
+	} else if (typeof item.descendants === 'number') {
+		discussionLink.textContent = `${item.descendants} ${
+			item.descendants === 1 ? 'comment' : 'comments'
+		}`;
+	} else {
+		discussionLink.textContent = 'discuss';
+	}
+	if (item.type === 'comment') {
+		setAnchorOpenInNewTab(discussionLink);
+	}
 	fragment.append(' · ', discussionLink);
+
+	if (item.type === 'comment') {
+		const storyId = (item as FollowedDisplayItem).storyId ?? item.parent ?? item.id;
+		const commentsLink = doc.createElement('a');
+		commentsLink.href = getHnUrl(`/item?id=${storyId}`);
+		commentsLink.textContent = 'comments';
+		commentsLink.className = 'oj-following__comment-discuss';
+		setAnchorOpenInNewTab(commentsLink);
+		fragment.append(' | ', commentsLink);
+	}
 
 	return fragment;
 };
 
 const createSectionId = (username: string): string => encodeURIComponent(username);
+
+const clearSummaryDropIndicators = (summary: HTMLElement): void => {
+	for (const item of summary.querySelectorAll<HTMLElement>(
+		`.${FOLLOWING_SUMMARY_ITEM_CLASS}[data-drag-over="true"]`
+	)) {
+		delete item.dataset.dragOver;
+	}
+	const insertionMarker = summary.querySelector<HTMLElement>(
+		`.${FOLLOWING_SUMMARY_INSERTION_CLASS}`
+	);
+	insertionMarker?.remove();
+};
+
+const clearSummaryDragState = (summary: HTMLElement): void => {
+	clearSummaryDropIndicators(summary);
+	for (const item of summary.querySelectorAll<HTMLElement>(
+		`.${FOLLOWING_SUMMARY_ITEM_CLASS}[data-dragging="true"]`
+	)) {
+		delete item.dataset.dragging;
+	}
+	delete summary.dataset.dragActive;
+	delete summary.dataset.dragUsername;
+};
+
+const getSummaryItems = (summary: HTMLElement): HTMLElement[] =>
+	Array.from(summary.querySelectorAll<HTMLElement>(`.${FOLLOWING_SUMMARY_ITEM_CLASS}`));
+
+const getSummaryOrder = (summary: HTMLElement): string[] => {
+	const usernames: string[] = [];
+
+	for (const item of getSummaryItems(summary)) {
+		const username = item.dataset.followUsername?.trim();
+		if (!username) {
+			continue;
+		}
+		usernames.push(username);
+	}
+
+	return usernames;
+};
+
+const createSummaryInsertionMarker = (doc: Document): HTMLSpanElement => {
+	const marker = doc.createElement('span');
+	marker.className = FOLLOWING_SUMMARY_INSERTION_CLASS;
+	marker.setAttribute('aria-hidden', 'true');
+	return marker;
+};
+
+const getSummaryInsertionMarker = (summary: HTMLElement): HTMLElement | undefined =>
+	summary.querySelector<HTMLElement>(`.${FOLLOWING_SUMMARY_INSERTION_CLASS}`) ?? undefined;
+
+const getSummaryDraggedUsername = (summary: HTMLElement): string | undefined => {
+	const username = summary.dataset.dragUsername?.trim();
+	return username || undefined;
+};
+
+const moveSummaryInsertionMarkerByClientX = (
+	summary: HTMLElement,
+	insertionMarker: HTMLElement,
+	draggedItem: HTMLElement,
+	clientX: number
+): void => {
+	const siblingItems = getSummaryItems(summary).filter((item) => item !== draggedItem);
+	let insertBefore: HTMLElement | undefined;
+
+	for (const item of siblingItems) {
+		const { left, width } = item.getBoundingClientRect();
+		if (clientX < left + width / 2) {
+			insertBefore = item;
+			break;
+		}
+	}
+
+	if (insertBefore) {
+		summary.insertBefore(insertionMarker, insertBefore);
+		return;
+	}
+
+	summary.append(insertionMarker);
+};
+
+const getSummaryItemByUsername = (
+	summary: HTMLElement,
+	username: string
+): HTMLElement | undefined =>
+	getSummaryItems(summary).find((item) => item.dataset.followUsername === username);
+
+const reorderFollowingSections = (doc: Document, usernames: readonly string[]): void => {
+	const sectionsContainer = doc.querySelector<HTMLElement>('.oj-following__sections');
+	if (!sectionsContainer) {
+		return;
+	}
+
+	for (const username of usernames) {
+		const section = doc.getElementById(createSectionId(username));
+		if (!section) {
+			continue;
+		}
+		sectionsContainer.append(section);
+	}
+};
+
+const bindSummaryDragHandle = (
+	doc: Document,
+	summary: HTMLDivElement,
+	link: HTMLAnchorElement,
+	username: string
+): void => {
+	const item = link.closest<HTMLElement>(`.${FOLLOWING_SUMMARY_ITEM_CLASS}`);
+	if (!item) {
+		return;
+	}
+
+	link.addEventListener('mousedown', (event) => {
+		if (event.button !== 0) {
+			return;
+		}
+
+		event.preventDefault();
+		clearSummaryDragState(summary);
+		summary.dataset.dragActive = 'true';
+		summary.dataset.dragUsername = username;
+		item.dataset.dragging = 'true';
+		const insertionMarker = createSummaryInsertionMarker(doc);
+		moveSummaryInsertionMarkerByClientX(summary, insertionMarker, item, event.clientX);
+
+		const onMouseMove = (moveEvent: MouseEvent): void => {
+			clearSummaryDropIndicators(summary);
+			summary.dataset.dragActive = 'true';
+			summary.dataset.dragUsername = username;
+			item.dataset.dragging = 'true';
+			const nextInsertionMarker = createSummaryInsertionMarker(doc);
+			moveSummaryInsertionMarkerByClientX(
+				summary,
+				nextInsertionMarker,
+				item,
+				moveEvent.clientX
+			);
+			const previousItem = nextInsertionMarker.previousElementSibling;
+			const nextItem = nextInsertionMarker.nextElementSibling;
+			let highlightedItem: Element | null | undefined;
+			if (nextItem?.classList.contains(FOLLOWING_SUMMARY_ITEM_CLASS)) {
+				highlightedItem = nextItem;
+			} else if (previousItem?.classList.contains(FOLLOWING_SUMMARY_ITEM_CLASS)) {
+				highlightedItem = previousItem;
+			}
+
+			if (highlightedItem instanceof HTMLElement) {
+				highlightedItem.dataset.dragOver = 'true';
+			}
+		};
+
+		const cleanup = (): void => {
+			doc.removeEventListener('mousemove', onMouseMove);
+			doc.removeEventListener('mouseup', onMouseUp);
+		};
+
+		const onMouseUp = async (): Promise<void> => {
+			cleanup();
+			const draggedUsername = getSummaryDraggedUsername(summary);
+			if (!draggedUsername) {
+				return;
+			}
+
+			const draggedItem = getSummaryItemByUsername(summary, draggedUsername);
+			const insertionMarker = getSummaryInsertionMarker(summary);
+			if (draggedItem && insertionMarker) {
+				summary.insertBefore(draggedItem, insertionMarker);
+			}
+			const nextOrder = getSummaryOrder(summary);
+			clearSummaryDragState(summary);
+			await setFollowedUsers(nextOrder);
+			reorderFollowingSections(doc, nextOrder);
+		};
+
+		doc.addEventListener('mousemove', onMouseMove);
+		doc.addEventListener('mouseup', onMouseUp);
+	});
+};
+
+const setupSummaryReorder = (summary: HTMLDivElement): void => {
+	summary.addEventListener('mouseleave', () => {
+		if (!summary.dataset.dragActive) {
+			clearSummaryDropIndicators(summary);
+		}
+	});
+};
 
 const createCommentTitleRow = (
 	doc: Document,
@@ -439,7 +834,11 @@ const createCommentTitleRow = (
 	titleCell.className = 'title oj-following__title-cell';
 
 	const storyLink = doc.createElement('a');
-	storyLink.href = getHnUrl(`/item?id=${item.parent ?? item.id}`);
+	setAnchorHref(
+		storyLink,
+		item.storyUrl ?? getHnUrl(`/item?id=${item.storyId ?? item.parent ?? item.id}`)
+	);
+	setAnchorOpenInNewTab(storyLink);
 	storyLink.textContent = item.storyTitle;
 
 	titleCell.append(storyLink);
@@ -547,25 +946,31 @@ const loadSection = async (
 		itemInfoById.set(item.id, item);
 	}
 
-	const resolveStoryTitle = async (item: HNItemInfo): Promise<string | undefined> => {
+	const resolveStory = async (
+		item: HNItemInfo
+	): Promise<Pick<FollowedDisplayItem, 'storyId' | 'storyTitle' | 'storyUrl'>> => {
 		let currentParentId = item.parent;
 		while (typeof currentParentId === 'number') {
 			let parentItem = itemInfoById.get(currentParentId);
 			if (!parentItem) {
 				parentItem = (await apiModule.getItemInfo(`${currentParentId}`)) ?? undefined;
 				if (!parentItem) {
-					return undefined;
+					return {};
 				}
 				itemInfoById.set(currentParentId, parentItem);
 			}
 
 			if (parentItem.title) {
-				return parentItem.title;
+				return {
+					storyId: parentItem.id,
+					storyTitle: parentItem.title,
+					storyUrl: parentItem.url,
+				};
 			}
 
 			currentParentId = parentItem.parent;
 		}
-		return undefined;
+		return {};
 	};
 
 	const itemsWithStoryTitles: FollowedDisplayItem[] = await Promise.all(
@@ -573,7 +978,7 @@ const loadSection = async (
 			item.type === 'comment'
 				? {
 						...item,
-						storyTitle: await resolveStoryTitle(item),
+						...(await resolveStory(item)),
 					}
 				: item
 		)
@@ -597,6 +1002,50 @@ const renderEmptyState = (doc: Document, root: HTMLElement): void => {
 	empty.textContent =
 		'No followed users yet. Use the small follow buttons next to usernames to build this page.';
 	root.append(empty);
+};
+
+const createLoadingState = (doc: Document): HTMLDivElement => {
+	const loading = doc.createElement('div');
+	loading.className = 'oj-following__loading';
+
+	const spinner = doc.createElement('div');
+	spinner.className = 'loader1';
+	spinner.setAttribute('aria-hidden', 'true');
+
+	const label = doc.createElement('span');
+	label.textContent = 'Loading activity...';
+
+	loading.append(spinner, label);
+	return loading;
+};
+
+const createSectionToggleButton = (
+	doc: Document,
+	username: string,
+	isExpanded: boolean
+): HTMLButtonElement => {
+	const button = doc.createElement('button');
+	button.className = SECTION_TOGGLE_BUTTON_CLASS;
+	button.type = 'button';
+	button.dataset.followUsername = username;
+	button.setAttribute('aria-expanded', `${isExpanded}`);
+	button.setAttribute('aria-label', `${isExpanded ? 'Collapse' : 'Expand'} ${username} activity`);
+	button.title = `${isExpanded ? 'Collapse' : 'Expand'} ${username}`;
+	button.textContent = isExpanded ? '▾' : '▸';
+	return button;
+};
+
+const setSectionExpandedState = (
+	button: HTMLButtonElement,
+	content: HTMLElement,
+	username: string,
+	isExpanded: boolean
+): void => {
+	button.setAttribute('aria-expanded', `${isExpanded}`);
+	button.setAttribute('aria-label', `${isExpanded ? 'Collapse' : 'Expand'} ${username} activity`);
+	button.title = `${isExpanded ? 'Collapse' : 'Expand'} ${username}`;
+	button.textContent = isExpanded ? '▾' : '▸';
+	content.hidden = !isExpanded;
 };
 
 const confirmUnfollow = async (
@@ -673,12 +1122,14 @@ const renderFollowingSections = async (
 	list.className = 'oj-following__sections';
 
 	for (const section of sections) {
+		const isExpanded = await isFollowingSectionExpanded(section.username);
 		const article = doc.createElement('section');
 		article.className = 'oj-following__section';
 		article.id = createSectionId(section.username);
 
 		const header = doc.createElement('div');
 		header.className = 'oj-following__section-header';
+		const toggleButton = createSectionToggleButton(doc, section.username, isExpanded);
 
 		const headerText = doc.createElement('div');
 		const heading = doc.createElement('div');
@@ -688,6 +1139,7 @@ const renderFollowingSections = async (
 		const profileLink = doc.createElement('a');
 		profileLink.href = getHnUrl(`/user?id=${encodeURIComponent(section.username)}`);
 		profileLink.className = 'hnuser';
+		setAnchorOpenInNewTab(profileLink);
 		profileLink.textContent = section.username;
 		heading.append(profileLink);
 
@@ -699,6 +1151,7 @@ const renderFollowingSections = async (
 		headerText.append(heading, meta);
 
 		const unfollowButton = createFollowButton(doc, section.username, true);
+		const refreshButton = createRefreshButton(doc, section.username);
 		unfollowButton.addEventListener('click', async () => {
 			const shouldUnfollow = await confirmUnfollow(ctx, doc, section.username);
 			if (!shouldUnfollow) {
@@ -713,17 +1166,36 @@ const renderFollowingSections = async (
 				unfollowButton.disabled = false;
 			}
 		});
+		refreshButton.addEventListener('click', async () => {
+			refreshButton.disabled = true;
+			unfollowButton.disabled = true;
+			try {
+				await clearCachedFollowingSection(section.username);
+				await renderFollowingPage(ctx, doc, options);
+			} finally {
+				refreshButton.disabled = false;
+				unfollowButton.disabled = false;
+			}
+		});
 
-		heading.append(unfollowButton);
-		header.append(headerText);
+		heading.append(refreshButton, unfollowButton);
+		header.append(toggleButton, headerText);
 		article.append(header);
+		const sectionContent = doc.createElement('div');
+		setSectionExpandedState(toggleButton, sectionContent, section.username, isExpanded);
+		toggleButton.addEventListener('click', async () => {
+			const nextExpanded = toggleButton.getAttribute('aria-expanded') !== 'true';
+			setSectionExpandedState(toggleButton, sectionContent, section.username, nextExpanded);
+			await setFollowingSectionExpanded(section.username, nextExpanded);
+		});
 
 		if (section.items.length === 0) {
 			const empty = doc.createElement('div');
 			empty.className = 'oj-following__meta';
 			empty.style.paddingLeft = '18px';
 			empty.textContent = 'No recent comments or submissions available.';
-			article.append(empty);
+			sectionContent.append(empty);
+			article.append(sectionContent);
 			list.append(article);
 			continue;
 		}
@@ -738,7 +1210,8 @@ const renderFollowingSections = async (
 		}
 		items.append(tbody);
 
-		article.append(items);
+		sectionContent.append(items);
+		article.append(sectionContent);
 		list.append(article);
 	}
 
@@ -770,7 +1243,8 @@ export const renderFollowingPage = async (
 
 	const subtitle = doc.createElement('p');
 	subtitle.className = 'oj-following__subtitle';
-	subtitle.textContent = 'Recent comments and submissions from accounts you follow.';
+	subtitle.textContent =
+		'Recent comments and submissions from accounts you follow. Click and drag the names to reorder.';
 
 	headingLine.append(title, subtitle);
 	header.append(headingLine);
@@ -779,31 +1253,27 @@ export const renderFollowingPage = async (
 	if (followedUsers.length > 0) {
 		const summary = doc.createElement('div');
 		summary.className = 'oj-following__summary';
+		setupSummaryReorder(summary);
 
-		for (const [index, username] of followedUsers.entries()) {
+		for (const username of followedUsers) {
+			const item = doc.createElement('span');
+			item.className = FOLLOWING_SUMMARY_ITEM_CLASS;
+			item.dataset.followUsername = username;
+
 			const link = doc.createElement('a');
 			link.href = `#${createSectionId(username)}`;
 			link.textContent = username;
-			summary.append(link);
-			if (index < followedUsers.length - 1) {
-				summary.append(', ');
-			}
+			item.append(link);
+			bindSummaryDragHandle(doc, summary, link, username);
+			summary.append(item);
 		}
 
 		header.append(summary);
 	}
 
 	root.append(header);
-
-	try {
-		await renderFollowingSections(ctx, doc, root, options);
-	} catch (error) {
-		console.error({ error: 'Failed to render following page', cause: error });
-		const errorElement = doc.createElement('div');
-		errorElement.className = 'oj-following__error';
-		errorElement.textContent = 'Could not load followed activity right now.';
-		root.append(errorElement);
-	}
+	const loading = createLoadingState(doc);
+	root.append(loading);
 
 	doc.body.replaceChildren(root);
 	await wrapBodyWithHnTemplate(doc, { ...chrome, topColor });
@@ -815,6 +1285,18 @@ export const renderFollowingPage = async (
 	}
 	dom.ensureTopBarReadableText(doc);
 	showBody(doc);
+
+	try {
+		await renderFollowingSections(ctx, doc, root, options);
+	} catch (error) {
+		console.error({ error: 'Failed to render following page', cause: error });
+		const errorElement = doc.createElement('div');
+		errorElement.className = 'oj-following__error';
+		errorElement.textContent = 'Could not load followed activity right now.';
+		root.append(errorElement);
+	} finally {
+		loading.remove();
+	}
 };
 
 const registerButton = (

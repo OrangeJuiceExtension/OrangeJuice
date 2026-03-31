@@ -33,6 +33,34 @@ export const setFollowedUsers = async (usernames: readonly string[]): Promise<st
 	return nextUsernames;
 };
 
+export const reorderFollowedUsers = async (
+	username: string,
+	targetUsername: string
+): Promise<string[]> => {
+	const normalizedUsername = normalizeUsername(username);
+	const normalizedTargetUsername = normalizeUsername(targetUsername);
+	if (!(normalizedUsername && normalizedTargetUsername)) {
+		throw new Error('Usernames are required.');
+	}
+
+	if (normalizedUsername === normalizedTargetUsername) {
+		return getFollowedUsers();
+	}
+
+	const followedUsers = await getFollowedUsers();
+	const fromIndex = followedUsers.indexOf(normalizedUsername);
+	const targetIndex = followedUsers.indexOf(normalizedTargetUsername);
+	if (fromIndex === -1 || targetIndex === -1) {
+		return followedUsers;
+	}
+
+	const nextUsernames = [...followedUsers];
+	const [movedUsername] = nextUsernames.splice(fromIndex, 1);
+	nextUsernames.splice(targetIndex, 0, movedUsername);
+
+	return setFollowedUsers(nextUsernames);
+};
+
 export const isFollowingUser = async (username: string): Promise<boolean> => {
 	const normalized = normalizeUsername(username);
 	if (!normalized) {

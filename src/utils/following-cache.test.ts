@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { HNUser } from '@/utils/api.ts';
-import { getCachedFollowingSection, setCachedFollowingSection } from '@/utils/following-cache.ts';
+import {
+	clearCachedFollowingSection,
+	getCachedFollowingSection,
+	isFollowingSectionExpanded,
+	setCachedFollowingSection,
+	setFollowingSectionExpanded,
+} from '@/utils/following-cache.ts';
 import lStorage from '@/utils/local-storage.ts';
 
 const STORAGE_KEY = 'oj_following_cache';
@@ -34,28 +40,31 @@ describe('following-cache', () => {
 			username: 'alice',
 		});
 		await expect(
-			lStorage.getItem<Record<string, { user?: Record<string, unknown>; username?: string }>>(
-				STORAGE_KEY
-			)
+			lStorage.getItem<
+				Record<string, { sections?: Record<string, { user?: Record<string, unknown> }> }>
+			>(STORAGE_KEY)
 		).resolves.toMatchObject({
-			alice: {
-				user: {
-					created: 1,
-					karma: 42,
-					submitted: [1],
+			sections: {
+				alice: {
+					user: {
+						created: 1,
+						karma: 42,
+						submitted: [1],
+					},
 				},
 			},
 		});
 		await expect(
-			lStorage.getItem<Record<string, { user?: { id?: string }; username?: string }>>(
-				STORAGE_KEY
-			)
+			lStorage.getItem<
+				Record<string, { sections?: Record<string, { user?: { id?: string } }> }>
+			>(STORAGE_KEY)
 		).resolves.not.toMatchObject({
-			alice: {
-				user: {
-					id: 'alice',
+			sections: {
+				alice: {
+					user: {
+						id: 'alice',
+					},
 				},
-				username: 'alice',
 			},
 		});
 	});
@@ -72,7 +81,9 @@ describe('following-cache', () => {
 		vi.setSystemTime(new Date('2026-03-30T12:06:00Z'));
 
 		await expect(getCachedFollowingSection('alice')).resolves.toBeUndefined();
-		await expect(lStorage.getItem<Record<string, unknown>>(STORAGE_KEY)).resolves.toEqual({});
+		await expect(lStorage.getItem<Record<string, unknown>>(STORAGE_KEY)).resolves.toEqual({
+			sections: {},
+		});
 	});
 
 	it('strips redundant item authors from stored cache entries', async () => {
@@ -82,15 +93,57 @@ describe('following-cache', () => {
 		});
 
 		await expect(
-			lStorage.getItem<Record<string, { items: Record<string, unknown>[] }>>(STORAGE_KEY)
+			lStorage.getItem<
+				Record<string, { sections?: Record<string, { items: Record<string, unknown>[] }> }>
+			>(STORAGE_KEY)
 		).resolves.toMatchObject({
-			alice: {
-				items: [{ id: 1, time: 1, title: 'story', type: 'story' }],
+			sections: {
+				alice: {
+					items: [{ id: 1, time: 1, title: 'story', type: 'story' }],
+				},
 			},
 		});
 		await expect(getCachedFollowingSection('alice')).resolves.toEqual({
 			items: [{ id: 1, time: 1, title: 'story', type: 'story' }],
 			username: 'alice',
 		});
+	});
+
+	it('clears a cached section for a specific user', async () => {
+		await setCachedFollowingSection({
+			items: [{ id: 1, time: 1, title: 'story', type: 'story' }],
+			username: 'alice',
+		});
+		await setCachedFollowingSection({
+			items: [{ id: 2, time: 2, title: 'story 2', type: 'story' }],
+			username: 'bob',
+		});
+
+		await clearCachedFollowingSection('alice');
+
+		await expect(getCachedFollowingSection('alice')).resolves.toBeUndefined();
+		await expect(getCachedFollowingSection('bob')).resolves.toEqual({
+			items: [{ id: 2, time: 2, title: 'story 2', type: 'story' }],
+			username: 'bob',
+		});
+	});
+
+	it('stores and reads section expanded state separately from cached items', async () => {
+		await expect(isFollowingSectionExpanded('alice')).resolves.toBe(false);
+
+		await setFollowingSectionExpanded('alice', true);
+
+		await expect(isFollowingSectionExpanded('alice')).resolves.toBe(true);
+		await expect(isFollowingSectionExpanded('bob')).resolves.toBe(false);
+		await expect(lStorage.getItem<Record<string, unknown>>(STORAGE_KEY)).resolves.toMatchObject(
+			{
+				__ui: {
+					expandedByUsername: {
+						alice: true,
+					},
+				},
+				sections: {},
+			}
+		);
 	});
 });

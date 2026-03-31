@@ -59,6 +59,7 @@ export default defineConfig({
 					'following.html',
 					'icon/follow-check.svg',
 					'icon/follow-plus.svg',
+					'icon/refresh.svg',
 					'icon/orange_juice_icon_128x128.png',
 				],
 			},
