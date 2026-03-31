@@ -2,12 +2,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { getByRole, getByTestId } from '@testing-library/dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { stripFixtureElements } from '@/test/fixture-html.ts';
 import { dom } from '@/utils/dom.ts';
 import { handleReplyClick } from './inline-reply.ts';
 
-const fixtureHtml = readFileSync(
-	join(import.meta.dirname, '__fixtures__', 'hn-item.html'),
-	'utf-8'
+const fixtureHtml = stripFixtureElements(
+	readFileSync(join(import.meta.dirname, '__fixtures__', 'hn-item.html'), 'utf-8')
 );
 const hmacValue = '62d3dbf0610b7a13b23f62fa272a3de9e5f486fa';
 

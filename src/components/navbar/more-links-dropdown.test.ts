@@ -1,21 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { stripFixtureElements } from '@/test/fixture-html.ts';
 import { navbar } from './index';
-
-const stripFixtureElements = (html: string): Document => {
-	const parsed = new DOMParser().parseFromString(html, 'text/html');
-
-	for (const element of parsed.querySelectorAll('link, script')) {
-		element.remove();
-	}
-
-	return parsed;
-};
 
 const loadFixture = (fixtureName: string): void => {
 	const fixturePath = `${import.meta.dirname}/__fixtures__/${fixtureName}`;
-	const html = readFileSync(fixturePath, 'utf8');
-	const parsed = stripFixtureElements(html);
+	const html = stripFixtureElements(readFileSync(fixturePath, 'utf8'));
+	const parsed = new DOMParser().parseFromString(html, 'text/html');
 
 	document.head.replaceChildren(
 		...Array.from(parsed.head.childNodes, (node) => node.cloneNode(true))

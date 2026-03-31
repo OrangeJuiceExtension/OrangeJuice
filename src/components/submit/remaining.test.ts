@@ -2,11 +2,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContentScriptContext } from '#imports';
+import { stripFixtureElements } from '@/test/fixture-html.ts';
 import { remaining, updateCharacterCount } from './remaining';
 
-const fixtureHtml = readFileSync(
-	join(import.meta.dirname, '__fixtures__', 'hn-submit-page.html'),
-	'utf-8'
+const fixtureHtml = stripFixtureElements(
+	readFileSync(join(import.meta.dirname, '__fixtures__', 'hn-submit-page.html'), 'utf-8')
 );
 
 describe('remaining', () => {

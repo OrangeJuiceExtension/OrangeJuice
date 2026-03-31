@@ -9,7 +9,7 @@ export default defineConfig({
 		environment: 'happy-dom',
 		restoreMocks: true,
 		mockReset: true,
-		setupFiles: ['vitest-localstorage-mock'],
+		setupFiles: ['vitest-localstorage-mock', './src/test/vitest.setup.ts'],
 		exclude: ['**/node_modules/**', '**/e2e/**'],
 	},
 	plugins: [WxtVitest()],

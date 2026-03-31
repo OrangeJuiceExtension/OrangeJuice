@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { browser } from '#imports';
 import { ReadStoriesService } from '@/services/read-stories-service.ts';
+import { stripFixtureElements } from '@/test/fixture-html.ts';
 import lStorage from '@/utils/local-storage.ts';
 import {
 	createCheckbox,
@@ -14,9 +15,11 @@ import {
 import { HNStory } from './hn-story.ts';
 
 const STORY_LIST_HTML_REGEX = /class="itemlist"/;
-const homepageHtml = readFileSync(
-	join(import.meta.dirname, '..', '..', 'utils', '__fixtures__', 'hn-homepage.html'),
-	'utf-8'
+const homepageHtml = stripFixtureElements(
+	readFileSync(
+		join(import.meta.dirname, '..', '..', 'utils', '__fixtures__', 'hn-homepage.html'),
+		'utf-8'
+	)
 );
 const storiesWithBigboxHtml = readFileSync(
 	join(import.meta.dirname, '__fixtures__', 'stories-with-bigbox.html'),

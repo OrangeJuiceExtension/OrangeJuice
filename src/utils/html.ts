@@ -1,46 +1,93 @@
-import createDOMPurify from 'dompurify';
+import type { Properties, Root, RootContent } from 'hast';
+import { fromHtml } from 'hast-util-from-html';
+import { defaultSchema, type Schema, sanitize } from 'hast-util-sanitize';
 import { find } from 'linkifyjs';
+import { find as findProperty, html as htmlPropertyInfo, type Info } from 'property-information';
 
 const LINKIFY_SKIP_TAGS = new Set(['A', 'CODE', 'PRE', 'SCRIPT', 'STYLE', 'TEXTAREA']);
-const UNSAFE_URL_PROTOCOL_REGEX = /^\s*javascript:/i;
+const SANITIZE_SCHEMA: Schema = {
+	...defaultSchema,
+	attributes: {
+		...defaultSchema.attributes,
+		a: [...(defaultSchema.attributes?.a ?? []), 'rel', 'target', 'title'],
+	},
+	strip: [...(defaultSchema.strip ?? []), 'embed', 'iframe', 'object', 'style', 'template'],
+};
 
 interface LinkifyDomOptions {
 	openInNewTab?: boolean;
 }
 
-const getPurifier = (doc: Document) => {
-	const view = doc.defaultView ?? window;
-	return createDOMPurify(view);
-};
-
 const getNodeFilter = (doc: Document): typeof NodeFilter => {
 	return doc.defaultView?.NodeFilter ?? NodeFilter;
 };
 
-const scrubUnsafeAttributes = (root: ParentNode, doc: Document): void => {
-	const walker = doc.createTreeWalker(root, getNodeFilter(doc).SHOW_ELEMENT);
-
-	let currentNode: Node | null = walker.currentNode;
-	while (currentNode) {
-		if (currentNode instanceof Element) {
-			for (const attribute of Array.from(currentNode.attributes)) {
-				const attributeName = attribute.name.toLowerCase();
-				if (attributeName.startsWith('on')) {
-					currentNode.removeAttribute(attribute.name);
-					continue;
-				}
-
-				const attributeValue = attribute.value;
-				if (
-					(attributeName === 'href' || attributeName === 'src') &&
-					UNSAFE_URL_PROTOCOL_REGEX.test(attributeValue)
-				) {
-					currentNode.removeAttribute(attribute.name);
-				}
-			}
+const propertyValueToAttributeValue = (info: Info, value: Properties[string]): string => {
+	if (Array.isArray(value)) {
+		if (info.commaSeparated) {
+			return value.map(String).join(',');
 		}
-		currentNode = walker.nextNode();
+
+		return value.map(String).join(' ');
 	}
+
+	if (info.boolean && value === true) {
+		return '';
+	}
+
+	return String(value);
+};
+
+const setSanitizedProperty = (
+	element: Element,
+	propertyName: string,
+	value: Properties[string]
+): void => {
+	if (value === null || value === undefined || value === false) {
+		return;
+	}
+
+	const info = findProperty(htmlPropertyInfo, propertyName);
+	if (info.mustUseProperty) {
+		Reflect.set(element, info.property, value);
+		return;
+	}
+
+	const attributeValue = propertyValueToAttributeValue(info, value);
+	element.setAttribute(info.attribute, attributeValue);
+};
+
+const createDomNodeFromHast = (doc: Document, node: RootContent): Node | undefined => {
+	if (node.type === 'text') {
+		return doc.createTextNode(node.value);
+	}
+
+	if (node.type === 'comment') {
+		return doc.createComment(node.value);
+	}
+
+	if (node.type !== 'element') {
+		return undefined;
+	}
+
+	const element = doc.createElement(node.tagName);
+	for (const [propertyName, value] of Object.entries(node.properties)) {
+		setSanitizedProperty(element, propertyName, value);
+	}
+
+	for (const child of node.children) {
+		const domChild = createDomNodeFromHast(doc, child);
+		if (domChild) {
+			element.append(domChild);
+		}
+	}
+
+	return element;
+};
+
+const createSanitizedRoot = (html: string): Root => {
+	const tree = fromHtml(html, { fragment: true });
+	return sanitize(tree, SANITIZE_SCHEMA) as Root;
 };
 
 const createLinkifiedFragment = (
@@ -80,13 +127,16 @@ const createLinkifiedFragment = (
 };
 
 export const createSanitizedFragment = (doc: Document, html: string): DocumentFragment => {
-	const fragment = getPurifier(doc).sanitize(html, {
-		RETURN_DOM_FRAGMENT: true,
-		USE_PROFILES: {
-			html: true,
-		},
-	}) as DocumentFragment;
-	scrubUnsafeAttributes(fragment, doc);
+	const fragment = doc.createDocumentFragment();
+	const sanitizedRoot = createSanitizedRoot(html);
+
+	for (const child of sanitizedRoot.children) {
+		const sanitizedChild = createDomNodeFromHast(doc, child);
+		if (sanitizedChild) {
+			fragment.append(sanitizedChild);
+		}
+	}
+
 	return fragment;
 };
 

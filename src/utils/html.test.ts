@@ -12,16 +12,33 @@ describe('html utils', () => {
 	});
 
 	describe('createSanitizedFragment', () => {
-		it('creates a fragment from HTML text', () => {
-			const fragment = createSanitizedFragment(
-				document,
-				'<p>Hello <strong>world</strong></p><span>!</span>'
-			);
-
+		const renderSanitized = (html: string): HTMLDivElement => {
+			const fragment = createSanitizedFragment(document, html);
 			const container = document.createElement('div');
 			container.append(fragment);
+			return container;
+		};
 
-			expect(container.innerHTML).toBe('<p>Hello <strong>world</strong></p><span>!</span>');
+		it.each([
+			{
+				expected: '<p>Hello <strong>world</strong></p><span>!</span>',
+				html: '<p>Hello <strong>world</strong></p><span>!</span>',
+				name: 'creates a fragment from HTML text',
+			},
+			{
+				expected: '<div><span>safe</span></div>',
+				html: '<div><script>alert(1)</script><span>safe</span><style>body{}</style></div>',
+				name: 'strips unsafe elements while preserving safe siblings',
+			},
+			{
+				expected: '<p>before</p><p>after</p>',
+				html: '<p>before</p><template><p>hidden</p></template><iframe src="/x"></iframe><p>after</p>',
+				name: 'removes template and iframe content entirely',
+			},
+		])('$name', ({ html, expected }) => {
+			const container = renderSanitized(html);
+
+			expect(container.innerHTML).toBe(expected);
 		});
 
 		it('imports parsed nodes into the target document', () => {
@@ -32,16 +49,40 @@ describe('html utils', () => {
 			expect((link as HTMLAnchorElement | null)?.href).toContain('/item?id=1');
 		});
 
-		it('removes unsafe markup from HTML text', () => {
-			const fragment = createSanitizedFragment(
-				document,
-				'<p>Hello</p><script>alert(1)</script><img src="x" onerror="alert(1)">'
+		it('preserves allowed anchor attributes from the sanitize schema', () => {
+			const container = renderSanitized(
+				'<a href="https://example.com" rel="nofollow" target="_blank" title="Example">link</a>'
 			);
-			const container = document.createElement('div');
-			container.append(fragment);
+			const link = container.querySelector('a');
 
-			expect(container.querySelector('script')).toBeNull();
-			expect(container.querySelector('img')?.getAttribute('onerror')).toBeNull();
+			expect(link?.getAttribute('href')).toBe('https://example.com');
+			expect(link?.getAttribute('rel')).toBe('nofollow');
+			expect(link?.getAttribute('target')).toBe('_blank');
+			expect(link?.getAttribute('title')).toBe('Example');
+		});
+
+		it.each([
+			{
+				attribute: 'href',
+				html: '<a href="javascript:alert(1)">link</a>',
+				selector: 'a',
+			},
+			{
+				attribute: 'src',
+				html: '<img src="javascript:alert(1)">',
+				selector: 'img',
+			},
+		])('removes unsafe $attribute attributes', ({ attribute, html, selector }) => {
+			const container = renderSanitized(html);
+
+			expect(container.querySelector(selector)?.getAttribute(attribute)).toBeNull();
+		});
+
+		it('drops disallowed elements instead of preserving their attributes', () => {
+			const container = renderSanitized('<button onclick="alert(1)">click</button>');
+
+			expect(container.querySelector('button')).toBeNull();
+			expect(container.textContent).toBe('click');
 		});
 	});
 
@@ -55,7 +96,7 @@ describe('html utils', () => {
 				'<span class="new">new</span><em>content</em>'
 			);
 
-			expect(element.innerHTML).toBe('<span class="new">new</span><em>content</em>');
+			expect(element.innerHTML).toBe('<span>new</span><em>content</em>');
 			expect(fragment.childNodes).toHaveLength(0);
 		});
 	});

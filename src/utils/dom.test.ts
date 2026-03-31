@@ -1,27 +1,16 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { stripFixtureElements } from '@/test/fixture-html.ts';
 import { ActivityId } from './activity-trail.ts';
 import { dom, USERNAME_STORAGE_KEY } from './dom.ts';
 import lStorage from './local-storage.ts';
 
-const stripFixtureElements = (html: string): string => {
-	const parsed = new DOMParser().parseFromString(html, 'text/html');
-
-	for (const element of parsed.querySelectorAll('link, script')) {
-		element.remove();
-	}
-
-	return parsed.body.innerHTML;
-};
-
-const loggedInHtml = readFileSync(
-	join(import.meta.dirname, '__fixtures__', 'hn-logged-in.html'),
-	'utf-8'
+const loggedInHtml = stripFixtureElements(
+	readFileSync(join(import.meta.dirname, '__fixtures__', 'hn-logged-in.html'), 'utf-8')
 );
-const loggedOutHtml = readFileSync(
-	join(import.meta.dirname, '__fixtures__', 'hn-logged-out.html'),
-	'utf-8'
+const loggedOutHtml = stripFixtureElements(
+	readFileSync(join(import.meta.dirname, '__fixtures__', 'hn-logged-out.html'), 'utf-8')
 );
 const blackTopBarHtml = readFileSync(
 	join(import.meta.dirname, '..', 'components', 'navbar', '__fixtures__', 'hn-black.html'),

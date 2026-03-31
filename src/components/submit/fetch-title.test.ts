@@ -3,15 +3,15 @@ import { join } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContentScriptContext } from '#imports';
 import { createClientServices } from '@/services/manager.ts';
+import { stripFixtureElements } from '@/test/fixture-html.ts';
 import { fetchTitle } from './fetch-title';
 
 vi.mock('@/services/manager.ts', () => ({
 	createClientServices: vi.fn(),
 }));
 
-const fixtureHtml = readFileSync(
-	join(import.meta.dirname, '__fixtures__', 'hn-submit-page.html'),
-	'utf-8'
+const fixtureHtml = stripFixtureElements(
+	readFileSync(join(import.meta.dirname, '__fixtures__', 'hn-submit-page.html'), 'utf-8')
 );
 
 describe('fetchTitle', () => {

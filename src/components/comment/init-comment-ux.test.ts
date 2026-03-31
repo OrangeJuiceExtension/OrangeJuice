@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { stripFixtureElements } from '@/test/fixture-html.ts';
 import { dom } from '@/utils/dom.ts';
 import { initCommentUX } from './init-comment-ux.ts';
 
-const commentsHtml = readFileSync(
-	join(import.meta.dirname, '__fixtures__', 'hn-comments.html'),
-	'utf-8'
+const commentsHtml = stripFixtureElements(
+	readFileSync(join(import.meta.dirname, '__fixtures__', 'hn-comments.html'), 'utf-8')
 );
 
 describe('initCommentUX', () => {
