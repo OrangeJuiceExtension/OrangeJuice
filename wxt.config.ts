@@ -51,11 +51,16 @@ export default defineConfig({
 			128: '/icon/orange_juice_icon_128x128.png',
 		},
 		permissions: ['history', 'storage', 'tabs'],
-		host_permissions: ['https://squeeze.oj-hn.com/*'],
+		host_permissions: ['https://news.ycombinator.com/*', 'https://squeeze.oj-hn.com/*'],
 		web_accessible_resources: [
 			{
 				matches: ['https://news.ycombinator.com/*'],
-				resources: ['icon/orange_juice_icon_128x128.png'],
+				resources: [
+					'following.html',
+					'icon/follow-check.svg',
+					'icon/follow-plus.svg',
+					'icon/orange_juice_icon_128x128.png',
+				],
 			},
 		],
 	},

@@ -4,7 +4,7 @@ import {
 	createDropdownStyle,
 	NAVBAR_DROPDOWN_CLASS,
 } from '@/components/common/dropdown';
-import { paths } from '@/utils/paths.ts';
+import { getFollowingPageUrl, paths } from '@/utils/paths.ts';
 
 interface DropdownLink {
 	path: string;
@@ -59,6 +59,10 @@ const getLinks = (user: string, logoutPath?: string): DropdownLink[] => {
 		{
 			title: 'comments',
 			path: createUserPath('/threads', user),
+		},
+		{
+			title: 'following',
+			path: getFollowingPageUrl(),
 		},
 		{
 			title: 'hidden',

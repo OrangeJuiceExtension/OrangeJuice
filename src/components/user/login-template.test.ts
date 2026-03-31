@@ -8,6 +8,7 @@ vi.mock('@/components/common/hn-template.tsx', () => ({
 		bodySlot.className = 'oj-hn-body';
 		bodySlot.appendChild(doc.createElement('div'));
 		doc.body.appendChild(bodySlot);
+		return Promise.resolve();
 	}),
 }));
 
@@ -62,7 +63,7 @@ describe('loginTemplate', () => {
 	];
 
 	for (const testCase of testCases) {
-		it(testCase.name, () => {
+		it(testCase.name, async () => {
 			window.history.pushState({}, '', testCase.pathname);
 			document.body.appendChild(document.createElement('div'));
 
@@ -70,7 +71,7 @@ describe('loginTemplate', () => {
 				createFnidInput(document);
 			}
 
-			loginTemplate(document, testCase.username);
+			await loginTemplate(document, testCase.username);
 
 			if (testCase.shouldWrap) {
 				expect(wrapBodyWithHnTemplate).toHaveBeenCalled();

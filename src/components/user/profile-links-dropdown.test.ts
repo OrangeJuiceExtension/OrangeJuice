@@ -106,12 +106,13 @@ describe('profileLinksDropdown', () => {
 		expect(dropdown).not.toBeNull();
 
 		const links = dropdown?.querySelectorAll('a');
-		expect(links?.length).toBe(11);
+		expect(links?.length).toBe(12);
 
 		const expectedLinks = [
 			{ title: 'profile', path: 'user?id=testuser' },
 			{ title: 'submissions', path: 'submitted?id=testuser' },
 			{ title: 'comments', path: 'threads?id=testuser' },
+			{ title: 'following', path: 'following.html' },
 			{ title: 'hidden', path: 'hidden' },
 			{ title: 'flagged submissions', path: 'flagged?id=testuser' },
 			{ title: 'flagged comments', path: 'flagged?id=testuser&kind=comment' },

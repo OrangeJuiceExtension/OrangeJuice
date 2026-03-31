@@ -1,6 +1,7 @@
 import { type ContentScriptContext, defineContentScript } from '#imports';
 import { activities } from '@/components/activities/index.ts';
 import { comments } from '@/components/comment/index.ts';
+import { follow } from '@/components/follow/index.ts';
 import { footer } from '@/components/footer/index.ts';
 import { navbar } from '@/components/navbar/index.ts';
 import { past } from '@/components/past/index.ts';
@@ -11,6 +12,7 @@ import { createClientServices } from '@/services/manager.ts';
 import { newActivityFetcher } from '@/utils/activity-trail.ts';
 import { enableDarkMode } from '@/utils/dark-mode.ts';
 import { dom } from '@/utils/dom.ts';
+import { syncStoredTopbarColor } from '@/utils/topbar-color.ts';
 import { version } from '../../../package.json';
 import './global.css';
 import { common } from '@/components/common/index.ts';
@@ -22,6 +24,7 @@ const components: ComponentFeature[] = [
 	activities,
 	comments,
 	submit,
+	follow,
 	user,
 	past,
 	navbar,
@@ -91,7 +94,8 @@ export default defineContentScript({
 		const componentUsername = username ?? undefined;
 
 		await topcolorsTemplate(document);
-		loginTemplate(document, username ?? null);
+		await loginTemplate(document, username ?? null);
+		await syncStoredTopbarColor(document);
 		dom.ensureTopBarReadableText(document);
 		await enableDarkMode();
 

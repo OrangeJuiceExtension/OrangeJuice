@@ -4,11 +4,17 @@ import {
 	createDropdownStyle,
 	NAVBAR_DROPDOWN_CLASS,
 } from '@/components/common/dropdown';
+import { getFollowingPageUrl } from '@/utils/paths.ts';
 
 const linkDetails = [
 	{
 		title: 'leaders',
 		description: 'Users with most karma',
+	},
+	{
+		title: 'following',
+		href: getFollowingPageUrl(),
+		description: 'Recent activity from followed users',
 	},
 	{
 		title: 'best',
@@ -74,6 +80,10 @@ const linkDetails = [
 ];
 
 const COMPONENT_NAME = 'oj_more_links_dropdown';
+const TRAILING_SLASHES_PATTERN = /\/+$/;
+const normalizePathname = (value: string): string =>
+	value.replace(TRAILING_SLASHES_PATTERN, '') || '/';
+const isSameOriginLink = (url: URL): boolean => url.origin === window.location.origin;
 
 export const moreLinksDropdown = (
 	ctx: ContentScriptContext,
@@ -106,14 +116,19 @@ export const moreLinksDropdown = (
 
 	const dropdownEl = doc.createElement('div') as HTMLDivElement;
 	dropdownEl.classList.add(COMPONENT_NAME, NAVBAR_DROPDOWN_CLASS);
+	const currentPath = normalizePathname(window.location.pathname);
 
 	for (const link of linkDetails) {
-		if (window.location.pathname === `/${link.title}`) {
+		const resolvedUrl = new URL(link.href ?? `/${link.title}`, window.location.href);
+		if (
+			isSameOriginLink(resolvedUrl) &&
+			currentPath === normalizePathname(resolvedUrl.pathname)
+		) {
 			continue;
 		}
 
 		const linkEl = doc.createElement('a');
-		linkEl.href = link.href ?? link.title;
+		linkEl.href = resolvedUrl.toString();
 		linkEl.textContent = link.title;
 		linkEl.title = link.description;
 

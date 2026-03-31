@@ -3,7 +3,7 @@ import { wrapBodyWithHnTemplate } from '@/components/common/hn-template.tsx';
 
 const FNID_SELECTOR = 'input[type="hidden"][name="fnid"]';
 
-export const loginTemplate = (doc: Document, username: string | null = null) => {
+export const loginTemplate = async (doc: Document, username: string | null = null) => {
 	const { pathname } = window.location;
 	const hasFnidInput = doc.querySelector<HTMLInputElement>(FNID_SELECTOR) !== null;
 
@@ -20,6 +20,6 @@ export const loginTemplate = (doc: Document, username: string | null = null) => 
 	}
 
 	hideBody(doc);
-	wrapBodyWithHnTemplate(doc);
+	await wrapBodyWithHnTemplate(doc);
 	showBody(doc);
 };

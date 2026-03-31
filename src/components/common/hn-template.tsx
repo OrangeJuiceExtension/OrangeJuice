@@ -1,3 +1,5 @@
+import { paths } from '@/utils/paths.ts';
+import { getStoredTopbarColor } from '@/utils/topbar-color.ts';
 import { version } from '../../../package.json';
 import '../../utils/dark-mode.css';
 import './hn-template.css';
@@ -10,6 +12,8 @@ const createAnchor = (doc: Document, href: string, text: string): HTMLAnchorElem
 	link.textContent = text;
 	return link;
 };
+
+const DEFAULT_TOPBAR_COLOR = '#ff6600';
 
 const createDefaultNav = (doc: Document): HTMLTableElement => {
 	const table = doc.createElement('table');
@@ -24,11 +28,11 @@ const createDefaultNav = (doc: Document): HTMLTableElement => {
 	const logoCell = doc.createElement('td');
 	logoCell.className = 'oj-hn-logo-cell';
 	const logoLink = doc.createElement('a');
-	logoLink.href = 'https://news.ycombinator.com';
+	logoLink.href = paths.base;
 	const logo = doc.createElement('img');
 	logo.alt = 'Hacker News';
 	logo.height = 18;
-	logo.src = '/y18.svg';
+	logo.src = `${paths.base}/y18.svg`;
 	logo.style.border = '1px white solid';
 	logo.style.display = 'block';
 	logo.width = 18;
@@ -41,7 +45,7 @@ const createDefaultNav = (doc: Document): HTMLTableElement => {
 	pageTop.className = 'pagetop';
 	const name = doc.createElement('b');
 	name.className = 'hnname';
-	name.append(createAnchor(doc, '/news', 'Hacker News'));
+	name.append(createAnchor(doc, `${paths.base}/news`, 'Hacker News'));
 	pageTop.append(name, '\u00a0');
 	linksCell.append(pageTop);
 
@@ -54,7 +58,7 @@ const createDefaultNav = (doc: Document): HTMLTableElement => {
 	return table;
 };
 
-const createDefaultFooter = (doc: Document): HTMLDivElement => {
+const createDefaultFooter = (doc: Document, topColor: string): HTMLDivElement => {
 	const footer = doc.createElement('div');
 	footer.className = 'oj-hn-footer-center';
 
@@ -65,7 +69,7 @@ const createDefaultFooter = (doc: Document): HTMLDivElement => {
 	const tbody = doc.createElement('tbody');
 	const row = doc.createElement('tr');
 	const stripe = doc.createElement('td');
-	stripe.style.backgroundColor = '#ff6600';
+	stripe.style.backgroundColor = topColor;
 	stripe.style.height = '2px';
 	row.append(stripe);
 	tbody.append(row);
@@ -75,11 +79,11 @@ const createDefaultFooter = (doc: Document): HTMLDivElement => {
 	links.className = 'yclinks';
 
 	const footerLinks = [
-		['/newsguidelines.html', 'Guidelines'],
-		['/newsfaq.html', 'FAQ'],
-		['/lists', 'Lists'],
+		[`${paths.base}/newsguidelines.html`, 'Guidelines'],
+		[`${paths.base}/newsfaq.html`, 'FAQ'],
+		[`${paths.base}/lists`, 'Lists'],
 		['https://github.com/HackerNews/API', 'API'],
-		['/security.html', 'Security'],
+		[`${paths.base}/security.html`, 'Security'],
 		['https://www.ycombinator.com/legal/', 'Legal'],
 		['https://www.ycombinator.com/apply/', 'Apply to YC'],
 		['mailto:hn@ycombinator.com', 'Contact'],
@@ -105,9 +109,13 @@ const createDefaultFooter = (doc: Document): HTMLDivElement => {
 interface WrapOptions {
 	footer?: Node;
 	nav?: Node;
+	topColor?: string;
 }
 
-export const wrapBodyWithHnTemplate = (doc: Document, options: WrapOptions = {}): void => {
+export const wrapBodyWithHnTemplate = async (
+	doc: Document,
+	options: WrapOptions = {}
+): Promise<void> => {
 	if (doc.getElementById(TEMPLATE_ROOT_ID)) {
 		return;
 	}
@@ -130,7 +138,20 @@ export const wrapBodyWithHnTemplate = (doc: Document, options: WrapOptions = {})
 	const navRow = doc.createElement('tr');
 	const navCell = doc.createElement('td');
 	navCell.className = 'oj-hn-nav';
-	navCell.append((options.nav?.cloneNode(true) as Node | undefined) ?? createDefaultNav(doc));
+	const topColor = options.topColor ?? (await getStoredTopbarColor()) ?? DEFAULT_TOPBAR_COLOR;
+	navCell.setAttribute('bgcolor', topColor);
+	navCell.style.backgroundColor = topColor;
+
+	if (options.nav instanceof HTMLTableCellElement) {
+		const clonedNavCell = options.nav.cloneNode(true) as HTMLTableCellElement;
+		for (const attribute of Array.from(clonedNavCell.attributes)) {
+			navCell.setAttribute(attribute.name, attribute.value);
+		}
+		navCell.classList.add('oj-hn-nav');
+		navCell.replaceChildren(...Array.from(clonedNavCell.childNodes));
+	} else {
+		navCell.append((options.nav?.cloneNode(true) as Node | undefined) ?? createDefaultNav(doc));
+	}
 	navRow.append(navCell);
 
 	const bodyRow = doc.createElement('tr');
@@ -145,7 +166,7 @@ export const wrapBodyWithHnTemplate = (doc: Document, options: WrapOptions = {})
 	const footerCell = doc.createElement('td');
 	footerCell.className = 'oj-hn-footer';
 	footerCell.append(
-		(options.footer?.cloneNode(true) as Node | undefined) ?? createDefaultFooter(doc)
+		(options.footer?.cloneNode(true) as Node | undefined) ?? createDefaultFooter(doc, topColor)
 	);
 	footerRow.append(footerCell);
 

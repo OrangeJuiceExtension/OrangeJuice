@@ -167,6 +167,17 @@ describe('navbar more-links', () => {
 		expect(firstLink?.title).toBe('Users with most karma');
 	});
 
+	it('should keep the following link pointed at the extension page', async () => {
+		await navbar.main(mockContext);
+
+		const followingLink = Array.from(
+			document.querySelectorAll<HTMLAnchorElement>('.oj_more_links_dropdown a')
+		).find((link) => link.textContent === 'following');
+
+		expect(followingLink?.href).toBe('chrome-extension://test-extension-id/following.html');
+		expect(followingLink?.href).not.toContain('news.ycombinator.com/following.html');
+	});
+
 	it('should close dropdown when clicking outside', async () => {
 		await navbar.main(mockContext);
 		const button = document.querySelector('.oj_more_links_dropdown_button') as HTMLElement;

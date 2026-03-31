@@ -60,6 +60,11 @@ html.oj-dark-mode {
 		color: var(--oj-visited) !important;
 	}
 
+	.oj-hn-nav a:link,
+	.oj-hn-nav a:visited {
+		color: inherit !important;
+	}
+
 	.subline a:link,
 	.subline a:visited,
 	.rank,
@@ -142,7 +147,9 @@ html.oj-dark-mode {
 
 html.oj-topbar-readable {
 	.oj-topbar-cell,
+	.oj-topbar-cell > table,
 	.oj-topbar-cell
+		> table
 		:is(
 			a,
 			button,
@@ -154,5 +161,12 @@ html.oj-topbar-readable {
 			.oj-dark-mode-toggle
 		) {
 		color: var(--oj-topbar-fg) !important;
+	}
+}
+
+html.oj-dark-mode {
+	.oj-nav-dropdown a,
+	.oj-nav-dropdown a:visited {
+		color: #fff2d4 !important;
 	}
 }

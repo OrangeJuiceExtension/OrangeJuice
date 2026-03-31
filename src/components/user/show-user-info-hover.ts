@@ -4,17 +4,25 @@ import { cloneChildNodesInto, createSanitizedFragment, linkifyTextNodes } from '
 
 const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 export const USER_INFO_HOVER_CLASS = 'oj_user_info_hover';
+const USER_INFO_HOVER_STYLE_ID = 'oj-user-info-hover-style';
+const hoverCleanupByDocument = new WeakMap<Document, () => void>();
 
 export const showUserInfoOnHover = (
 	ctx: ContentScriptContext,
 	doc: Document,
 	username?: string
 ) => {
-	const style = doc.createElement('style');
-	style.textContent = `
+	hoverCleanupByDocument.get(doc)?.();
+
+	let style = doc.getElementById(USER_INFO_HOVER_STYLE_ID) as HTMLStyleElement | null;
+	if (!style) {
+		style = doc.createElement('style');
+		style.id = USER_INFO_HOVER_STYLE_ID;
+		style.textContent = `
 		.${USER_INFO_HOVER_CLASS} {
 			position: absolute;
 			background: #f6f6ef;
+			color: #828282;
 			z-index: 2;
 			border: 1px solid #000;
 			padding: 3px;
@@ -22,6 +30,10 @@ export const showUserInfoOnHover = (
 			max-height: 400px;
 			overflow-y: auto;
 			display: none;
+			font-family: Verdana, Geneva, sans-serif;
+			font-size: 10pt;
+			font-weight: normal;
+			line-height: 1.4;
 		}
 		
 		.${USER_INFO_HOVER_CLASS}.active {
@@ -48,10 +60,12 @@ export const showUserInfoOnHover = (
 			vertical-align: top;
 		}
 	`;
-	doc.head.appendChild(style);
+		doc.head.appendChild(style);
+	}
 
 	const allUsers = doc.querySelectorAll('a.hnuser') as NodeListOf<HTMLAnchorElement>;
 	if (!allUsers.length) {
+		hoverCleanupByDocument.delete(doc);
 		return;
 	}
 
@@ -127,6 +141,15 @@ export const showUserInfoOnHover = (
 		return userDiv;
 	};
 
+	const positionPopover = (trigger: HTMLAnchorElement, userDiv: HTMLDivElement): void => {
+		const triggerRect = trigger.getBoundingClientRect();
+		const left = window.scrollX + triggerRect.left;
+		const top = window.scrollY + triggerRect.bottom + 2;
+
+		userDiv.style.left = `${left}px`;
+		userDiv.style.top = `${top}px`;
+	};
+
 	function showPopover(trigger: HTMLAnchorElement): Promise<void> {
 		if (!popover) {
 			popover = createUserDiv(doc);
@@ -139,7 +162,8 @@ export const showUserInfoOnHover = (
 		loader.classList.add('loader1');
 
 		popover.append(loader);
-		trigger.parentElement?.append(popover);
+		positionPopover(trigger, popover);
+		doc.body.append(popover);
 		activeTrigger = trigger;
 
 		return populateUserDiv(trigger, popover);
@@ -205,11 +229,20 @@ export const showUserInfoOnHover = (
 
 	doc.addEventListener('mousemove', onMouseMove);
 
-	ctx.onInvalidated(() => {
+	const cleanup = () => {
 		for (const user of allUsers) {
 			user.removeEventListener('mouseover', onMouseOver);
 		}
 		doc.removeEventListener('mousemove', onMouseMove);
+	};
+
+	hoverCleanupByDocument.set(doc, cleanup);
+
+	ctx.onInvalidated(() => {
+		cleanup();
+		if (hoverCleanupByDocument.get(doc) === cleanup) {
+			hoverCleanupByDocument.delete(doc);
+		}
 	});
 
 	for (const user of allUsers) {

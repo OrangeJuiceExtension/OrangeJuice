@@ -27,7 +27,7 @@ const paths = {
 
 	forms: ['/reply', '/submit', '/newpoll', '/edit', '/delete-confirm', '/submitlink'],
 
-	misc: ['/leaders', '/user', '/topcolors', '/lists', '/flagged'],
+	misc: ['/leaders', '/user', '/topcolors', '/lists', '/flagged', '/following'],
 
 	actions: [
 		'/login',
@@ -51,6 +51,29 @@ const paths = {
 		'/bookmarklet.html',
 		'/showhn.html',
 	],
+};
+
+interface RuntimeUrlApi {
+	browser?: {
+		runtime?: {
+			getURL?: (path: string) => string;
+		};
+	};
+	chrome?: {
+		runtime?: {
+			getURL?: (path: string) => string;
+		};
+	};
+}
+
+export const getFollowingPageUrl = (): string => {
+	const runtimeApi = globalThis as typeof globalThis & RuntimeUrlApi;
+
+	return (
+		runtimeApi.browser?.runtime?.getURL?.('/following.html') ??
+		runtimeApi.chrome?.runtime?.getURL?.('/following.html') ??
+		'/following.html'
+	);
 };
 
 export { paths };
