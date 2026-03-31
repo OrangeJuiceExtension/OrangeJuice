@@ -30,6 +30,7 @@ This is not a complete list of features, but rather a selection that showcases t
 | Inline Reply + Quote Selection | ![Inline reply light](docs/assets/inline-reply-light.png) | ![Inline reply dark](docs/assets/inline-reply-dark.png) |
 | Unread Comment Highlighting | ![Unread comments light](docs/assets/unread-light.png) | ![Unread comments dark](docs/assets/unread-dark.png) |
 | Hover User Details | ![User info hover light](docs/assets/user-info-hover-light.png) | ![User info hover dark](docs/assets/user-info-hover-dark.png) |
+| Following Feed | Follow people and open a dedicated activity page for recent comments and submissions. | Cached locally with per-user refresh, reorder, and collapse state. |
 | Hide Read Stories | ![Hide read stories light](docs/assets/hide-read-light.png) | ![Hide read stories dark](docs/assets/hide-read-dark.png) |
 | Keyboard Navigation | ![Keyboard navigation light](docs/assets/screenshot-help-light.png) | ![Keyboard navigation dark](docs/assets/screenshot-help-dark.png) |
 | Mermaid Diagram Rendering | [![Mermaid rendering light](docs/assets/mermaid-light.png)](docs/assets/mermaid-light.png) | [![Mermaid rendering dark](docs/assets/mermaid-dark.png)](docs/assets/mermaid-dark.png) |
@@ -44,6 +45,12 @@ Clicking a "reply" link now opens an inline reply form directly on the page, eli
 
 ## Favorite Items
 Add a "favorite" button to comments and stories across various pages of HN, allowing you to save items for later reference. The button updates in place without redirecting you to a new page.
+
+## Following Feed
+- **Follow users directly from HN**: Small follow buttons appear next to usernames so you can build a personal follow list without leaving the page.
+- **Dedicated `/following` page**: Open a combined feed of recent comments and submissions from the users you follow, rendered in the normal HN style.
+- **Comment context included**: Comment entries show the parent story title, quick links for reply/comments, and relative timestamps so you can decide what to open next faster.
+- **Local persistence and controls**: Followed-user order, expanded/collapsed sections, and recent fetched data are stored locally. Reorder the usernames by dragging, collapse noisy users by default, and refresh a single user when you want fresh data without reloading everything else.
 
 ## Hide read stories
 There is a checkbox displayed at the top of story pages that hides any stories you've already read. It uses the browser's history API to determine if a link has been visited before.
