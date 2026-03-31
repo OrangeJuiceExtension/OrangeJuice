@@ -264,6 +264,21 @@ describe('HNComment', () => {
 			expect(clickSpy).toHaveBeenCalled();
 		});
 
+		it('should click collapse link with [-]', () => {
+			const row = createCommentRow();
+			const toggle = doc.createElement('a');
+			toggle.classList.add('togg');
+			toggle.textContent = '[-]';
+			row.appendChild(toggle);
+			const clickSpy = vi.spyOn(toggle, 'click');
+			const comment = new HNComment(row);
+
+			const result = comment.collapseToggle();
+
+			expect(result).toBe(true);
+			expect(clickSpy).toHaveBeenCalled();
+		});
+
 		it('should click collapse link with [N more]', () => {
 			const row = createCommentRow();
 			const toggle = doc.createElement('a');

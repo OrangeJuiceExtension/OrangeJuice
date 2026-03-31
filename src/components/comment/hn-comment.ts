@@ -1,6 +1,7 @@
 import { parseReferenceLinks } from '@/utils/parse-reference-links.ts';
 
 const COMMENTS_REGEX = /\[\s*(\d+)\s*more\s*]/;
+const COLLAPSE_LABELS = new Set(['[-]', '[–]']);
 const VOTE_SELECTORS = {
 	UNVOTE_LINK: 'a[id^="un_"]',
 	UPVOTE_ARROW: 'div.votearrow[title="upvote"]',
@@ -142,11 +143,11 @@ export class HNComment {
 	}
 
 	collapseToggle(): boolean {
-		const toggleLinks = this.commentRow.querySelectorAll<HTMLAnchorElement>('a.togg.clicky');
+		const toggleLinks = this.commentRow.querySelectorAll<HTMLAnchorElement>('a.togg');
 		for (const el of toggleLinks) {
 			const trimmed = el.textContent?.trim() || '';
 			const isCollapsed = COMMENTS_REGEX.test(trimmed);
-			if (trimmed === '[–]' || isCollapsed) {
+			if (COLLAPSE_LABELS.has(trimmed) || isCollapsed) {
 				el.click();
 				return true;
 			}

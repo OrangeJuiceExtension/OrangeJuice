@@ -3,6 +3,7 @@ import { backticksToCode } from '@/components/comment/backticks-to-code.ts';
 import { commentBeautifulMermaid } from '@/components/comment/beautiful-mermaid.ts';
 import { changeDeadCommentsColor } from '@/components/comment/change-dead-comments-color.ts';
 import { collapseRoot } from '@/components/comment/collapse-root.ts';
+import { persistCollapsedComments } from '@/components/comment/collapsed-comments.ts';
 import { CommentData } from '@/components/comment/comment-data.ts';
 import { highlightUnreadComments } from '@/components/comment/highlight-unread-comments.ts';
 import { HNComment } from '@/components/comment/hn-comment.ts';
@@ -38,6 +39,7 @@ export const comments: ComponentFeature = {
 		return Promise.all([
 			Promise.resolve().then(() => initCommentUX(document, allComments, this.username)),
 			Promise.resolve().then(() => highlightUnreadComments(document, allComments, manager)),
+			Promise.resolve().then(() => persistCollapsedComments(ctx, allComments)),
 			Promise.resolve().then(() => indentToggle(ctx, document, allComments)),
 			Promise.resolve().then(() => changeDeadCommentsColor(document, allComments)),
 			Promise.resolve().then(() => backticksToCode(document, allComments)),
