@@ -78,7 +78,7 @@ describe('following-cache', () => {
 			username: 'alice',
 		});
 
-		vi.setSystemTime(new Date('2026-03-30T12:06:00Z'));
+		vi.setSystemTime(new Date('2026-03-30T13:01:00Z'));
 
 		await expect(getCachedFollowingSection('alice')).resolves.toBeUndefined();
 		await expect(lStorage.getItem<Record<string, unknown>>(STORAGE_KEY)).resolves.toEqual({
