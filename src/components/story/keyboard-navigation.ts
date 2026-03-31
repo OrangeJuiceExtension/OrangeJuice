@@ -23,11 +23,6 @@ export const keyboardNavigation = async (
 		  --oj-focus-w: 1px;
 		}
 		
-		tr.athing > td:last-child {
-			padding-top: 2px;
-			padding-right: 4px;
-		}
-		
 		tr.athing > td:first-child,
 		tr.${focusClass2} > td:first-child,
 		tr.${focusClass3} > td:first-child {

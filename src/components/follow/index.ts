@@ -67,9 +67,9 @@ interface FollowingRenderOptions {
 
 const FOLLOW_STYLES = `
 	.${FOLLOW_BUTTON_CONTAINER_CLASS} {
-		display: inline-flex;
-		align-items: center;
-		margin-left: 3px;
+		display: inline-block;
+		line-height: 0;
+		vertical-align: baseline;
 	}
 
 	.${FOLLOW_BUTTON_CLASS},
@@ -80,13 +80,14 @@ const FOLLOW_STYLES = `
 		color: #a28e73;
 		display: inline-flex;
 		font: inherit;
-		height: 16px;
 		justify-content: center;
 		line-height: 1;
 		padding: 0;
 		border-radius: 999px;
 		cursor: pointer;
-		opacity: 0.82;
+		opacity: 1;
+		position: relative;
+		top: 1px;
 		width: 16px;
 	}
 
