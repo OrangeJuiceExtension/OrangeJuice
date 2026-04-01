@@ -643,7 +643,7 @@ body.oj-docs-lightbox-open {
 }
 
 .installation {
-	padding: 3rem;
+	padding: 3rem 3rem 1.75rem;
 	margin-bottom: 4rem;
 	background:
 		radial-gradient(
@@ -685,14 +685,153 @@ body.oj-docs-lightbox-open {
 
 .installation .section-title a {
 	display: inline-block;
-	padding: 0 0 0.25rem;
 	font-size: clamp(2rem, 4.2vw, 2.8rem);
 	font-weight: 800;
 	line-height: 1.05;
 	color: var(--text);
 	text-decoration: none;
-	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
-	border-bottom: 3px solid rgba(255, 102, 0, 0.65);
+}
+
+.install-browsers {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 1.25rem;
+	margin-bottom: 2.5rem;
+}
+
+.install-browser-card {
+	display: flex;
+	flex-direction: column;
+	padding: 1.75rem;
+	background: var(--bg);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	box-shadow: 0 4px 12px var(--shadow);
+}
+
+.install-browser-card--primary {
+	background:
+		radial-gradient(
+			circle at top left,
+			rgba(255, 102, 0, 0.07) 0,
+			transparent 55%
+		),
+		var(--bg);
+	border-color: rgba(255, 102, 0, 0.4);
+	box-shadow: 0 4px 20px rgba(255, 102, 0, 0.12);
+}
+
+.install-browser-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+
+.install-browser-card .install-browser-header {
+	justify-content: center;
+}
+
+.install-browser-name {
+	text-align: center;
+}
+
+.install-browser-icon {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+}
+
+.install-browser-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.25rem 0.7rem;
+	font-size: 0.72rem;
+	font-weight: 800;
+	color: #fff;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+	border-radius: 999px;
+}
+
+.install-browser-name {
+	margin-bottom: 0.5rem;
+	font-size: 1.35rem;
+	font-weight: 700;
+	color: var(--text);
+}
+
+.install-browser-desc {
+	flex: 1;
+	margin-bottom: 1.25rem;
+	line-height: 1.6;
+	color: var(--text-light);
+}
+
+.install-browser-btn {
+	justify-content: center;
+	width: 100%;
+}
+
+.install-browser-svg {
+	display: block;
+	border-radius: 50%;
+}
+
+.install-browsers--github {
+	margin-top: 0;
+}
+
+.install-github-download {
+	display: flex;
+	justify-content: center;
+	margin: 1.5rem 0 1.25rem;
+}
+
+.install-github-download-btn {
+	gap: 0.5rem;
+}
+
+.install-browser-pick {
+	margin: 0 0 1rem;
+	font-size: 1.1rem;
+	font-weight: 600;
+	color: var(--text);
+	text-align: center;
+}
+
+.install-browser-note {
+	margin: 0.9rem 0 0;
+	font-size: 0.85rem;
+	color: var(--text-light);
+}
+
+.install-browser-note a {
+	font-weight: 600;
+	color: var(--primary);
+}
+
+.install-divider {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	margin-bottom: 2rem;
+	color: var(--text-light);
+}
+
+.install-divider::before,
+.install-divider::after {
+	flex: 1;
+	height: 1px;
+	content: "";
+	background: var(--border);
+}
+
+.install-divider-label {
+	flex-shrink: 0;
+	font-size: 0.85rem;
+	white-space: nowrap;
 }
 
 .oj-docs-install-intro {
@@ -857,6 +996,10 @@ footer {
 	.feature-showcase,
 	.installation {
 		padding: 2rem 1.25rem;
+	}
+
+	.install-browsers {
+		grid-template-columns: 1fr;
 	}
 
 	.why-grid {

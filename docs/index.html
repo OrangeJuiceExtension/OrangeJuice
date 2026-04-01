@@ -470,107 +470,287 @@
 
 				<section class="installation">
 					<div class="install-hero">
-						<p class="install-kicker">Recommended Setup Path</p>
 						<h2 class="section-title"><a id="installation">Installation</a></h2>
 					</div>
-					<p class="oj-docs-install-intro">
-						Install from the <strong>Chrome Web Store first</strong>. That is the
-						default path for most people.
-					</p>
-					<p class="oj-docs-install-secondary">
-						Chrome Web Store updates can be slow and may take several days to appear. If
-						you want the newest fixes immediately, use the GitHub release instead:
-						<a
-							href="https://chromewebstore.google.com/detail/orange-juice/jojpnpkbdjfpjjgjhdccgpbifipacaii"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="oj-docs-link-primary"
-							>Chrome Web Store</a
-						>
-						·
+					<div class="install-browsers">
+						<div class="install-browser-card">
+							<div class="install-browser-header">
+								<svg
+									class="install-browser-svg"
+									viewBox="0 0 48 48"
+									width="48"
+									height="48"
+									aria-hidden="true"
+									focusable="false"
+								>
+									<path
+										d="M24,24 L24,1 A23,23,0,0,1,43.92,35.5 Z"
+										fill="#EA4335"
+									/>
+									<path
+										d="M24,24 L43.92,35.5 A23,23,0,0,1,4.08,35.5 Z"
+										fill="#FBBC04"
+									/>
+									<path
+										d="M24,24 L4.08,35.5 A23,23,0,0,1,24,1 Z"
+										fill="#34A853"
+									/>
+									<circle cx="24" cy="24" r="10" fill="white" />
+									<circle cx="24" cy="24" r="9" fill="#4285F4" />
+								</svg>
+							</div>
+							<h3 class="install-browser-name">Chrome</h3>
+							<p class="install-browser-desc">
+								Installs from the Chrome Web Store with automatic updates.
+							</p>
+							<a
+								href="https://chromewebstore.google.com/detail/orange-juice/jojpnpkbdjfpjjgjhdccgpbifipacaii"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="btn btn-secondary install-browser-btn"
+							>
+								Install for Chrome
+							</a>
+						</div>
+						<div class="install-browser-card">
+							<div class="install-browser-header">
+								<svg
+									class="install-browser-svg"
+									viewBox="0 0 48 48"
+									width="48"
+									height="48"
+									aria-hidden="true"
+									focusable="false"
+								>
+									<defs>
+										<radialGradient id="ff-globe" cx="38%" cy="35%" r="65%">
+											<stop offset="0%" stop-color="#00b3f4" />
+											<stop offset="55%" stop-color="#0060df" />
+											<stop offset="100%" stop-color="#003eaa" />
+										</radialGradient>
+										<radialGradient id="ff-flame" cx="50%" cy="25%" r="70%">
+											<stop offset="0%" stop-color="#ffe900" />
+											<stop offset="28%" stop-color="#ff7139" />
+											<stop offset="72%" stop-color="#e31587" />
+											<stop offset="100%" stop-color="#7542e5" />
+										</radialGradient>
+									</defs>
+									<circle cx="24" cy="24" r="23" fill="url(#ff-globe)" />
+									<ellipse
+										cx="24"
+										cy="24"
+										rx="10"
+										ry="23"
+										fill="none"
+										stroke="rgba(255,255,255,0.18)"
+										stroke-width="1"
+									/>
+									<line
+										x1="1"
+										y1="24"
+										x2="47"
+										y2="24"
+										stroke="rgba(255,255,255,0.18)"
+										stroke-width="1"
+									/>
+									<path
+										d="M3,17 Q24,10 45,17"
+										fill="none"
+										stroke="rgba(255,255,255,0.18)"
+										stroke-width="1"
+									/>
+									<path
+										d="M3,31 Q24,38 45,31"
+										fill="none"
+										stroke="rgba(255,255,255,0.18)"
+										stroke-width="1"
+									/>
+									<path
+										d="M43,14 C40,7 34,3 26,2 C22,2 18,3 15,5 C20,4 25,6 28,10 C23,8 17,11 16,17 C20,13 26,14 28,19 C25,15 19,17 18,23 C21,19 27,20 27,26 C27,32 22,36 17,37 C11,38 6,33 5,27 C4,33 6,39 11,43 C14,46 19,47 24,47 C35,47 44,40 46,29 C48,22 46,16 43,14 Z"
+										fill="url(#ff-flame)"
+									/>
+								</svg>
+							</div>
+							<h3 class="install-browser-name">Firefox</h3>
+							<p class="install-browser-desc">
+								Available on Firefox Add-ons for a permanent, auto-updating
+								installation.
+							</p>
+							<a
+								href="https://addons.mozilla.org/en-US/firefox/addon/orange-juice-hn/"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="btn btn-secondary install-browser-btn"
+							>
+								Install for Firefox
+							</a>
+						</div>
+					</div>
+
+					<div class="install-divider" id="github-release">
+						<span class="install-divider-label">or install manually from GitHub</span>
+					</div>
+
+					<h3 class="oj-docs-install-heading">From GitHub releases</h3>
+
+					<div class="install-github-download">
 						<a
 							href="https://github.com/OrangeJuiceExtension/OrangeJuice/releases/latest"
 							target="_blank"
 							rel="noopener noreferrer"
-							class="oj-docs-link-primary"
-							>Latest GitHub release</a
+							class="btn btn-secondary install-github-download-btn"
 						>
-						·<span>Firefox Add-ons (coming soon)</span>
-					</p>
+							Download latest release (.zip)
+						</a>
+					</div>
 
-					<h3 class="oj-docs-install-heading">From GitHub releases</h3>
+					<p class="install-browser-pick">Then load it into your browser:</p>
 
-					<div class="install-steps">
-						<div class="step">
-							<div class="step-number">1</div>
-							<div class="step-content">
-								<p class="step-title">Download the latest release</p>
-								<p>
-									Visit the
+					<div class="install-browsers install-browsers--github">
+						<div class="install-browser-card">
+							<div class="install-browser-header">
+								<svg
+									class="install-browser-svg"
+									viewBox="0 0 48 48"
+									width="48"
+									height="48"
+									aria-hidden="true"
+									focusable="false"
+								>
+									<path
+										d="M24,24 L24,1 A23,23,0,0,1,43.92,35.5 Z"
+										fill="#EA4335"
+									/>
+									<path
+										d="M24,24 L43.92,35.5 A23,23,0,0,1,4.08,35.5 Z"
+										fill="#FBBC04"
+									/>
+									<path
+										d="M24,24 L4.08,35.5 A23,23,0,0,1,24,1 Z"
+										fill="#34A853"
+									/>
+									<circle cx="24" cy="24" r="10" fill="white" />
+									<circle cx="24" cy="24" r="9" fill="#4285F4" />
+								</svg>
+							</div>
+							<h3 class="install-browser-name">Chrome</h3>
+							<ul class="oj-docs-install-list">
+								<li>
+									Open Chrome and navigate to
+									<code class="oj-docs-code-inline">chrome://extensions/</code>
+								</li>
+								<li>Enable "Developer mode" in the top right</li>
+								<li>
+									Click "Load unpacked" and select the extracted
+									<code class="oj-docs-code-inline">.zip</code>
+									folder
+								</li>
+								<li>
+									The extension should now be active, now visit
 									<a
-										href="https://github.com/OrangeJuiceExtension/OrangeJuice/releases/latest"
+										href="https://news.ycombinator.com"
 										target="_blank"
 										rel="noopener noreferrer"
-										class="oj-docs-link-primary"
-										>releases page</a
+										>Hacker News</a
 									>
-									and download the
-									<code class="oj-docs-code-inline">.zip</code>
-									file for your browser.
-								</p>
-							</div>
+									to see it in action.
+								</li>
+							</ul>
 						</div>
-
-						<div class="step">
-							<div class="step-number">2</div>
-							<div class="step-content">
-								<p class="step-title">Install in Chrome</p>
-								<ul class="oj-docs-install-list">
-									<li>
-										Open Chrome and navigate to
-										<code class="oj-docs-code-inline">
-											chrome://extensions/
-										</code>
-									</li>
-									<li>
-										Enable "Developer mode" using the toggle in the top right
-									</li>
-									<li>
-										Click "Load unpacked" and select the extracted folder from
-										the
-										<code class="oj-docs-code-inline">.zip</code>
-										file
-									</li>
-									<li>The extension should now be active</li>
-								</ul>
+						<div class="install-browser-card">
+							<div class="install-browser-header">
+								<svg
+									class="install-browser-svg"
+									viewBox="0 0 48 48"
+									width="48"
+									height="48"
+									aria-hidden="true"
+									focusable="false"
+								>
+									<defs>
+										<radialGradient id="ff-globe2" cx="38%" cy="35%" r="65%">
+											<stop offset="0%" stop-color="#00b3f4" />
+											<stop offset="55%" stop-color="#0060df" />
+											<stop offset="100%" stop-color="#003eaa" />
+										</radialGradient>
+										<radialGradient id="ff-flame2" cx="50%" cy="25%" r="70%">
+											<stop offset="0%" stop-color="#ffe900" />
+											<stop offset="28%" stop-color="#ff7139" />
+											<stop offset="72%" stop-color="#e31587" />
+											<stop offset="100%" stop-color="#7542e5" />
+										</radialGradient>
+									</defs>
+									<circle cx="24" cy="24" r="23" fill="url(#ff-globe2)" />
+									<ellipse
+										cx="24"
+										cy="24"
+										rx="10"
+										ry="23"
+										fill="none"
+										stroke="rgba(255,255,255,0.18)"
+										stroke-width="1"
+									/>
+									<line
+										x1="1"
+										y1="24"
+										x2="47"
+										y2="24"
+										stroke="rgba(255,255,255,0.18)"
+										stroke-width="1"
+									/>
+									<path
+										d="M3,17 Q24,10 45,17"
+										fill="none"
+										stroke="rgba(255,255,255,0.18)"
+										stroke-width="1"
+									/>
+									<path
+										d="M3,31 Q24,38 45,31"
+										fill="none"
+										stroke="rgba(255,255,255,0.18)"
+										stroke-width="1"
+									/>
+									<path
+										d="M43,14 C40,7 34,3 26,2 C22,2 18,3 15,5 C20,4 25,6 28,10 C23,8 17,11 16,17 C20,13 26,14 28,19 C25,15 19,17 18,23 C21,19 27,20 27,26 C27,32 22,36 17,37 C11,38 6,33 5,27 C4,33 6,39 11,43 C14,46 19,47 24,47 C35,47 44,40 46,29 C48,22 46,16 43,14 Z"
+										fill="url(#ff-flame2)"
+									/>
+								</svg>
 							</div>
-						</div>
-
-						<div class="step">
-							<div class="step-number">3</div>
-							<div class="step-content">
-								<p class="step-title">Install in Firefox</p>
-								<ul class="oj-docs-install-list">
-									<li>
-										Open Firefox and navigate to
-										<code class="oj-docs-code-inline">
-											about:debugging#/runtime/this-firefox
-										</code>
-									</li>
-									<li>Click "Load Temporary Add-on..."</li>
-									<li>
-										Navigate to the extracted folder and select the
-										<code class="oj-docs-code-inline">manifest.json</code>
-										file
-									</li>
-									<li>The extension should now be active</li>
-								</ul>
-								<div class="note oj-docs-note">
-									<strong>Note:</strong>
-									Temporary extensions in Firefox are removed when you restart the
-									browser. For a permanent installation, you'll need to install
-									from Firefox Add-ons once the extension is published there.
-								</div>
+							<h3 class="install-browser-name">Firefox</h3>
+							<ul class="oj-docs-install-list">
+								<li>
+									Open Firefox and navigate to
+									<code class="oj-docs-code-inline"
+										>about:debugging#/runtime/this-firefox</code
+									>
+								</li>
+								<li>Click "Load Temporary Add-on..."</li>
+								<li>
+									Select the
+									<code class="oj-docs-code-inline">manifest.json</code>
+									file from the extracted folder
+								</li>
+								<li>
+									The extension should now be active, now visit
+									<a
+										href="https://news.ycombinator.com"
+										target="_blank"
+										rel="noopener noreferrer"
+										>Hacker News</a
+									>
+									to see it in action.
+								</li>
+							</ul>
+							<div class="note oj-docs-note">
+								<strong>Note:</strong>
+								Temporary extensions are removed on restart. For a permanent
+								installation, use
+								<a
+									href="https://addons.mozilla.org/en-US/firefox/addon/orange-juice-hn/"
+									target="_blank"
+									rel="noopener noreferrer"
+									>Firefox Add-ons</a
+								>.
 							</div>
 						</div>
 					</div>

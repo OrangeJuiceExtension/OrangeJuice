@@ -103,41 +103,33 @@ Mermaid diagrams render automatically when wrapped in a `<mermaid>` block, with 
 
 # Installation
 
-Default to installing from the Chrome Web Store.
-
-## From the Chrome webstore
+## Chrome Web Store
 
 https://chromewebstore.google.com/detail/orange-juice/jojpnpkbdjfpjjgjhdccgpbifipacaii
 
-Chrome Web Store updates can be slow and may take several days to show up. If you want the newest fixes immediately, install from the latest GitHub release instead.
+## Firefox Add-ons
 
-## From the Firefox webstore
+https://addons.mozilla.org/en-US/firefox/addon/orange-juice-hn/
 
-Coming soon.
+## From a GitHub release
 
-## From latest github release
+Download the latest `.zip` from the [releases page](https://github.com/OrangeJuiceExtension/OrangeJuice/releases/latest), then pick your browser:
 
-Use this if you want updates faster than the Chrome Web Store review cycle.
+**Chrome**
 
-1. **Download the latest release**
+- Open Chrome and navigate to `chrome://extensions/`
+- Enable "Developer mode" using the toggle in the top right
+- Click "Load unpacked" and select the extracted folder from the `.zip` file
+- The extension should now be active, now visit [Hacker News](https://news.ycombinator.com) to see it in action.
 
-   Visit the [releases page](https://github.com/OrangeJuiceExtension/OrangeJuice/releases/latest) and download the `.zip` file for your browser. Double-click on the `.zip` file to extract it into a folder.
+**Firefox**
 
-2. **Install in Chrome**
+- Open Firefox and navigate to `about:debugging#/runtime/this-firefox`
+- Click "Load Temporary Add-on..."
+- Navigate to the extracted folder and select the `manifest.json` file
+- The extension should now be active, now visit [Hacker News](https://news.ycombinator.com) to see it in action.
 
-   - Open Chrome and navigate to `chrome://extensions/`
-   - Enable "Developer mode" using the toggle in the top right
-   - Click "Load unpacked" and select the extracted folder from the `.zip` file
-   - The extension should now be active
-
-3. **Install in Firefox**
-
-   - Open Firefox and navigate to `about:debugging#/runtime/this-firefox`
-   - Click "Load Temporary Add-on..."
-   - Navigate to the extracted folder and select the `manifest.json` file
-   - The extension should now be active
-
-Note: Temporary extensions in Firefox are removed when you restart the browser. For a permanent installation, you'll need to install from Firefox Add-ons once the extension is published there.
+Note: Temporary extensions in Firefox are removed when you restart the browser. For a permanent installation, use [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/orange-juice-hn/).
 
 # Development
 
