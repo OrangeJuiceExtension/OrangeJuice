@@ -307,13 +307,14 @@ const FOLLOW_STYLES = `
 
 	.oj-following__table {
 		border-collapse: collapse;
-		margin-left: 18px;
+		margin-left: 42px;
 		margin-top: 6px;
-		width: calc(100% - 40px);
+		width: calc(100% - 64px);
 	}
 
 	.oj-following__title-cell {
-		padding: 0 0 0 18px;
+		border-left: 2px solid #d4d4d4;
+		padding: 0 0 0 8px;
 		vertical-align: top;
 	}
 
@@ -337,7 +338,7 @@ const FOLLOW_STYLES = `
 	.oj-following__meta {
 		color: #828282;
 		font-size: 8pt;
-		padding-left: 18px;
+		padding-left: 10px;
 	}
 
 	.oj-following__meta a,
@@ -438,6 +439,10 @@ const FOLLOW_STYLES = `
 
 	html.oj-dark-mode .oj-following__comment {
 		color: var(--oj-muted);
+	}
+
+	html.oj-dark-mode .oj-following__title-cell {
+		border-left-color: #ccc;
 	}
 
 `;
