@@ -263,7 +263,7 @@ describe('Story KeyboardHandlers', () => {
 	});
 
 	describe('goBack', () => {
-		it('should navigate to first page when current page is 2', () => {
+		it('should navigate to first page when current page is 2', async () => {
 			let href = 'https://news.ycombinator.com/news?p=2';
 			Object.defineProperty(window, 'location', {
 				value: {
@@ -280,12 +280,78 @@ describe('Story KeyboardHandlers', () => {
 			});
 
 			const keyboardHandlers = new KeyboardHandlers(doc);
-			keyboardHandlers.goBack();
+			await keyboardHandlers.goBack();
 
 			expect(window.location.href).toBe('/news');
 		});
 
-		it('should decrement page when current page is greater than 2', () => {
+		it('should navigate to stored prev URL when on next= page', async () => {
+			let href = 'https://news.ycombinator.com/newest?next=47619421&n=31';
+			Object.defineProperty(window, 'location', {
+				value: {
+					get href() {
+						return href;
+					},
+					set href(value: string) {
+						href = value;
+					},
+					search: '?next=47619421&n=31',
+				},
+				writable: true,
+				configurable: true,
+			});
+			vi.mocked(lStorage.getItem).mockResolvedValueOnce('/newest');
+
+			const keyboardHandlers = new KeyboardHandlers(doc);
+			await keyboardHandlers.goBack();
+
+			expect(window.location.href).toBe('/newest');
+			expect(lStorage.setItem).toHaveBeenCalledWith('oj_prev_page_url', null);
+		});
+
+		it('should navigate to pathname when on next= page with no stored prev URL', async () => {
+			let href = 'https://news.ycombinator.com/newest?next=47619421&n=31';
+			Object.defineProperty(window, 'location', {
+				value: {
+					get href() {
+						return href;
+					},
+					set href(value: string) {
+						href = value;
+					},
+					search: '?next=47619421&n=31',
+					pathname: '/newest',
+				},
+				writable: true,
+				configurable: true,
+			});
+			vi.mocked(lStorage.getItem).mockResolvedValueOnce(null);
+
+			const keyboardHandlers = new KeyboardHandlers(doc);
+			await keyboardHandlers.goBack();
+
+			expect(window.location.href).toBe('/newest');
+		});
+
+		it('should do nothing when on the first page with no pagination params', async () => {
+			Object.defineProperty(window, 'location', {
+				value: {
+					href: 'https://news.ycombinator.com/newest',
+					search: '',
+				},
+				writable: true,
+				configurable: true,
+			});
+			const historyBack = vi.spyOn(window.history, 'back').mockImplementation(() => {});
+
+			const keyboardHandlers = new KeyboardHandlers(doc);
+			await keyboardHandlers.goBack();
+
+			expect(historyBack).not.toHaveBeenCalled();
+			historyBack.mockRestore();
+		});
+
+		it('should decrement page when current page is greater than 2', async () => {
 			let href = 'https://news.ycombinator.com/news?p=5';
 			Object.defineProperty(window, 'location', {
 				value: {
@@ -302,7 +368,7 @@ describe('Story KeyboardHandlers', () => {
 			});
 
 			const keyboardHandlers = new KeyboardHandlers(doc);
-			keyboardHandlers.goBack();
+			await keyboardHandlers.goBack();
 
 			expect(window.location.href).toBe('/news?p=4');
 		});

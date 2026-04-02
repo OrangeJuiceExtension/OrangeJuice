@@ -33,3 +33,6 @@ test-results/
 .env.submit*
 
 build-docs
+
+# AI
+.claude/settings.local.json

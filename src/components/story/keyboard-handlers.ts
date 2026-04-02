@@ -6,9 +6,11 @@ import lStorage from '@/utils/local-storage.ts';
 import { navigateToSafeUrl, openSafeUrlInNewTab } from '@/utils/navigation.ts';
 
 const PAGE_PARAM_REGEX = /[?&]p=\d+/;
+const NEXT_PARAM_REGEX = /[?&]next=/;
 const CHECKBOX_ID = 'oj-hide-read-stories';
 const NAV_STATE_KEY = 'oj_page_nav_state';
 const ACTIVE_STORY_KEY = 'oj_active_story_id2';
+const PREV_PAGE_URL_KEY = 'oj_prev_page_url';
 
 type NavDirection = 'next' | 'prev';
 
@@ -30,10 +32,14 @@ export class KeyboardHandlers {
 		if (!nextItem) {
 			if (direction === 'down') {
 				await lStorage.setItem(NAV_STATE_KEY, 'next');
+				await lStorage.setItem(
+					PREV_PAGE_URL_KEY,
+					`${window.location.pathname}${window.location.search}`
+				);
 				this.clickMore(this.doc);
 			} else if (direction === 'up') {
 				await lStorage.setItem(NAV_STATE_KEY, 'prev');
-				this.goBack();
+				await this.goBack();
 			}
 			return;
 		}
@@ -172,7 +178,7 @@ export class KeyboardHandlers {
 		}
 	}
 
-	goBack() {
+	async goBack() {
 		if (PAGE_PARAM_REGEX.test(window.location.search)) {
 			const currentUrl = new URL(window.location.href);
 			const currentPage = Number.parseInt(currentUrl.searchParams.get('p') ?? '', 10);
@@ -186,6 +192,10 @@ export class KeyboardHandlers {
 				currentUrl.searchParams.set('p', `${currentPage - 1}`);
 			}
 			window.location.href = `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`;
+		} else if (NEXT_PARAM_REGEX.test(window.location.search)) {
+			const prevUrl = await lStorage.getItem<string>(PREV_PAGE_URL_KEY);
+			await lStorage.setItem(PREV_PAGE_URL_KEY, null);
+			window.location.href = prevUrl ?? window.location.pathname;
 		}
 	}
 
