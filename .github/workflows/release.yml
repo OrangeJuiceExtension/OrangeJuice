@@ -169,9 +169,11 @@ jobs:
         continue-on-error: true
         timeout-minutes: 2
         env:
+          FIREFOX_SOURCES_ZIP: .output/orangejuice-${{ steps.bump.outputs.new_version }}-sources.zip
           FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
           FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
           FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+          FIREFOX_CHANNEL: listed
         run: ./node_modules/.bin/publish-extension --firefox-zip .output/orangejuice-${{ steps.bump.outputs.new_version }}-firefox.zip
 
       - name: Prune old releases and tags
