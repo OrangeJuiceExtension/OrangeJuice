@@ -100,9 +100,11 @@ jobs:
           "
 
       - name: Commit version bump
+        env:
+          LEFTHOOK: 0
         run: |
           git add package.json
-          LEFTHOOK=0 git commit -m "chore: bump version to ${{ steps.bump.outputs.new_version }} [skip ci]"
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.new_version }} [skip ci]"
           git tag "v${{ steps.bump.outputs.new_version }}"
           git push origin main
           git push origin "v${{ steps.bump.outputs.new_version }}"
