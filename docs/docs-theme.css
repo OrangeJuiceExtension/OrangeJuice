@@ -246,6 +246,14 @@ header {
 	justify-content: center;
 }
 
+.share-group {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	justify-content: center;
+	margin-top: 1rem;
+}
+
 .btn-github {
 	display: inline-flex;
 	gap: 0.5rem;
@@ -294,6 +302,20 @@ header {
 }
 
 .btn-secondary:hover {
+	color: var(--primary);
+	border-color: var(--primary);
+	transform: translateY(-2px);
+}
+
+.btn-share {
+	padding: 0.8rem 1.25rem;
+	font-size: 0.95rem;
+	color: var(--text);
+	background: transparent;
+	border: 1px solid var(--border);
+}
+
+.btn-share:hover {
 	color: var(--primary);
 	border-color: var(--primary);
 	transform: translateY(-2px);
