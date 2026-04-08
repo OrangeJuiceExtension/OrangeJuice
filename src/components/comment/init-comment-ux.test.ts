@@ -38,6 +38,7 @@ describe('initCommentUX', () => {
 
 			const styleElement = document.head.querySelector('style');
 			expect(styleElement?.textContent).toContain('color: #ff6000 !important');
+			expect(styleElement?.textContent).toContain('html.oj-dark-mode a.hnuser.oj_op');
 		});
 
 		it('should add code block styling rules', () => {

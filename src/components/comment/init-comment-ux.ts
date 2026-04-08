@@ -47,6 +47,10 @@ export const initCommentUX = (
 		.oj_op {
 			color: #ff6000 !important;
 		}
+		html.oj-dark-mode a.hnuser.oj_op,
+		html.oj-dark-mode .comhead a.hnuser.oj_op {
+			color: #ff6600 !important;
+		}
 		.${OJ_NEW_COMMENT_INDENT} {
 			box-shadow: inset -2px 0 #ff6000;
 		}
