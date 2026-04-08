@@ -2,7 +2,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/og-card-dark-1200x630.png">
   <source media="(prefers-color-scheme: light)" srcset="docs/assets/og-card-1200x630.png">
-  <img src="docs/assets/og-card-1200x630.png" alt="Orange Juice banner" width="1200" height="630">
+  <img src="docs/assets/og-card-1200x630.png" alt="Orange Juice banner" width="1200">
 </picture>
 
 # Orange Juice makes Hacker News sweeter
