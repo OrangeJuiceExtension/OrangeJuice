@@ -1,5 +1,9 @@
 <meta name="google-site-verification" content="hdHpuNQq_ujr4eHU5wdi7yjcxFPPmoLAg3CQuxAJP4E" />
-<img src="docs/assets/image.png"  alt="OrangeJuice" width="50%"/>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/og-card-dark-1200x630.png">
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/og-card-1200x630.png">
+  <img src="docs/assets/og-card-1200x630.png" alt="Orange Juice banner" width="1200" height="630">
+</picture>
 
 # Orange Juice makes Hacker News sweeter
 
@@ -13,11 +17,11 @@
 
 ## Motivation
 
-I’ve been part of the Hacker News community since 2009, and over the years I’ve accumulated many ideas for improving the experience. I’ve used HNES, Refined Hacker News, and other extensions, and saved countless ideas along the way. Many promising projects were eventually abandoned. That may happen here too, but this is something I’ve wanted to explore personally for a long time. With AI making experimentation easier, now feels like the right time to do it.
+I’ve been on Hacker News since 2009 and have had a running list of small things I wished it did better. I’ve used HNES, Refined Hacker News, and a bunch of other extensions over the years. Some were great, but most eventually died out. This is my attempt to build the version I actually want to use.
 
-The goal isn’t to redesign Hacker News. Its minimal UX works, and no one wants to relearn an interface that already does the job. Instead, this project focuses on small, thoughtful improvements—adding features and polish that make HN more pleasant to use without changing its core.
+The goal isn’t to redesign Hacker News. The site mostly works. I just want to smooth out the rough edges, add a few missing features, and make it nicer to use without changing what makes it feel like HN.
 
-I’m also interested in exploring social features. HN is already a massive social network, but interactions feel fragmented. There’s room for tools that make engagement richer, not through obvious features like live chat, but through more creative, viral ideas I plan to experiment with. Keeping the extension open source is critical for trust; the last thing I want is for it to become a liability to the community.
+I’m also interested in the social side of the site. HN already works like a social network, but a lot of the interaction is scattered and hard to follow. I want to experiment there too, while keeping the project open source and easy to trust.
 
 # Features
 
