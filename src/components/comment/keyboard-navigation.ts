@@ -4,6 +4,7 @@ import { focusClass, focusClassDefault } from '@/components/comment/hn-comment.t
 import { KeyboardHandlers } from '@/components/comment/keyboard-handlers.ts';
 import type { KeyboardNavState } from '@/components/common/keyboard-navigation.ts';
 import { dom } from '@/utils/dom.ts';
+import { getEnableFocusBoxPreference } from '@/utils/preferences.ts';
 
 export const keyboardNavigation = async (
 	ctx: ContentScriptContext,
@@ -12,32 +13,34 @@ export const keyboardNavigation = async (
 	commentData: CommentData,
 	navState?: KeyboardNavState
 ): Promise<void> => {
-	const style = doc.createElement('style');
-	style.textContent = `
-		:root {
-			--oj-focus-color: #f7694c;
-			--oj-focus-w: 1px;
-			--oj-focus-pad: 4px;
-		}
+	if (await getEnableFocusBoxPreference()) {
+		const style = doc.createElement('style');
+		style.textContent = `
+			:root {
+				--oj-focus-color: #f7694c;
+				--oj-focus-w: 1px;
+				--oj-focus-pad: 4px;
+			}
 
-		tr.athing td.default {
-			padding: var(--oj-focus-pad);
-		}
+			tr.athing td.default {
+				padding: var(--oj-focus-pad);
+			}
 
-		tr.${focusClass} td.${focusClassDefault} {
-			background-color: #fbfbf7;
-			--oj-top: inset 0 var(--oj-focus-w) 0 0 var(--oj-focus-color);
-			--oj-right: inset calc(-1 * var(--oj-focus-w)) 0 0 0 var(--oj-focus-color);
-			--oj-bottom: inset 0 calc(-1 * var(--oj-focus-w)) 0 0 var(--oj-focus-color);
-			--oj-left: inset var(--oj-focus-w) 0 0 0 var(--oj-focus-color);
-			box-shadow: var(--oj-top), var(--oj-right), var(--oj-bottom), var(--oj-left);
-		}
+			tr.${focusClass} td.${focusClassDefault} {
+				background-color: #fbfbf7;
+				--oj-top: inset 0 var(--oj-focus-w) 0 0 var(--oj-focus-color);
+				--oj-right: inset calc(-1 * var(--oj-focus-w)) 0 0 0 var(--oj-focus-color);
+				--oj-bottom: inset 0 calc(-1 * var(--oj-focus-w)) 0 0 var(--oj-focus-color);
+				--oj-left: inset var(--oj-focus-w) 0 0 0 var(--oj-focus-color);
+				box-shadow: var(--oj-top), var(--oj-right), var(--oj-bottom), var(--oj-left);
+			}
 
-		tr.${focusClass}.morelink {
-			margin: 0;
-		}
-	`;
-	doc.head.appendChild(style);
+			tr.${focusClass}.morelink {
+				margin: 0;
+			}
+		`;
+		doc.head.appendChild(style);
+	}
 
 	function prevent(doc: Document, e?: KeyboardEvent) {
 		if (doc.activeElement?.tagName === undefined) {

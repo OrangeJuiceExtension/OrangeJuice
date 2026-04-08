@@ -7,6 +7,11 @@ import { focusClass, focusClassDefault, HNComment } from '@/components/comment/h
 import { KeyboardHandlers } from '@/components/comment/keyboard-handlers.ts';
 import { keyboardNavigation } from '@/components/comment/keyboard-navigation.ts';
 import lStorage from '@/utils/local-storage.ts';
+import { getEnableFocusBoxPreference } from '@/utils/preferences.ts';
+
+vi.mock('@/utils/preferences.ts', () => ({
+	getEnableFocusBoxPreference: vi.fn(async () => true),
+}));
 
 const noop = () => {
 	/* intentionally empty */
@@ -146,6 +151,17 @@ describe('keyboardNavigation', () => {
 			expect(styleElement?.textContent).toContain(`tr.${focusClass} td`);
 			expect(styleElement?.textContent).toContain(`td.${focusClassDefault}`);
 			expect(styleElement?.textContent).toContain('--oj-focus-color: #f7694c');
+
+			invalidate();
+		});
+
+		it('should skip focus styles when the preference is disabled', async () => {
+			vi.mocked(getEnableFocusBoxPreference).mockResolvedValueOnce(false);
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
+
+			expect(doc.head.querySelector('style')).toBeNull();
 
 			invalidate();
 		});

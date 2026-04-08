@@ -5,6 +5,11 @@ import { keyboardNavigation } from '@/components/story/keyboard-navigation.ts';
 import { StoryData } from '@/components/story/story-data.ts';
 import lStorage from '@/utils/local-storage.ts';
 import { paths } from '@/utils/paths.ts';
+import { getEnableFocusBoxPreference } from '@/utils/preferences.ts';
+
+vi.mock('@/utils/preferences.ts', () => ({
+	getEnableFocusBoxPreference: vi.fn(async () => true),
+}));
 
 const ACTIVE_STORY_KEY = 'oj_active_story_id2';
 const NAV_STATE_KEY = 'oj_page_nav_state';
@@ -177,6 +182,15 @@ describe('story keyboard navigation', () => {
 			}
 			expect(window.location.href).toBe(testCase.expectedLocation);
 		}
+	});
+
+	it('should skip focus styles when the preference is disabled', async () => {
+		vi.mocked(getEnableFocusBoxPreference).mockResolvedValueOnce(false);
+		const storyData = createStoryData(doc);
+
+		await keyboardNavigation(ctx, doc, storyData, { helpModalOpen: false });
+
+		expect(doc.head.querySelector('style')).toBeNull();
 	});
 
 	it('should move with arrow up/down when no active story', async () => {
