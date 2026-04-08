@@ -73,7 +73,6 @@ const createReplyForm = (params: {
 
 	const guidelinesNote = createGuidelinesNote();
 	const submitButton = createSubmitButton();
-	removeGuidelinesNoteFromTabOrder(guidelinesNote);
 	attachReplySubmitShortcut(textarea, submitButton);
 	form.appendChild(guidelinesNote);
 	form.appendChild(createSubmitContainer(submitButton));
@@ -113,12 +112,6 @@ const createSubmitButton = (): HTMLInputElement => {
 	submitButton.type = 'submit';
 	submitButton.value = 'reply';
 	return submitButton;
-};
-
-const removeGuidelinesNoteFromTabOrder = (guidelinesNote: HTMLDivElement): void => {
-	for (const link of guidelinesNote.querySelectorAll<HTMLAnchorElement>('a')) {
-		link.tabIndex = -1;
-	}
 };
 
 const attachReplySubmitShortcut = (
