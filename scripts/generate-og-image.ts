@@ -1,13 +1,6 @@
-import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
-
-const OG_WIDTH = 1200;
-const OG_HEIGHT = 630;
-const LOGO_SIZE = 360;
-const LOGO_TOP = 108;
-const LOGO_LEFT = Math.round((OG_WIDTH - LOGO_SIZE) / 2);
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const sourceLogoPath = path.join(projectRoot, 'docs', 'assets', 'image.png');
@@ -30,12 +23,22 @@ interface ImageThemeConfig {
 	cardHaloSmall: string;
 	cloudColor: string;
 	clouds: readonly CloudConfig[];
-	filename: string;
 	floorColor: string;
 	logoShadow: string;
 	mistStops: readonly string[];
 	sunGlowEnd: string;
 	sunGlowStart: string;
+}
+
+interface ImageOutputConfig {
+	filename: string;
+	height: number;
+	width: number;
+}
+
+interface RenderConfig {
+	output: ImageOutputConfig;
+	theme: ImageThemeConfig;
 }
 
 const lightTheme: ImageThemeConfig = {
@@ -53,7 +56,6 @@ const lightTheme: ImageThemeConfig = {
 		{ blurId: 'blurWide', cx: 1040, cy: 430, height: 116, opacity: 0.64, width: 290 },
 		{ blurId: 'blurWide', cx: 610, cy: 520, height: 150, opacity: 0.5, width: 520 },
 	],
-	filename: 'og-card-1200x630.png',
 	floorColor: 'rgba(255, 244, 224, 0.7)',
 	logoShadow: 'rgba(20,57,89,0.28)',
 	mistStops: ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.22)', 'rgba(255,255,255,0.1)'],
@@ -76,7 +78,6 @@ const darkTheme: ImageThemeConfig = {
 		{ blurId: 'blurWide', cx: 1015, cy: 440, height: 118, opacity: 0.38, width: 300 },
 		{ blurId: 'blurWide', cx: 610, cy: 520, height: 146, opacity: 0.28, width: 500 },
 	],
-	filename: 'og-card-dark-1200x630.png',
 	floorColor: 'rgba(11, 30, 48, 0.72)',
 	logoShadow: 'rgba(0,0,0,0.52)',
 	mistStops: ['rgba(82,167,224,0.04)', 'rgba(139,208,255,0.12)', 'rgba(82,167,224,0.04)'],
@@ -84,7 +85,36 @@ const darkTheme: ImageThemeConfig = {
 	sunGlowStart: '#FFD48A',
 };
 
-const themes = [lightTheme, darkTheme] as const;
+const outputs = {
+	bannerLight: {
+		filename: 'banner-1-1280x800.png',
+		height: 800,
+		width: 1280,
+	},
+	ogDark: {
+		filename: 'og-card-dark-1200x630.png',
+		height: 630,
+		width: 1200,
+	},
+	ogLight: {
+		filename: 'og-card-1200x630.png',
+		height: 630,
+		width: 1200,
+	},
+} as const satisfies Record<string, ImageOutputConfig>;
+
+const renders = [
+	{ output: outputs.ogLight, theme: lightTheme },
+	{ output: outputs.ogDark, theme: darkTheme },
+	{ output: outputs.bannerLight, theme: lightTheme },
+] as const satisfies readonly RenderConfig[];
+
+const getLogoMetrics = (output: ImageOutputConfig): { left: number; size: number; top: number } => {
+	const size = Math.round(output.width * 0.3);
+	const top = Math.round(output.height * 0.17);
+	const left = Math.round((output.width - size) / 2);
+	return { left, size, top };
+};
 
 const createCloudSvg = (
 	{ cx, cy, width, height, opacity, blurId }: CloudConfig,
@@ -105,15 +135,46 @@ const createCloudSvg = (
 	`;
 };
 
-const createBackgroundSvg = (theme: ImageThemeConfig): string => {
-	const clouds = theme.clouds.map((cloud) => createCloudSvg(cloud, theme.cloudColor)).join('');
+const scaleCloud = (cloud: CloudConfig, output: ImageOutputConfig): CloudConfig => {
+	const widthScale = output.width / 1200;
+	const heightScale = output.height / 630;
+	return {
+		...cloud,
+		cx: Math.round(cloud.cx * widthScale),
+		cy: Math.round(cloud.cy * heightScale),
+		height: Math.round(cloud.height * heightScale),
+		width: Math.round(cloud.width * widthScale),
+	};
+};
+
+const createBackgroundSvg = ({ output, theme }: RenderConfig): string => {
+	const clouds = theme.clouds
+		.map((cloud) => scaleCloud(cloud, output))
+		.map((cloud) => createCloudSvg(cloud, theme.cloudColor))
+		.join('');
 
 	const [backgroundTop, backgroundMidTop, backgroundMidBottom, backgroundBottom] =
 		theme.backgroundStops;
 	const [mistStart, mistMiddle, mistEnd] = theme.mistStops;
+	const widthCenter = Math.round(output.width / 2);
+	const sunCenterY = Math.round(output.height * 0.448);
+	const sunScaleY = Math.round(output.height * 0.54);
+	const sunScaleX = Math.round(output.width * 0.283);
+	const accentScale = Math.round(Math.min(output.width, output.height) * 0.333);
+	const floorY = Math.round(output.height * 0.949);
+	const floorRadiusX = Math.round(output.width * 0.433);
+	const floorRadiusY = Math.round(output.height * 0.13);
+	const mistY = Math.round(output.height * 0.929);
+	const mistRadiusX = Math.round(output.width * 0.383);
+	const mistRadiusY = Math.round(output.height * 0.092);
+	const shadowY = Math.round(output.height * 0.825);
+	const shadowRadiusX = Math.round(output.width * 0.127);
+	const shadowRadiusY = Math.round(output.height * 0.041);
+	const haloLarge = Math.round(Math.min(output.width, output.height) * 0.267);
+	const haloSmall = Math.round(Math.min(output.width, output.height) * 0.232);
 
 	return `
-		<svg width="${OG_WIDTH}" height="${OG_HEIGHT}" viewBox="0 0 ${OG_WIDTH} ${OG_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg">
+		<svg width="${output.width}" height="${output.height}" viewBox="0 0 ${output.width} ${output.height}" fill="none" xmlns="http://www.w3.org/2000/svg">
 			<defs>
 				<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
 					<stop offset="0%" stop-color="${backgroundTop}" />
@@ -121,12 +182,12 @@ const createBackgroundSvg = (theme: ImageThemeConfig): string => {
 					<stop offset="78%" stop-color="${backgroundMidBottom}" />
 					<stop offset="100%" stop-color="${backgroundBottom}" />
 				</linearGradient>
-				<radialGradient id="sunGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(600 282) rotate(90) scale(250 340)">
+				<radialGradient id="sunGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(${widthCenter} ${sunCenterY}) rotate(90) scale(${sunScaleX} ${sunScaleY})">
 					<stop offset="0%" stop-color="${theme.sunGlowStart}" stop-opacity="0.95" />
 					<stop offset="38%" stop-color="${theme.sunGlowEnd}" stop-opacity="0.66" />
 					<stop offset="100%" stop-color="${theme.sunGlowEnd}" stop-opacity="0" />
 				</radialGradient>
-				<radialGradient id="orangeGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(600 292) rotate(90) scale(210 210)">
+				<radialGradient id="orangeGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(${widthCenter} ${Math.round(output.height * 0.463)}) rotate(90) scale(${accentScale} ${accentScale})">
 					<stop offset="0%" stop-color="${theme.accentGlowStart}" stop-opacity="0.4" />
 					<stop offset="100%" stop-color="${theme.accentGlowEnd}" stop-opacity="0" />
 				</radialGradient>
@@ -145,26 +206,27 @@ const createBackgroundSvg = (theme: ImageThemeConfig): string => {
 					<feDropShadow dx="0" dy="24" stdDeviation="20" flood-color="${theme.logoShadow}" />
 				</filter>
 			</defs>
-			<rect width="${OG_WIDTH}" height="${OG_HEIGHT}" fill="url(#sky)" />
-			<rect width="${OG_WIDTH}" height="${OG_HEIGHT}" fill="url(#sunGlow)" />
-			<rect width="${OG_WIDTH}" height="${OG_HEIGHT}" fill="url(#orangeGlow)" />
-			<ellipse cx="600" cy="598" rx="520" ry="82" fill="${theme.floorColor}" />
-			<ellipse cx="600" cy="585" rx="460" ry="58" fill="url(#mist)" />
+			<rect width="${output.width}" height="${output.height}" fill="url(#sky)" />
+			<rect width="${output.width}" height="${output.height}" fill="url(#sunGlow)" />
+			<rect width="${output.width}" height="${output.height}" fill="url(#orangeGlow)" />
+			<ellipse cx="${widthCenter}" cy="${floorY}" rx="${floorRadiusX}" ry="${floorRadiusY}" fill="${theme.floorColor}" />
+			<ellipse cx="${widthCenter}" cy="${mistY}" rx="${mistRadiusX}" ry="${mistRadiusY}" fill="url(#mist)" />
 			${clouds}
 			<g filter="url(#logoShadow)">
-				<ellipse cx="600" cy="520" rx="152" ry="26" fill="${theme.baseShadow}" />
-				<circle cx="600" cy="290" r="168" fill="${theme.cardHaloLarge}" />
-				<circle cx="600" cy="290" r="146" fill="${theme.cardHaloSmall}" />
+				<ellipse cx="${widthCenter}" cy="${shadowY}" rx="${shadowRadiusX}" ry="${shadowRadiusY}" fill="${theme.baseShadow}" />
+				<circle cx="${widthCenter}" cy="${Math.round(output.height * 0.46)}" r="${haloLarge}" fill="${theme.cardHaloLarge}" />
+				<circle cx="${widthCenter}" cy="${Math.round(output.height * 0.46)}" r="${haloSmall}" fill="${theme.cardHaloSmall}" />
 			</g>
 		</svg>
 	`;
 };
 
-const writeImage = async (theme: ImageThemeConfig): Promise<void> => {
-	const backgroundBuffer = Buffer.from(createBackgroundSvg(theme));
-	const outputPath = path.join(projectRoot, 'docs', 'assets', theme.filename);
+const writeImage = async (render: RenderConfig): Promise<void> => {
+	const backgroundBuffer = Buffer.from(createBackgroundSvg(render));
+	const outputPath = path.join(projectRoot, 'docs', 'assets', render.output.filename);
+	const logoMetrics = getLogoMetrics(render.output);
 	const logoBuffer = await sharp(sourceLogoPath)
-		.resize(LOGO_SIZE, LOGO_SIZE, {
+		.resize(logoMetrics.size, logoMetrics.size, {
 			fit: 'contain',
 		})
 		.png()
@@ -174,27 +236,26 @@ const writeImage = async (theme: ImageThemeConfig): Promise<void> => {
 		.composite([
 			{
 				input: logoBuffer,
-				left: LOGO_LEFT,
-				top: LOGO_TOP,
+				left: logoMetrics.left,
+				top: logoMetrics.top,
 			},
 		])
 		.png({
 			adaptiveFiltering: true,
 			compressionLevel: 9,
+			effort: 10,
+			palette: true,
+			quality: 92,
 		})
 		.toFile(outputPath);
-
-	execFileSync('bunx', ['oxipng', '-o', '3', '--strip', 'all', outputPath], {
-		stdio: 'inherit',
-	});
 
 	const outputStats = await fs.stat(outputPath);
 	console.log(`Wrote ${path.relative(projectRoot, outputPath)} (${outputStats.size} bytes)`);
 };
 
 const main = async (): Promise<void> => {
-	for (const theme of themes) {
-		await writeImage(theme);
+	for (const render of renders) {
+		await writeImage(render);
 	}
 };
 
