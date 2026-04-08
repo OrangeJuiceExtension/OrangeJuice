@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -31,7 +32,6 @@ interface ImageThemeConfig {
 	clouds: readonly CloudConfig[];
 	filename: string;
 	floorColor: string;
-	floorGlow: string;
 	logoShadow: string;
 	mistStops: readonly string[];
 	sunGlowEnd: string;
@@ -55,7 +55,6 @@ const lightTheme: ImageThemeConfig = {
 	],
 	filename: 'og-card-1200x630.png',
 	floorColor: 'rgba(255, 244, 224, 0.7)',
-	floorGlow: 'rgba(255,255,255,0.1)|rgba(255,255,255,0.22)|rgba(255,255,255,0.1)',
 	logoShadow: 'rgba(20,57,89,0.28)',
 	mistStops: ['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.22)', 'rgba(255,255,255,0.1)'],
 	sunGlowEnd: '#FFD289',
@@ -79,7 +78,6 @@ const darkTheme: ImageThemeConfig = {
 	],
 	filename: 'og-card-dark-1200x630.png',
 	floorColor: 'rgba(11, 30, 48, 0.72)',
-	floorGlow: 'rgba(82,167,224,0.04)|rgba(139,208,255,0.12)|rgba(82,167,224,0.04)',
 	logoShadow: 'rgba(0,0,0,0.52)',
 	mistStops: ['rgba(82,167,224,0.04)', 'rgba(139,208,255,0.12)', 'rgba(82,167,224,0.04)'],
 	sunGlowEnd: '#FF8D3A',
@@ -185,6 +183,10 @@ const writeImage = async (theme: ImageThemeConfig): Promise<void> => {
 			compressionLevel: 9,
 		})
 		.toFile(outputPath);
+
+	execFileSync('bunx', ['oxipng', '-o', '3', '--strip', 'all', outputPath], {
+		stdio: 'inherit',
+	});
 
 	const outputStats = await fs.stat(outputPath);
 	console.log(`Wrote ${path.relative(projectRoot, outputPath)} (${outputStats.size} bytes)`);
