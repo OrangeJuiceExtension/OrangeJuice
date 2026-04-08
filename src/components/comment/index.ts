@@ -33,11 +33,12 @@ export const comments: ComponentFeature = {
 		const manager = createClientServices();
 
 		const allComments = dom.getAllComments(document);
+		const itemAuthor = dom.getItemAuthor(document);
 		const hnComments = allComments.map((el) => new HNComment(el));
 		const commentData = new CommentData(hnComments);
 
 		return Promise.all([
-			Promise.resolve().then(() => initCommentUX(document, allComments, this.username)),
+			Promise.resolve().then(() => initCommentUX(document, allComments, itemAuthor)),
 			Promise.resolve().then(() => highlightUnreadComments(document, allComments, manager)),
 			Promise.resolve().then(() => persistCollapsedComments(ctx, allComments)),
 			Promise.resolve().then(() => indentToggle(ctx, document, allComments)),

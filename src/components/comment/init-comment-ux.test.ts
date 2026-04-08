@@ -159,6 +159,70 @@ describe('initCommentUX', () => {
 			const authorLink = commentWithoutAuthor?.querySelector('a.hnuser');
 			expect(authorLink).toBeFalsy();
 		});
+
+		it('should use the item author rather than the logged in username', () => {
+			document.body.innerHTML = `
+				<table id="hnmain">
+					<tr>
+						<td style="text-align:right;">
+							<span class="pagetop">
+								<a href="user?id=loggedinuser" id="me">loggedinuser</a>
+							</span>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<table class="fatitem">
+								<tr>
+									<td class="subtext">
+										<a href="user?id=itemauthor" class="hnuser">itemauthor</a>
+									</td>
+								</tr>
+							</table>
+							<table class="comment-tree">
+								<tr class="athing comtr" id="comment1">
+									<td>
+										<table>
+											<tr>
+												<td class="ind"><img src="s.gif" height="1" width="0" alt=""></td>
+												<td class="default">
+													<a href="user?id=itemauthor" class="hnuser">itemauthor</a>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+								<tr class="athing comtr" id="comment2">
+									<td>
+										<table>
+											<tr>
+												<td class="ind"><img src="s.gif" height="1" width="0" alt=""></td>
+												<td class="default">
+													<a href="user?id=loggedinuser" class="hnuser">loggedinuser</a>
+												</td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</table>
+			`;
+			const currentComments = dom.getAllComments(document);
+			const itemAuthor = dom.getItemAuthor(document);
+
+			initCommentUX(document, currentComments, itemAuthor);
+
+			const itemAuthorLink = document.querySelector<HTMLAnchorElement>('#comment1 a.hnuser');
+			const loggedInUserLink =
+				document.querySelector<HTMLAnchorElement>('#comment2 a.hnuser');
+
+			expect(itemAuthorLink?.classList.contains('oj_op')).toBe(true);
+			expect(itemAuthorLink?.innerText).toContain('[op]');
+			expect(loggedInUserLink?.classList.contains('oj_op')).toBe(false);
+			expect(loggedInUserLink?.innerText).not.toContain('[op]');
+		});
 	});
 
 	describe('edge cases', () => {
@@ -196,7 +260,7 @@ describe('initCommentUX', () => {
 			expect(() => initCommentUX(document, comments, 'testuser')).not.toThrow();
 		});
 
-		it('should handle logged out state (no OP)', () => {
+		it('should handle missing item author', () => {
 			document.body.innerHTML = `
 				<table id="hnmain">
 					<tr class="athing comtr" id="comment1">
@@ -214,7 +278,7 @@ describe('initCommentUX', () => {
 				</table>
 			`;
 
-			initCommentUX(document, comments, 'someuser');
+			initCommentUX(document, comments, dom.getItemAuthor(document));
 
 			const authorLink = document.querySelector<HTMLAnchorElement>('a.hnuser');
 			expect(authorLink?.classList.contains('oj_op')).toBe(false);

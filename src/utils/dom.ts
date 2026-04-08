@@ -114,6 +114,11 @@ const getUsername = async (doc: HTMLElement): Promise<string | undefined> => {
 	return getStoredUsername();
 };
 
+const getItemAuthor = (doc: Document): string | undefined => {
+	const itemAuthorLink = doc.querySelector<HTMLAnchorElement>('table.fatitem a.hnuser');
+	return itemAuthorLink?.textContent || undefined;
+};
+
 const parseRgbChannel = (value: string): number => {
 	return Number.parseInt(value, 16);
 };
@@ -365,6 +370,7 @@ export const dom = {
 	getPageDom,
 	fetchHmacFromPage,
 	getUsername,
+	getItemAuthor,
 	ensureTopBarReadableText,
 	getItemIdFromLocation,
 	isClickModified,
