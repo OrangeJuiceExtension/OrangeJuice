@@ -46,6 +46,12 @@ describe('handleReplyClick', () => {
 
 		const submitButton = form?.querySelector('input[type="submit"]') as HTMLInputElement;
 		expect(submitButton?.value).toBe('reply');
+		expect(form?.textContent).toContain("HN's approach to comments and site guidelines.");
+		expect(submitButton.tabIndex).toBe(0);
+
+		const noteLinks = form?.querySelectorAll<HTMLAnchorElement>('div a') ?? [];
+		expect(noteLinks[0]?.tabIndex).toBe(-1);
+		expect(noteLinks[1]?.tabIndex).toBe(-1);
 
 		expect(link1.textContent).toBe('hide reply');
 	});
@@ -110,5 +116,31 @@ describe('handleReplyClick', () => {
 		// Assert
 		const textarea = getByRole(document.body, 'textbox') as HTMLTextAreaElement;
 		expect(document.activeElement).toBe(textarea);
+	});
+
+	it.each([
+		{ name: 'ctrl+enter', ctrlKey: true, metaKey: false },
+		{ name: 'cmd+enter', ctrlKey: false, metaKey: true },
+	])('should submit the inline reply form with $name', async ({ ctrlKey, metaKey }) => {
+		const link1 = getByTestId<HTMLAnchorElement>(document.body, 'test-a-1');
+		await handleReplyClick(link1);
+
+		const textarea = getByRole(document.body, 'textbox') as HTMLTextAreaElement;
+		const submitButton = textarea
+			.closest('form')
+			?.querySelector<HTMLInputElement>('input[type="submit"]') as HTMLInputElement;
+		const clickSpy = vi.spyOn(submitButton, 'click');
+
+		textarea.dispatchEvent(
+			new KeyboardEvent('keydown', {
+				bubbles: true,
+				cancelable: true,
+				key: 'Enter',
+				ctrlKey,
+				metaKey,
+			})
+		);
+
+		expect(clickSpy).toHaveBeenCalledTimes(1);
 	});
 });

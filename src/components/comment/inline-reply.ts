@@ -71,8 +71,12 @@ const createReplyForm = (params: {
 	form.appendChild(dom.createHiddenInput('goto', params.goto));
 	form.appendChild(dom.createHiddenInput('hmac', params.hmacValue));
 
-	form.appendChild(createGuidelinesNote());
-	form.appendChild(createSubmitContainer());
+	const guidelinesNote = createGuidelinesNote();
+	const submitButton = createSubmitButton();
+	removeGuidelinesNoteFromTabOrder(guidelinesNote);
+	attachReplySubmitShortcut(textarea, submitButton);
+	form.appendChild(guidelinesNote);
+	form.appendChild(createSubmitContainer(submitButton));
 
 	return form;
 };
@@ -104,15 +108,40 @@ const getQuotedSelection = (): string => {
 		.join('\n\n');
 };
 
-const createSubmitContainer = (): HTMLDivElement => {
+const createSubmitButton = (): HTMLInputElement => {
+	const submitButton = document.createElement('input');
+	submitButton.type = 'submit';
+	submitButton.value = 'reply';
+	return submitButton;
+};
+
+const removeGuidelinesNoteFromTabOrder = (guidelinesNote: HTMLDivElement): void => {
+	for (const link of guidelinesNote.querySelectorAll<HTMLAnchorElement>('a')) {
+		link.tabIndex = -1;
+	}
+};
+
+const attachReplySubmitShortcut = (
+	textarea: HTMLTextAreaElement,
+	submitButton: HTMLInputElement
+): void => {
+	textarea.addEventListener('keydown', (event: KeyboardEvent) => {
+		const isSubmitShortcut =
+			event.key === 'Enter' && (event.ctrlKey || event.metaKey) && !event.altKey;
+		if (!isSubmitShortcut) {
+			return;
+		}
+
+		event.preventDefault();
+		submitButton.click();
+	});
+};
+
+const createSubmitContainer = (submitButton: HTMLInputElement): HTMLDivElement => {
 	const buttonContainer = document.createElement('div');
 	buttonContainer.style.marginTop = '8px';
 	buttonContainer.style.display = 'flex';
 	buttonContainer.style.gap = '8px';
-
-	const submitButton = document.createElement('input');
-	submitButton.type = 'submit';
-	submitButton.value = 'reply';
 
 	buttonContainer.appendChild(submitButton);
 	return buttonContainer;
