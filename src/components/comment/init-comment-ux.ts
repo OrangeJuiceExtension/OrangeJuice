@@ -34,7 +34,11 @@ export const createGuidelinesNote = (options?: { marginBottom?: string }): HTMLD
 	return guidelinesNote;
 };
 
-export const initCommentUX = (doc: Document, comments: HTMLElement[], username?: string): void => {
+export const initCommentUX = (
+	doc: Document,
+	comments: HTMLElement[],
+	itemAuthor?: string
+): void => {
 	const style = doc.createElement('style');
 	style.textContent = `
 		.oj_comment_indent {
@@ -77,8 +81,7 @@ export const initCommentUX = (doc: Document, comments: HTMLElement[], username?:
 			continue;
 		}
 
-		// Highlight-op-username
-		if (username && username === commentAuthor.innerText) {
+		if (itemAuthor && itemAuthor === commentAuthor.innerText) {
 			commentAuthor.innerText += ' [op]';
 			commentAuthor.classList.add('oj_op');
 		}

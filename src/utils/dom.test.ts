@@ -109,6 +109,29 @@ describe('dom', () => {
 		});
 	});
 
+	describe('getItemAuthor', () => {
+		it('should return the author from the comment page item header', () => {
+			document.body.innerHTML = `
+				<table class="fatitem">
+					<tr>
+						<td class="subtext">
+							<a href="user?id=itemauthor" class="hnuser">itemauthor</a>
+						</td>
+					</tr>
+				</table>
+			`;
+
+			expect(dom.getItemAuthor(document)).toBe('itemauthor');
+		});
+
+		it('should return undefined when the item header author is missing', () => {
+			document.body.innerHTML =
+				'<table class="fatitem"><tr><td class="subtext"></td></tr></table>';
+
+			expect(dom.getItemAuthor(document)).toBeUndefined();
+		});
+	});
+
 	describe('ensureTopBarReadableText', () => {
 		beforeEach(() => {
 			document.documentElement.classList.remove('oj-topbar-readable');
