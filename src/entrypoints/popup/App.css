@@ -5,16 +5,19 @@
 	--popup-muted: #6b6b6b;
 	--popup-border: #d7d7c8;
 	--popup-accent: #ff6600;
+	--popup-accent-soft: #fff1e5;
 	display: grid;
 	place-items: center;
 	min-width: 380px;
-	min-height: 420px;
+	min-height: 260px;
 	padding: 16px;
 	font-family:
 		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
 		Cantarell, sans-serif;
 	color: var(--popup-text);
-	background: var(--popup-bg);
+	background:
+		radial-gradient(circle at top right, #ffe5d1, transparent 36%),
+		linear-gradient(180deg, #fbfaf4 0%, var(--popup-bg) 100%);
 }
 
 .oj-popup--dark {
@@ -24,35 +27,90 @@
 	--popup-muted: #c7c4be;
 	--popup-border: #3a3f41;
 	--popup-accent: #ff6600;
+	--popup-accent-soft: rgba(255, 102, 0, 0.14);
+	background:
+		radial-gradient(
+			circle at top right,
+			rgba(255, 122, 34, 0.18),
+			transparent 34%
+		),
+		linear-gradient(180deg, #25231f 0%, var(--popup-bg) 100%);
 }
 
 .oj-popup__card {
-	width: 70%;
+	width: min(100%, 360px);
 	padding: 18px 16px;
-	margin: 0 12px;
-	text-align: center;
 	background: var(--popup-surface);
 	border: 1px solid var(--popup-border);
-	border-radius: 12px;
+	border-radius: 16px;
+	box-shadow: 0 18px 44px rgba(0, 0, 0, 0.08);
+}
+
+.oj-popup__header {
+	display: flex;
+	gap: 14px;
+	align-items: center;
+	margin-bottom: 18px;
+	text-align: left;
 }
 
 .oj-popup__logo {
-	display: block;
-	width: 96px;
-	height: 96px;
-	margin: 0 auto 12px;
+	flex: 0 0 auto;
+	width: 64px;
+	height: 64px;
 }
 
 .oj-popup__title {
-	margin: 0 0 8px;
-	font-size: 1.65rem;
+	margin: 0 0 6px;
+	font-size: 1.35rem;
 	line-height: 1.1;
 	color: var(--popup-accent);
 }
 
 .oj-popup__text {
 	margin: 0;
-	font-size: 0.95rem;
-	line-height: 1.5;
+	font-size: 0.92rem;
+	line-height: 1.45;
 	color: var(--popup-muted);
+}
+
+.oj-popup__settings {
+	display: grid;
+	gap: 12px;
+}
+
+.oj-popup__toggle {
+	display: flex;
+	gap: 16px;
+	align-items: center;
+	justify-content: space-between;
+	padding: 14px;
+	cursor: pointer;
+	background: var(--popup-accent-soft);
+	border: 1px solid var(--popup-border);
+	border-radius: 12px;
+}
+
+.oj-popup__toggle-copy {
+	display: grid;
+	gap: 4px;
+}
+
+.oj-popup__toggle-title {
+	font-size: 0.98rem;
+	font-weight: 600;
+	line-height: 1.2;
+}
+
+.oj-popup__toggle-hint {
+	font-size: 0.84rem;
+	line-height: 1.35;
+	color: var(--popup-muted);
+}
+
+.oj-popup__checkbox {
+	width: 18px;
+	height: 18px;
+	accent-color: var(--popup-accent);
+	cursor: pointer;
 }
