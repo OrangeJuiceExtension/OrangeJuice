@@ -4,10 +4,12 @@ import {
 	ENABLE_FOCUS_BOX_STORAGE_KEY,
 	getEnableFocusBoxPreference,
 	getOpenStoryNewTabPreference,
+	getShowHiddenStoriesOptionPreference,
 	OPEN_STORY_NEW_TAB_STORAGE_KEY,
 	PREFERENCES_STORAGE_KEY,
 	setEnableFocusBoxPreference,
 	setOpenStoryNewTabPreference,
+	setShowHiddenStoriesOptionPreference,
 } from './preferences.ts';
 
 vi.mock('@/utils/local-storage.ts', () => ({
@@ -61,6 +63,7 @@ describe('preferences', () => {
 						JSON.stringify({
 							enableFocusBox: true,
 							openStoryNewTab: true,
+							showHiddenStoriesOption: true,
 						}),
 					],
 				],
@@ -71,6 +74,7 @@ describe('preferences', () => {
 					[PREFERENCES_STORAGE_KEY]: JSON.stringify({
 						enableFocusBox: false,
 						openStoryNewTab: true,
+						showHiddenStoriesOption: false,
 					}),
 				},
 				reader: () => getOpenStoryNewTabPreference(),
@@ -91,6 +95,7 @@ describe('preferences', () => {
 						JSON.stringify({
 							enableFocusBox: false,
 							openStoryNewTab: true,
+							showHiddenStoriesOption: true,
 						}),
 					],
 					[ENABLE_FOCUS_BOX_STORAGE_KEY, null],
@@ -110,9 +115,23 @@ describe('preferences', () => {
 						JSON.stringify({
 							enableFocusBox: true,
 							openStoryNewTab: true,
+							showHiddenStoriesOption: true,
 						}),
 					],
 				],
+			},
+			{
+				name: 'reads the show hidden stories option from the json body',
+				storedValues: {
+					[PREFERENCES_STORAGE_KEY]: JSON.stringify({
+						enableFocusBox: true,
+						openStoryNewTab: true,
+						showHiddenStoriesOption: false,
+					}),
+				},
+				reader: () => getShowHiddenStoriesOptionPreference(),
+				expectedValue: false,
+				expectedSetCalls: [],
 			},
 		])('$name', async ({ storedValues, reader, expectedValue, expectedSetCalls }) => {
 			mockStorage(storedValues);
@@ -125,6 +144,7 @@ describe('preferences', () => {
 			mockStorage({
 				[PREFERENCES_STORAGE_KEY]: JSON.stringify({
 					enableFocusBox: false,
+					showHiddenStoriesOption: true,
 				}),
 			});
 
@@ -135,6 +155,7 @@ describe('preferences', () => {
 				JSON.stringify({
 					enableFocusBox: false,
 					openStoryNewTab: true,
+					showHiddenStoriesOption: true,
 				})
 			);
 		});
@@ -148,6 +169,7 @@ describe('preferences', () => {
 				expectedJson: JSON.stringify({
 					enableFocusBox: false,
 					openStoryNewTab: true,
+					showHiddenStoriesOption: true,
 				}),
 			},
 			{
@@ -156,6 +178,16 @@ describe('preferences', () => {
 				expectedJson: JSON.stringify({
 					enableFocusBox: true,
 					openStoryNewTab: false,
+					showHiddenStoriesOption: true,
+				}),
+			},
+			{
+				name: 'updates showHiddenStoriesOption in the json body',
+				action: () => setShowHiddenStoriesOptionPreference(false),
+				expectedJson: JSON.stringify({
+					enableFocusBox: true,
+					openStoryNewTab: true,
+					showHiddenStoriesOption: false,
 				}),
 			},
 		])('$name', async ({ action, expectedJson }) => {
@@ -163,6 +195,7 @@ describe('preferences', () => {
 				[PREFERENCES_STORAGE_KEY]: JSON.stringify({
 					enableFocusBox: true,
 					openStoryNewTab: true,
+					showHiddenStoriesOption: true,
 				}),
 			});
 

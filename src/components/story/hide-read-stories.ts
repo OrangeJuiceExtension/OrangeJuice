@@ -4,6 +4,8 @@ import type { StoryData } from '@/components/story/story-data.ts';
 import { createClientServices } from '@/services/manager.ts';
 import type { ReadStoriesService, ReadStoryLookup } from '@/services/read-stories-service.ts';
 import lStorage from '@/utils/local-storage.ts';
+import { getShowHiddenStoriesOptionPreference } from '@/utils/preferences.ts';
+import { registerPreferencesUpdateHandler } from '@/utils/preferences-live.ts';
 
 const CHECKBOX_ID = 'oj-hide-read-stories';
 const STORAGE_KEY = 'oj_hide_read_stories';
@@ -59,6 +61,10 @@ export const setupCheckbox = async (
 	bigbox: Element,
 	doc: Document
 ): Promise<HTMLInputElement | null> => {
+	if (!(await getShowHiddenStoriesOptionPreference())) {
+		return null;
+	}
+
 	if (!bigbox.parentElement) {
 		return null;
 	}
@@ -115,11 +121,6 @@ export const hideReadStories = async (
 	doc: Document,
 	storyData: StoryData
 ) => {
-	const checkbox = await setupCheckbox(storyData.bigbox, doc);
-	if (!checkbox) {
-		return;
-	}
-
 	try {
 		const service = createClientServices().getReadStoriesService();
 		const updateVisits = async () => {
@@ -129,27 +130,63 @@ export const hideReadStories = async (
 			}
 			checkbox.checked ? hideStories(readStories) : showStories(readStories);
 		};
-		try {
+		let checkbox: HTMLInputElement | null = null;
+		let handleCheckboxChange: (() => Promise<void>) | null = null;
+
+		const cleanupCheckbox = () => {
+			if (checkbox && handleCheckboxChange) {
+				checkbox.removeEventListener('change', handleCheckboxChange);
+			}
+			checkbox?.closest('tr')?.remove();
+			checkbox = null;
+			handleCheckboxChange = null;
+		};
+
+		const syncCheckboxVisibility = async (): Promise<void> => {
+			if (!(await getShowHiddenStoriesOptionPreference())) {
+				cleanupCheckbox();
+				const readStories = await getVisitedStories(service, storyData.hnStories);
+				showStories(readStories);
+				return;
+			}
+
+			if (!checkbox) {
+				checkbox = await setupCheckbox(storyData.bigbox, doc);
+				if (!checkbox) {
+					return;
+				}
+
+				handleCheckboxChange = async () => {
+					await updateVisits();
+					if (!checkbox) {
+						return;
+					}
+					await lStorage.setItem<StorageState>(STORAGE_KEY, {
+						checkbox: checkbox.checked,
+					});
+				};
+
+				checkbox.addEventListener('change', handleCheckboxChange);
+			}
+
 			await updateVisits();
+		};
+
+		try {
+			await syncCheckboxVisibility();
 		} catch (e) {
 			console.log({ error: 'error update visits', e });
 		}
 
-		const handleCheckboxChange = async () => {
-			await updateVisits();
-			await lStorage.setItem<StorageState>(STORAGE_KEY, { checkbox: checkbox.checked });
-		};
-
-		checkbox.addEventListener('change', handleCheckboxChange);
-
 		const pageshow = async () => {
-			await updateVisits();
+			await syncCheckboxVisibility();
 		};
 		// When you click the back button, this even gets fired
 		window.addEventListener('pageshow', pageshow);
+		registerPreferencesUpdateHandler(ctx, syncCheckboxVisibility);
 
 		ctx.onInvalidated(() => {
-			checkbox.removeEventListener('change', handleCheckboxChange);
+			cleanupCheckbox();
 			// window.removeEventListener('pageshow', pageshow);
 		});
 	} catch (e) {

@@ -128,12 +128,13 @@
 }
 
 .oj-popup__checkbox::after {
+	display: block;
 	width: 5px;
 	height: 9px;
 	content: "";
 	border-right: 2px solid transparent;
 	border-bottom: 2px solid transparent;
-	transform: rotate(45deg) scale(0.9);
+	transform: translateY(-1px) rotate(45deg) scale(0.9);
 	transition:
 		border-color 120ms ease,
 		transform 120ms ease;
@@ -156,5 +157,5 @@
 
 .oj-popup__checkbox:checked::after {
 	border-color: #fff;
-	transform: rotate(45deg) scale(1);
+	transform: translateY(-1px) rotate(45deg) scale(1);
 }

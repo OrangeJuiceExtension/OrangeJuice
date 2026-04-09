@@ -1,9 +1,8 @@
 import type { ContentScriptContext } from '#imports';
 import { getOpenStoryNewTabPreference } from '@/utils/preferences.ts';
-/**
- * Opens story title links in new tabs using the browser tab service
- */
-export const openInNewTab = async (_ctx: ContentScriptContext, doc: Document): Promise<void> => {
+import { registerPreferencesUpdateHandler } from '@/utils/preferences-live.ts';
+
+const applyOpenInNewTabPreference = async (doc: Document): Promise<void> => {
 	const anchors = doc.querySelectorAll('.titleline > a') as NodeListOf<HTMLAnchorElement>;
 	const openStoryNewTab = await getOpenStoryNewTabPreference();
 
@@ -24,4 +23,13 @@ export const openInNewTab = async (_ctx: ContentScriptContext, doc: Document): P
 			anchor.rel = 'noopener noreferrer';
 		}
 	}
+};
+/**
+ * Opens story title links in new tabs using the browser tab service
+ */
+export const openInNewTab = async (ctx: ContentScriptContext, doc: Document): Promise<void> => {
+	await applyOpenInNewTabPreference(doc);
+	registerPreferencesUpdateHandler(ctx, async () => {
+		await applyOpenInNewTabPreference(doc);
+	});
 };

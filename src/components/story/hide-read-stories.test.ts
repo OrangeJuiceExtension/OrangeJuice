@@ -5,6 +5,7 @@ import { browser } from '#imports';
 import { ReadStoriesService } from '@/services/read-stories-service.ts';
 import { stripFixtureElements } from '@/test/fixture-html.ts';
 import lStorage from '@/utils/local-storage.ts';
+import { getShowHiddenStoriesOptionPreference } from '@/utils/preferences.ts';
 import {
 	createCheckbox,
 	hideStories,
@@ -13,6 +14,10 @@ import {
 	showStories,
 } from './hide-read-stories.ts';
 import { HNStory } from './hn-story.ts';
+
+vi.mock('@/utils/preferences.ts', () => ({
+	getShowHiddenStoriesOptionPreference: vi.fn(async () => true),
+}));
 
 const STORY_LIST_HTML_REGEX = /class="itemlist"/;
 const homepageHtml = stripFixtureElements(
@@ -36,6 +41,7 @@ describe('hide_read_stories', () => {
 		document.body.innerHTML = '';
 		lStorage.clear();
 		vi.clearAllMocks();
+		vi.mocked(getShowHiddenStoriesOptionPreference).mockResolvedValue(true);
 		service = new ReadStoriesService();
 	});
 
@@ -196,6 +202,19 @@ describe('hide_read_stories', () => {
 			const result = await setupCheckbox(bigbox, document);
 
 			expect(result).toBeNull();
+		});
+
+		it('should return null when the show hidden stories option preference is disabled', async () => {
+			vi.mocked(getShowHiddenStoriesOptionPreference).mockResolvedValueOnce(false);
+			const container = document.createElement('div');
+			const bigbox = document.createElement('div');
+			bigbox.id = 'bigbox';
+			container.appendChild(bigbox);
+
+			const result = await setupCheckbox(bigbox, document);
+
+			expect(result).toBeNull();
+			expect(container.querySelector('#oj-hide-read-stories')).toBeNull();
 		});
 	});
 

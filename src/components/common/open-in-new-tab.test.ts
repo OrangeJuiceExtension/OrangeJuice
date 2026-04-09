@@ -33,7 +33,7 @@ describe('openInNewTab', () => {
 	let ctx: ContentScriptContext;
 
 	beforeEach(() => {
-		ctx = {} as ContentScriptContext;
+		ctx = { onInvalidated: vi.fn() } as unknown as ContentScriptContext;
 		vi.clearAllMocks();
 	});
 

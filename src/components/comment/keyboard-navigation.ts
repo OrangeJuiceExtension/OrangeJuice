@@ -5,17 +5,23 @@ import { KeyboardHandlers } from '@/components/comment/keyboard-handlers.ts';
 import type { KeyboardNavState } from '@/components/common/keyboard-navigation.ts';
 import { dom } from '@/utils/dom.ts';
 import { getEnableFocusBoxPreference } from '@/utils/preferences.ts';
+import { registerPreferencesUpdateHandler } from '@/utils/preferences-live.ts';
 
-export const keyboardNavigation = async (
-	ctx: ContentScriptContext,
-	doc: Document,
-	commentElements: HTMLElement[],
-	commentData: CommentData,
-	navState?: KeyboardNavState
-): Promise<void> => {
-	if (await getEnableFocusBoxPreference()) {
-		const style = doc.createElement('style');
-		style.textContent = `
+const COMMENT_FOCUS_STYLE_ID = 'oj-comment-focus-style';
+
+const syncFocusBoxStyle = async (doc: Document): Promise<void> => {
+	const existingStyle = doc.getElementById(COMMENT_FOCUS_STYLE_ID);
+	if (!(await getEnableFocusBoxPreference())) {
+		existingStyle?.remove();
+		return;
+	}
+	if (existingStyle) {
+		return;
+	}
+
+	const style = doc.createElement('style');
+	style.id = COMMENT_FOCUS_STYLE_ID;
+	style.textContent = `
 			:root {
 				--oj-focus-color: #f7694c;
 				--oj-focus-w: 1px;
@@ -39,8 +45,20 @@ export const keyboardNavigation = async (
 				margin: 0;
 			}
 		`;
-		doc.head.appendChild(style);
-	}
+	doc.head.appendChild(style);
+};
+
+export const keyboardNavigation = async (
+	ctx: ContentScriptContext,
+	doc: Document,
+	commentElements: HTMLElement[],
+	commentData: CommentData,
+	navState?: KeyboardNavState
+): Promise<void> => {
+	await syncFocusBoxStyle(doc);
+	registerPreferencesUpdateHandler(ctx, async () => {
+		await syncFocusBoxStyle(doc);
+	});
 
 	function prevent(doc: Document, e?: KeyboardEvent) {
 		if (doc.activeElement?.tagName === undefined) {
