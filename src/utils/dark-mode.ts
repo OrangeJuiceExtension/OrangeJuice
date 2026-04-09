@@ -1,8 +1,10 @@
 import '@/utils/dark-mode.css';
 import lStorage from '@/utils/local-storage.ts';
+import { paths } from '@/utils/paths.ts';
 
 const DARK_MODE_STORAGE_KEY = 'oj_dark_mode';
 const DARK_MODE_CLASS = 'oj-dark-mode';
+const INFO_PAGE_CLASS = 'oj-info-page';
 
 export type DarkModePreference = 'dark' | 'light';
 
@@ -18,6 +20,8 @@ const applyDarkMode = (mode: DarkModePreference) => {
 	if (!(root && head)) {
 		return;
 	}
+
+	root.classList.toggle(INFO_PAGE_CLASS, paths.info.includes(window.location.pathname));
 
 	if (mode === 'dark') {
 		root.classList.add(DARK_MODE_CLASS);

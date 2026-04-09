@@ -170,3 +170,23 @@ html.oj-dark-mode {
 		color: #fff2d4 !important;
 	}
 }
+
+html.oj-dark-mode.oj-info-page {
+	body {
+		color: var(--oj-text) !important;
+		background-color: #302921 !important;
+	}
+
+	body :is(p, span, font, li, ul, ol, b, td, center, table, tbody, tr) {
+		color: inherit !important;
+		background-color: transparent !important;
+	}
+
+	body a:link {
+		color: var(--oj-link) !important;
+	}
+
+	body a:visited {
+		color: var(--oj-visited) !important;
+	}
+}

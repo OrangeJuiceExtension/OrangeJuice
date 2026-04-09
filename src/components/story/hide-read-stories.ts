@@ -124,6 +124,9 @@ export const hideReadStories = async (
 	try {
 		const service = createClientServices().getReadStoriesService();
 		const updateVisits = async () => {
+			if (!checkbox) {
+				return;
+			}
 			const readStories = await getVisitedStories(service, storyData.hnStories);
 			if (!readStories) {
 				return;

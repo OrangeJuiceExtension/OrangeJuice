@@ -46,6 +46,7 @@ const paths = {
 	info: [
 		'/formatdoc',
 		'/newsguidelines.html',
+		'/newswelcome.html',
 		'/newsfaq.html',
 		'/security.html',
 		'/bookmarklet.html',
