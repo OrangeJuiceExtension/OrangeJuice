@@ -14,6 +14,7 @@ Agents must follow:
 - Minimize token usage. Don’t over-explain.
 - Ask for clarification if instructions are ambiguous.
 - When unsure, prefer retrieval-led reasoning over pre-training-led reasoning
+- Always use the GitHub workflow commit message format: conventional commits as `<type>(<scope>)?: <subject>`, with types like `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, or `test`; use `!` or `BREAKING CHANGE:` for breaking changes.
 - Write code that is **accessible, performant, type-safe, and maintainable**. Focus on clarity and explicit intent over brevity.
 
 ### Environment
@@ -48,8 +49,8 @@ Agents must follow:
 - Leverage TypeScript's type narrowing instead of type assertions
 - Use meaningful variable names instead of magic numbers - extract constants with descriptive names
 - Always generate valid HTML.
-    - Invalid: `<div><td></td></div>`
-    - Valid: `<div><table><tbody><tr><td></td></tr></tbody></table></div>`
+  - Invalid: `<div><td></td></div>`
+  - Valid: `<div><table><tbody><tr><td></td></tr></tbody></table></div>`
 - **Check code format**: `bun run check`
 - **Format and fix code**: `bun run fix` and `bun run compile`
 - Always `await` promises in async functions - don't forget to use the return value
@@ -65,12 +66,12 @@ Agents must follow:
 - Nest children between opening and closing tags instead of passing as props
 - Don't define components inside other components
 - Use semantic HTML and ARIA attributes for accessibility:
-    - Provide meaningful alt text for images
-    - Use proper heading hierarchy
-    - Add labels for form inputs
-    - Include keyboard event handlers alongside mouse events
-    - Use semantic elements (`<button>`, `<nav>`, etc.) instead of divs with roles
-    - Add recommended attributes, like type="button" and width/height to img
+  - Provide meaningful alt text for images
+  - Use proper heading hierarchy
+  - Add labels for form inputs
+  - Include keyboard event handlers alongside mouse events
+  - Use semantic elements (`<button>`, `<nav>`, etc.) instead of divs with roles
+  - Add recommended attributes, like type="button" and width/height to img
 
 
 ### Tests
