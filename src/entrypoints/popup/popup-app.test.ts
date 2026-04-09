@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DarkModePreference } from '@/utils/dark-mode.ts';
 import { getDarkModePreference } from '@/utils/dark-mode.ts';
-import { getEnableFocusBoxPreference, setEnableFocusBoxPreference } from '@/utils/preferences.ts';
+import {
+	getEnableFocusBoxPreference,
+	getOpenStoryNewTabPreference,
+	setEnableFocusBoxPreference,
+	setOpenStoryNewTabPreference,
+} from '@/utils/preferences.ts';
 import { renderPopupApp } from './popup-app.tsx';
 
 vi.mock('@/utils/dark-mode.ts', () => ({
@@ -10,8 +15,11 @@ vi.mock('@/utils/dark-mode.ts', () => ({
 
 vi.mock('@/utils/preferences.ts', () => ({
 	ENABLE_FOCUS_BOX_STORAGE_KEY: 'enableFocusBox',
+	OPEN_STORY_NEW_TAB_STORAGE_KEY: 'openStoryNewTab',
 	getEnableFocusBoxPreference: vi.fn(async () => true),
+	getOpenStoryNewTabPreference: vi.fn(async () => true),
 	setEnableFocusBoxPreference: vi.fn(async () => {}),
+	setOpenStoryNewTabPreference: vi.fn(async () => {}),
 }));
 
 describe('renderPopupApp', () => {
@@ -59,6 +67,16 @@ describe('renderPopupApp', () => {
 		expect(getEnableFocusBoxPreference).toHaveBeenCalledTimes(1);
 	});
 
+	it('loads the open story in new tab preference enabled by default', async () => {
+		const root = document.createElement('div');
+
+		await renderPopupApp(document, root);
+
+		const checkbox = root.querySelector<HTMLInputElement>('input[name="openStoryNewTab"]');
+		expect(checkbox?.checked).toBe(true);
+		expect(getOpenStoryNewTabPreference).toHaveBeenCalledTimes(1);
+	});
+
 	it('persists checkbox changes', async () => {
 		const root = document.createElement('div');
 		await renderPopupApp(document, root);
@@ -72,5 +90,20 @@ describe('renderPopupApp', () => {
 		checkbox.dispatchEvent(new Event('change', { bubbles: true }));
 
 		expect(setEnableFocusBoxPreference).toHaveBeenCalledWith(false);
+	});
+
+	it('persists open story in new tab changes', async () => {
+		const root = document.createElement('div');
+		await renderPopupApp(document, root);
+
+		const checkbox = root.querySelector<HTMLInputElement>('input[name="openStoryNewTab"]');
+		if (!checkbox) {
+			throw new Error('Expected open story in new tab checkbox to exist');
+		}
+
+		checkbox.checked = false;
+		checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+
+		expect(setOpenStoryNewTabPreference).toHaveBeenCalledWith(false);
 	});
 });

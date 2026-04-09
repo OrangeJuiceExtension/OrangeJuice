@@ -109,8 +109,52 @@
 }
 
 .oj-popup__checkbox {
+	display: grid;
+	flex: 0 0 auto;
+	place-content: center;
 	width: 18px;
 	height: 18px;
-	accent-color: var(--popup-accent);
+	margin: 0;
+	appearance: none;
 	cursor: pointer;
+	background: var(--popup-surface);
+	border: 1px solid
+		color-mix(in srgb, var(--popup-border) 75%, var(--popup-text) 25%);
+	border-radius: 5px;
+	transition:
+		background-color 120ms ease,
+		border-color 120ms ease,
+		box-shadow 120ms ease;
+}
+
+.oj-popup__checkbox::after {
+	width: 5px;
+	height: 9px;
+	content: "";
+	border-right: 2px solid transparent;
+	border-bottom: 2px solid transparent;
+	transform: rotate(45deg) scale(0.9);
+	transition:
+		border-color 120ms ease,
+		transform 120ms ease;
+}
+
+.oj-popup__checkbox:hover {
+	border-color: var(--popup-accent);
+}
+
+.oj-popup__checkbox:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 3px
+		color-mix(in srgb, var(--popup-accent) 20%, transparent);
+}
+
+.oj-popup__checkbox:checked {
+	background: var(--popup-accent);
+	border-color: var(--popup-accent);
+}
+
+.oj-popup__checkbox:checked::after {
+	border-color: #fff;
+	transform: rotate(45deg) scale(1);
 }
