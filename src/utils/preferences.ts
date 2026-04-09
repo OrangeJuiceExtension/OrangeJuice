@@ -3,15 +3,18 @@ import lStorage from '@/utils/local-storage.ts';
 export const PREFERENCES_STORAGE_KEY = 'oj_preferences';
 export const ENABLE_FOCUS_BOX_STORAGE_KEY = 'enableFocusBox';
 export const OPEN_STORY_NEW_TAB_STORAGE_KEY = 'openStoryNewTab';
+export const SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY = 'showHiddenStoriesOption';
 
 export interface Preferences {
 	enableFocusBox: boolean;
 	openStoryNewTab: boolean;
+	showHiddenStoriesOption: boolean;
 }
 
 const DEFAULT_PREFERENCES: Preferences = {
 	enableFocusBox: true,
 	openStoryNewTab: true,
+	showHiddenStoriesOption: true,
 };
 
 const getDefaultPreferences = (): Preferences => ({
@@ -36,6 +39,9 @@ const parseStoredPreferences = (stored: string): Partial<Preferences> | null => 
 		if (typeof parsed[OPEN_STORY_NEW_TAB_STORAGE_KEY] === 'boolean') {
 			preferences.openStoryNewTab = parsed[OPEN_STORY_NEW_TAB_STORAGE_KEY];
 		}
+		if (typeof parsed[SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY] === 'boolean') {
+			preferences.showHiddenStoriesOption = parsed[SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY];
+		}
 
 		return preferences;
 	} catch {
@@ -53,7 +59,8 @@ const mergePreferences = (stored: Partial<Preferences>): Preferences => {
 const hasAllPreferences = (preferences: Partial<Preferences>): preferences is Preferences => {
 	return (
 		typeof preferences.enableFocusBox === 'boolean' &&
-		typeof preferences.openStoryNewTab === 'boolean'
+		typeof preferences.openStoryNewTab === 'boolean' &&
+		typeof preferences.showHiddenStoriesOption === 'boolean'
 	);
 };
 
@@ -138,4 +145,13 @@ export const getOpenStoryNewTabPreference = async (): Promise<boolean> => {
 
 export const setOpenStoryNewTabPreference = async (enabled: boolean): Promise<void> => {
 	await setPreference('openStoryNewTab', enabled);
+};
+
+export const getShowHiddenStoriesOptionPreference = async (): Promise<boolean> => {
+	const preferences = await getPreferences();
+	return preferences.showHiddenStoriesOption;
+};
+
+export const setShowHiddenStoriesOptionPreference = async (enabled: boolean): Promise<void> => {
+	await setPreference('showHiddenStoriesOption', enabled);
 };

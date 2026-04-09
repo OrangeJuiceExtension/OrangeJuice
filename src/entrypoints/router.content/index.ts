@@ -1,4 +1,4 @@
-import { type ContentScriptContext, defineContentScript } from '#imports';
+import { browser, type ContentScriptContext, defineContentScript } from '#imports';
 import { activities } from '@/components/activities/index.ts';
 import { comments } from '@/components/comment/index.ts';
 import { follow } from '@/components/follow/index.ts';
@@ -12,6 +12,10 @@ import { createClientServices } from '@/services/manager.ts';
 import { newActivityFetcher } from '@/utils/activity-trail.ts';
 import { enableDarkMode } from '@/utils/dark-mode.ts';
 import { dom } from '@/utils/dom.ts';
+import {
+	notifyPreferencesUpdated,
+	PREFERENCES_UPDATED_MESSAGE_TYPE,
+} from '@/utils/preferences-live.ts';
 import { syncStoredTopbarColor } from '@/utils/topbar-color.ts';
 import { version } from '../../../package.json';
 import './global.css';
@@ -87,6 +91,26 @@ export default defineContentScript({
 	matches: ['https://news.ycombinator.com/*'],
 	runAt: 'document_end',
 	async main(ctx: ContentScriptContext): Promise<void> {
+		const messageHandler = (message: unknown) => {
+			if (
+				typeof message === 'object' &&
+				message !== null &&
+				'type' in message &&
+				message.type === PREFERENCES_UPDATED_MESSAGE_TYPE
+			) {
+				notifyPreferencesUpdated().catch((error: unknown) => {
+					console.error({
+						error: 'Failed to update preferences live',
+						errorDetail: error,
+					});
+				});
+			}
+		};
+		browser.runtime.onMessage.addListener(messageHandler);
+		ctx.onInvalidated(() => {
+			browser.runtime.onMessage.removeListener(messageHandler);
+		});
+
 		createClientServices();
 
 		const currentUrl = window.location.href;

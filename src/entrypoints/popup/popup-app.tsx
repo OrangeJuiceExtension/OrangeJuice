@@ -4,10 +4,14 @@ import {
 	ENABLE_FOCUS_BOX_STORAGE_KEY,
 	getEnableFocusBoxPreference,
 	getOpenStoryNewTabPreference,
+	getShowHiddenStoriesOptionPreference,
 	OPEN_STORY_NEW_TAB_STORAGE_KEY,
+	SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY,
 	setEnableFocusBoxPreference,
 	setOpenStoryNewTabPreference,
+	setShowHiddenStoriesOptionPreference,
 } from '@/utils/preferences.ts';
+import { PREFERENCES_UPDATED_MESSAGE_TYPE } from '@/utils/preferences-live.ts';
 import './App.css';
 
 const LOGO_PATH = '/icon/orange_juice_icon_128x128.png';
@@ -19,6 +23,28 @@ interface ToggleDefinition {
 	id: string;
 	label: string;
 }
+
+const notifyActiveTabPreferencesUpdated = async (): Promise<void> => {
+	const tabs = await browser.tabs.query({
+		active: true,
+		currentWindow: true,
+	});
+	const activeTabId = tabs[0]?.id;
+	if (activeTabId === undefined) {
+		return;
+	}
+
+	try {
+		await browser.tabs.sendMessage(activeTabId, {
+			type: PREFERENCES_UPDATED_MESSAGE_TYPE,
+		});
+	} catch (error: unknown) {
+		console.error({
+			error: 'Failed to notify active tab of preference changes',
+			errorDetail: error,
+		});
+	}
+};
 
 const createToggle = (doc: Document, toggle: ToggleDefinition): HTMLLabelElement => {
 	const label = doc.createElement('label');
@@ -81,6 +107,11 @@ const createPopupContent = (doc: Document): HTMLElement => {
 	const settingsList = doc.createElement('div');
 	settingsList.className = 'oj-popup__settings';
 
+	const showHiddenStoriesOptionLabel = createToggle(doc, {
+		description: 'Show the hide read stories checkbox on story pages.',
+		id: SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY,
+		label: 'Show hide read stories option',
+	});
 	const focusBoxLabel = createToggle(doc, {
 		description: 'Display the orange selection box around stories and comments.',
 		id: ENABLE_FOCUS_BOX_STORAGE_KEY,
@@ -92,7 +123,7 @@ const createPopupContent = (doc: Document): HTMLElement => {
 		label: 'Open stories in new tab',
 	});
 
-	settingsList.append(focusBoxLabel, openStoryNewTabLabel);
+	settingsList.append(showHiddenStoriesOptionLabel, focusBoxLabel, openStoryNewTabLabel);
 	card.append(header, settingsList);
 	main.append(card);
 	return main;
@@ -108,6 +139,19 @@ export const renderPopupApp = async (doc: Document, root: HTMLElement): Promise<
 
 	applyPopupTheme(popup, await getDarkModePreference());
 
+	const showHiddenStoriesOptionCheckbox = popup.querySelector<HTMLInputElement>(
+		`#${SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY}`
+	);
+	if (!showHiddenStoriesOptionCheckbox) {
+		throw new Error('Show hidden stories option checkbox is missing from popup UI.');
+	}
+
+	showHiddenStoriesOptionCheckbox.checked = await getShowHiddenStoriesOptionPreference();
+	showHiddenStoriesOptionCheckbox.addEventListener('change', async () => {
+		await setShowHiddenStoriesOptionPreference(showHiddenStoriesOptionCheckbox.checked);
+		await notifyActiveTabPreferencesUpdated();
+	});
+
 	const checkbox = popup.querySelector<HTMLInputElement>(`#${ENABLE_FOCUS_BOX_STORAGE_KEY}`);
 	if (!checkbox) {
 		throw new Error('Focus box checkbox is missing from popup UI.');
@@ -116,6 +160,7 @@ export const renderPopupApp = async (doc: Document, root: HTMLElement): Promise<
 	checkbox.checked = await getEnableFocusBoxPreference();
 	checkbox.addEventListener('change', async () => {
 		await setEnableFocusBoxPreference(checkbox.checked);
+		await notifyActiveTabPreferencesUpdated();
 	});
 
 	const openStoryNewTabCheckbox = popup.querySelector<HTMLInputElement>(
@@ -128,5 +173,6 @@ export const renderPopupApp = async (doc: Document, root: HTMLElement): Promise<
 	openStoryNewTabCheckbox.checked = await getOpenStoryNewTabPreference();
 	openStoryNewTabCheckbox.addEventListener('change', async () => {
 		await setOpenStoryNewTabPreference(openStoryNewTabCheckbox.checked);
+		await notifyActiveTabPreferencesUpdated();
 	});
 };
