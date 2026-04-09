@@ -1,6 +1,6 @@
 import lStorage from '@/utils/local-storage.ts';
 
-export const PREFERENCES_STORAGE_KEY = 'preferences';
+export const PREFERENCES_STORAGE_KEY = 'oj_preferences';
 export const ENABLE_FOCUS_BOX_STORAGE_KEY = 'enableFocusBox';
 export const OPEN_STORY_NEW_TAB_STORAGE_KEY = 'openStoryNewTab';
 
