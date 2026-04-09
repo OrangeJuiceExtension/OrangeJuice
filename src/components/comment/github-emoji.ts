@@ -1,14 +1,7 @@
-import { gemoji } from 'gemoji';
+import { find } from 'node-emoji';
 
 const SHORTCODE_REGEX = /:([a-z0-9_+-]+):/gi;
 const SKIP_TAGS = new Set(['CODE', 'PRE']);
-
-const emojiByShortcode = new Map<string, string>();
-for (const { emoji, names } of gemoji) {
-	for (const name of names) {
-		emojiByShortcode.set(name, emoji);
-	}
-}
 
 const replaceEmojiInTextNode = (doc: Document, textNode: Text): void => {
 	const sourceText = textNode.textContent ?? '';
@@ -24,15 +17,15 @@ const replaceEmojiInTextNode = (doc: Document, textNode: Text): void => {
 			continue;
 		}
 
-		const emoji = emojiByShortcode.get(shortcode);
-		if (!emoji) {
+		const matchResult = find(shortcode);
+		if (!matchResult) {
 			continue;
 		}
 
 		matched = true;
 		const matchIndex = match.index ?? 0;
 		fragment.append(sourceText.slice(lastIndex, matchIndex));
-		fragment.append(emoji);
+		fragment.append(matchResult.emoji);
 		lastIndex = matchIndex + match[0].length;
 	}
 
