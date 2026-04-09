@@ -4,11 +4,16 @@ import {
 	ENABLE_FOCUS_BOX_STORAGE_KEY,
 	getEnableFocusBoxPreference,
 	getOpenStoryNewTabPreference,
+	getReadStoriesVisibilityPreference,
 	getShowHiddenStoriesOptionPreference,
 	OPEN_STORY_NEW_TAB_STORAGE_KEY,
+	READ_STORIES_VISIBILITY,
+	READ_STORIES_VISIBILITY_STORAGE_KEY,
+	type ReadStoriesVisibilityPreference,
 	SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY,
 	setEnableFocusBoxPreference,
 	setOpenStoryNewTabPreference,
+	setReadStoriesVisibilityPreference,
 	setShowHiddenStoriesOptionPreference,
 } from '@/utils/preferences.ts';
 import { PREFERENCES_UPDATED_MESSAGE_TYPE } from '@/utils/preferences-live.ts';
@@ -23,6 +28,27 @@ interface ToggleDefinition {
 	id: string;
 	label: string;
 }
+
+interface SelectDefinition {
+	description: string;
+	id: string;
+	label: string;
+	options: ReadonlyArray<{
+		label: string;
+		value: ReadStoriesVisibilityPreference;
+	}>;
+}
+
+interface SettingsGroupDefinition {
+	description: string;
+	title: string;
+}
+
+const READ_STORIES_VISIBILITY_OPTIONS = [
+	{ label: 'Hide', value: READ_STORIES_VISIBILITY.HIDE },
+	{ label: 'Strikethrough', value: READ_STORIES_VISIBILITY.STRIKETHROUGH },
+	{ label: 'Dim', value: READ_STORIES_VISIBILITY.DIM },
+] as const;
 
 const notifyActiveTabPreferencesUpdated = async (): Promise<void> => {
 	const tabs = await browser.tabs.query({
@@ -74,6 +100,65 @@ const createToggle = (doc: Document, toggle: ToggleDefinition): HTMLLabelElement
 	return label;
 };
 
+const createSelectSetting = (doc: Document, setting: SelectDefinition): HTMLLabelElement => {
+	const label = doc.createElement('label');
+	label.className = 'oj-popup__toggle';
+	label.htmlFor = setting.id;
+
+	const copy = doc.createElement('span');
+	copy.className = 'oj-popup__toggle-copy';
+
+	const labelText = doc.createElement('span');
+	labelText.className = 'oj-popup__toggle-title';
+	labelText.textContent = setting.label;
+
+	const hintText = doc.createElement('span');
+	hintText.className = 'oj-popup__toggle-hint';
+	hintText.textContent = setting.description;
+
+	copy.append(labelText, hintText);
+
+	const select = doc.createElement('select');
+	select.className = 'oj-popup__select';
+	select.id = setting.id;
+	select.name = setting.id;
+
+	for (const optionDefinition of setting.options) {
+		const option = doc.createElement('option');
+		option.textContent = optionDefinition.label;
+		option.value = String(optionDefinition.value);
+		select.append(option);
+	}
+
+	label.append(copy, select);
+	return label;
+};
+
+const createSettingsGroup = (
+	doc: Document,
+	group: SettingsGroupDefinition
+): {
+	container: HTMLElement;
+	settings: HTMLElement;
+} => {
+	const container = doc.createElement('section');
+	container.className = 'oj-popup__group';
+
+	const heading = doc.createElement('h2');
+	heading.className = 'oj-popup__group-title';
+	heading.textContent = group.title;
+
+	const description = doc.createElement('p');
+	description.className = 'oj-popup__group-description';
+	description.textContent = group.description;
+
+	const settings = doc.createElement('div');
+	settings.className = 'oj-popup__group-settings';
+
+	container.append(heading, description, settings);
+	return { container, settings };
+};
+
 const createPopupContent = (doc: Document): HTMLElement => {
 	const main = doc.createElement('main');
 	main.className = 'oj-popup oj-popup--light';
@@ -107,10 +192,22 @@ const createPopupContent = (doc: Document): HTMLElement => {
 	const settingsList = doc.createElement('div');
 	settingsList.className = 'oj-popup__settings';
 
+	const readStoriesGroup = createSettingsGroup(doc, {
+		description:
+			'Control whether read stories are affected on story pages and how they appear.',
+		title: 'Read stories',
+	});
+
 	const showHiddenStoriesOptionLabel = createToggle(doc, {
 		description: 'Show the hide read stories checkbox on story pages.',
 		id: SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY,
 		label: 'Show hide read stories option',
+	});
+	const readStoriesVisibilityLabel = createSelectSetting(doc, {
+		description: 'Choose how visited stories appear on story pages.',
+		id: READ_STORIES_VISIBILITY_STORAGE_KEY,
+		label: 'Read stories',
+		options: READ_STORIES_VISIBILITY_OPTIONS,
 	});
 	const focusBoxLabel = createToggle(doc, {
 		description: 'Display the orange selection box around stories and comments.',
@@ -123,7 +220,8 @@ const createPopupContent = (doc: Document): HTMLElement => {
 		label: 'Open stories in new tab',
 	});
 
-	settingsList.append(showHiddenStoriesOptionLabel, focusBoxLabel, openStoryNewTabLabel);
+	readStoriesGroup.settings.append(showHiddenStoriesOptionLabel, readStoriesVisibilityLabel);
+	settingsList.append(readStoriesGroup.container, focusBoxLabel, openStoryNewTabLabel);
 	card.append(header, settingsList);
 	main.append(card);
 	return main;
@@ -149,6 +247,23 @@ export const renderPopupApp = async (doc: Document, root: HTMLElement): Promise<
 	showHiddenStoriesOptionCheckbox.checked = await getShowHiddenStoriesOptionPreference();
 	showHiddenStoriesOptionCheckbox.addEventListener('change', async () => {
 		await setShowHiddenStoriesOptionPreference(showHiddenStoriesOptionCheckbox.checked);
+		await notifyActiveTabPreferencesUpdated();
+	});
+
+	const readStoriesVisibilitySelect = popup.querySelector<HTMLSelectElement>(
+		`#${READ_STORIES_VISIBILITY_STORAGE_KEY}`
+	);
+	if (!readStoriesVisibilitySelect) {
+		throw new Error('Read stories visibility select is missing from popup UI.');
+	}
+
+	readStoriesVisibilitySelect.value = String(await getReadStoriesVisibilityPreference());
+	readStoriesVisibilitySelect.addEventListener('change', async () => {
+		const visibility = Number.parseInt(
+			readStoriesVisibilitySelect.value,
+			10
+		) as ReadStoriesVisibilityPreference;
+		await setReadStoriesVisibilityPreference(visibility);
 		await notifyActiveTabPreferencesUpdated();
 	});
 

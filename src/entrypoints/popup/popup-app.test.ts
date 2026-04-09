@@ -5,9 +5,12 @@ import { getDarkModePreference } from '@/utils/dark-mode.ts';
 import {
 	getEnableFocusBoxPreference,
 	getOpenStoryNewTabPreference,
+	getReadStoriesVisibilityPreference,
 	getShowHiddenStoriesOptionPreference,
+	READ_STORIES_VISIBILITY,
 	setEnableFocusBoxPreference,
 	setOpenStoryNewTabPreference,
+	setReadStoriesVisibilityPreference,
 	setShowHiddenStoriesOptionPreference,
 } from '@/utils/preferences.ts';
 import { renderPopupApp } from './popup-app.tsx';
@@ -19,12 +22,20 @@ vi.mock('@/utils/dark-mode.ts', () => ({
 vi.mock('@/utils/preferences.ts', () => ({
 	ENABLE_FOCUS_BOX_STORAGE_KEY: 'enableFocusBox',
 	OPEN_STORY_NEW_TAB_STORAGE_KEY: 'openStoryNewTab',
+	READ_STORIES_VISIBILITY: {
+		HIDE: 0,
+		STRIKETHROUGH: 1,
+		DIM: 2,
+	},
+	READ_STORIES_VISIBILITY_STORAGE_KEY: 'readStoriesVisibility',
 	SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY: 'showHiddenStoriesOption',
 	getEnableFocusBoxPreference: vi.fn(async () => true),
 	getOpenStoryNewTabPreference: vi.fn(async () => true),
+	getReadStoriesVisibilityPreference: vi.fn(async () => 0),
 	getShowHiddenStoriesOptionPreference: vi.fn(async () => true),
 	setEnableFocusBoxPreference: vi.fn(async () => {}),
 	setOpenStoryNewTabPreference: vi.fn(async () => {}),
+	setReadStoriesVisibilityPreference: vi.fn(async () => {}),
 	setShowHiddenStoriesOptionPreference: vi.fn(async () => {}),
 }));
 
@@ -98,6 +109,32 @@ describe('renderPopupApp', () => {
 		expect(getOpenStoryNewTabPreference).toHaveBeenCalledTimes(1);
 	});
 
+	it('loads the read stories visibility preference into the dropdown', async () => {
+		vi.mocked(getReadStoriesVisibilityPreference).mockResolvedValueOnce(
+			READ_STORIES_VISIBILITY.STRIKETHROUGH
+		);
+		const root = document.createElement('div');
+
+		await renderPopupApp(document, root);
+
+		const select = root.querySelector<HTMLSelectElement>(
+			'select[name="readStoriesVisibility"]'
+		);
+		expect(select?.value).toBe(String(READ_STORIES_VISIBILITY.STRIKETHROUGH));
+		expect(getReadStoriesVisibilityPreference).toHaveBeenCalledTimes(1);
+	});
+
+	it('groups the read stories settings together', async () => {
+		const root = document.createElement('div');
+
+		await renderPopupApp(document, root);
+
+		const group = root.querySelector<HTMLElement>('.oj-popup__group');
+		expect(group?.querySelector('.oj-popup__group-title')?.textContent).toBe('Read stories');
+		expect(group?.querySelector('input[name="showHiddenStoriesOption"]')).not.toBeNull();
+		expect(group?.querySelector('select[name="readStoriesVisibility"]')).not.toBeNull();
+	});
+
 	it('persists checkbox changes', async () => {
 		const root = document.createElement('div');
 		await renderPopupApp(document, root);
@@ -158,6 +195,30 @@ describe('renderPopupApp', () => {
 			});
 		});
 		expect(setOpenStoryNewTabPreference).toHaveBeenCalledWith(false);
+	});
+
+	it('persists read stories visibility changes', async () => {
+		const root = document.createElement('div');
+		await renderPopupApp(document, root);
+
+		const select = root.querySelector<HTMLSelectElement>(
+			'select[name="readStoriesVisibility"]'
+		);
+		if (!select) {
+			throw new Error('Expected read stories visibility select to exist');
+		}
+
+		select.value = String(READ_STORIES_VISIBILITY.DIM);
+		select.dispatchEvent(new Event('change', { bubbles: true }));
+
+		await vi.waitFor(() => {
+			expect(browser.tabs.sendMessage).toHaveBeenCalledWith(123, {
+				type: 'oj:preferences-updated',
+			});
+		});
+		expect(setReadStoriesVisibilityPreference).toHaveBeenCalledWith(
+			READ_STORIES_VISIBILITY.DIM
+		);
 	});
 
 	it('skips notifying the tab when there is no active tab id', async () => {

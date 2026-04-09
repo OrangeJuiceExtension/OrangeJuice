@@ -4,7 +4,11 @@ import type { StoryData } from '@/components/story/story-data.ts';
 import { createClientServices } from '@/services/manager.ts';
 import type { ReadStoriesService, ReadStoryLookup } from '@/services/read-stories-service.ts';
 import lStorage from '@/utils/local-storage.ts';
-import { getShowHiddenStoriesOptionPreference } from '@/utils/preferences.ts';
+import {
+	getReadStoriesVisibilityPreference,
+	getShowHiddenStoriesOptionPreference,
+	type ReadStoriesVisibilityPreference,
+} from '@/utils/preferences.ts';
 import { registerPreferencesUpdateHandler } from '@/utils/preferences-live.ts';
 
 const CHECKBOX_ID = 'oj-hide-read-stories';
@@ -40,7 +44,7 @@ const setDisplay = (readStories: HNStory[], display: string) => {
 		if (display === 'none') {
 			story.hide();
 		} else {
-			story.show();
+			story.resetReadPresentation();
 		}
 	}
 };
@@ -51,6 +55,15 @@ export const hideStories = (readStories: HNStory[]): void => {
 
 export const showStories = (readStories: HNStory[]): void => {
 	setDisplay(readStories, '');
+};
+
+export const applyReadStoriesVisibility = (
+	readStories: HNStory[],
+	visibility: ReadStoriesVisibilityPreference
+): void => {
+	for (const story of readStories) {
+		story.applyReadStoriesVisibility(visibility);
+	}
 };
 
 export interface StorageState {
@@ -104,7 +117,6 @@ const getVisitedStories = async (
 				const found = map.get(story.id);
 				if (found) {
 					found.latestVisit = story.latestVisit;
-					found.hide();
 					ret.push(found);
 				}
 			}
@@ -124,14 +136,18 @@ export const hideReadStories = async (
 	try {
 		const service = createClientServices().getReadStoriesService();
 		const updateVisits = async () => {
-			if (!checkbox) {
-				return;
-			}
 			const readStories = await getVisitedStories(service, storyData.hnStories);
 			if (!readStories) {
 				return;
 			}
-			checkbox.checked ? hideStories(readStories) : showStories(readStories);
+			const visibility = await getReadStoriesVisibilityPreference();
+			if (!checkbox) {
+				applyReadStoriesVisibility(readStories, visibility);
+				return;
+			}
+			checkbox.checked
+				? applyReadStoriesVisibility(readStories, visibility)
+				: showStories(readStories);
 		};
 		let checkbox: HTMLInputElement | null = null;
 		let handleCheckboxChange: (() => Promise<void>) | null = null;
@@ -146,10 +162,15 @@ export const hideReadStories = async (
 		};
 
 		const syncCheckboxVisibility = async (): Promise<void> => {
-			if (!(await getShowHiddenStoriesOptionPreference())) {
+			const [showHiddenStoriesOption, readStoriesVisibility] = await Promise.all([
+				getShowHiddenStoriesOptionPreference(),
+				getReadStoriesVisibilityPreference(),
+			]);
+
+			if (!showHiddenStoriesOption) {
 				cleanupCheckbox();
 				const readStories = await getVisitedStories(service, storyData.hnStories);
-				showStories(readStories);
+				applyReadStoriesVisibility(readStories, readStoriesVisibility);
 				return;
 			}
 
@@ -204,7 +225,8 @@ export const hideReadStoriesOnce = async (storyData: StoryData): Promise<void> =
 		if (!readStories) {
 			return;
 		}
-		hideStories(readStories);
+		const visibility = await getReadStoriesVisibilityPreference();
+		applyReadStoriesVisibility(readStories, visibility);
 	} catch (e) {
 		console.error({ error: 'Error in hideReadStoriesOnce', e });
 	}
