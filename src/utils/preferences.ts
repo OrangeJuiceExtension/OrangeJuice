@@ -107,9 +107,7 @@ const getPreferences = async (): Promise<Preferences> => {
 	}
 
 	const preferences = getDefaultPreferences();
-	if (typeof stored === 'string') {
-		await persistPreferences(preferences);
-	}
+	await persistPreferences(preferences);
 	return preferences;
 };
 

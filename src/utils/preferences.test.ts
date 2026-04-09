@@ -55,7 +55,15 @@ describe('preferences', () => {
 				storedValues: {},
 				reader: () => getEnableFocusBoxPreference(),
 				expectedValue: true,
-				expectedSetCalls: [],
+				expectedSetCalls: [
+					[
+						PREFERENCES_STORAGE_KEY,
+						JSON.stringify({
+							enableFocusBox: true,
+							openStoryNewTab: true,
+						}),
+					],
+				],
 			},
 			{
 				name: 'reads the open story preference from the json body',
