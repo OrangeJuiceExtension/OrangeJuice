@@ -3,13 +3,50 @@ import { type DarkModePreference, getDarkModePreference } from '@/utils/dark-mod
 import {
 	ENABLE_FOCUS_BOX_STORAGE_KEY,
 	getEnableFocusBoxPreference,
+	getOpenStoryNewTabPreference,
+	OPEN_STORY_NEW_TAB_STORAGE_KEY,
 	setEnableFocusBoxPreference,
+	setOpenStoryNewTabPreference,
 } from '@/utils/preferences.ts';
 import './App.css';
 
 const LOGO_PATH = '/icon/orange_juice_icon_128x128.png';
 
 const getLogoUrl = (): string => browser.runtime?.getURL?.(LOGO_PATH) ?? LOGO_PATH;
+
+interface ToggleDefinition {
+	description: string;
+	id: string;
+	label: string;
+}
+
+const createToggle = (doc: Document, toggle: ToggleDefinition): HTMLLabelElement => {
+	const label = doc.createElement('label');
+	label.className = 'oj-popup__toggle';
+	label.htmlFor = toggle.id;
+
+	const copy = doc.createElement('span');
+	copy.className = 'oj-popup__toggle-copy';
+
+	const labelText = doc.createElement('span');
+	labelText.className = 'oj-popup__toggle-title';
+	labelText.textContent = toggle.label;
+
+	const hintText = doc.createElement('span');
+	hintText.className = 'oj-popup__toggle-hint';
+	hintText.textContent = toggle.description;
+
+	copy.append(labelText, hintText);
+
+	const checkbox = doc.createElement('input');
+	checkbox.className = 'oj-popup__checkbox';
+	checkbox.id = toggle.id;
+	checkbox.name = toggle.id;
+	checkbox.type = 'checkbox';
+
+	label.append(copy, checkbox);
+	return label;
+};
 
 const createPopupContent = (doc: Document): HTMLElement => {
 	const main = doc.createElement('main');
@@ -44,31 +81,18 @@ const createPopupContent = (doc: Document): HTMLElement => {
 	const settingsList = doc.createElement('div');
 	settingsList.className = 'oj-popup__settings';
 
-	const focusBoxLabel = doc.createElement('label');
-	focusBoxLabel.className = 'oj-popup__toggle';
-	focusBoxLabel.htmlFor = ENABLE_FOCUS_BOX_STORAGE_KEY;
+	const focusBoxLabel = createToggle(doc, {
+		description: 'Display the orange selection box around stories and comments.',
+		id: ENABLE_FOCUS_BOX_STORAGE_KEY,
+		label: 'Show focus box',
+	});
+	const openStoryNewTabLabel = createToggle(doc, {
+		description: 'Open story title links in a new tab.',
+		id: OPEN_STORY_NEW_TAB_STORAGE_KEY,
+		label: 'Open stories in new tab',
+	});
 
-	const copy = doc.createElement('span');
-	copy.className = 'oj-popup__toggle-copy';
-
-	const labelText = doc.createElement('span');
-	labelText.className = 'oj-popup__toggle-title';
-	labelText.textContent = 'Show focus box';
-
-	const hintText = doc.createElement('span');
-	hintText.className = 'oj-popup__toggle-hint';
-	hintText.textContent = 'Display the orange selection box around stories and comments.';
-
-	copy.append(labelText, hintText);
-
-	const checkbox = doc.createElement('input');
-	checkbox.className = 'oj-popup__checkbox';
-	checkbox.id = ENABLE_FOCUS_BOX_STORAGE_KEY;
-	checkbox.name = ENABLE_FOCUS_BOX_STORAGE_KEY;
-	checkbox.type = 'checkbox';
-
-	focusBoxLabel.append(copy, checkbox);
-	settingsList.append(focusBoxLabel);
+	settingsList.append(focusBoxLabel, openStoryNewTabLabel);
 	card.append(header, settingsList);
 	main.append(card);
 	return main;
@@ -92,5 +116,17 @@ export const renderPopupApp = async (doc: Document, root: HTMLElement): Promise<
 	checkbox.checked = await getEnableFocusBoxPreference();
 	checkbox.addEventListener('change', async () => {
 		await setEnableFocusBoxPreference(checkbox.checked);
+	});
+
+	const openStoryNewTabCheckbox = popup.querySelector<HTMLInputElement>(
+		`#${OPEN_STORY_NEW_TAB_STORAGE_KEY}`
+	);
+	if (!openStoryNewTabCheckbox) {
+		throw new Error('Open story in new tab checkbox is missing from popup UI.');
+	}
+
+	openStoryNewTabCheckbox.checked = await getOpenStoryNewTabPreference();
+	openStoryNewTabCheckbox.addEventListener('change', async () => {
+		await setOpenStoryNewTabPreference(openStoryNewTabCheckbox.checked);
 	});
 };
