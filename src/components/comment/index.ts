@@ -5,6 +5,7 @@ import { changeDeadCommentsColor } from '@/components/comment/change-dead-commen
 import { collapseRoot } from '@/components/comment/collapse-root.ts';
 import { persistCollapsedComments } from '@/components/comment/collapsed-comments.ts';
 import { CommentData } from '@/components/comment/comment-data.ts';
+import { githubEmoji } from '@/components/comment/github-emoji.ts';
 import { highlightUnreadComments } from '@/components/comment/highlight-unread-comments.ts';
 import { HNComment } from '@/components/comment/hn-comment.ts';
 import { indentToggle } from '@/components/comment/indent-toggle.ts';
@@ -44,6 +45,7 @@ export const comments: ComponentFeature = {
 			Promise.resolve().then(() => indentToggle(ctx, document, allComments)),
 			Promise.resolve().then(() => changeDeadCommentsColor(document, allComments)),
 			Promise.resolve().then(() => backticksToCode(document, allComments)),
+			Promise.resolve().then(() => githubEmoji(document, allComments)),
 			Promise.resolve().then(() => commentBeautifulMermaid(ctx, document, hnComments)),
 			Promise.resolve().then(() => collapseRoot(ctx, document, allComments, commentData)),
 			Promise.resolve().then(() =>
