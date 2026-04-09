@@ -79,6 +79,41 @@
 	gap: 12px;
 }
 
+.oj-popup__group {
+	display: grid;
+	gap: 10px;
+	padding: 14px;
+	background: color-mix(
+		in srgb,
+		var(--popup-accent-soft) 55%,
+		var(--popup-surface) 45%
+	);
+	border: 1px solid var(--popup-border);
+	border-radius: 14px;
+}
+
+.oj-popup__group-title {
+	margin: 0;
+	font-size: 0.8rem;
+	font-weight: 700;
+	line-height: 1.2;
+	color: var(--popup-accent);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.oj-popup__group-description {
+	margin: 0;
+	font-size: 0.84rem;
+	line-height: 1.35;
+	color: var(--popup-muted);
+}
+
+.oj-popup__group-settings {
+	display: grid;
+	gap: 10px;
+}
+
 .oj-popup__toggle {
 	display: flex;
 	gap: 16px;
@@ -158,4 +193,26 @@
 .oj-popup__checkbox:checked::after {
 	border-color: #fff;
 	transform: translateY(-1px) rotate(45deg) scale(1);
+}
+
+.oj-popup__select {
+	flex: 0 0 auto;
+	min-width: 136px;
+	padding: 8px 12px;
+	font: inherit;
+	color: var(--popup-text);
+	background: var(--popup-surface);
+	border: 1px solid
+		color-mix(in srgb, var(--popup-border) 75%, var(--popup-text) 25%);
+	border-radius: 8px;
+}
+
+.oj-popup__select:hover {
+	border-color: var(--popup-accent);
+}
+
+.oj-popup__select:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 3px
+		color-mix(in srgb, var(--popup-accent) 20%, transparent);
 }

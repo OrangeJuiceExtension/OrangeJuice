@@ -2,6 +2,10 @@ import type { Browser } from '#imports';
 import { STORY_HIDDEN } from '@/components/story/hide-read-stories.ts';
 import { focusClass1, focusClass2, focusClass3 } from '@/components/story/story-data.ts';
 import { paths } from '@/utils/paths.ts';
+import {
+	READ_STORIES_VISIBILITY,
+	type ReadStoriesVisibilityPreference,
+} from '@/utils/preferences.ts';
 
 const POINTS_REGEX = /^(\d+)\s+points?$/;
 const COMMENTS_REGEX = /^(\d+)\s+comments?$/;
@@ -10,6 +14,8 @@ const UPVOTE_ARROW = 'div.votearrow[title="upvote"]';
 const FAVORITE_LINK = 'button.oj_favorite_link';
 const FLAG_LINK = 'a[href^="flag?"]';
 const STORY_ID_ATTR = 'data-story-id';
+const TITLE_LINK_SELECTOR = 'span.titleline > a';
+const DIMMED_TITLE_OPACITY = '0.45';
 
 export class HNStory {
 	id: string;
@@ -67,7 +73,7 @@ export class HNStory {
 	}
 
 	parseTitle(row: HTMLElement): { title: string; url: string } {
-		const titleLink = row.querySelector<HTMLAnchorElement>('span.titleline > a');
+		const titleLink = row.querySelector<HTMLAnchorElement>(TITLE_LINK_SELECTOR);
 		const href = titleLink?.getAttribute('href') || '';
 		const url = href.length === 0 || href.startsWith('http') ? href : `${paths.base}/${href}`;
 		return {
@@ -137,6 +143,39 @@ export class HNStory {
 
 	hidden(): boolean {
 		return this.isHidden;
+	}
+
+	resetReadPresentation(): void {
+		this.show();
+
+		const titleLink = this.storyRow.querySelector<HTMLAnchorElement>(TITLE_LINK_SELECTOR);
+		if (!titleLink) {
+			return;
+		}
+
+		titleLink.style.opacity = '';
+		titleLink.style.textDecoration = '';
+	}
+
+	applyReadStoriesVisibility(visibility: ReadStoriesVisibilityPreference): void {
+		this.resetReadPresentation();
+
+		if (visibility === READ_STORIES_VISIBILITY.HIDE) {
+			this.hide();
+			return;
+		}
+
+		const titleLink = this.storyRow.querySelector<HTMLAnchorElement>(TITLE_LINK_SELECTOR);
+		if (!titleLink) {
+			return;
+		}
+
+		if (visibility === READ_STORIES_VISIBILITY.STRIKETHROUGH) {
+			titleLink.style.textDecoration = 'line-through';
+			return;
+		}
+
+		titleLink.style.opacity = DIMMED_TITLE_OPACITY;
 	}
 
 	activate() {

@@ -3,17 +3,29 @@ import lStorage from '@/utils/local-storage.ts';
 export const PREFERENCES_STORAGE_KEY = 'oj_preferences';
 export const ENABLE_FOCUS_BOX_STORAGE_KEY = 'enableFocusBox';
 export const OPEN_STORY_NEW_TAB_STORAGE_KEY = 'openStoryNewTab';
+export const READ_STORIES_VISIBILITY_STORAGE_KEY = 'readStoriesVisibility';
 export const SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY = 'showHiddenStoriesOption';
+
+export const READ_STORIES_VISIBILITY = {
+	HIDE: 0,
+	STRIKETHROUGH: 1,
+	DIM: 2,
+} as const;
+
+export type ReadStoriesVisibilityPreference =
+	(typeof READ_STORIES_VISIBILITY)[keyof typeof READ_STORIES_VISIBILITY];
 
 export interface Preferences {
 	enableFocusBox: boolean;
 	openStoryNewTab: boolean;
+	readStoriesVisibility: ReadStoriesVisibilityPreference;
 	showHiddenStoriesOption: boolean;
 }
 
 const DEFAULT_PREFERENCES: Preferences = {
 	enableFocusBox: true,
 	openStoryNewTab: true,
+	readStoriesVisibility: READ_STORIES_VISIBILITY.HIDE,
 	showHiddenStoriesOption: true,
 };
 
@@ -23,6 +35,16 @@ const getDefaultPreferences = (): Preferences => ({
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
 	return typeof value === 'object' && value !== null;
+};
+
+const isReadStoriesVisibilityPreference = (
+	value: unknown
+): value is ReadStoriesVisibilityPreference => {
+	return (
+		value === READ_STORIES_VISIBILITY.HIDE ||
+		value === READ_STORIES_VISIBILITY.STRIKETHROUGH ||
+		value === READ_STORIES_VISIBILITY.DIM
+	);
 };
 
 const parseStoredPreferences = (stored: string): Partial<Preferences> | null => {
@@ -38,6 +60,9 @@ const parseStoredPreferences = (stored: string): Partial<Preferences> | null => 
 		}
 		if (typeof parsed[OPEN_STORY_NEW_TAB_STORAGE_KEY] === 'boolean') {
 			preferences.openStoryNewTab = parsed[OPEN_STORY_NEW_TAB_STORAGE_KEY];
+		}
+		if (isReadStoriesVisibilityPreference(parsed[READ_STORIES_VISIBILITY_STORAGE_KEY])) {
+			preferences.readStoriesVisibility = parsed[READ_STORIES_VISIBILITY_STORAGE_KEY];
 		}
 		if (typeof parsed[SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY] === 'boolean') {
 			preferences.showHiddenStoriesOption = parsed[SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY];
@@ -60,6 +85,7 @@ const hasAllPreferences = (preferences: Partial<Preferences>): preferences is Pr
 	return (
 		typeof preferences.enableFocusBox === 'boolean' &&
 		typeof preferences.openStoryNewTab === 'boolean' &&
+		isReadStoriesVisibilityPreference(preferences.readStoriesVisibility) &&
 		typeof preferences.showHiddenStoriesOption === 'boolean'
 	);
 };
@@ -143,8 +169,20 @@ export const getOpenStoryNewTabPreference = async (): Promise<boolean> => {
 	return preferences.openStoryNewTab;
 };
 
+export const getReadStoriesVisibilityPreference =
+	async (): Promise<ReadStoriesVisibilityPreference> => {
+		const preferences = await getPreferences();
+		return preferences.readStoriesVisibility;
+	};
+
 export const setOpenStoryNewTabPreference = async (enabled: boolean): Promise<void> => {
 	await setPreference('openStoryNewTab', enabled);
+};
+
+export const setReadStoriesVisibilityPreference = async (
+	visibility: ReadStoriesVisibilityPreference
+): Promise<void> => {
+	await setPreference('readStoriesVisibility', visibility);
 };
 
 export const getShowHiddenStoriesOptionPreference = async (): Promise<boolean> => {

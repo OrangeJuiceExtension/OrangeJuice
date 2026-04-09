@@ -1,22 +1,47 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { browser } from '#imports';
+import { browser, type ContentScriptContext } from '#imports';
+import { createClientServices } from '@/services/manager.ts';
 import { ReadStoriesService } from '@/services/read-stories-service.ts';
 import { stripFixtureElements } from '@/test/fixture-html.ts';
 import lStorage from '@/utils/local-storage.ts';
-import { getShowHiddenStoriesOptionPreference } from '@/utils/preferences.ts';
 import {
+	getReadStoriesVisibilityPreference,
+	getShowHiddenStoriesOptionPreference,
+	READ_STORIES_VISIBILITY,
+	type ReadStoriesVisibilityPreference,
+} from '@/utils/preferences.ts';
+import { registerPreferencesUpdateHandler } from '@/utils/preferences-live.ts';
+import {
+	applyReadStoriesVisibility,
 	createCheckbox,
+	hideReadStories,
+	hideReadStoriesOnce,
 	hideStories,
 	type StorageState,
 	setupCheckbox,
 	showStories,
 } from './hide-read-stories.ts';
 import { HNStory } from './hn-story.ts';
+import { StoryData } from './story-data.ts';
+
+vi.mock('@/services/manager.ts', () => ({
+	createClientServices: vi.fn(),
+}));
 
 vi.mock('@/utils/preferences.ts', () => ({
+	getReadStoriesVisibilityPreference: vi.fn(async () => 0),
 	getShowHiddenStoriesOptionPreference: vi.fn(async () => true),
+	READ_STORIES_VISIBILITY: {
+		HIDE: 0,
+		STRIKETHROUGH: 1,
+		DIM: 2,
+	},
+}));
+
+vi.mock('@/utils/preferences-live.ts', () => ({
+	registerPreferencesUpdateHandler: vi.fn(),
 }));
 
 const STORY_LIST_HTML_REGEX = /class="itemlist"/;
@@ -37,11 +62,61 @@ const emptyPageHtml = readFileSync(
 
 describe('hide_read_stories', () => {
 	let service: ReadStoriesService;
+	let mockGetVisitsForHideReadStories: ReturnType<typeof vi.fn>;
+
+	const createStoryData = (): StoryData => {
+		const wrapper = document.createElement('div');
+		const table = document.createElement('table');
+		const tbody = document.createElement('tbody');
+		const bigboxRow = document.createElement('tr');
+		const bigboxCell = document.createElement('td');
+		const bigbox = document.createElement('div');
+		bigbox.id = 'bigbox';
+		bigboxCell.append(bigbox);
+		bigboxRow.append(bigboxCell);
+		tbody.append(bigboxRow);
+
+		const createStoryRows = (id: string, title: string): HTMLElement => {
+			const storyRow = document.createElement('tr');
+			storyRow.className = 'athing';
+			storyRow.id = id;
+			storyRow.innerHTML = `<td><span class="titleline"><a href="https://example.com/${id}">${title}</a></span></td>`;
+
+			const subtextRow = document.createElement('tr');
+			subtextRow.innerHTML = '<td class="subtext"></td>';
+
+			const spacerRow = document.createElement('tr');
+			spacerRow.innerHTML = '<td></td>';
+
+			tbody.append(storyRow, subtextRow, spacerRow);
+			return storyRow;
+		};
+
+		const firstStoryRow = createStoryRows('story-1', 'Story one');
+		createStoryRows('story-2', 'Story two');
+
+		table.append(tbody);
+		wrapper.append(table);
+		document.body.append(wrapper);
+
+		return new StoryData(bigbox, [firstStoryRow]);
+	};
+
 	beforeEach(() => {
 		document.body.innerHTML = '';
 		lStorage.clear();
 		vi.clearAllMocks();
+		mockGetVisitsForHideReadStories = vi.fn();
+		vi.mocked(createClientServices).mockReturnValue({
+			getReadStoriesService: () => ({
+				getVisits: mockGetVisitsForHideReadStories,
+			}),
+		} as unknown as ReturnType<typeof createClientServices>);
+		vi.mocked(getReadStoriesVisibilityPreference).mockResolvedValue(
+			READ_STORIES_VISIBILITY.HIDE
+		);
 		vi.mocked(getShowHiddenStoriesOptionPreference).mockResolvedValue(true);
+		vi.mocked(registerPreferencesUpdateHandler).mockImplementation(() => {});
 		service = new ReadStoriesService();
 	});
 
@@ -116,6 +191,36 @@ describe('hide_read_stories', () => {
 			}).not.toThrow();
 		});
 
+		it('should strikethrough the story title when configured', () => {
+			const storyRow = document.createElement('tr');
+			storyRow.id = 'strike-story';
+			storyRow.innerHTML = '<td><span class="titleline"><a href="#">Story</a></span></td>';
+			document.body.appendChild(storyRow);
+
+			const story = new HNStory(storyRow);
+			const titleLink = storyRow.querySelector<HTMLAnchorElement>('span.titleline > a');
+
+			applyReadStoriesVisibility([story], READ_STORIES_VISIBILITY.STRIKETHROUGH);
+
+			expect(titleLink?.style.textDecoration).toBe('line-through');
+			expect(storyRow.style.display).toBe('');
+		});
+
+		it('should dim the story title when configured', () => {
+			const storyRow = document.createElement('tr');
+			storyRow.id = 'dim-story';
+			storyRow.innerHTML = '<td><span class="titleline"><a href="#">Story</a></span></td>';
+			document.body.appendChild(storyRow);
+
+			const story = new HNStory(storyRow);
+			const titleLink = storyRow.querySelector<HTMLAnchorElement>('span.titleline > a');
+
+			applyReadStoriesVisibility([story], READ_STORIES_VISIBILITY.DIM);
+
+			expect(titleLink?.style.opacity).toBe('0.45');
+			expect(storyRow.style.display).toBe('');
+		});
+
 		it('should handle story without subtext or spacer rows', () => {
 			const storyRow = document.createElement('tr');
 			storyRow.id = 'lonely-story';
@@ -153,6 +258,119 @@ describe('hide_read_stories', () => {
 			expect(cell).not.toBeNull();
 			expect(cell?.style.paddingLeft).toBe('5px');
 			expect(cell?.style.paddingBottom).toBe('10px');
+		});
+	});
+
+	describe('feature interactions', () => {
+		it('keeps visited stories visible until the page checkbox is checked', async () => {
+			const storyData = createStoryData();
+			const visitedStory = storyData.hnStories[0];
+			mockGetVisitsForHideReadStories.mockResolvedValue([
+				{ id: visitedStory.id, latestVisit: {} },
+			]);
+			vi.mocked(getReadStoriesVisibilityPreference).mockResolvedValue(
+				READ_STORIES_VISIBILITY.DIM
+			);
+			const ctx = { onInvalidated: vi.fn() } as unknown as ContentScriptContext;
+
+			await hideReadStories(ctx, document, storyData);
+
+			const checkbox = document.querySelector<HTMLInputElement>('#oj-hide-read-stories');
+			const titleLink =
+				visitedStory.storyRow.querySelector<HTMLAnchorElement>('span.titleline > a');
+			expect(checkbox?.checked).toBe(false);
+			expect(titleLink?.style.opacity).toBe('');
+			expect(visitedStory.storyRow.style.display).toBe('');
+
+			if (!checkbox) {
+				throw new Error('Expected page checkbox to exist');
+			}
+
+			checkbox.checked = true;
+			checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+
+			await vi.waitFor(() => {
+				expect(titleLink?.style.opacity).toBe('0.45');
+			});
+			expect(await lStorage.getItem<StorageState>('oj_hide_read_stories')).toEqual({
+				checkbox: true,
+			});
+		});
+
+		it('updates checked stories when the read stories visibility preference changes', async () => {
+			let currentVisibility: ReadStoriesVisibilityPreference =
+				READ_STORIES_VISIBILITY.STRIKETHROUGH;
+			vi.mocked(getReadStoriesVisibilityPreference).mockImplementation(
+				async () => currentVisibility
+			);
+			await lStorage.setItem<StorageState>('oj_hide_read_stories', { checkbox: true });
+
+			const storyData = createStoryData();
+			const visitedStory = storyData.hnStories[0];
+			mockGetVisitsForHideReadStories.mockResolvedValue([
+				{ id: visitedStory.id, latestVisit: {} },
+			]);
+			let preferencesHandler: (() => Promise<void> | void) | undefined;
+			vi.mocked(registerPreferencesUpdateHandler).mockImplementation((_ctx, handler) => {
+				preferencesHandler = handler;
+			});
+			const ctx = { onInvalidated: vi.fn() } as unknown as ContentScriptContext;
+
+			await hideReadStories(ctx, document, storyData);
+
+			const titleLink =
+				visitedStory.storyRow.querySelector<HTMLAnchorElement>('span.titleline > a');
+			expect(titleLink?.style.textDecoration).toBe('line-through');
+
+			currentVisibility = READ_STORIES_VISIBILITY.DIM;
+			if (!preferencesHandler) {
+				throw new Error('Expected preferences update handler to be registered');
+			}
+			await preferencesHandler();
+
+			expect(titleLink?.style.textDecoration).toBe('');
+			expect(titleLink?.style.opacity).toBe('0.45');
+		});
+
+		it.each([
+			{
+				name: 'hides visited stories once when visibility is hide',
+				visibility: READ_STORIES_VISIBILITY.HIDE,
+				assertion: (story: HNStory, titleLink: HTMLAnchorElement | null) => {
+					expect(story.storyRow.style.display).toBe('none');
+					expect(titleLink?.style.textDecoration).toBe('');
+					expect(titleLink?.style.opacity).toBe('');
+				},
+			},
+			{
+				name: 'strikes through visited stories once when visibility is strikethrough',
+				visibility: READ_STORIES_VISIBILITY.STRIKETHROUGH,
+				assertion: (story: HNStory, titleLink: HTMLAnchorElement | null) => {
+					expect(story.storyRow.style.display).toBe('');
+					expect(titleLink?.style.textDecoration).toBe('line-through');
+				},
+			},
+			{
+				name: 'dims visited stories once when visibility is dim',
+				visibility: READ_STORIES_VISIBILITY.DIM,
+				assertion: (story: HNStory, titleLink: HTMLAnchorElement | null) => {
+					expect(story.storyRow.style.display).toBe('');
+					expect(titleLink?.style.opacity).toBe('0.45');
+				},
+			},
+		])('$name', async ({ visibility, assertion }) => {
+			const storyData = createStoryData();
+			const visitedStory = storyData.hnStories[0];
+			mockGetVisitsForHideReadStories.mockResolvedValue([
+				{ id: visitedStory.id, latestVisit: {} },
+			]);
+			vi.mocked(getReadStoriesVisibilityPreference).mockResolvedValue(visibility);
+
+			await hideReadStoriesOnce(storyData);
+
+			const titleLink =
+				visitedStory.storyRow.querySelector<HTMLAnchorElement>('span.titleline > a');
+			assertion(visitedStory, titleLink);
 		});
 	});
 
@@ -215,6 +433,20 @@ describe('hide_read_stories', () => {
 
 			expect(result).toBeNull();
 			expect(container.querySelector('#oj-hide-read-stories')).toBeNull();
+		});
+
+		it('should still create the checkbox when read stories visibility is hide', async () => {
+			vi.mocked(getReadStoriesVisibilityPreference).mockResolvedValueOnce(
+				READ_STORIES_VISIBILITY.HIDE
+			);
+			const container = document.createElement('div');
+			const bigbox = document.createElement('div');
+			bigbox.id = 'bigbox';
+			container.appendChild(bigbox);
+
+			const result = await setupCheckbox(bigbox, document);
+
+			expect(result).not.toBeNull();
 		});
 	});
 
