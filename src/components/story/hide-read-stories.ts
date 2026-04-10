@@ -13,8 +13,31 @@ import { registerPreferencesUpdateHandler } from '@/utils/preferences-live.ts';
 
 const CHECKBOX_ID = 'oj-hide-read-stories';
 const STORAGE_KEY = 'oj_hide_read_stories';
+const READ_STORIES_LABEL_SUFFIX = 'read stories';
+const CHECKBOX_LABEL_TEXT = {
+	0: 'Hide',
+	1: 'Strikethrough',
+	2: 'Dim',
+} as const satisfies Record<ReadStoriesVisibilityPreference, string>;
 
-export const createCheckbox = (doc: Document) => {
+const getCheckboxLabelText = (visibility: ReadStoriesVisibilityPreference): string => {
+	return `${CHECKBOX_LABEL_TEXT[visibility]} ${READ_STORIES_LABEL_SUFFIX}`;
+};
+
+const updateCheckboxLabel = (
+	checkbox: HTMLInputElement,
+	visibility: ReadStoriesVisibilityPreference
+): void => {
+	const label = checkbox.parentElement;
+	if (!label) {
+		return;
+	}
+
+	label.lastChild?.remove();
+	label.appendChild(checkbox.ownerDocument.createTextNode(getCheckboxLabelText(visibility)));
+};
+
+export const createCheckbox = (doc: Document, visibility: ReadStoriesVisibilityPreference) => {
 	const row = doc.createElement('tr');
 	const cell = doc.createElement('td');
 	cell.style.paddingLeft = '5px';
@@ -30,7 +53,7 @@ export const createCheckbox = (doc: Document) => {
 	checkbox.style.marginRight = '5px';
 
 	label.appendChild(checkbox);
-	label.appendChild(doc.createTextNode('Hide read stories'));
+	label.appendChild(doc.createTextNode(getCheckboxLabelText(visibility)));
 	cell.appendChild(label);
 	row.appendChild(cell);
 
@@ -70,9 +93,14 @@ export interface StorageState {
 	checkbox: boolean;
 }
 
+const setStoredCheckboxState = async (checked: boolean): Promise<void> => {
+	await lStorage.setItem<StorageState>(STORAGE_KEY, { checkbox: checked });
+};
+
 export const setupCheckbox = async (
 	bigbox: Element,
-	doc: Document
+	doc: Document,
+	visibility: ReadStoriesVisibilityPreference
 ): Promise<HTMLInputElement | null> => {
 	if (!(await getShowHiddenStoriesOptionPreference())) {
 		return null;
@@ -82,14 +110,14 @@ export const setupCheckbox = async (
 		return null;
 	}
 
-	const { row, checkbox } = createCheckbox(doc);
+	const { row, checkbox } = createCheckbox(doc, visibility);
 	bigbox.parentElement.insertBefore(row, bigbox);
 
 	const storedState = await lStorage.getItem<StorageState>(STORAGE_KEY, { fallback: undefined });
 	if (storedState && storedState.checkbox !== undefined) {
 		checkbox.checked = storedState.checkbox;
 	} else {
-		await lStorage.setItem<StorageState>(STORAGE_KEY, { checkbox: false });
+		await setStoredCheckboxState(false);
 	}
 
 	return checkbox;
@@ -168,6 +196,7 @@ export const hideReadStories = async (
 			]);
 
 			if (!showHiddenStoriesOption) {
+				await setStoredCheckboxState(true);
 				cleanupCheckbox();
 				const readStories = await getVisitedStories(service, storyData.hnStories);
 				applyReadStoriesVisibility(readStories, readStoriesVisibility);
@@ -175,7 +204,7 @@ export const hideReadStories = async (
 			}
 
 			if (!checkbox) {
-				checkbox = await setupCheckbox(storyData.bigbox, doc);
+				checkbox = await setupCheckbox(storyData.bigbox, doc, readStoriesVisibility);
 				if (!checkbox) {
 					return;
 				}
@@ -185,14 +214,13 @@ export const hideReadStories = async (
 					if (!checkbox) {
 						return;
 					}
-					await lStorage.setItem<StorageState>(STORAGE_KEY, {
-						checkbox: checkbox.checked,
-					});
+					await setStoredCheckboxState(checkbox.checked);
 				};
 
 				checkbox.addEventListener('change', handleCheckboxChange);
 			}
 
+			updateCheckboxLabel(checkbox, readStoriesVisibility);
 			await updateVisits();
 		};
 

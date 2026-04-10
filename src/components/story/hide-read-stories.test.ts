@@ -237,8 +237,21 @@ describe('hide_read_stories', () => {
 	});
 
 	describe('checkbox creation', () => {
-		it('should create checkbox with correct attributes', () => {
-			const { row, checkbox } = createCheckbox(document);
+		it.each([
+			{
+				labelText: 'Hide read stories',
+				visibility: READ_STORIES_VISIBILITY.HIDE,
+			},
+			{
+				labelText: 'Strikethrough read stories',
+				visibility: READ_STORIES_VISIBILITY.STRIKETHROUGH,
+			},
+			{
+				labelText: 'Dim read stories',
+				visibility: READ_STORIES_VISIBILITY.DIM,
+			},
+		])('should create checkbox with the $labelText label', ({ labelText, visibility }) => {
+			const { row, checkbox } = createCheckbox(document, visibility);
 
 			expect(checkbox.type).toBe('checkbox');
 			expect(checkbox.id).toBe('oj-hide-read-stories');
@@ -248,11 +261,11 @@ describe('hide_read_stories', () => {
 			expect(label).not.toBeNull();
 			expect(label?.style.cursor).toBe('pointer');
 			expect(label?.style.userSelect).toBe('none');
-			expect(label?.textContent).toBe('Hide read stories');
+			expect(label?.textContent).toBe(labelText);
 		});
 
 		it('should have correct cell styling', () => {
-			const { row } = createCheckbox(document);
+			const { row } = createCheckbox(document, READ_STORIES_VISIBILITY.HIDE);
 			const cell = row.querySelector('td');
 
 			expect(cell).not.toBeNull();
@@ -320,7 +333,9 @@ describe('hide_read_stories', () => {
 
 			const titleLink =
 				visitedStory.storyRow.querySelector<HTMLAnchorElement>('span.titleline > a');
+			const checkbox = document.querySelector<HTMLInputElement>('#oj-hide-read-stories');
 			expect(titleLink?.style.textDecoration).toBe('line-through');
+			expect(checkbox?.parentElement?.textContent).toBe('Strikethrough read stories');
 
 			currentVisibility = READ_STORIES_VISIBILITY.DIM;
 			if (!preferencesHandler) {
@@ -330,6 +345,56 @@ describe('hide_read_stories', () => {
 
 			expect(titleLink?.style.textDecoration).toBe('');
 			expect(titleLink?.style.opacity).toBe('0.45');
+			expect(checkbox?.parentElement?.textContent).toBe('Dim read stories');
+		});
+
+		it('keeps the hide read stories feature enabled when the page checkbox option is hidden', async () => {
+			const currentVisibility: ReadStoriesVisibilityPreference = READ_STORIES_VISIBILITY.HIDE;
+			let showHiddenStoriesOption = true;
+			vi.mocked(getReadStoriesVisibilityPreference).mockImplementation(
+				async () => currentVisibility
+			);
+			vi.mocked(getShowHiddenStoriesOptionPreference).mockImplementation(
+				async () => showHiddenStoriesOption
+			);
+
+			const storyData = createStoryData();
+			const visitedStory = storyData.hnStories[0];
+			mockGetVisitsForHideReadStories.mockResolvedValue([
+				{ id: visitedStory.id, latestVisit: {} },
+			]);
+			let preferencesHandler: (() => Promise<void> | void) | undefined;
+			vi.mocked(registerPreferencesUpdateHandler).mockImplementation((_ctx, handler) => {
+				preferencesHandler = handler;
+			});
+			const ctx = { onInvalidated: vi.fn() } as unknown as ContentScriptContext;
+
+			await hideReadStories(ctx, document, storyData);
+
+			const initialCheckbox =
+				document.querySelector<HTMLInputElement>('#oj-hide-read-stories');
+			expect(initialCheckbox?.checked).toBe(false);
+			expect(visitedStory.storyRow.style.display).toBe('');
+
+			showHiddenStoriesOption = false;
+			if (!preferencesHandler) {
+				throw new Error('Expected preferences update handler to be registered');
+			}
+			await preferencesHandler();
+
+			expect(document.querySelector('#oj-hide-read-stories')).toBeNull();
+			expect(visitedStory.storyRow.style.display).toBe('none');
+			expect(await lStorage.getItem<StorageState>('oj_hide_read_stories')).toEqual({
+				checkbox: true,
+			});
+
+			showHiddenStoriesOption = true;
+			await preferencesHandler();
+
+			const restoredCheckbox =
+				document.querySelector<HTMLInputElement>('#oj-hide-read-stories');
+			expect(restoredCheckbox?.checked).toBe(true);
+			expect(visitedStory.storyRow.style.display).toBe('none');
 		});
 
 		it.each([
@@ -383,7 +448,7 @@ describe('hide_read_stories', () => {
 			bigbox.id = 'bigbox';
 			container.appendChild(bigbox);
 
-			await setupCheckbox(bigbox, document);
+			await setupCheckbox(bigbox, document, READ_STORIES_VISIBILITY.HIDE);
 
 			const stored = await lStorage.getItem<StorageState>(STORAGE_KEY);
 			expect(stored).toEqual({ checkbox: false });
@@ -397,7 +462,7 @@ describe('hide_read_stories', () => {
 			bigbox.id = 'bigbox';
 			container.appendChild(bigbox);
 
-			const checkbox = await setupCheckbox(bigbox, document);
+			const checkbox = await setupCheckbox(bigbox, document, READ_STORIES_VISIBILITY.HIDE);
 
 			expect(checkbox?.checked).toBe(true);
 		});
@@ -410,14 +475,14 @@ describe('hide_read_stories', () => {
 			bigbox.id = 'bigbox';
 			container.appendChild(bigbox);
 
-			const checkbox = await setupCheckbox(bigbox, document);
+			const checkbox = await setupCheckbox(bigbox, document, READ_STORIES_VISIBILITY.HIDE);
 
 			expect(checkbox?.checked).toBe(false);
 		});
 
 		it('should return null if bigbox has no parent', async () => {
 			const bigbox = document.createElement('div');
-			const result = await setupCheckbox(bigbox, document);
+			const result = await setupCheckbox(bigbox, document, READ_STORIES_VISIBILITY.HIDE);
 
 			expect(result).toBeNull();
 		});
@@ -429,7 +494,7 @@ describe('hide_read_stories', () => {
 			bigbox.id = 'bigbox';
 			container.appendChild(bigbox);
 
-			const result = await setupCheckbox(bigbox, document);
+			const result = await setupCheckbox(bigbox, document, READ_STORIES_VISIBILITY.HIDE);
 
 			expect(result).toBeNull();
 			expect(container.querySelector('#oj-hide-read-stories')).toBeNull();
@@ -444,7 +509,7 @@ describe('hide_read_stories', () => {
 			bigbox.id = 'bigbox';
 			container.appendChild(bigbox);
 
-			const result = await setupCheckbox(bigbox, document);
+			const result = await setupCheckbox(bigbox, document, READ_STORIES_VISIBILITY.HIDE);
 
 			expect(result).not.toBeNull();
 		});
@@ -639,7 +704,7 @@ describe('hide_read_stories', () => {
 				return;
 			}
 
-			const checkbox = await setupCheckbox(bigbox, document);
+			const checkbox = await setupCheckbox(bigbox, document, READ_STORIES_VISIBILITY.HIDE);
 			expect(checkbox).not.toBeNull();
 			expect(checkbox?.id).toBe('oj-hide-read-stories');
 
@@ -782,9 +847,11 @@ describe('hide_read_stories', () => {
 			const bigbox = document.getElementById('bigbox');
 			expect(bigbox).not.toBeNull();
 			expect(bigbox?.parentElement).not.toBeNull();
+			if (!bigbox) {
+				throw new Error('Expected bigbox to exist');
+			}
 
-			// biome-ignore lint/style/noNonNullAssertion: it is a test
-			const checkbox = await setupCheckbox(bigbox!, document);
+			const checkbox = await setupCheckbox(bigbox, document, READ_STORIES_VISIBILITY.HIDE);
 			expect(checkbox).not.toBeNull();
 			expect(checkbox?.id).toBe('oj-hide-read-stories');
 
