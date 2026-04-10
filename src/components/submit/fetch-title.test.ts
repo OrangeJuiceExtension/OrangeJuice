@@ -110,4 +110,57 @@ describe('fetchTitle', () => {
 
 		expect(mockContext.onInvalidated).toHaveBeenCalledWith(expect.any(Function));
 	});
+
+	it('should show a loading state while fetching the title', async () => {
+		let resolveFetch: (value: { title: string }) => void;
+		const fetchPromise = new Promise<{ title: string }>((resolve) => {
+			resolveFetch = resolve;
+		});
+		mockFetchJson.mockReturnValue(fetchPromise);
+
+		fetchTitle(mockContext, mockDoc);
+
+		const urlInput = mockDoc.querySelector<HTMLInputElement>('input[name="url"]');
+		const button = urlInput?.parentElement?.querySelector<HTMLButtonElement>('button');
+		if (!(urlInput && button)) {
+			throw new Error('Required elements not found');
+		}
+
+		urlInput.value = 'example.com';
+		button.click();
+
+		expect(button.disabled).toBe(true);
+		expect(button.innerText).toBe('fetching...');
+
+		// @ts-expect-error promise resolver is initialized synchronously in this test
+		resolveFetch({ title: 'Loaded Title' });
+		await vi.waitFor(() => {
+			expect(button.disabled).toBe(false);
+		});
+		expect(button.innerText).toBe('fetch title');
+	});
+
+	it('should dispatch an input event after populating the fetched title', async () => {
+		mockFetchJson.mockResolvedValue({ title: 'Fetched Title' });
+
+		fetchTitle(mockContext, mockDoc);
+
+		const urlInput = mockDoc.querySelector<HTMLInputElement>('input[name="url"]');
+		const titleInput = mockDoc.querySelector<HTMLInputElement>('input[name="title"]');
+		const button = urlInput?.parentElement?.querySelector<HTMLButtonElement>('button');
+		if (!(urlInput && titleInput && button)) {
+			throw new Error('Required elements not found');
+		}
+
+		const inputListener = vi.fn();
+		titleInput.addEventListener('input', inputListener);
+		urlInput.value = 'example.com';
+
+		button.click();
+
+		await vi.waitFor(() => {
+			expect(titleInput.value).toBe('Fetched Title');
+		});
+		expect(inputListener).toHaveBeenCalledTimes(1);
+	});
 });
