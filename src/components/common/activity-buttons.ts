@@ -4,6 +4,7 @@ import { dom } from '@/utils/dom.ts';
 
 const unvPrefixPattern = /^unv_/;
 const itemIdPattern = /[?&]id=(\d+)/;
+const labelSeparatorPattern = /[\s-]+/g;
 
 export const idExtractors = new Map<
 	string,
@@ -79,15 +80,20 @@ const activityTypeFromClassList = (
 	return undefined;
 };
 
-const hasButtonAlready = (nav: HTMLElement, config: ActivityButtonConfig) => {
-	return (
-		nav.querySelector(`.${config.buttonClass}`) ||
-		[...nav.querySelectorAll('a')].find(
-			(a) =>
-				a.textContent === config.buttonLabels.active ||
-				a.textContent === config.buttonLabels.inactive
-		)
-	);
+const normalizeLabel = (label: string | null | undefined): string => {
+	return label?.trim().toLowerCase().replace(labelSeparatorPattern, '') ?? '';
+};
+
+const hasButtonAlready = (nav: HTMLElement, config: ActivityButtonConfig): boolean => {
+	const activeLabel = normalizeLabel(config.buttonLabels.active);
+	const inactiveLabel = normalizeLabel(config.buttonLabels.inactive);
+	const existingButton = nav.querySelector(`.${config.buttonClass}`);
+	const existingLink = [...nav.querySelectorAll('a')].find((a) => {
+		const label = normalizeLabel(a.textContent);
+		return label === activeLabel || label === inactiveLabel;
+	});
+
+	return existingButton !== null || existingLink !== undefined;
 };
 
 export const initActivityButtons = async (
@@ -187,7 +193,7 @@ export const initActivityButtons = async (
 
 		button.addEventListener('click', handleClick);
 
-		const separator = document.createElement('span');
+		const separator = doc.createElement('span');
 		separator.textContent = ' | ';
 
 		cleanupHandlers.push(() => {

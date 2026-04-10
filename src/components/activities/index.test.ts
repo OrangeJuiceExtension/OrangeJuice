@@ -93,7 +93,7 @@ describe('activities component', () => {
 				{
 					componentType: 'favorite',
 					buttonClass: 'oj_favorite_link',
-					buttonLabels: { active: 'un-favorite', inactive: 'favorite' },
+					buttonLabels: { active: 'unfavorite', inactive: 'favorite' },
 				}
 			);
 
@@ -105,7 +105,7 @@ describe('activities component', () => {
 				{
 					componentType: 'flag',
 					buttonClass: 'oj_flag_link',
-					buttonLabels: { active: 'un-flag', inactive: 'flag' },
+					buttonLabels: { active: 'unflag', inactive: 'flag' },
 				}
 			);
 		});

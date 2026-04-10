@@ -144,13 +144,13 @@ describe('activity-buttons', () => {
 		const favoriteConfig: ActivityButtonConfig = {
 			componentType: 'favorite',
 			buttonClass: 'oj_favorite_link',
-			buttonLabels: { active: 'un-favorite', inactive: 'favorite' },
+			buttonLabels: { active: 'unfavorite', inactive: 'favorite' },
 		};
 
 		const flagConfig: ActivityButtonConfig = {
 			componentType: 'flag',
 			buttonClass: 'oj_flag_link',
-			buttonLabels: { active: 'un-flag', inactive: 'flag' },
+			buttonLabels: { active: 'unflag', inactive: 'flag' },
 		};
 
 		it('should create favorite button for submission in subline', async () => {
@@ -201,7 +201,7 @@ describe('activity-buttons', () => {
 			);
 
 			const button = doc.querySelector('.oj_favorite_link');
-			expect(button?.textContent).toBe('un-favorite');
+			expect(button?.textContent).toBe('unfavorite');
 		});
 
 		it('should add separator after button', async () => {
@@ -249,6 +249,23 @@ describe('activity-buttons', () => {
 			);
 
 			const buttons = doc.querySelectorAll('.oj_favorite_link');
+			expect(buttons.length).toBe(0);
+		});
+
+		it('should not add flag button when comment already has an unflag link without a hyphen', async () => {
+			const comhead = createComhead('12345');
+			const existingLink = doc.createElement('a');
+			existingLink.textContent = 'unflag';
+			comhead.appendChild(existingLink);
+
+			await initActivityButtons(
+				doc,
+				'/',
+				mockActivityTrail as unknown as ActivityTrail,
+				flagConfig
+			);
+
+			const buttons = doc.querySelectorAll('.oj_flag_link');
 			expect(buttons.length).toBe(0);
 		});
 
@@ -310,7 +327,7 @@ describe('activity-buttons', () => {
 					});
 				});
 
-				expect(button.textContent).toBe('un-favorite');
+				expect(button.textContent).toBe('unfavorite');
 			});
 
 			it('should toggle active to inactive on click', async () => {
@@ -331,7 +348,7 @@ describe('activity-buttons', () => {
 				);
 
 				const button = doc.querySelector('.oj_favorite_link') as HTMLButtonElement;
-				expect(button.textContent).toBe('un-favorite');
+				expect(button.textContent).toBe('unfavorite');
 
 				button.click();
 				await vi.waitFor(() => {
