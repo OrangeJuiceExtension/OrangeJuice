@@ -28,14 +28,14 @@ export const activities: ComponentFeature = {
 				return init(ctx, document, activityTrail, {
 					componentType: 'favorite',
 					buttonClass: FAVORITE_LINK,
-					buttonLabels: { active: 'un-favorite', inactive: 'favorite' },
+					buttonLabels: { active: 'unfavorite', inactive: 'favorite' },
 				});
 			}),
 			Promise.resolve().then(() => {
 				return init(ctx, document, activityTrail, {
 					componentType: 'flag',
 					buttonClass: FLAG_LINK,
-					buttonLabels: { active: 'un-flag', inactive: 'flag' },
+					buttonLabels: { active: 'unflag', inactive: 'flag' },
 				});
 			}),
 		]);
