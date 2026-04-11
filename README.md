@@ -55,7 +55,6 @@ Add a "favorite" button to comments and stories across various pages of HN, allo
 - **Dedicated `/following` page**: Open a combined feed of recent comments and submissions from the users you follow, rendered in the normal HN style.
 - **Comment context included**: Comment entries show the parent story title, quick links for reply/comments, and relative timestamps so you can decide what to open next faster.
 - **Local persistence and controls**: Followed-user order, expanded/collapsed sections, and recent fetched data are stored locally. Reorder the usernames by dragging, collapse noisy users by default, and refresh a single user when you want fresh data without reloading everything else.
-- **Mute users**: From the `/following` page or any user profile, you can mute noisy users. Muted comments appear faded in thread pages, and a mute/unmute toggle appears on your own profile for easy management.
 
 ## Hide read stories
 There is a checkbox displayed at the top of story pages that hides any stories you've already read. It uses the browser's history API to determine if a link has been visited before.
