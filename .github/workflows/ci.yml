@@ -65,7 +65,6 @@ jobs:
         run: bun run ci
 
   codeql:
-    needs: test
     # Only run on push to main, and not on the bump commit (and not if CI was intentionally skipped)
     if: >
       github.event_name == 'push' &&
@@ -81,7 +80,7 @@ jobs:
     uses: ./.github/workflows/codeql.yml
 
   release:
-    needs: codeql
+    needs: [test, test-latest, codeql]
     # Only run on push to main, and not on the bump commit (and not if CI was intentionally skipped)
     if: >
       github.event_name == 'push' &&
