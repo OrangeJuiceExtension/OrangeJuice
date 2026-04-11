@@ -16,12 +16,17 @@ const COMMENT_ID_ATTR = 'data-comment-id';
 export const focusClass = 'oj_focused_comment';
 export const focusClassDefault = 'oj_focused_comment_default';
 
+const MUTED_MARKER_TEXT = ' [muted] ';
+const MUTED_MARKER_STYLE_ID = 'oj-muted-marker-style';
+
 export class HNComment {
 	id: string;
 	commentRow: HTMLElement;
 
 	author?: string;
 	postedDate?: string;
+	mutedMarker: HTMLElement | null = null;
+	private mutedMarkerInserted = false;
 
 	constructor(commentRow: HTMLElement) {
 		this.id = commentRow.id;
@@ -34,6 +39,53 @@ export class HNComment {
 		this.author = this.commentRow.querySelector('a.hnuser')?.textContent || undefined;
 		this.postedDate =
 			this.commentRow.querySelector('span.age')?.getAttribute('title') || undefined;
+		this.ensureMutedMarkerStyle();
+	}
+
+	get commentHead(): HTMLElement | null {
+		return this.commentRow.querySelector('.comhead');
+	}
+
+	get commentText(): HTMLElement | null {
+		return this.commentRow.querySelector('.commtext');
+	}
+
+	getAuthor(): string | undefined {
+		return this.author?.trim();
+	}
+
+	setMuted(muted: boolean): void {
+		if (muted && !this.mutedMarkerInserted) {
+			const authorLink = this.commentHead?.querySelector('a.hnuser');
+			if (authorLink) {
+				const marker = document.createElement('span');
+				marker.className = 'oj_muted_marker';
+				marker.textContent = MUTED_MARKER_TEXT;
+				authorLink.after(marker);
+				this.mutedMarker = marker;
+				this.mutedMarkerInserted = true;
+			}
+		} else if (!muted && this.mutedMarker) {
+			this.mutedMarker.remove();
+			this.mutedMarker = null;
+			this.mutedMarkerInserted = false;
+		}
+	}
+
+	private ensureMutedMarkerStyle(): void {
+		if (document.getElementById(MUTED_MARKER_STYLE_ID)) {
+			return;
+		}
+		const style = document.createElement('style');
+		style.id = MUTED_MARKER_STYLE_ID;
+		style.textContent = `
+			.hnuser + ${JSON.stringify(MUTED_MARKER_TEXT)} {
+				color: #888;
+				font-size: 0.85em;
+				margin-left: 4px;
+			}
+		`;
+		document.head.appendChild(style);
 	}
 
 	get isCollapsed(): boolean {
@@ -100,16 +152,11 @@ export class HNComment {
 			VOTE_SELECTORS.UNVOTE_LINK
 		) as HTMLAnchorElement;
 
-		if (unvoteBtn) {
-			unvoteBtn.click();
+		const btn = unvoteBtn ?? voteBtn;
+		if (btn) {
+			btn.click();
 			return true;
 		}
-
-		if (voteBtn) {
-			voteBtn.click();
-			return true;
-		}
-
 		return false;
 	}
 

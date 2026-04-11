@@ -1,8 +1,6 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -65,14 +63,8 @@ jobs:
         run: bun run ci
 
   codeql:
-    needs: test
-    # Only run on push to main, and not on the bump commit (and not if CI was intentionally skipped)
-    if: >
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/main' &&
-      github.actor != 'github-actions[bot]' &&
-      !contains(github.event.head_commit.message, 'chore: bump version') &&
-      !contains(github.event.head_commit.message, '[skip ci]')
+    # Run in parallel with tests on PRs
+    if: github.event_name == 'pull_request'
     permissions:
       contents: read
       actions: read
@@ -81,14 +73,12 @@ jobs:
     uses: ./.github/workflows/codeql.yml
 
   release:
-    needs: codeql
-    # Only run on push to main, and not on the bump commit (and not if CI was intentionally skipped)
+    needs: [test, test-latest, codeql]
+    # Only run when a PR is closed (merged) on main
     if: >
-      github.event_name == 'push' &&
-      github.ref == 'refs/heads/main' &&
-      github.actor != 'github-actions[bot]' &&
-      !contains(github.event.head_commit.message, 'chore: bump version') &&
-      !contains(github.event.head_commit.message, '[skip ci]')
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true
     permissions:
       contents: write
       id-token: write

@@ -12,10 +12,12 @@ import { indentToggle } from '@/components/comment/indent-toggle.ts';
 import { initCommentUX } from '@/components/comment/init-comment-ux.ts';
 import { inlineReply } from '@/components/comment/inline-reply.ts';
 import { keyboardNavigation } from '@/components/comment/keyboard-navigation.ts';
+import { applyMutedComments } from '@/components/comment/muted-comments.ts';
 import { replyFocusTextarea } from '@/components/comment/reply-focus.ts';
 import { getNavState } from '@/components/common/index.ts';
 import { createClientServices } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
+import { getMutedUsers } from '@/utils/muted-users.ts';
 import { paths } from '@/utils/paths.ts';
 import type { ComponentFeature } from '@/utils/types.ts';
 
@@ -26,7 +28,7 @@ export const comments: ComponentFeature = {
 	loginRequired: true,
 	matches: [`${paths.base}/*`],
 	runAt: 'document_end',
-	main(ctx: ContentScriptContext) {
+	async main(ctx: ContentScriptContext) {
 		if (!validPaths.some((p) => document.location.pathname.startsWith(p))) {
 			return;
 		}
@@ -37,9 +39,11 @@ export const comments: ComponentFeature = {
 		const itemAuthor = dom.getItemAuthor(document);
 		const hnComments = allComments.map((el) => new HNComment(el));
 		const commentData = new CommentData(hnComments);
+		const mutedUsers = await getMutedUsers();
 
 		return Promise.all([
 			Promise.resolve().then(() => initCommentUX(document, allComments, itemAuthor)),
+			Promise.resolve().then(() => applyMutedComments(document, hnComments, mutedUsers)),
 			Promise.resolve().then(() => highlightUnreadComments(document, allComments, manager)),
 			Promise.resolve().then(() => persistCollapsedComments(ctx, allComments)),
 			Promise.resolve().then(() => indentToggle(ctx, document, allComments)),

@@ -20,13 +20,13 @@ describe('change-dead-comments-color', () => {
 		comment.innerHTML = `
 			<span class="comhead">user [dead]</span>
 			<div class="comment">
-				<span class="commtext cdd">This is a dead comment</span>
+				<div class="commtext cdd">This is a dead comment</div>
 			</div>
 		`;
 
 		changeDeadCommentsColor(doc, [comment]);
 
-		const commtext = comment.querySelector('div.comment span.commtext.cdd');
+		const commtext = comment.querySelector('div.comment .commtext.cdd');
 		expect(commtext?.classList.contains('oj_dead_comment')).toBe(true);
 	});
 
@@ -36,13 +36,13 @@ describe('change-dead-comments-color', () => {
 		comment.innerHTML = `
 			<span class="comhead">user</span>
 			<div class="comment">
-				<span class="commtext cdd">This is a live comment</span>
+				<div class="commtext cdd">This is a live comment</div>
 			</div>
 		`;
 
 		changeDeadCommentsColor(doc, [comment]);
 
-		const commtext = comment.querySelector('div.comment span.commtext.cdd');
+		const commtext = comment.querySelector('div.comment .commtext.cdd');
 		expect(commtext?.classList.contains('oj_dead_comment')).toBe(false);
 	});
 
@@ -53,7 +53,7 @@ describe('change-dead-comments-color', () => {
 		deadComment.innerHTML = `
 			<span class="comhead">user1 [dead]</span>
 			<div class="comment">
-				<span class="commtext cdd">Dead comment</span>
+				<div class="commtext cdd">Dead comment</div>
 			</div>
 		`;
 
@@ -61,7 +61,7 @@ describe('change-dead-comments-color', () => {
 		liveComment.innerHTML = `
 			<span class="comhead">user2</span>
 			<div class="comment">
-				<span class="commtext cdd">Live comment</span>
+				<div class="commtext cdd">Live comment</div>
 			</div>
 		`;
 
@@ -69,15 +69,15 @@ describe('change-dead-comments-color', () => {
 		anotherDeadComment.innerHTML = `
 			<span class="comhead">user3 [dead]</span>
 			<div class="comment">
-				<span class="commtext cdd">Another dead comment</span>
+				<div class="commtext cdd">Another dead comment</div>
 			</div>
 		`;
 
 		changeDeadCommentsColor(doc, [deadComment, liveComment, anotherDeadComment]);
 
-		const deadCommtext1 = deadComment.querySelector('div.comment span.commtext.cdd');
-		const liveCommtext = liveComment.querySelector('div.comment span.commtext.cdd');
-		const deadCommtext2 = anotherDeadComment.querySelector('div.comment span.commtext.cdd');
+		const deadCommtext1 = deadComment.querySelector('div.comment .commtext.cdd');
+		const liveCommtext = liveComment.querySelector('div.comment .commtext.cdd');
+		const deadCommtext2 = anotherDeadComment.querySelector('div.comment .commtext.cdd');
 
 		expect(deadCommtext1?.classList.contains('oj_dead_comment')).toBe(true);
 		expect(liveCommtext?.classList.contains('oj_dead_comment')).toBe(false);
@@ -89,13 +89,13 @@ describe('change-dead-comments-color', () => {
 		const comment = doc.createElement('div');
 		comment.innerHTML = `
 			<div class="comment">
-				<span class="commtext cdd">Comment without comhead</span>
+				<div class="commtext cdd">Comment without comhead</div>
 			</div>
 		`;
 
 		changeDeadCommentsColor(doc, [comment]);
 
-		const commtext = comment.querySelector('div.comment span.commtext.cdd');
+		const commtext = comment.querySelector('div.comment .commtext.cdd');
 		expect(commtext?.classList.contains('oj_dead_comment')).toBe(false);
 	});
 

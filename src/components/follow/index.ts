@@ -1359,7 +1359,10 @@ const attachButtonAfterNode = (
 	wrap.className = FOLLOW_BUTTON_CONTAINER_CLASS;
 	const button = createFollowButton(doc, username, isFollowing);
 	wrap.append(button);
-	target.parentNode.insertBefore(wrap, target.nextSibling);
+
+	const mutedMarker = target.parentNode.querySelector('.oj_muted_marker');
+	const insertBefore = mutedMarker ? mutedMarker.nextSibling : target.nextSibling;
+	target.parentNode.insertBefore(wrap, insertBefore);
 	registerButton(ctx, doc, username, buttonsByUsername, button, currentUsername);
 };
 

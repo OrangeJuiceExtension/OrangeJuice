@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContentScriptContext } from '#imports';
+import { syncMutedComments } from '@/components/comment/muted-comments';
 import { apiModule } from '@/utils/api';
+import { isMutedUser, toggleMutedUser } from '@/utils/muted-users';
 import { showUserInfoOnHover } from './show-user-info-hover';
 
 vi.mock('@/utils/api', () => {
@@ -12,6 +14,15 @@ vi.mock('@/utils/api', () => {
 		getUserInfo,
 	};
 });
+
+vi.mock('@/utils/muted-users', () => ({
+	isMutedUser: vi.fn(),
+	toggleMutedUser: vi.fn(),
+}));
+
+vi.mock('@/components/comment/muted-comments', () => ({
+	syncMutedComments: vi.fn(),
+}));
 
 describe('showUserInfoOnHover', () => {
 	let mockCtx: ContentScriptContext;
@@ -29,6 +40,8 @@ describe('showUserInfoOnHover', () => {
 		} as unknown as ContentScriptContext;
 
 		vi.clearAllMocks();
+		vi.mocked(isMutedUser).mockResolvedValue(false);
+		vi.mocked(syncMutedComments).mockResolvedValue();
 	});
 
 	const createUserLink = (userName: string): HTMLAnchorElement => {
@@ -95,6 +108,57 @@ describe('showUserInfoOnHover', () => {
 			expect(popover?.textContent).toContain('testuser');
 			expect(popover?.textContent).toContain('5000');
 			expect(popover?.textContent).toContain('100');
+		});
+	});
+
+	it('should render a mute button next to the username', async () => {
+		const userLink = createUserLink('testuser');
+		mockUserInfo('testuser');
+
+		showUserInfoOnHover(mockCtx, document);
+
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+		await vi.waitFor(() => {
+			const button = document.querySelector<HTMLButtonElement>('.oj-action-button');
+			expect(button?.textContent).toBe('mute');
+		});
+	});
+
+	it('should render unmute when the user is already muted', async () => {
+		const userLink = createUserLink('testuser');
+		mockUserInfo('testuser');
+		vi.mocked(isMutedUser).mockResolvedValueOnce(true);
+
+		showUserInfoOnHover(mockCtx, document);
+
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+		await vi.waitFor(() => {
+			const button = document.querySelector<HTMLButtonElement>('.oj-action-button');
+			expect(button?.textContent).toBe('unmute');
+		});
+	});
+
+	it('should toggle mute state and sync comments when the mute button is clicked', async () => {
+		const userLink = createUserLink('testuser');
+		mockUserInfo('testuser');
+		vi.mocked(toggleMutedUser).mockResolvedValueOnce(true);
+
+		showUserInfoOnHover(mockCtx, document);
+
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+		await vi.waitFor(() => {
+			expect(document.querySelector('.oj-action-button')).toBeTruthy();
+		});
+		const button = document.querySelector<HTMLButtonElement>('.oj-action-button');
+		button?.click();
+
+		await vi.waitFor(() => {
+			expect(toggleMutedUser).toHaveBeenCalledWith('testuser');
+			expect(syncMutedComments).toHaveBeenCalled();
+			expect(button?.textContent).toBe('unmute');
 		});
 	});
 

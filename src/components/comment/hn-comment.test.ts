@@ -60,7 +60,16 @@ describe('HNComment', () => {
 			const comment = new HNComment(row);
 
 			expect(comment.author).toBe('alice');
+			expect(comment.getAuthor()).toBe('alice');
 			expect(comment.postedDate).toBe('2024-01-01');
+		});
+
+		it('should return a trimmed author', () => {
+			const row = createCommentRow({ author: ' alice ' });
+
+			const comment = new HNComment(row);
+
+			expect(comment.getAuthor()).toBe('alice');
 		});
 
 		it('should mark collapsed when coll or noshow class exists', () => {
@@ -77,6 +86,98 @@ describe('HNComment', () => {
 			const comment = new HNComment(row);
 
 			expect(comment.isDead).toBe(true);
+		});
+
+		it('should expose comment head and text nodes', () => {
+			const row = doc.createElement('tr');
+			row.id = 'comment-2';
+			row.classList.add('comtr');
+			row.innerHTML = `
+				<td class="default">
+					<span class="comhead">
+						<a class="hnuser" href="user?id=alice">alice</a>
+						<span class="dead">[dead]</span>
+					</span>
+					<div class="comment">
+						<span class="commtext">hello</span>
+					</div>
+				</td>
+			`;
+			doc.body.append(row);
+
+			const comment = new HNComment(row);
+
+			expect(comment.commentHead?.classList.contains('comhead')).toBe(true);
+			expect(comment.commentText?.classList.contains('commtext')).toBe(true);
+			expect(comment.isDead).toBe(true);
+		});
+
+		it('should expose comment text when commtext is a div', () => {
+			const row = doc.createElement('tr');
+			row.id = 'comment-5';
+			row.classList.add('comtr');
+			row.innerHTML = `
+				<td class="default">
+					<span class="comhead">
+						<a class="hnuser" href="user?id=alice">alice</a>
+					</span>
+					<div class="comment">
+						<div class="commtext c00">hello</div>
+					</div>
+				</td>
+			`;
+			doc.body.append(row);
+
+			const comment = new HNComment(row);
+
+			expect(comment.commentText?.tagName).toBe('DIV');
+			expect(comment.commentText?.classList.contains('commtext')).toBe(true);
+		});
+
+		it('should add muted presentation for muted comments', () => {
+			const row = doc.createElement('tr');
+			row.id = 'comment-3';
+			row.classList.add('comtr');
+			row.innerHTML = `
+				<td class="default">
+					<span class="comhead">
+						<a class="hnuser" href="user?id=alice">alice</a>
+					</span>
+					<div class="comment">
+						<span class="commtext">hello</span>
+					</div>
+				</td>
+			`;
+			doc.body.append(row);
+
+			const comment = new HNComment(row);
+			comment.setMuted(true);
+
+			expect(comment.mutedMarker?.textContent).toContain('[muted]');
+			expect(comment.mutedMarker?.textContent).toBe(' [muted] ');
+		});
+
+		it('should remove the muted marker when unmuting', () => {
+			const row = doc.createElement('tr');
+			row.id = 'comment-4';
+			row.classList.add('comtr');
+			row.innerHTML = `
+				<td class="default">
+					<span class="comhead">
+						<a class="hnuser" href="user?id=alice">alice</a>
+					</span>
+					<div class="comment">
+						<span class="commtext">hello</span>
+					</div>
+				</td>
+			`;
+			doc.body.append(row);
+
+			const comment = new HNComment(row);
+			comment.setMuted(true);
+			comment.setMuted(false);
+
+			expect(comment.mutedMarker).toBeNull();
 		});
 
 		it('should set data-comment-id attribute', () => {
