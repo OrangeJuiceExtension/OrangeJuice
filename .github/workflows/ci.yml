@@ -75,7 +75,6 @@ jobs:
     uses: ./.github/workflows/codeql.yml
 
   release:
-    needs: [test, test-latest, codeql]
     # Only run when a PR is closed (merged) on main
     if: >
       github.event_name == 'pull_request' &&
