@@ -122,7 +122,7 @@ jobs:
           git add package.json
           git commit -m "chore: bump version to ${{ steps.bump.outputs.new_version }} [skip ci]"
           git tag "v${{ steps.bump.outputs.new_version }}"
-          git push origin main
+          git push origin HEAD:main
           git push origin "v${{ steps.bump.outputs.new_version }}"
 
       - name: Run zip chrome
