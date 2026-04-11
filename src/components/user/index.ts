@@ -1,4 +1,5 @@
 import type { ContentScriptContext } from '#imports';
+import { mutedUsersRow } from '@/components/user/muted-users-row.ts';
 import { profileLinksDropdown } from '@/components/user/profile-links-dropdown.ts';
 import { showUserInfoOnHover } from '@/components/user/show-user-info-hover.ts';
 import { topLeadersKarma } from '@/components/user/top-leaders-karma.ts';
@@ -15,6 +16,7 @@ export const user: ComponentFeature = {
 		return Promise.all([
 			Promise.resolve().then(() => showUserInfoOnHover(ctx, document, user.username)),
 			Promise.resolve().then(() => profileLinksDropdown(ctx, document)),
+			Promise.resolve().then(() => mutedUsersRow(ctx, document)),
 			Promise.resolve().then(() => userAboutLinkify(ctx, document)),
 			Promise.resolve().then(() => topLeadersKarma(document)),
 		]);
