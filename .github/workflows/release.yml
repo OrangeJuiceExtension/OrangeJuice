@@ -21,16 +21,31 @@ jobs:
       - name: Guard against release loop
         shell: bash
         run: |
-          MSG="${{ github.event.head_commit.message || '' }}"
-          if echo "$MSG" | grep -qiE "^chore: bump version"; then
-            echo "Automated version bump commit; exiting to avoid a loop."
-            exit 0
+          message="${{ github.event.head_commit.message || '' }}"
+          if echo "$message" | grep -qiE '\[skip ci\]'; then
+              echo 'Automated version bump commit detected; exiting.'
+              exit 0
           fi
+
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
       - uses: actions/checkout@v6
         with:
-          ref: main
           fetch-depth: 0
+          ref: ${{ github.sha }}
+          token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: false
+
+      - name: Configure Git
+        run: |
+          git config user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+          git config user.email '${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+          git remote set-url origin "https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}.git"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -44,12 +59,6 @@ jobs:
           key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
           restore-keys: |
             ${{ runner.os }}-bun-
-
-      - name: Configure Git
-        run: |
-          git config user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
-          git config user.email '${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
-          git remote set-url origin "https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}.git"
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -79,27 +88,32 @@ jobs:
 
       - name: Bump version
         id: bump
+        shell: bash
         run: |
-          CURRENT_VERSION=$(bun --print "require('./package.json').version")
-          BUMP_TYPE="${{ steps.version.outputs.bump }}"
+          current_version="$(jq -r '.version' package.json)"
+          bump_type="${{ steps.version.outputs.bump }}"
 
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+          IFS='.' read -r major minor patch <<< "$current_version"
 
-          case $BUMP_TYPE in
-            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
-            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
-            patch) PATCH=$((PATCH + 1)) ;;
+          case "$bump_type" in
+              major)
+                  major=$((major + 1))
+                  minor=0
+                  patch=0
+                  ;;
+              minor)
+                  minor=$((minor + 1))
+                  patch=0
+                  ;;
+              patch)
+                  patch=$((patch + 1))
+                  ;;
           esac
 
-          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          new_version="$major.$minor.$patch"
+          echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
 
-          bun --eval "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            pkg.version = '$NEW_VERSION';
-            fs.writeFileSync('package.json', JSON.stringify(pkg, null, '\t') + '\n');
-          "
+          sed -i 's/"version": *"[^"]*"/"version": "'"$new_version"'"/' package.json
 
       - name: Commit version bump
         env:
@@ -111,29 +125,6 @@ jobs:
           git push origin HEAD:main
           git push origin "v${{ steps.bump.outputs.new_version }}"
 
-      - name: Generate changelog
-        id: changelog
-        run: |
-          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          if [ -z "$LAST_TAG" ]; then
-            COMMITS=$(git log --pretty=format:"- %s (%h)" HEAD)
-          else
-            COMMITS=$(git log ${LAST_TAG}..HEAD^ --pretty=format:"- %s (%h)")
-          fi
-
-          FEATURES=$(echo "$COMMITS" | grep -iE "^- (feat|feature)(\(.*\))?:" || true)
-          FIXES=$(echo "$COMMITS" | grep -iE "^- fix(\(.*\))?:" || true)
-          CHORES=$(echo "$COMMITS" | grep -iE "^- (chore|docs|style|refactor|perf|test)(\(.*\))?:" || true)
-
-          INSTALL_INSTRUCTIONS=$(cat scripts/browser-install.txt)
-          CHANGELOG="$INSTALL_INSTRUCTIONS"$'\n\n'"## What's Changed"$'\n'
-          if [ -n "$FEATURES" ]; then CHANGELOG+=$'\n'"### ✨ Features"$'\n'"$FEATURES"$'\n'; fi
-          if [ -n "$FIXES" ]; then CHANGELOG+=$'\n'"### 🐛 Bug Fixes"$'\n'"$FIXES"$'\n'; fi
-          if [ -n "$CHORES" ]; then CHANGELOG+=$'\n'"### 🔧 Maintenance"$'\n'"$CHORES"$'\n'; fi
-          if [ -z "$FEATURES" ] && [ -z "$FIXES" ] && [ -z "$CHORES" ]; then CHANGELOG+=$'\n'"- Initial release"; fi
-
-          echo "$CHANGELOG" > changelog.txt
-
       - name: Run zip chrome
         run: bun run zip
 
@@ -142,11 +133,11 @@ jobs:
 
       - name: Create GitHub Release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           gh release create "v${{ steps.bump.outputs.new_version }}" \
             --title "v${{ steps.bump.outputs.new_version }}" \
-            --notes-file changelog.txt \
+            --generate-notes \
             .output/orangejuice-*.zip
 
       - name: Trigger pages workflow in orangejuiceextension.github.io
