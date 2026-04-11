@@ -54,6 +54,29 @@ Agents must follow:
 - Handle errors appropriately in async code with try-catch blocks
 - Don't use async functions as Promise executors
 
+### Frontend tasks
+
+For [frontend design tasks](https://developers.openai.com/blog/designing-delightful-frontends-with-gpt-5-4), avoid generic, overbuilt layouts.
+
+**Hard rules**
+- **One composition:** The first viewport should read as a single composition, not a dashboard unless it actually is one.
+- **Brand first:** On branded pages, make the brand or product name hero-level. It should not be reduced to nav text or an eyebrow, and no headline should overpower it.
+- **Brand test:** If removing the nav makes the first viewport feel like another brand, branding is too weak.
+- **Typography:** Use expressive, intentional fonts. Avoid default stacks (Inter, Roboto, Arial, system).
+- **Background:** Avoid flat, single-color backgrounds; use gradients, images, or subtle patterns.
+- **Full-bleed hero:** On landing/promotional pages, use an edge-to-edge hero image or background. Avoid inset heroes, side panels, rounded media cards, tiled collages, or floating image blocks unless required by an existing system.
+- **Hero budget:** First viewport should contain only the brand, one headline, one short supporting sentence, one CTA group, and one dominant image. Exclude stats, schedules, promos, and metadata.
+- **No hero overlays:** Do not place badges, chips, stickers, or callouts on hero media.
+- **Cards:** Default to no cards. Never use cards in the hero. Use them only when they directly support interaction.
+- **One job per section:** Each section should have one purpose, one headline, and usually one short supporting sentence.
+- **Real visual anchor:** Imagery should show the product, place, or context—not just decoration.
+- **Reduce clutter:** Avoid pill clusters, stat strips, icon rows, boxed promos, and competing text blocks.
+- **Motion:** Use 2–3 intentional motions to create hierarchy, not noise.
+- **Color & look:** Define CSS variables and a clear visual direction. Avoid default purple-on-white or dark-mode bias.
+- **Responsive:** Ensure the page loads well on desktop and mobile.
+
+**Exception:** When working within an existing design system, preserve established patterns and structure.
+
 ### React
 - Use function components over class components
 - Call hooks at the top level only, never conditionally
@@ -61,6 +84,7 @@ Agents must follow:
 - Use the `key` prop for elements in iterables (prefer unique IDs over array indices)
 - Nest children between opening and closing tags instead of passing as props
 - Don't define components inside other components
+- Prefer modern patterns (`useEffectEvent`, `startTransition`, `useDeferredValue`) when appropriate. Avoid `useMemo`/`useCallback` unless already used.
 - Use semantic HTML and ARIA attributes for accessibility:
   - Provide meaningful alt text for images
   - Use proper heading hierarchy
