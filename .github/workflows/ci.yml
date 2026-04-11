@@ -1,8 +1,10 @@
 name: CI
 
 on:
+  push:
+    branches: [main]
   pull_request:
-    types: [opened, synchronize, closed]
+    types: [opened, synchronize]
     branches: [main]
 
 permissions:
@@ -75,11 +77,8 @@ jobs:
     uses: ./.github/workflows/codeql.yml
 
   release:
-    # Only run when a PR is closed (merged) on main
-    if: >
-      github.event_name == 'pull_request' &&
-      github.event.action == 'closed' &&
-      github.event.pull_request.merged == true
+    # Only run on push to main (i.e. after PR merge)
+    if: github.event_name == 'push'
     permissions:
       contents: write
       id-token: write
