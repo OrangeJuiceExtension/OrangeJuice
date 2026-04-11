@@ -1,6 +1,11 @@
 import type { ContentScriptContext } from '#imports';
+import { HNComment } from '@/components/comment/hn-comment.ts';
+import { syncMutedComments } from '@/components/comment/muted-comments.ts';
+import { ACTION_BUTTON_CLASS, getActionButtonStyle } from '@/utils/action-button.ts';
 import { apiModule } from '@/utils/api.ts';
+import { dom } from '@/utils/dom.ts';
 import { cloneChildNodesInto, createSanitizedFragment, linkifyTextNodes } from '@/utils/html.ts';
+import { isMutedUser, toggleMutedUser } from '@/utils/muted-users.ts';
 
 const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 export const USER_INFO_HOVER_CLASS = 'oj_user_info_hover';
@@ -59,6 +64,11 @@ export const showUserInfoOnHover = (
 		.${USER_INFO_HOVER_CLASS} td {
 			vertical-align: top;
 		}
+
+		.${ACTION_BUTTON_CLASS} {
+			margin-left: 6px;
+		}
+	${getActionButtonStyle()}
 	`;
 		doc.head.appendChild(style);
 	}
@@ -73,12 +83,39 @@ export const showUserInfoOnHover = (
 	const cachedData = new Map<string, HTMLDivElement>();
 	let activeTrigger: HTMLAnchorElement | null = null;
 	let popover: HTMLDivElement | null = null;
+	const allComments = dom.getAllComments(doc);
+	const hnComments = allComments.map((comment) => new HNComment(comment));
+
+	const upsertMuteButton = async (
+		userName: string,
+		userDivBox: HTMLDivElement
+	): Promise<void> => {
+		const userRow = userDivBox.querySelector<HTMLTableRowElement>('tr');
+		const userValueCell = userRow?.querySelector<HTMLTableCellElement>('td:last-child');
+		if (!userValueCell) {
+			return;
+		}
+
+		userValueCell.querySelector(`.${ACTION_BUTTON_CLASS}`)?.remove();
+
+		const button = doc.createElement('button');
+		button.type = 'button';
+		button.className = ACTION_BUTTON_CLASS;
+		button.textContent = (await isMutedUser(userName)) ? 'unmute' : 'mute';
+		button.addEventListener('click', async () => {
+			const isMuted = await toggleMutedUser(userName);
+			button.textContent = isMuted ? 'unmute' : 'mute';
+			await syncMutedComments(doc, hnComments);
+		});
+		userValueCell.append(button);
+	};
 
 	const populateUserDiv = async (user: HTMLAnchorElement, userDivBox: HTMLDivElement) => {
 		const userName = user.innerText.trim().split(' ')[0];
 		const cachedUserDiv = cachedData.get(userName);
 		if (cachedUserDiv) {
 			cloneChildNodesInto(cachedUserDiv, userDivBox);
+			await upsertMuteButton(userName, userDivBox);
 			return;
 		}
 
@@ -133,6 +170,7 @@ export const showUserInfoOnHover = (
 
 		userDivBox.replaceChildren(table);
 		cachedData.set(userName, userDivBox.cloneNode(true) as HTMLDivElement);
+		await upsertMuteButton(userName, userDivBox);
 	};
 
 	const createUserDiv = (doc: Document) => {
