@@ -2,6 +2,7 @@ name: CI
 
 on:
   pull_request:
+    types: [opened, synchronize, closed]
     branches: [main]
 
 permissions:
@@ -13,6 +14,7 @@ concurrency:
 
 jobs:
   test:
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
 
     steps:
@@ -37,6 +39,7 @@ jobs:
         run: bun run ci
 
   test-latest:
+    if: github.event.action != 'closed'
     name:  Test against latest dependencies in order to predict failures
     runs-on: ubuntu-latest
 
@@ -63,8 +66,7 @@ jobs:
         run: bun run ci
 
   codeql:
-    # Run in parallel with tests on PRs
-    if: github.event_name == 'pull_request'
+    if: github.event.action != 'closed'
     permissions:
       contents: read
       actions: read
