@@ -28,7 +28,7 @@ export default defineConfig({
 			'--use-mock-keychain',
 		],
 	}),
-	manifest: {
+	manifest: ({ browser }) => ({
 		name: 'Orange Juice',
 		homepage_url: 'https://oj-hn.com',
 		description: 'Orange Juice makes Hacker News sweeter',
@@ -50,7 +50,10 @@ export default defineConfig({
 			96: '/icon/orange_juice_icon_96x96.png',
 			128: '/icon/orange_juice_icon_128x128.png',
 		},
-		permissions: ['history', 'storage', 'tabs'],
+		permissions:
+			browser === 'safari'
+				? ['nativeMessaging', 'storage', 'tabs']
+				: ['history', 'storage', 'tabs'],
 		host_permissions: ['https://news.ycombinator.com/*', 'https://squeeze.oj-hn.com/*'],
 		web_accessible_resources: [
 			{
@@ -64,7 +67,7 @@ export default defineConfig({
 				],
 			},
 		],
-	},
+	}),
 	vite: () => ({
 		plugins: [tailwindcss()],
 	}),

@@ -10,6 +10,8 @@
 		"build": "wxt build",
 		"build-watch": "chokidar --initial --silent \"src/**/*\" -c \"bun run build\"",
 		"build:firefox": "wxt build -b firefox",
+		"build:safari": "wxt build -b safari --mv3",
+		"build:safari:convert": "bun run build:safari && ./scripts/safari.sh",
 		"webext:firefox:lint": "web-ext -w -s .output/firefox-mv2/ lint",
 		"icons": "bun run scripts/generate-icons.ts",
 		"zip": "wxt zip",
