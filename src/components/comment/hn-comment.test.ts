@@ -353,23 +353,8 @@ describe('HNComment', () => {
 		it('should click collapse link with [–]', () => {
 			const row = createCommentRow();
 			const toggle = doc.createElement('a');
-			toggle.classList.add('togg', 'clicky');
-			toggle.textContent = '[–]';
-			row.appendChild(toggle);
-			const clickSpy = vi.spyOn(toggle, 'click');
-			const comment = new HNComment(row);
-
-			const result = comment.collapseToggle();
-
-			expect(result).toBe(true);
-			expect(clickSpy).toHaveBeenCalled();
-		});
-
-		it('should click collapse link with [-]', () => {
-			const row = createCommentRow();
-			const toggle = doc.createElement('a');
 			toggle.classList.add('togg');
-			toggle.textContent = '[-]';
+			toggle.textContent = '[–]';
 			row.appendChild(toggle);
 			const clickSpy = vi.spyOn(toggle, 'click');
 			const comment = new HNComment(row);
@@ -452,6 +437,177 @@ describe('HNComment', () => {
 			row.appendChild(inner);
 
 			expect(HNComment.getCommentIdFromElement(inner)).toBe('comment-1');
+		});
+	});
+
+	describe('getCollapseRootLink', () => {
+		it('should return the collapse root link when present', () => {
+			const row = doc.createElement('tr');
+			row.classList.add('comtr');
+			row.innerHTML = `
+				<td class="default">
+					<span class="comhead">
+						<a href="user?id=test">test</a>
+						<a style="cursor: pointer;">[collapse root]</a>
+					</span>
+				</td>
+			`;
+			doc.body.appendChild(row);
+			const comment = new HNComment(row);
+
+			const link = comment.getCollapseRootLink();
+
+			expect(link).toBeTruthy();
+			expect(link?.textContent).toBe('[collapse root]');
+		});
+
+		it('should return undefined when no collapse root link exists', () => {
+			const row = doc.createElement('tr');
+			row.classList.add('comtr');
+			row.innerHTML = `
+				<td class="default">
+					<span class="comhead">
+						<a href="user?id=test">test</a>
+					</span>
+				</td>
+			`;
+			doc.body.appendChild(row);
+			const comment = new HNComment(row);
+
+			const link = comment.getCollapseRootLink();
+
+			expect(link).toBeUndefined();
+		});
+
+		it('should return undefined when comment head does not exist', () => {
+			const row = doc.createElement('tr');
+			row.classList.add('comtr');
+			row.innerHTML = `<td class="default"></td>`;
+			doc.body.appendChild(row);
+			const comment = new HNComment(row);
+
+			const link = comment.getCollapseRootLink();
+
+			expect(link).toBeUndefined();
+		});
+	});
+
+	describe('getRootCommentElement', () => {
+		it('should return the root comment element for a reply', () => {
+			const rootRow = doc.createElement('tr');
+			rootRow.classList.add('athing', 'comtr');
+			rootRow.innerHTML = `
+				<td class="default">
+					<span class="ind"><img src="s.gif" width="0"></span>
+				</td>
+			`;
+			const replyRow = doc.createElement('tr');
+			replyRow.classList.add('athing', 'comtr');
+			replyRow.innerHTML = `
+				<td class="default">
+					<span class="ind"><img src="s.gif" width="40"></span>
+				</td>
+			`;
+			doc.body.appendChild(rootRow);
+			doc.body.appendChild(replyRow);
+			const comment = new HNComment(replyRow);
+
+			const root = comment.getRootCommentElement();
+
+			expect(root).toBe(rootRow);
+		});
+
+		it('should return undefined when there is no previous sibling with indent 0', () => {
+			const replyRow = doc.createElement('tr');
+			replyRow.classList.add('athing', 'comtr');
+			replyRow.innerHTML = `
+				<td class="default">
+					<span class="ind"><img src="s.gif" width="40"></span>
+				</td>
+			`;
+			doc.body.appendChild(replyRow);
+			const comment = new HNComment(replyRow);
+
+			const root = comment.getRootCommentElement();
+
+			expect(root).toBeUndefined();
+		});
+
+		it('should return undefined for a root comment itself', () => {
+			const rootRow = doc.createElement('tr');
+			rootRow.classList.add('athing', 'comtr');
+			rootRow.innerHTML = `
+				<td class="default">
+					<span class="ind"><img src="s.gif" width="0"></span>
+				</td>
+			`;
+			doc.body.appendChild(rootRow);
+			const comment = new HNComment(rootRow);
+
+			const root = comment.getRootCommentElement();
+
+			expect(root).toBeUndefined();
+		});
+	});
+
+	describe('getExpandRootLink', () => {
+		it('should return the expand root link when comment is collapsed with [N more]', () => {
+			const row = doc.createElement('tr');
+			row.classList.add('athing', 'comtr', 'coll');
+			row.innerHTML = `
+				<td class="default">
+					<span class="comhead">
+						<a class="togg clicky" href="javascript:void(0)">[8 more]</a>
+					</span>
+					<div class="noshow">
+						<div class="commtext c00">hidden text</div>
+					</div>
+				</td>
+			`;
+			doc.body.appendChild(row);
+			const comment = new HNComment(row);
+
+			const link = comment.getExpandRootLink();
+
+			expect(link).toBeTruthy();
+			expect(link?.textContent).toBe('[8 more]');
+		});
+
+		it('should return undefined when no [N more] link exists', () => {
+			const row = doc.createElement('tr');
+			row.classList.add('athing', 'comtr');
+			row.innerHTML = `
+				<td class="default">
+					<span class="comhead">
+						<a href="user?id=test">test</a>
+					</span>
+				</td>
+			`;
+			doc.body.appendChild(row);
+			const comment = new HNComment(row);
+
+			const link = comment.getExpandRootLink();
+
+			expect(link).toBeUndefined();
+		});
+
+		it('should return the link for various N values', () => {
+			const row = doc.createElement('tr');
+			row.classList.add('athing', 'comtr', 'coll');
+			row.innerHTML = `
+				<td class="default">
+					<span class="comhead">
+						<a class="togg clicky" href="javascript:void(0)">[1 more]</a>
+					</span>
+				</td>
+			`;
+			doc.body.appendChild(row);
+			const comment = new HNComment(row);
+
+			const link = comment.getExpandRootLink();
+
+			expect(link).toBeTruthy();
+			expect(link?.textContent).toBe('[1 more]');
 		});
 	});
 });

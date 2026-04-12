@@ -1,7 +1,8 @@
+import { dom } from '@/utils/dom.ts';
 import { parseReferenceLinks } from '@/utils/parse-reference-links.ts';
 
 const COMMENTS_REGEX = /\[\s*(\d+)\s*more\s*]/;
-const COLLAPSE_LABELS = new Set(['[-]', '[–]']);
+const COLLAPSE_LABEL_REGEX = /^\[–]$/;
 const VOTE_SELECTORS = {
 	UNVOTE_LINK: 'a[id^="un_"]',
 	UPVOTE_ARROW: 'div.votearrow[title="upvote"]',
@@ -193,13 +194,52 @@ export class HNComment {
 		const toggleLinks = this.commentRow.querySelectorAll<HTMLAnchorElement>('a.togg');
 		for (const el of toggleLinks) {
 			const trimmed = el.textContent?.trim() || '';
-			const isCollapsed = COMMENTS_REGEX.test(trimmed);
-			if (COLLAPSE_LABELS.has(trimmed) || isCollapsed) {
+			const isCollapsedToggle =
+				COLLAPSE_LABEL_REGEX.test(trimmed) || COMMENTS_REGEX.test(trimmed);
+			if (isCollapsedToggle) {
 				el.click();
 				return true;
 			}
 		}
 		return false;
+	}
+
+	getCollapseRootLink(): HTMLAnchorElement | undefined {
+		const comhead = this.commentHead;
+		if (!comhead) {
+			return undefined;
+		}
+		for (const link of comhead.querySelectorAll('a')) {
+			if (link.textContent === '[collapse root]') {
+				return link as HTMLAnchorElement;
+			}
+		}
+		return undefined;
+	}
+
+	getExpandRootLink(): HTMLAnchorElement | undefined {
+		const toggleLinks = this.commentRow.querySelectorAll<HTMLAnchorElement>('a.togg');
+		for (const el of toggleLinks) {
+			const trimmed = el.textContent?.trim() || '';
+			if (COMMENTS_REGEX.test(trimmed)) {
+				return el;
+			}
+		}
+		return undefined;
+	}
+
+	getRootCommentElement(): HTMLElement | undefined {
+		let rootRow: HTMLElement | null = null;
+		let currentRow = this.commentRow.previousElementSibling as HTMLElement | null;
+		while (currentRow) {
+			const indent = dom.getCommentIndentation(currentRow);
+			if (indent.width === 0) {
+				rootRow = currentRow;
+				break;
+			}
+			currentRow = currentRow.previousElementSibling as HTMLElement | null;
+		}
+		return rootRow ?? undefined;
 	}
 
 	getNextSiblingLink(): HTMLAnchorElement | undefined {

@@ -144,6 +144,35 @@ export class KeyboardHandlers {
 		commentData.collapseToggle();
 	}
 
+	async collapseExpandRoot(commentData: CommentData) {
+		const activeComment = commentData.getActiveComment();
+		if (!activeComment) {
+			return;
+		}
+
+		const collapseRootLink = activeComment.getCollapseRootLink();
+		if (collapseRootLink) {
+			const rootRow = activeComment.getRootCommentElement();
+			if (!rootRow) {
+				return;
+			}
+
+			const rootComment = commentData.getCommentFromElement(rootRow);
+			if (!rootComment) {
+				return;
+			}
+
+			collapseRootLink.click();
+			await commentData.deactivate();
+			await commentData.activate(rootComment);
+		} else {
+			const expandRootLink = activeComment.getExpandRootLink();
+			if (expandRootLink) {
+				expandRootLink.click();
+			}
+		}
+	}
+
 	async navigateToThreadLink(commentData: CommentData, linkText: 'next' | 'prev') {
 		const activeComment = commentData.getActiveComment();
 		if (!activeComment) {
