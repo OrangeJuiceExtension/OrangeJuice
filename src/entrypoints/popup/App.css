@@ -74,6 +74,11 @@
 	color: var(--popup-muted);
 }
 
+.oj-popup__text a,
+.oj-popup__text a:visited {
+	color: var(--popup-accent);
+}
+
 .oj-popup__settings {
 	display: grid;
 	gap: 12px;
