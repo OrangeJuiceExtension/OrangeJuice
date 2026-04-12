@@ -116,13 +116,19 @@ jobs:
           sed -i 's/"version": *"[^"]*"/"version": "'"$new_version"'"/' package.json
 
       - name: Commit version bump
+        uses: iarekylew00t/verified-bot-commit@v2
+        env:
+          LEFTHOOK: 0
+        with:
+          message: "chore: bump version to ${{ steps.bump.outputs.new_version }}"
+          token: ${{ steps.app-token.outputs.token }}
+          files: package.json
+
+      - name: Push version tag
         env:
           LEFTHOOK: 0
         run: |
-          git add package.json
-          git commit -m "chore: bump version to ${{ steps.bump.outputs.new_version }} [skip ci]"
           git tag "v${{ steps.bump.outputs.new_version }}"
-          git push origin HEAD:main
           git push origin "v${{ steps.bump.outputs.new_version }}"
 
       - name: Run zip chrome
