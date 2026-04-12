@@ -66,7 +66,7 @@ jobs:
         run: bun run ci
 
   codeql:
-    if: github.event.action != 'closed'
+    if: github.event.action != 'closed' && !(github.event_name == 'push' && github.ref == 'refs/heads/main')
     permissions:
       contents: read
       actions: read
