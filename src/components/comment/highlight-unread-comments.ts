@@ -47,7 +47,11 @@ export const highlightUnreadComments = async (
 		return;
 	}
 
-	await manager.getHighlightService().expireOldComments(readCommentsList);
+	try {
+		await manager.getHighlightService().expireOldComments(readCommentsList);
+	} catch (e) {
+		console.error('Failed to expire old comments:', e);
+	}
 
 	// If the item is so old that one cannot reply, there is no point in storing comments
 	const replyForm = doc.querySelector<HTMLFormElement>('table.fatitem form');
