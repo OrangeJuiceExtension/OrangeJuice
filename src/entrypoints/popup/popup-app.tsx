@@ -169,12 +169,18 @@ const createPopupContent = (doc: Document): HTMLElement => {
 	const header = doc.createElement('div');
 	header.className = 'oj-popup__header';
 
+	const logoLink = doc.createElement('a');
+	logoLink.href = 'https://oj-hn.com';
+	logoLink.rel = 'noopener';
+	logoLink.target = '_blank';
+
 	const logo = doc.createElement('img');
 	logo.alt = 'Orange Juice logo';
 	logo.className = 'oj-popup__logo';
 	logo.height = 64;
 	logo.src = getLogoUrl();
 	logo.width = 64;
+	logoLink.append(logo);
 
 	const titleGroup = doc.createElement('div');
 
@@ -184,10 +190,16 @@ const createPopupContent = (doc: Document): HTMLElement => {
 
 	const text = doc.createElement('p');
 	text.className = 'oj-popup__text';
-	text.textContent = 'Control the Orange Juice.';
+	text.textContent = 'Control the ';
+	const link = doc.createElement('a');
+	link.href = 'https://oj-hn.com';
+	link.rel = 'noopener';
+	link.target = '_blank';
+	link.textContent = 'Orange Juice';
+	text.append(link, '.');
 
 	titleGroup.append(title, text);
-	header.append(logo, titleGroup);
+	header.append(logoLink, titleGroup);
 
 	const settingsList = doc.createElement('div');
 	settingsList.className = 'oj-popup__settings';
