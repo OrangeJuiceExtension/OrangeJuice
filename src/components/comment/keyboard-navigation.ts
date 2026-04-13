@@ -217,6 +217,11 @@ export const keyboardNavigation = async (
 					keyboardHandlers.collapseToggle(commentData);
 				}
 				break;
+			case 'C':
+				if (!nonShiftCombo && commentData.getActiveComment()) {
+					await keyboardHandlers.collapseExpandRoot(commentData);
+				}
+				break;
 			case 't':
 				if (!combo) {
 					doc.body.scrollTo(0, 0);

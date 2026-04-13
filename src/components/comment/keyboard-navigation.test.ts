@@ -75,6 +75,7 @@ const createTestContext = (commentCount = 3): TestContext => {
 	vi.spyOn(KeyboardHandlers.prototype, 'upvote');
 	vi.spyOn(KeyboardHandlers.prototype, 'downvote');
 	vi.spyOn(KeyboardHandlers.prototype, 'collapseToggle');
+	vi.spyOn(KeyboardHandlers.prototype, 'collapseExpandRoot');
 	vi.spyOn(KeyboardHandlers.prototype, 'openReferenceLink');
 	vi.spyOn(KeyboardHandlers.prototype, 'activateElement');
 	vi.spyOn(KeyboardHandlers.prototype, 'checkActiveState');
@@ -273,6 +274,18 @@ describe('keyboardNavigation', () => {
 			dispatchKeydown(doc, 'c');
 
 			expect(KeyboardHandlers.prototype.collapseToggle).toHaveBeenCalled();
+
+			invalidate();
+		});
+
+		it('C should call collapseExpandRoot', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			await activateFirstComment(commentData, comments);
+			dispatchKeydown(doc, 'C');
+
+			expect(KeyboardHandlers.prototype.collapseExpandRoot).toHaveBeenCalled();
 
 			invalidate();
 		});

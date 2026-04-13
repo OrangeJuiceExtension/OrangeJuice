@@ -722,6 +722,96 @@ describe('commentKeyboardHandlers', () => {
 		});
 	});
 
+	describe('collapseRoot', () => {
+		it('should click root toggle and activate root when collapse root link exists', async () => {
+			const setup = createCommentData(doc, 2);
+
+			const rootRow = setup.rows[0];
+			const childRow = setup.rows[1];
+			const root = setup.commentData.first();
+			const child = setup.commentData.get('comment-2');
+
+			if (!(rootRow && childRow && root && child)) {
+				throw new Error('Expected items to exist');
+			}
+
+			addIndentation(doc, rootRow, 0);
+			addIndentation(doc, childRow, 1);
+
+			const childComhead = doc.createElement('span');
+			childComhead.classList.add('comhead');
+			const collapseRootLink = doc.createElement('a');
+			collapseRootLink.textContent = '[collapse root]';
+			childComhead.appendChild(collapseRootLink);
+			childRow.appendChild(childComhead);
+
+			const rootComhead = doc.createElement('span');
+			rootComhead.classList.add('comhead');
+			const rootToggle = doc.createElement('a');
+			rootToggle.classList.add('togg', 'clicky');
+			rootToggle.textContent = '[–]';
+			rootComhead.appendChild(rootToggle);
+			rootRow.appendChild(rootComhead);
+
+			await setup.commentData.activate(child);
+			const toggleClickSpy = vi.spyOn(collapseRootLink, 'click');
+
+			await keyboardHandlers.collapseExpandRoot(setup.commentData);
+
+			expect(toggleClickSpy).toHaveBeenCalled();
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-1');
+		});
+
+		it('should not throw when no collapse root link exists', async () => {
+			const setup = createCommentData(doc, 1);
+			const first = setup.commentData.first();
+			if (!first) {
+				throw new Error('Expected item to exist');
+			}
+			await setup.commentData.activate(first);
+
+			expect(() => keyboardHandlers.collapseExpandRoot(setup.commentData)).not.toThrow();
+		});
+
+		it('should not click toggle when collapse root link text is different', async () => {
+			const setup = createCommentData(doc, 2);
+
+			const rootRow = setup.rows[0];
+			const childRow = setup.rows[1];
+			const root = setup.commentData.first();
+			const child = setup.commentData.get('comment-2');
+
+			if (!(rootRow && childRow && root && child)) {
+				throw new Error('Expected items to exist');
+			}
+
+			addIndentation(doc, rootRow, 0);
+			addIndentation(doc, childRow, 1);
+
+			const childComhead = doc.createElement('span');
+			childComhead.classList.add('comhead');
+			const otherLink = doc.createElement('a');
+			otherLink.textContent = '[something else]';
+			childComhead.appendChild(otherLink);
+			childRow.appendChild(childComhead);
+
+			const rootComhead = doc.createElement('span');
+			rootComhead.classList.add('comhead');
+			const rootToggle = doc.createElement('a');
+			rootToggle.classList.add('togg', 'clicky');
+			rootToggle.textContent = '[–]';
+			rootComhead.appendChild(rootToggle);
+			rootRow.appendChild(rootComhead);
+
+			await setup.commentData.activate(child);
+			const toggleClickSpy = vi.spyOn(rootToggle, 'click');
+
+			await keyboardHandlers.collapseExpandRoot(setup.commentData);
+
+			expect(toggleClickSpy).not.toHaveBeenCalled();
+		});
+	});
+
 	describe('navigateToThreadLink', () => {
 		it('should navigate to next link', async () => {
 			const setup = createCommentData(doc, 3);
