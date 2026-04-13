@@ -942,6 +942,44 @@ describe('commentKeyboardHandlers', () => {
 	});
 
 	describe('moveAtSameIndent', () => {
+		it('should include collapsed top-level comments when moving down', async () => {
+			const setup = createCommentData(doc, 5, { collapsedIds: [3] });
+			const first = setup.commentData.first();
+			if (!first) {
+				throw new Error('Expected item to exist');
+			}
+
+			addIndentation(doc, setup.rows[0], 0);
+			addIndentation(doc, setup.rows[1], 1);
+			addIndentation(doc, setup.rows[2], 0);
+			addIndentation(doc, setup.rows[3], 1);
+			addIndentation(doc, setup.rows[4], 0);
+			await setup.commentData.activate(first);
+
+			await keyboardHandlers.moveAtSameIndent(setup.commentData, 'down');
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-3');
+		});
+
+		it('should include collapsed top-level comments when moving up', async () => {
+			const setup = createCommentData(doc, 5, { collapsedIds: [4] });
+			const fifth = setup.commentData.get('comment-5');
+			if (!fifth) {
+				throw new Error('Expected item to exist');
+			}
+
+			addIndentation(doc, setup.rows[0], 0);
+			addIndentation(doc, setup.rows[1], 0);
+			addIndentation(doc, setup.rows[2], 1);
+			addIndentation(doc, setup.rows[3], 0);
+			addIndentation(doc, setup.rows[4], 0);
+			await setup.commentData.activate(fifth);
+
+			await keyboardHandlers.moveAtSameIndent(setup.commentData, 'up');
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-4');
+		});
+
 		it('should move down to the next comment at the same indent', async () => {
 			const setup = createCommentData(doc, 6);
 			const first = setup.commentData.first();
@@ -1027,6 +1065,24 @@ describe('commentKeyboardHandlers', () => {
 
 			expect(setup.commentData.getActiveComment()?.id).toBe('comment-2');
 			expect(secondRow.classList.contains('oj_focused_comment')).toBe(true);
+		});
+
+		it('should move to the next visible top-level comment when no collapsed root exists', async () => {
+			const setup = createCommentData(doc, 4);
+			const first = setup.commentData.first();
+			if (!first) {
+				throw new Error('Expected item to exist');
+			}
+
+			addIndentation(doc, setup.rows[0], 0);
+			addIndentation(doc, setup.rows[1], 1);
+			addIndentation(doc, setup.rows[2], 0);
+			addIndentation(doc, setup.rows[3], 1);
+			await setup.commentData.activate(first);
+
+			await keyboardHandlers.moveAtSameIndent(setup.commentData, 'down');
+
+			expect(setup.commentData.getActiveComment()?.id).toBe('comment-3');
 		});
 	});
 
