@@ -754,9 +754,9 @@ describe('commentKeyboardHandlers', () => {
 			rootRow.appendChild(rootComhead);
 
 			await setup.commentData.activate(child);
-			const toggleClickSpy = vi.spyOn(rootToggle, 'click');
+			const toggleClickSpy = vi.spyOn(collapseRootLink, 'click');
 
-			await keyboardHandlers.collapseRoot(setup.commentData);
+			await keyboardHandlers.collapseExpandRoot(setup.commentData);
 
 			expect(toggleClickSpy).toHaveBeenCalled();
 			expect(setup.commentData.getActiveComment()?.id).toBe('comment-1');
@@ -770,7 +770,7 @@ describe('commentKeyboardHandlers', () => {
 			}
 			await setup.commentData.activate(first);
 
-			expect(() => keyboardHandlers.collapseRoot(setup.commentData)).not.toThrow();
+			expect(() => keyboardHandlers.collapseExpandRoot(setup.commentData)).not.toThrow();
 		});
 
 		it('should not click toggle when collapse root link text is different', async () => {
@@ -806,7 +806,7 @@ describe('commentKeyboardHandlers', () => {
 			await setup.commentData.activate(child);
 			const toggleClickSpy = vi.spyOn(rootToggle, 'click');
 
-			await keyboardHandlers.collapseRoot(setup.commentData);
+			await keyboardHandlers.collapseExpandRoot(setup.commentData);
 
 			expect(toggleClickSpy).not.toHaveBeenCalled();
 		});
