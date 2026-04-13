@@ -35,13 +35,11 @@ export default defineConfig({
 		browser_specific_settings: {
 			gecko: {
 				id: 'hello@oj-hn.com',
-				// Firefox supports this, but WXT's manifest type does not include it.
 				data_collection_permissions: {
 					required: ['none'],
 				},
 			},
-			// biome-ignore lint/suspicious/noExplicitAny: https://github.com/wxt-dev/wxt/pull/1976
-		} as any,
+		},
 		icons: {
 			16: '/icon/orange_juice_icon_16x16.png',
 			24: '/icon/orange_juice_icon_24x24.png',
