@@ -9,6 +9,7 @@ Agents must follow:
 - Be friendly but cold. No praise or filler.
 - Minimize token usage. Don’t over-explain.
 - Ask for clarification if instructions are ambiguous.
+- Before touching files, if we are on the main branch, always pull the main branch first and then work from a new branch.
 - When unsure, prefer retrieval-led reasoning over pre-training-led reasoning
 - Always use the GitHub workflow commit message format: conventional commits as `<type>(<scope>)?: <subject>`, with types like `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, or `test`; use `!` or `BREAKING CHANGE:` for breaking changes.
 - Write code that is **accessible, performant, type-safe, and maintainable**. Focus on clarity and explicit intent over brevity.

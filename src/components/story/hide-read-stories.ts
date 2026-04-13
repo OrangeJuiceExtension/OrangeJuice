@@ -41,7 +41,7 @@ export const createCheckbox = (doc: Document, visibility: ReadStoriesVisibilityP
 	const row = doc.createElement('tr');
 	const cell = doc.createElement('td');
 	cell.style.paddingLeft = '5px';
-	cell.style.paddingBottom = '10px';
+	cell.style.paddingBottom = '5px';
 
 	const label = doc.createElement('label');
 	label.style.cursor = 'pointer';
@@ -239,7 +239,7 @@ export const hideReadStories = async (
 
 		ctx.onInvalidated(() => {
 			cleanupCheckbox();
-			// window.removeEventListener('pageshow', pageshow);
+			window.removeEventListener('pageshow', pageshow);
 		});
 	} catch (e) {
 		console.error({ error: 'Error in hideread stories', e });
