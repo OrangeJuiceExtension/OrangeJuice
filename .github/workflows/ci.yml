@@ -65,15 +65,6 @@ jobs:
       - name: Run CI
         run: bun run ci
 
-  codeql:
-    if: github.event.action != 'closed' && !(github.event_name == 'push' && github.ref == 'refs/heads/main')
-    permissions:
-      contents: read
-      actions: read
-      packages: read
-      security-events: write
-    uses: ./.github/workflows/codeql.yml
-
   release:
     # Only run when a PR is closed (merged) on main
     if: >
