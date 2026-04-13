@@ -12,6 +12,7 @@ Agents must follow:
 - When unsure, prefer retrieval-led reasoning over pre-training-led reasoning
 - Always use the GitHub workflow commit message format: conventional commits as `<type>(<scope>)?: <subject>`, with types like `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, or `test`; use `!` or `BREAKING CHANGE:` for breaking changes.
 - Write code that is **accessible, performant, type-safe, and maintainable**. Focus on clarity and explicit intent over brevity.
+- Always create a new branch before starting work.
 
 ### Environment
 - Reference DOM: https://news.hackernews.com
