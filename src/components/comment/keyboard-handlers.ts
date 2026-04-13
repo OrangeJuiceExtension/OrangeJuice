@@ -208,7 +208,9 @@ export class KeyboardHandlers {
 		if (!activeComment) {
 			return;
 		}
-		const nextItem = commentData.getNextAtSameIndent(activeComment, direction);
+
+		const skipHidden = activeComment.getIndentLevel() !== 0;
+		const nextItem = commentData.getNextAtSameIndent(activeComment, direction, skipHidden);
 		if (!nextItem) {
 			activeComment.activate();
 			return;

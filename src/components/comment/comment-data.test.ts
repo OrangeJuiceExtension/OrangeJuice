@@ -182,6 +182,20 @@ describe('CommentData', () => {
 		expect(previous).toBeUndefined();
 	});
 
+	it('should include collapsed top-level comments when moving down at the same indent', () => {
+		const comments = createComments(doc, 5, { collapsedIds: [3] });
+		addIndentation(doc, comments[0].commentRow, 0);
+		addIndentation(doc, comments[1].commentRow, 1);
+		addIndentation(doc, comments[2].commentRow, 0);
+		addIndentation(doc, comments[3].commentRow, 1);
+		addIndentation(doc, comments[4].commentRow, 0);
+		const data = new CommentData(comments);
+
+		const next = data.getNextAtSameIndent(comments[0], 'down', false);
+
+		expect(next?.id).toBe('comment-3');
+	});
+
 	it('should proxy actions to active comment', async () => {
 		const comments = createComments(doc, 1);
 		const data = new CommentData(comments);
