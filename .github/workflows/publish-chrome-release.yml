@@ -36,7 +36,8 @@ jobs:
           gh release download "${TAG}" \
             --pattern "${ASSET_NAME}" \
             --dir .
-
+          
+          echo "Asset: ${ASSET_NAME}"
           echo "asset_name=${ASSET_NAME}" >> "$GITHUB_OUTPUT"
 
       - name: Publish to Chrome Web Store
@@ -45,4 +46,4 @@ jobs:
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
-        run: bunx publish-extension --chrome-zip "${{ steps.release.outputs.asset_name }}"
+        run: bunx publish-browser-extension --chrome-zip "${{ steps.release.outputs.asset_name }}"
