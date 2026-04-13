@@ -64,6 +64,6 @@
 		"vitest": "^4.1.4",
 		"vitest-localstorage-mock": "^0.1.2",
 		"web-ext": "^10.1.0",
-		"wxt": "^0.20.20"
+		"wxt": "^0.20.21"
 	}
 }
