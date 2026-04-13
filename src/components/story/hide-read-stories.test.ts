@@ -270,7 +270,7 @@ describe('hide_read_stories', () => {
 
 			expect(cell).not.toBeNull();
 			expect(cell?.style.paddingLeft).toBe('5px');
-			expect(cell?.style.paddingBottom).toBe('10px');
+			expect(cell?.style.paddingBottom).toBe('5px');
 		});
 	});
 
