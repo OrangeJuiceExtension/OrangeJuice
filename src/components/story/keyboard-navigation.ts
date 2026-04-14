@@ -117,6 +117,10 @@ export const keyboardNavigation = async (
 
 	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: shrug
 	const keydownHandler = (e: KeyboardEvent) => {
+		if (dom.isEditableField(doc.activeElement)) {
+			return;
+		}
+
 		if (navState?.helpModalOpen) {
 			if (e.key === 'Escape') {
 				return;
