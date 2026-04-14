@@ -91,6 +91,20 @@ const setLocationHref = (href: string) => {
 	});
 };
 
+const setActiveElement = (doc: Document, element: HTMLElement) => {
+	Object.defineProperty(doc, 'activeElement', {
+		configurable: true,
+		get: () => element,
+	});
+};
+
+const clearActiveElement = (doc: Document) => {
+	Object.defineProperty(doc, 'activeElement', {
+		configurable: true,
+		get: () => doc.body,
+	});
+};
+
 describe('story keyboard navigation', () => {
 	let doc: Document;
 	let ctx: ContentScriptContext;
@@ -325,6 +339,56 @@ describe('story keyboard navigation', () => {
 		await vi.waitFor(() => {
 			expect(storyData.getActiveStory()?.id).toBe('2');
 		});
+	});
+
+	it('should not trigger shortcuts while a text input is focused', async () => {
+		const storyData = createStoryData(doc);
+		const input = doc.createElement('input');
+		input.type = 'text';
+		doc.body.appendChild(input);
+		setActiveElement(doc, input);
+		const initialHref = window.location.href;
+
+		await keyboardNavigation(ctx, doc, storyData, { helpModalOpen: false });
+		doc.dispatchEvent(new KeyboardEvent('keydown', { key: 'm' }));
+
+		expect(window.location.href).toBe(initialHref);
+
+		doc.body.removeChild(input);
+		clearActiveElement(doc);
+	});
+
+	it('should not trigger shortcuts while a textarea is focused', async () => {
+		const storyData = createStoryData(doc);
+		const textarea = doc.createElement('textarea');
+		doc.body.appendChild(textarea);
+		setActiveElement(doc, textarea);
+		const initialHref = window.location.href;
+
+		await keyboardNavigation(ctx, doc, storyData, { helpModalOpen: false });
+		doc.dispatchEvent(new KeyboardEvent('keydown', { key: 'm' }));
+
+		expect(window.location.href).toBe(initialHref);
+
+		doc.body.removeChild(textarea);
+		clearActiveElement(doc);
+	});
+
+	it('should not trigger shortcuts while a contenteditable element is focused', async () => {
+		const storyData = createStoryData(doc);
+		const editable = doc.createElement('div');
+		editable.contentEditable = 'true';
+		doc.body.appendChild(editable);
+		setActiveElement(doc, editable);
+		const initialHref = window.location.href;
+
+		await keyboardNavigation(ctx, doc, storyData, { helpModalOpen: false });
+		doc.dispatchEvent(new KeyboardEvent('keydown', { key: 'm' }));
+
+		expect(window.location.href).toBe(initialHref);
+
+		doc.body.removeChild(editable);
+		clearActiveElement(doc);
 	});
 
 	it('should activate last story on pageshow when nav state is prev', async () => {

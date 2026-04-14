@@ -11,6 +11,18 @@ const TOP_BAR_DARK_TEXT_COLOR = '#111111';
 const TOP_BAR_LIGHT_TEXT_COLOR = '#f1efec';
 const SHORT_HEX_COLOR_PATTERN = /^#?([a-f0-9]{3})$/i;
 const HEX_COLOR_PATTERN = /^#?([a-f0-9]{6})$/i;
+const NON_TEXT_INPUT_TYPES = new Set([
+	'button',
+	'checkbox',
+	'color',
+	'file',
+	'hidden',
+	'image',
+	'radio',
+	'range',
+	'reset',
+	'submit',
+]);
 
 const createHiddenInput = (name: string, value: string) => {
 	const input = document.createElement('input');
@@ -273,6 +285,23 @@ function isComboKey(event: KeyboardEvent) {
 	return event.ctrlKey || event.metaKey || event.shiftKey || event.altKey;
 }
 
+function isEditableField(element?: Element | null) {
+	if (!(element instanceof HTMLElement)) {
+		return false;
+	}
+
+	if (element instanceof HTMLTextAreaElement) {
+		return true;
+	}
+
+	if (element instanceof HTMLInputElement) {
+		const inputType = element.type.toLowerCase();
+		return !NON_TEXT_INPUT_TYPES.has(inputType);
+	}
+
+	return element.isContentEditable;
+}
+
 const createOptions = (start: number, end: number, step: number, selectedValue: number) => {
 	const options: HTMLOptionElement[] = [];
 	for (let i = start; step > 0 ? i <= end : i >= end; i += step) {
@@ -375,6 +404,7 @@ export const dom = {
 	getItemIdFromLocation,
 	isClickModified,
 	isComboKey,
+	isEditableField,
 	createOptions,
 	elementPosition,
 	elementInScrollView,

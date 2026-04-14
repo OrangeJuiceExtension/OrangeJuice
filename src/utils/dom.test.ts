@@ -707,6 +707,41 @@ describe('dom', () => {
 		});
 	});
 
+	describe('isEditableField', () => {
+		it('should return true for text inputs', () => {
+			const input = document.createElement('input');
+			input.type = 'text';
+
+			expect(dom.isEditableField(input)).toBe(true);
+		});
+
+		it('should return false for non-text inputs', () => {
+			const input = document.createElement('input');
+			input.type = 'checkbox';
+
+			expect(dom.isEditableField(input)).toBe(false);
+		});
+
+		it('should return true for textareas', () => {
+			const textarea = document.createElement('textarea');
+
+			expect(dom.isEditableField(textarea)).toBe(true);
+		});
+
+		it('should return true for contenteditable elements', () => {
+			const div = document.createElement('div');
+			div.contentEditable = 'true';
+
+			expect(dom.isEditableField(div)).toBe(true);
+		});
+
+		it('should return false for non-editable elements', () => {
+			const div = document.createElement('div');
+
+			expect(dom.isEditableField(div)).toBe(false);
+		});
+	});
+
 	describe('removeClassRecursive', () => {
 		it('should remove single class from element', () => {
 			const div = document.createElement('div');
