@@ -1,4 +1,5 @@
 import type { ContentScriptContext } from '#imports';
+import { widenFields } from '@/components/submit/field-width.ts';
 import { fetchTitle } from '@/components/submit/fetch-title.ts';
 import { prefill } from '@/components/submit/prefill.ts';
 import { remaining } from '@/components/submit/remaining.ts';
@@ -18,6 +19,7 @@ export const submit: ComponentFeature = {
 	runAt: 'document_end',
 	main(ctx: ContentScriptContext) {
 		return Promise.all([
+			Promise.resolve().then(() => widenFields(document)),
 			Promise.resolve().then(() => prefill(document)),
 			Promise.resolve().then(() => fetchTitle(ctx, document)),
 			Promise.resolve().then(() => remaining(ctx, document)),
