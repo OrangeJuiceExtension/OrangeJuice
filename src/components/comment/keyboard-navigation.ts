@@ -222,6 +222,11 @@ export const keyboardNavigation = async (
 					await keyboardHandlers.collapseExpandRoot(commentData);
 				}
 				break;
+			case 'z':
+				if (!combo && commentData.getActiveComment()) {
+					keyboardHandlers.scrollActiveCommentToTop(commentData);
+				}
+				break;
 			case 't':
 				if (!combo) {
 					doc.body.scrollTo(0, 0);

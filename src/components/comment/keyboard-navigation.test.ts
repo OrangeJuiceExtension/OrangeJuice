@@ -76,6 +76,7 @@ const createTestContext = (commentCount = 3): TestContext => {
 	vi.spyOn(KeyboardHandlers.prototype, 'downvote');
 	vi.spyOn(KeyboardHandlers.prototype, 'collapseToggle');
 	vi.spyOn(KeyboardHandlers.prototype, 'collapseExpandRoot');
+	vi.spyOn(KeyboardHandlers.prototype, 'scrollActiveCommentToTop');
 	vi.spyOn(KeyboardHandlers.prototype, 'openReferenceLink');
 	vi.spyOn(KeyboardHandlers.prototype, 'activateElement');
 	vi.spyOn(KeyboardHandlers.prototype, 'checkActiveState');
@@ -290,6 +291,18 @@ describe('keyboardNavigation', () => {
 			invalidate();
 		});
 
+		it('z should scroll the active comment to the top', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			await activateFirstComment(commentData, comments);
+			dispatchKeydown(doc, 'z');
+
+			expect(KeyboardHandlers.prototype.scrollActiveCommentToTop).toHaveBeenCalled();
+
+			invalidate();
+		});
+
 		it('j should deactivate the previously active comment when moving down', async () => {
 			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 			const firstComment = getComment(comments, 0);
@@ -446,6 +459,7 @@ describe('keyboardNavigation', () => {
 			{ key: 'u', handler: 'upvote' },
 			{ key: 'd', handler: 'downvote' },
 			{ key: 'c', handler: 'collapseToggle' },
+			{ key: 'z', handler: 'scrollActiveCommentToTop' },
 			{ key: '0', handler: 'openReferenceLink' },
 		];
 
@@ -479,6 +493,7 @@ describe('keyboardNavigation', () => {
 			{ key: 'u', handler: 'upvote' },
 			{ key: 'd', handler: 'downvote' },
 			{ key: 'c', handler: 'collapseToggle' },
+			{ key: 'z', handler: 'scrollActiveCommentToTop' },
 		];
 
 		for (const { key, handler } of comboKeyTests) {

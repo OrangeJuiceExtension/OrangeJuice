@@ -63,6 +63,35 @@ describe('commentKeyboardHandlers', () => {
 		vi.spyOn(lStorage, 'setItem').mockResolvedValue();
 	});
 
+	describe('scrollActiveCommentToTop', () => {
+		it('should scroll the active comment into view at the top', async () => {
+			const setup = createCommentData(doc, 2);
+			const first = setup.commentData.first();
+			if (!first) {
+				throw new Error('Expected item to exist');
+			}
+			await setup.commentData.activate(first);
+			const scrollSpy = vi
+				.spyOn(HTMLElement.prototype, 'scrollIntoView')
+				.mockImplementation(noop);
+
+			keyboardHandlers.scrollActiveCommentToTop(setup.commentData);
+
+			expect(scrollSpy).toHaveBeenCalledWith(true);
+		});
+
+		it('should do nothing when no comment is active', () => {
+			const setup = createCommentData(doc, 2);
+			const scrollSpy = vi
+				.spyOn(HTMLElement.prototype, 'scrollIntoView')
+				.mockImplementation(noop);
+
+			keyboardHandlers.scrollActiveCommentToTop(setup.commentData);
+
+			expect(scrollSpy).not.toHaveBeenCalled();
+		});
+	});
+
 	it('should store and load active comment id for the current item', async () => {
 		const setup = createCommentData(doc, 1);
 		vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
