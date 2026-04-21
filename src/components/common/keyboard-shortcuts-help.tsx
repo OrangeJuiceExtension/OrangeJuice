@@ -14,6 +14,7 @@ const SHORTCUTS_COMMENTS = [
 	{ key: 'f', description: 'Favorite selected comment' },
 	{ key: 'X', description: 'Flag selected comment' },
 	{ key: '0-9', description: 'Open reference link by number' },
+	{ key: 'z', description: 'Scroll selected comment to top of window' },
 	{ key: 't', description: 'Scroll to top of page' },
 	{ key: 'b', description: 'Go back (if paginated)' },
 	{ key: 'esc', description: 'Unfocus comment or close reply box' },

@@ -27,6 +27,13 @@ describe('keyboard shortcuts help', () => {
 		expect(text).toContain('n');
 	});
 
+	it('should include the comment scroll-to-top shortcut', () => {
+		const text = help.textContent ?? '';
+
+		expect(text).toContain('z');
+		expect(text).toContain('Scroll selected comment to top of window');
+	});
+
 	it('should include website and github links', () => {
 		const links = help.querySelectorAll('a');
 		const hrefs = new Set<string>();

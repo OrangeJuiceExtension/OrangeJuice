@@ -144,6 +144,15 @@ export class KeyboardHandlers {
 		commentData.collapseToggle();
 	}
 
+	scrollActiveCommentToTop(commentData: CommentData) {
+		const activeComment = commentData.getActiveComment();
+		if (!activeComment) {
+			return;
+		}
+
+		activeComment.commentRow.scrollIntoView(true);
+	}
+
 	async collapseExpandRoot(commentData: CommentData) {
 		const activeComment = commentData.getActiveComment();
 		if (!activeComment) {
