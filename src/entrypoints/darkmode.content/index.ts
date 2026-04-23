@@ -20,12 +20,12 @@ export default defineContentScript({
 	runAt: 'document_start',
 	main() {
 		const root = document.documentElement;
+		const cachedMode = readCachedMode();
 
-		const mode =
-			readCachedMode() ??
-			(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-
-		if (mode === 'dark') {
+		// Only pre-apply dark mode when we have an explicit cached preference.
+		// Falling back to matchMedia here causes a dark flash for users who saved
+		// a light preference before the synchronous cache was introduced.
+		if (cachedMode === 'dark') {
 			root.classList.add(DARK_MODE_CLASS);
 			root.style.colorScheme = 'dark';
 		}
