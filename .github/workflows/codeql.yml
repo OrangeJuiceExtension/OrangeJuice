@@ -26,7 +26,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Initialize CodeQL
+      - name: Initialize CodeQL for JavaScript and TypeScript
+        if: matrix.language == 'javascript-typescript'
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Initialize CodeQL for Actions
+        if: matrix.language == 'actions'
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
