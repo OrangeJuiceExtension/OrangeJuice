@@ -10,7 +10,7 @@ Agents must follow:
 - Minimize token usage. Don’t over-explain.
 - Ask for clarification if instructions are ambiguous.
 - Before touching files, if we are on the main branch, always pull the main branch first and then work from a new branch.
-- Before using `gh` for this repo, switch to the OJ GitHub account first.
+- Before using `gh` for this repo, switch to the OJ GitHub account first only when the user is Mr. OJ.
 - When checking out a PR, set the local branch to track the PR head repository/branch directly so follow-up pushes go to the PR without extra remote setup.
 - When unsure, prefer retrieval-led reasoning over pre-training-led reasoning
 - Always use the GitHub workflow commit message format: conventional commits as `<type>(<scope>)?: <subject>`, with types like `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, or `test`; use `!` or `BREAKING CHANGE:` for breaking changes.
