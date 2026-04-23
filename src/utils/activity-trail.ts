@@ -72,7 +72,7 @@ const actionFromType = (type: ActivityType): string | undefined => {
 		case ActivityId.FavoriteComments:
 			return 'fave?id=';
 		default:
-			return undefined;
+			return;
 	}
 };
 
@@ -99,7 +99,7 @@ const urlFromType = (username: string, type: ActivityType, page = 1): string | u
 		case ActivityId.FavoriteComments:
 			return `${paths.base}/favorites?id=${username}&comments=t${pageParam}`;
 		default:
-			return undefined;
+			return;
 	}
 };
 
@@ -136,7 +136,7 @@ export class ActivityTrail {
 				return { ...found, type };
 			}
 		}
-		return undefined;
+		return;
 	}
 
 	async set(detail: ActivityDetail): Promise<void> {

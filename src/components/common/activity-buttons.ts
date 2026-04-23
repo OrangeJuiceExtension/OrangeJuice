@@ -46,7 +46,7 @@ const activityTypeFromClassList = (
 			case 'vote':
 				return ActivityId.VotesSubmissions;
 			default:
-				return undefined;
+				return;
 		}
 	}
 
@@ -60,7 +60,7 @@ const activityTypeFromClassList = (
 			case 'vote':
 				return ActivityId.VotesComments;
 			default:
-				return undefined;
+				return;
 		}
 	}
 
@@ -73,16 +73,15 @@ const activityTypeFromClassList = (
 			case 'vote':
 				return ActivityId.VotesSubmissions;
 			default:
-				return undefined;
+				return;
 		}
 	}
 
-	return undefined;
+	return;
 };
 
-const normalizeLabel = (label: string | null | undefined): string => {
-	return label?.trim().toLowerCase().replace(labelSeparatorPattern, '') ?? '';
-};
+const normalizeLabel = (label: string | null | undefined): string =>
+	label?.trim().toLowerCase().replace(labelSeparatorPattern, '') ?? '';
 
 const hasButtonAlready = (nav: HTMLElement, config: ActivityButtonConfig): boolean => {
 	const activeLabel = normalizeLabel(config.buttonLabels.active);

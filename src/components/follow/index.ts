@@ -464,13 +464,13 @@ const extractUsernameFromAnchor = (anchor: HTMLAnchorElement): string | undefine
 	try {
 		const url = new URL(anchor.getAttribute('href') ?? '', paths.base);
 		if (url.pathname !== '/user') {
-			return undefined;
+			return;
 		}
 
 		const username = url.searchParams.get('id')?.trim();
 		return username || undefined;
 	} catch {
-		return undefined;
+		return;
 	}
 };
 
@@ -832,7 +832,7 @@ const createCommentTitleRow = (
 	item: FollowedDisplayItem
 ): HTMLTableRowElement | undefined => {
 	if (!(item.type === 'comment' && item.storyTitle)) {
-		return undefined;
+		return;
 	}
 
 	const titleRow = doc.createElement('tr');

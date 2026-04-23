@@ -4,11 +4,11 @@ const resolveSafeUrl = (url: string, baseUrl: string): string | undefined => {
 	try {
 		const resolved = new URL(url, baseUrl);
 		if (!SAFE_PROTOCOLS.has(resolved.protocol)) {
-			return undefined;
+			return;
 		}
 		return resolved.toString();
 	} catch {
-		return undefined;
+		return;
 	}
 };
 

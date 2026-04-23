@@ -66,7 +66,7 @@ export class KeyboardHandlers {
 	getNextItem(commentData: CommentData, direction: 'up' | 'down', skipHidden: boolean) {
 		const activeComment = commentData.getActiveComment();
 		if (!activeComment) {
-			return undefined;
+			return;
 		}
 
 		return direction === 'down'
@@ -305,7 +305,7 @@ export class KeyboardHandlers {
 			}
 			current = commentData.getPrevious(current, false);
 		}
-		return undefined;
+		return;
 	}
 
 	private expandParentIfNeeded(commentData: CommentData, target: HNComment): void {

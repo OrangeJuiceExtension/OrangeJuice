@@ -85,9 +85,7 @@ const copyToClipboard = async (_doc: Document, value: string): Promise<boolean> 
 	return true;
 };
 
-const formatTopColorForUserForm = (value: string): string => {
-	return normalizeHex(value) ?? value;
-};
+const formatTopColorForUserForm = (value: string): string => normalizeHex(value) ?? value;
 
 const getUserSettingsForm = async (
 	username: string
@@ -110,7 +108,7 @@ const getUserSettingsForm = async (
 		Boolean(candidate.querySelector<HTMLInputElement>(`input[name="${TOP_COLOR_FIELD_NAME}"]`))
 	);
 	if (!formWithTopColor) {
-		return undefined;
+		return;
 	}
 	return { form: formWithTopColor, formUrl };
 };
@@ -164,7 +162,7 @@ const collectFormEntries = (form: HTMLFormElement): URLSearchParams => {
 const getTopColorSaveTarget = async (username: string): Promise<TopColorSaveTarget | undefined> => {
 	const formData = await getUserSettingsForm(username);
 	if (!formData) {
-		return undefined;
+		return;
 	}
 	const { form, formUrl } = formData;
 	const formValues = collectFormEntries(form);

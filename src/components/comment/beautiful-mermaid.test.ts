@@ -137,9 +137,9 @@ describe('commentBeautifulMermaid', () => {
 			textarea.name = 'text';
 			textarea.value = '<mermaid>graph TD\\nA --> B</mermaid>';
 			document.body.appendChild(textarea);
-			renderMermaidMock.mockImplementation((code: string) => {
-				return Promise.resolve(`<svg data-code="${code}"></svg>`);
-			});
+			renderMermaidMock.mockImplementation((code: string) =>
+				Promise.resolve(`<svg data-code="${code}"></svg>`)
+			);
 			const { ctx, invalidate } = createCtx();
 
 			await commentBeautifulMermaid(ctx, document, []);

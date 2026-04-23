@@ -25,7 +25,7 @@ export class CommentData {
 	getCommentFromElement(element: HTMLElement): HNComment | undefined {
 		const commentRow = element.closest('tr.athing') as HTMLElement;
 		if (!commentRow?.id) {
-			return undefined;
+			return;
 		}
 		return this.comments.get(commentRow.id);
 	}
@@ -76,13 +76,13 @@ export class CommentData {
 			}
 			current = this.comments.getNext(current);
 		}
-		return undefined;
+		return;
 	}
 
 	getNext(comment: HNComment, skipHidden = true): HNComment | undefined {
 		const next = this.comments.getNext(comment);
 		if (!next) {
-			return undefined;
+			return;
 		}
 		if (skipHidden) {
 			if (next.isCollapsed && this.hasChildren(next)) {
@@ -98,7 +98,7 @@ export class CommentData {
 	getPrevious(comment: HNComment, skipHidden = true): HNComment | undefined {
 		const prev = this.comments.getPrevious(comment);
 		if (!prev) {
-			return undefined;
+			return;
 		}
 		if (skipHidden && prev.hidden()) {
 			return this.getPrevious(prev, skipHidden);
@@ -125,7 +125,7 @@ export class CommentData {
 					? this.getNext(current, skipHidden)
 					: this.getPrevious(current, skipHidden);
 		}
-		return undefined;
+		return;
 	}
 
 	first(): HNComment | undefined {
@@ -138,7 +138,7 @@ export class CommentData {
 
 	findClosestCollapsed(direction: 'up' | 'down'): HNComment | undefined {
 		if (!this.activeComment) {
-			return undefined;
+			return;
 		}
 
 		let current = this.activeComment;
@@ -148,7 +148,7 @@ export class CommentData {
 					? this.comments.getPrevious(current)
 					: this.comments.getNext(current);
 			if (!next) {
-				return undefined;
+				return;
 			}
 			if (next.hidden()) {
 				return next;
@@ -156,7 +156,7 @@ export class CommentData {
 			current = next;
 		}
 
-		return undefined;
+		return;
 	}
 
 	closestCollapsedUp(): HNComment | undefined {

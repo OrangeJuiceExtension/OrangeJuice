@@ -1,6 +1,6 @@
 import type { ContentScriptContext } from '#imports';
-import { widenFields } from '@/components/submit/field-width.ts';
 import { fetchTitle } from '@/components/submit/fetch-title.ts';
+import { widenFields } from '@/components/submit/field-width.ts';
 import { prefill } from '@/components/submit/prefill.ts';
 import { remaining } from '@/components/submit/remaining.ts';
 import { paths } from '@/utils/paths.ts';

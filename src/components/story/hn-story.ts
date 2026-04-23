@@ -84,7 +84,7 @@ export class HNStory {
 
 	parsePoints(subtext?: HTMLElement): number | undefined {
 		if (!subtext) {
-			return undefined;
+			return;
 		}
 		const scoreText = subtext.querySelector('span.score')?.textContent;
 		const match = scoreText?.match(POINTS_REGEX);
@@ -93,7 +93,7 @@ export class HNStory {
 
 	parseComments(subtext?: HTMLElement): number | undefined {
 		if (!subtext) {
-			return undefined;
+			return;
 		}
 		const links = subtext.querySelectorAll<HTMLAnchorElement>('a');
 
@@ -114,7 +114,7 @@ export class HNStory {
 			}
 		}
 
-		return undefined;
+		return;
 	}
 
 	hide() {

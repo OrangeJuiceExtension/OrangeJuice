@@ -37,9 +37,9 @@ const mockStorage = (values: Partial<Record<string, StorageValue>>): void => {
 	);
 	const state = new Map<string, StorageValue>(entries);
 
-	vi.mocked(lStorage.getItem).mockImplementation((key: string) => {
-		return Promise.resolve(state.get(key) ?? null);
-	});
+	vi.mocked(lStorage.getItem).mockImplementation((key: string) =>
+		Promise.resolve(state.get(key) ?? null)
+	);
 
 	vi.mocked(lStorage.setItem).mockImplementation((key: string, value: unknown) => {
 		state.set(key, toStorageValue(value));

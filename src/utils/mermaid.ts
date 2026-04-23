@@ -15,12 +15,11 @@ const DARK_THEME_NAME = 'github-dark';
 
 export const MERMAID_CODE_ATTRIBUTE = `data-oj-${MERMAID}-code`;
 
-const decodeEscapes = (value: string): string => {
-	return value
+const decodeEscapes = (value: string): string =>
+	value
 		.replace(ESCAPED_NEWLINE_PATTERN, '\n')
 		.replace(ESCAPED_TAB_PATTERN, '\t')
 		.replace(ESCAPED_QUOTE_PATTERN, '"');
-};
 
 const getRenderTheme = (doc: Document) => {
 	const isDarkMode = doc.documentElement.classList.contains('oj-dark-mode');
@@ -73,13 +72,13 @@ export const createMermaidSvgNodeFromMarkup = async (
 ): Promise<SVGElement | undefined> => {
 	const result = await renderMermaid(mermaid, getRenderTheme(doc));
 	if (!result) {
-		return undefined;
+		return;
 	}
 
 	const parsed = new DOMParser().parseFromString(result, 'text/html');
 	const svgRoot = parsed.querySelector('svg');
 	if (!svgRoot) {
-		return undefined;
+		return;
 	}
 
 	const svg = doc.importNode(svgRoot, true) as SVGElement;

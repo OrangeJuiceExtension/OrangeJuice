@@ -20,9 +20,8 @@ const CHECKBOX_LABEL_TEXT = {
 	2: 'Dim',
 } as const satisfies Record<ReadStoriesVisibilityPreference, string>;
 
-const getCheckboxLabelText = (visibility: ReadStoriesVisibilityPreference): string => {
-	return `${CHECKBOX_LABEL_TEXT[visibility]} ${READ_STORIES_LABEL_SUFFIX}`;
-};
+const getCheckboxLabelText = (visibility: ReadStoriesVisibilityPreference): string =>
+	`${CHECKBOX_LABEL_TEXT[visibility]} ${READ_STORIES_LABEL_SUFFIX}`;
 
 const updateCheckboxLabel = (
 	checkbox: HTMLInputElement,
@@ -173,9 +172,12 @@ export const hideReadStories = async (
 				applyReadStoriesVisibility(readStories, visibility);
 				return;
 			}
-			checkbox.checked
-				? applyReadStoriesVisibility(readStories, visibility)
-				: showStories(readStories);
+			if (checkbox.checked) {
+				applyReadStoriesVisibility(readStories, visibility);
+				return;
+			}
+
+			showStories(readStories);
 		};
 		let checkbox: HTMLInputElement | null = null;
 		let handleCheckboxChange: (() => Promise<void>) | null = null;

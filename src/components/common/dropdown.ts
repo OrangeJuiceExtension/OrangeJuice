@@ -96,8 +96,7 @@ export const createDropdown = (options: DropdownOptions) => {
 	};
 };
 
-export const createDropdownStyle = (className: string) => {
-	return `
+export const createDropdownStyle = (className: string) => `
 		.${className},
 		.${NAVBAR_DROPDOWN_CLASS} {
 			display: none;
@@ -155,4 +154,3 @@ export const createDropdownStyle = (className: string) => {
 			text-decoration: none !important;
 		}
 	`;
-};

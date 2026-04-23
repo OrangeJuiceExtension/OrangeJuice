@@ -24,20 +24,20 @@ export const activities: ComponentFeature = {
 		const activityTrail = newActivityTrail();
 
 		return Promise.all([
-			Promise.resolve().then(() => {
-				return init(ctx, document, activityTrail, {
+			Promise.resolve().then(() =>
+				init(ctx, document, activityTrail, {
 					componentType: 'favorite',
 					buttonClass: FAVORITE_LINK,
 					buttonLabels: { active: 'unfavorite', inactive: 'favorite' },
-				});
-			}),
-			Promise.resolve().then(() => {
-				return init(ctx, document, activityTrail, {
+				})
+			),
+			Promise.resolve().then(() =>
+				init(ctx, document, activityTrail, {
 					componentType: 'flag',
 					buttonClass: FLAG_LINK,
 					buttonLabels: { active: 'unflag', inactive: 'flag' },
-				});
-			}),
+				})
+			),
 		]);
 	},
 };

@@ -417,19 +417,20 @@ describe('showUserInfoOnHover', () => {
 		const userLink = createUserLink('testuser');
 
 		// Delay the response
-		vi.mocked(apiModule.getUserInfo).mockImplementationOnce(() => {
-			return new Promise((resolve) => {
-				setTimeout(() => {
-					resolve({
-						id: 'testuser',
-						created: Math.floor(Date.now() / 1000),
-						karma: 1000,
-						about: '',
-						submitted: [],
-					});
-				}, 100);
-			});
-		});
+		vi.mocked(apiModule.getUserInfo).mockImplementationOnce(
+			() =>
+				new Promise((resolve) => {
+					setTimeout(() => {
+						resolve({
+							id: 'testuser',
+							created: Math.floor(Date.now() / 1000),
+							karma: 1000,
+							about: '',
+							submitted: [],
+						});
+					}, 100);
+				})
+		);
 
 		showUserInfoOnHover(mockCtx, document);
 

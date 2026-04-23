@@ -58,13 +58,10 @@ const removeExistingRow = (tableBody: HTMLTableSectionElement): void => {
 	tableBody.querySelector(`.${MUTED_USERS_ACTION_ROW_CLASS}`)?.remove();
 };
 
-const getCurrentUsername = (doc: Document): string | undefined => {
-	return (
-		doc
-			.querySelector<HTMLAnchorElement>('span.pagetop a[href*="user?id="]')
-			?.textContent?.split(' ')[0] || undefined
-	);
-};
+const getCurrentUsername = (doc: Document): string | undefined =>
+	doc
+		.querySelector<HTMLAnchorElement>('span.pagetop a[href*="user?id="]')
+		?.textContent?.split(' ')[0] || undefined;
 
 const getProfileUsername = (tableBody: HTMLTableSectionElement): string | undefined => {
 	for (const row of tableBody.querySelectorAll<HTMLTableRowElement>('tr')) {
