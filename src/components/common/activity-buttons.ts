@@ -3,7 +3,6 @@ import { DAYS_30 } from '@/utils/constants.ts';
 import { dom } from '@/utils/dom.ts';
 
 const unvPrefixPattern = /^unv_/;
-const itemIdPattern = /[?&]id=(\d+)/;
 const labelSeparatorPattern = /[\s-]+/g;
 
 export const idExtractors = new Map<
@@ -20,8 +19,24 @@ export const idExtractors = new Map<
 	[
 		'/jobs',
 		(nav) => {
-			const element = nav.querySelector<HTMLAnchorElement>('a[href*="item?id="]');
-			return { element, id: element?.href.match(itemIdPattern)?.[1] };
+			const link = dom.findLinkByPathnameAndQueryParam(
+				nav,
+				'a',
+				'/item',
+				'id',
+				undefined,
+				window.location.origin
+			);
+			if (link) {
+				const href = link.getAttribute('href');
+				return {
+					element: link,
+					id: href
+						? dom.getHrefQueryParam(href, 'id', window.location.origin)
+						: undefined,
+				};
+			}
+			return { element: null, id: undefined };
 		},
 	],
 ]);
@@ -68,8 +83,9 @@ const activityTypeFromClassList = (
 	if (classList.contains('subtext')) {
 		switch (componentType) {
 			case 'favorite':
-			case 'flag':
 				return ActivityId.FavoriteSubmissions;
+			case 'flag':
+				return ActivityId.FlagsSubmissions;
 			case 'vote':
 				return ActivityId.VotesSubmissions;
 			default:

@@ -9,6 +9,35 @@ vi.mock('@/utils/dom', () => ({
 	dom: {
 		getAuthToken: vi.fn(),
 		toggleActivityState: vi.fn(),
+		findLinkByPathnameAndQueryParam: (
+			root: ParentNode,
+			selector: string,
+			pathname: string,
+			param: string,
+			value?: string,
+			baseUrl = window.location.origin
+		) => {
+			const candidates = root.querySelectorAll<HTMLAnchorElement>(selector);
+			for (const candidate of candidates) {
+				const href = candidate.getAttribute('href');
+				if (!href) {
+					continue;
+				}
+				const url = new URL(href, baseUrl);
+				if (url.pathname !== pathname) {
+					continue;
+				}
+				const paramValue = url.searchParams.get(param);
+				if (paramValue && (value === undefined || paramValue === value)) {
+					return candidate;
+				}
+			}
+			return;
+		},
+		getHrefQueryParam: (href: string, param: string, baseUrl = window.location.origin) => {
+			const url = new URL(href, baseUrl);
+			return url.searchParams.get(param) ?? undefined;
+		},
 	},
 }));
 
@@ -93,6 +122,22 @@ describe('activity-buttons', () => {
 
 				expect(result.element).toBe(link);
 				expect(result.id).toBe('11111');
+			});
+
+			it('should extract id when the item id param is not first', () => {
+				const nav = doc.createElement('div');
+				const link = doc.createElement('a');
+				link.href = 'item?foo=bar&id=22222';
+				nav.appendChild(link);
+
+				const extractor = idExtractors.get('/jobs');
+				if (!extractor) {
+					throw new Error('missing');
+				}
+				const result = extractor(nav);
+
+				expect(result.element).toBe(link);
+				expect(result.id).toBe('22222');
 			});
 
 			it('should return null when no item link exists', () => {
@@ -588,6 +633,12 @@ describe('activity-buttons', () => {
 					createNav: createComhead,
 					config: flagConfig,
 					expectedType: ActivityId.FlagsComments,
+				},
+				{
+					name: 'flag in subtext',
+					createNav: createSubtext,
+					config: flagConfig,
+					expectedType: ActivityId.FlagsSubmissions,
 				},
 			];
 
