@@ -126,6 +126,30 @@ describe('mutedUsersRow', () => {
 		expect(document.querySelector('.oj-muted-users-row')?.textContent).toContain('alice');
 	});
 
+	it('supports current user links with reordered query params', async () => {
+		window.history.pushState({}, '', '/user?id=latchkey');
+		document.body.innerHTML = `
+			<span class="pagetop">
+				<a href="user?foo=bar&id=latchkey">latchkey</a>
+			</span>
+			<form action="xuser" method="post">
+				<table>
+					<tbody>
+						<tr>
+							<td>user:</td>
+							<td><a href="user?id=latchkey" class="hnuser">latchkey</a></td>
+						</tr>
+					</tbody>
+				</table>
+			</form>
+		`;
+		await lStorage.setItem(MUTED_USERS_STORAGE_KEY, ['alice']);
+
+		await mutedUsersRow(mockCtx, document);
+
+		expect(document.querySelector('.oj-muted-users-row')?.textContent).toContain('alice');
+	});
+
 	it('shows none when no users are muted', async () => {
 		window.history.pushState({}, '', '/user?id=latchkey');
 		renderProfileForm();

@@ -1,5 +1,6 @@
 import type { ContentScriptContext } from '#imports';
 import { ACTION_BUTTON_CLASS, getActionButtonStyle } from '@/utils/action-button.ts';
+import { dom } from '@/utils/dom.ts';
 import lStorage from '@/utils/local-storage.ts';
 import {
 	getMutedUsers,
@@ -59,8 +60,15 @@ const removeExistingRow = (tableBody: HTMLTableSectionElement): void => {
 };
 
 const getCurrentUsername = (doc: Document): string | undefined =>
-	doc
-		.querySelector<HTMLAnchorElement>('span.pagetop a[href*="user?id="]')
+	dom
+		.findLinkByPathnameAndQueryParam(
+			doc,
+			'span.pagetop a',
+			'/user',
+			'id',
+			undefined,
+			window.location.origin
+		)
 		?.textContent?.split(' ')[0] || undefined;
 
 const getProfileUsername = (tableBody: HTMLTableSectionElement): string | undefined => {
