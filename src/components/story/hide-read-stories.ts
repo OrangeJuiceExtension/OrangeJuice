@@ -173,9 +173,12 @@ export const hideReadStories = async (
 				applyReadStoriesVisibility(readStories, visibility);
 				return;
 			}
-			checkbox.checked
-				? applyReadStoriesVisibility(readStories, visibility)
-				: showStories(readStories);
+			if (checkbox.checked) {
+				applyReadStoriesVisibility(readStories, visibility);
+				return;
+			}
+
+			showStories(readStories);
 		};
 		let checkbox: HTMLInputElement | null = null;
 		let handleCheckboxChange: (() => Promise<void>) | null = null;
