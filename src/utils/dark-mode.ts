@@ -2,9 +2,10 @@ import '@/utils/dark-mode.css';
 import lStorage from '@/utils/local-storage.ts';
 import { paths } from '@/utils/paths.ts';
 
-const DARK_MODE_STORAGE_KEY = 'oj_dark_mode';
-const DARK_MODE_CLASS = 'oj-dark-mode';
-const INFO_PAGE_CLASS = 'oj-info-page';
+export const DARK_MODE_STORAGE_KEY = 'oj_dark_mode';
+export const DARK_MODE_CACHE_KEY = 'oj_dark_mode_cache';
+export const DARK_MODE_CLASS = 'oj-dark-mode';
+export const INFO_PAGE_CLASS = 'oj-info-page';
 
 export type DarkModePreference = 'dark' | 'light';
 
@@ -32,6 +33,14 @@ const applyDarkMode = (mode: DarkModePreference) => {
 	}
 };
 
+const cachePreference = (mode: DarkModePreference) => {
+	try {
+		localStorage.setItem(DARK_MODE_CACHE_KEY, mode);
+	} catch {
+		// localStorage unavailable
+	}
+};
+
 export const getDarkModePreference = async (): Promise<DarkModePreference> => {
 	const stored = await lStorage.getItem<DarkModePreference>(DARK_MODE_STORAGE_KEY);
 	if (stored) {
@@ -42,6 +51,7 @@ export const getDarkModePreference = async (): Promise<DarkModePreference> => {
 
 export const setDarkModePreference = async (mode: DarkModePreference) => {
 	applyDarkMode(mode);
+	cachePreference(mode);
 	await lStorage.setItem<DarkModePreference>(DARK_MODE_STORAGE_KEY, mode);
 };
 
@@ -53,5 +63,7 @@ export const toggleDarkModePreference = async (): Promise<DarkModePreference> =>
 };
 
 export async function enableDarkMode() {
-	applyDarkMode(await getDarkModePreference());
+	const mode = await getDarkModePreference();
+	applyDarkMode(mode);
+	cachePreference(mode);
 }

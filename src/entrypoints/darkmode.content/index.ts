@@ -1,0 +1,37 @@
+import { defineContentScript } from '#imports';
+import '@/utils/dark-mode.css';
+import { DARK_MODE_CACHE_KEY, DARK_MODE_CLASS, INFO_PAGE_CLASS } from '@/utils/dark-mode.ts';
+import { paths } from '@/utils/paths.ts';
+
+const readCachedMode = (): 'dark' | 'light' | null => {
+	try {
+		const value = localStorage.getItem(DARK_MODE_CACHE_KEY);
+		if (value === 'dark' || value === 'light') {
+			return value;
+		}
+	} catch {
+		// localStorage unavailable (e.g. incognito with restricted storage)
+	}
+	return null;
+};
+
+export default defineContentScript({
+	matches: ['https://news.ycombinator.com/*'],
+	runAt: 'document_start',
+	main() {
+		const root = document.documentElement;
+
+		const mode =
+			readCachedMode() ??
+			(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+		if (mode === 'dark') {
+			root.classList.add(DARK_MODE_CLASS);
+			root.style.colorScheme = 'dark';
+		}
+
+		if (paths.info.includes(window.location.pathname)) {
+			root.classList.add(INFO_PAGE_CLASS);
+		}
+	},
+});
