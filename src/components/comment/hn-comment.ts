@@ -187,7 +187,7 @@ export class HNComment {
 			replyBtn.click();
 			return replyBtn;
 		}
-		return undefined;
+		return;
 	}
 
 	collapseToggle(): boolean {
@@ -207,14 +207,14 @@ export class HNComment {
 	getCollapseRootLink(): HTMLAnchorElement | undefined {
 		const comhead = this.commentHead;
 		if (!comhead) {
-			return undefined;
+			return;
 		}
 		for (const link of comhead.querySelectorAll('a')) {
 			if (link.textContent === '[collapse root]') {
 				return link as HTMLAnchorElement;
 			}
 		}
-		return undefined;
+		return;
 	}
 
 	getExpandRootLink(): HTMLAnchorElement | undefined {
@@ -225,7 +225,7 @@ export class HNComment {
 				return el;
 			}
 		}
-		return undefined;
+		return;
 	}
 
 	getRootCommentElement(): HTMLElement | undefined {
@@ -249,7 +249,7 @@ export class HNComment {
 				return link;
 			}
 		}
-		return undefined;
+		return;
 	}
 
 	getPrevSiblingLink(): HTMLAnchorElement | undefined {
@@ -259,7 +259,7 @@ export class HNComment {
 				return link;
 			}
 		}
-		return undefined;
+		return;
 	}
 
 	getReferenceLinks() {

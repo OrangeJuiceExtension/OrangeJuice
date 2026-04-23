@@ -25,7 +25,7 @@ export class IndexedList<T> implements Iterable<T> {
 		if (index !== undefined && index < this.items.length - 1) {
 			return this.items[index + 1];
 		}
-		return undefined;
+		return;
 	}
 
 	getPrevious(current: T): T | undefined {
@@ -34,7 +34,7 @@ export class IndexedList<T> implements Iterable<T> {
 		if (index !== undefined && index > 0) {
 			return this.items[index - 1];
 		}
-		return undefined;
+		return;
 	}
 
 	first(): T | undefined {

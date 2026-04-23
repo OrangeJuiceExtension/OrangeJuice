@@ -63,7 +63,7 @@ export class KeyboardHandlers {
 	getNextItem(storyData: StoryData, direction: 'up' | 'down') {
 		const activeStory = storyData.getActiveStory();
 		if (!activeStory) {
-			return undefined;
+			return;
 		}
 
 		return direction === 'down'

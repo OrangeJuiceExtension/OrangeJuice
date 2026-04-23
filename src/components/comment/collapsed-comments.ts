@@ -6,13 +6,10 @@ const COLLAPSED_COMMENTS_KEY = 'oj_collapsed_comment_ids';
 
 type CollapsedCommentsMap = Record<string, string[]>;
 
-const getStoredCollapsedComments = async (): Promise<CollapsedCommentsMap> => {
-	return (
-		(await lStorage.getItem<CollapsedCommentsMap>(COLLAPSED_COMMENTS_KEY, {
-			fallback: {},
-		})) ?? {}
-	);
-};
+const getStoredCollapsedComments = async (): Promise<CollapsedCommentsMap> =>
+	(await lStorage.getItem<CollapsedCommentsMap>(COLLAPSED_COMMENTS_KEY, {
+		fallback: {},
+	})) ?? {};
 
 const storeCollapsedComments = async (itemId: string, comments: HTMLElement[]): Promise<void> => {
 	const stored = await getStoredCollapsedComments();

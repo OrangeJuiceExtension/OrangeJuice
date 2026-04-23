@@ -78,8 +78,8 @@ export class InjectAdapter implements Adapter<MessageMeta> {
 	constructor(injector?: 'content' | 'popup') {
 		this.injector = injector;
 	}
-	sendMessage: SendMessage<MessageMeta> = (message) => {
-		return browser.runtime.sendMessage(browser.runtime.id, {
+	sendMessage: SendMessage<MessageMeta> = (message) =>
+		browser.runtime.sendMessage(browser.runtime.id, {
 			...message,
 			meta: {
 				url: document.location.href.split('#')[0],
@@ -87,7 +87,6 @@ export class InjectAdapter implements Adapter<MessageMeta> {
 				message,
 			},
 		});
-	};
 	onMessage: OnMessage<MessageMeta> = (callback) => {
 		const handler = (
 			message: Partial<Message<MessageMeta>>

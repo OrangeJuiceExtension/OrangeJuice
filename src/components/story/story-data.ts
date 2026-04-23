@@ -60,7 +60,7 @@ export class StoryData {
 	firstTopDownVisible(): HNStory | undefined {
 		const first = this.storiesList.first();
 		if (!first) {
-			return undefined;
+			return;
 		}
 		if (!this.shouldSkipForNavigation(first)) {
 			return first;
@@ -72,7 +72,7 @@ export class StoryData {
 	firstBottomUpVisible(): HNStory | undefined {
 		const last = this.storiesList.last();
 		if (!last) {
-			return undefined;
+			return;
 		}
 		if (!this.shouldSkipForNavigation(last)) {
 			return last;
@@ -178,7 +178,7 @@ export class StoryData {
 	getStoryFromElement(element: HTMLElement): HNStory | undefined {
 		const id = HNStory.getStoryIdFromElement(element);
 		if (!id) {
-			return undefined;
+			return;
 		}
 		return this.get(id);
 	}
@@ -201,6 +201,6 @@ export class StoryData {
 				return story;
 			}
 		}
-		return undefined;
+		return;
 	}
 }

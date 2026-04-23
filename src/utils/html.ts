@@ -18,9 +18,8 @@ interface LinkifyDomOptions {
 	openInNewTab?: boolean;
 }
 
-const getNodeFilter = (doc: Document): typeof NodeFilter => {
-	return doc.defaultView?.NodeFilter ?? NodeFilter;
-};
+const getNodeFilter = (doc: Document): typeof NodeFilter =>
+	doc.defaultView?.NodeFilter ?? NodeFilter;
 
 const propertyValueToAttributeValue = (info: Info, value: Properties[string]): string => {
 	if (Array.isArray(value)) {
@@ -67,7 +66,7 @@ const createDomNodeFromHast = (doc: Document, node: RootContent): Node | undefin
 	}
 
 	if (node.type !== 'element') {
-		return undefined;
+		return;
 	}
 
 	const element = doc.createElement(node.tagName);
@@ -97,7 +96,7 @@ const createLinkifiedFragment = (
 ): DocumentFragment | undefined => {
 	const matches = find(text).filter((match) => match.isLink);
 	if (matches.length === 0) {
-		return undefined;
+		return;
 	}
 
 	const fragment = doc.createDocumentFragment();

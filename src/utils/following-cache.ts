@@ -87,13 +87,13 @@ export const getCachedFollowingSection = async (
 	const cache = await getStoredCache();
 	const entry = cache.sections[username];
 	if (!entry) {
-		return undefined;
+		return;
 	}
 
 	if (entry.expiresAt <= Date.now()) {
 		delete cache.sections[username];
 		await setStoredCache(cache);
-		return undefined;
+		return;
 	}
 
 	const { expiresAt: _expiresAt, user, ...section } = entry;

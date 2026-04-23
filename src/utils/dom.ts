@@ -32,9 +32,8 @@ const createHiddenInput = (name: string, value: string) => {
 	return input;
 };
 
-const getHiddenInputValue = (doc: Document, name: string) => {
-	return doc.querySelector<HTMLInputElement>(`input[type="hidden"][name="${name}"]`)?.value || '';
-};
+const getHiddenInputValue = (doc: Document, name: string) =>
+	doc.querySelector<HTMLInputElement>(`input[type="hidden"][name="${name}"]`)?.value || '';
 
 const getPageDom = async (
 	url: string,
@@ -131,9 +130,7 @@ const getItemAuthor = (doc: Document): string | undefined => {
 	return itemAuthorLink?.textContent || undefined;
 };
 
-const parseRgbChannel = (value: string): number => {
-	return Number.parseInt(value, 16);
-};
+const parseRgbChannel = (value: string): number => Number.parseInt(value, 16);
 
 const parseColorToRgb = (value: string): { r: number; g: number; b: number } | undefined => {
 	const color = value.trim();
@@ -156,7 +153,7 @@ const parseColorToRgb = (value: string): { r: number; g: number; b: number } | u
 		};
 	}
 
-	return undefined;
+	return;
 };
 
 const srgbToLinear = (channel: number): number => {
@@ -224,7 +221,7 @@ const getActivityActionName = (type: ActivityType): 'fave' | 'flag' | undefined 
 		case ActivityId.FlagsSubmissions:
 			return 'flag';
 		default:
-			return undefined;
+			return;
 	}
 };
 
@@ -262,13 +259,12 @@ const toggleActivityState = async (
 	return true;
 };
 
-const getAllComments = (doc: Document): HTMLElement[] => {
-	return [...doc.querySelectorAll<HTMLElement>('tr.athing')];
-};
+const getAllComments = (doc: Document): HTMLElement[] => [
+	...doc.querySelectorAll<HTMLElement>('tr.athing'),
+];
 
-const mapElementsById = (elements: HTMLElement[]): Map<string, HTMLElement> => {
-	return new Map(elements.map((el) => [el.id, el]));
-};
+const mapElementsById = (elements: HTMLElement[]): Map<string, HTMLElement> =>
+	new Map(elements.map((el) => [el.id, el]));
 
 const getItemIdFromLocation = (): string | null => {
 	const url = new URL(window.location.href);

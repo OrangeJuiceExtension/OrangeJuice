@@ -35,14 +35,14 @@ const getSafeRelativePath = (path: string): string | undefined => {
 	try {
 		const resolved = new URL(path, paths.base);
 		if (!SAFE_PROTOCOLS.has(resolved.protocol)) {
-			return undefined;
+			return;
 		}
 		if (resolved.origin !== new URL(paths.base).origin) {
-			return undefined;
+			return;
 		}
 		return `${resolved.pathname}${resolved.search}${resolved.hash}`;
 	} catch {
-		return undefined;
+		return;
 	}
 };
 
@@ -108,7 +108,7 @@ const getLinks = (user: string, logoutPath?: string): DropdownLink[] => {
 const removeTopLogoutLink = (pageTop: Element): string | undefined => {
 	const logoutLink = pageTop.querySelector<HTMLAnchorElement>('a[href*="logout"]');
 	if (!logoutLink) {
-		return undefined;
+		return;
 	}
 
 	const logoutPath = logoutLink.getAttribute('href') ?? undefined;

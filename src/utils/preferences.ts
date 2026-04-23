@@ -33,19 +33,15 @@ const getDefaultPreferences = (): Preferences => ({
 	...DEFAULT_PREFERENCES,
 });
 
-const isRecord = (value: unknown): value is Record<string, unknown> => {
-	return typeof value === 'object' && value !== null;
-};
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === 'object' && value !== null;
 
 const isReadStoriesVisibilityPreference = (
 	value: unknown
-): value is ReadStoriesVisibilityPreference => {
-	return (
-		value === READ_STORIES_VISIBILITY.HIDE ||
-		value === READ_STORIES_VISIBILITY.STRIKETHROUGH ||
-		value === READ_STORIES_VISIBILITY.DIM
-	);
-};
+): value is ReadStoriesVisibilityPreference =>
+	value === READ_STORIES_VISIBILITY.HIDE ||
+	value === READ_STORIES_VISIBILITY.STRIKETHROUGH ||
+	value === READ_STORIES_VISIBILITY.DIM;
 
 const parseStoredPreferences = (stored: string): Partial<Preferences> | null => {
 	try {
@@ -74,21 +70,16 @@ const parseStoredPreferences = (stored: string): Partial<Preferences> | null => 
 	}
 };
 
-const mergePreferences = (stored: Partial<Preferences>): Preferences => {
-	return {
-		...DEFAULT_PREFERENCES,
-		...stored,
-	};
-};
+const mergePreferences = (stored: Partial<Preferences>): Preferences => ({
+	...DEFAULT_PREFERENCES,
+	...stored,
+});
 
-const hasAllPreferences = (preferences: Partial<Preferences>): preferences is Preferences => {
-	return (
-		typeof preferences.enableFocusBox === 'boolean' &&
-		typeof preferences.openStoryNewTab === 'boolean' &&
-		isReadStoriesVisibilityPreference(preferences.readStoriesVisibility) &&
-		typeof preferences.showHiddenStoriesOption === 'boolean'
-	);
-};
+const hasAllPreferences = (preferences: Partial<Preferences>): preferences is Preferences =>
+	typeof preferences.enableFocusBox === 'boolean' &&
+	typeof preferences.openStoryNewTab === 'boolean' &&
+	isReadStoriesVisibilityPreference(preferences.readStoriesVisibility) &&
+	typeof preferences.showHiddenStoriesOption === 'boolean';
 
 const persistPreferences = async (preferences: Preferences): Promise<void> => {
 	await lStorage.setItem<string>(PREFERENCES_STORAGE_KEY, JSON.stringify(preferences));
