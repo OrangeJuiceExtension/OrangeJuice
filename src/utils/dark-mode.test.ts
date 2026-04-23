@@ -5,6 +5,7 @@ import {
 	DARK_MODE_STORAGE_KEY,
 	enableDarkMode,
 	setDarkModePreference,
+	THEME_PENDING_CLASS,
 	toggleDarkModePreference,
 } from '@/utils/dark-mode.ts';
 import lStorage from '@/utils/local-storage.ts';
@@ -15,6 +16,7 @@ describe('dark-mode', () => {
 	beforeEach(async () => {
 		await lStorage.setItem(DARK_MODE_STORAGE_KEY, null);
 		document.documentElement.classList.remove(DARK_MODE_CLASS);
+		document.documentElement.classList.remove(THEME_PENDING_CLASS);
 		document.documentElement.style.removeProperty('color-scheme');
 		cacheWriteSpy = vi.spyOn(localStorage, 'setItem');
 	});
@@ -44,6 +46,7 @@ describe('dark-mode', () => {
 			await enableDarkMode();
 
 			expect(document.documentElement.classList.contains(DARK_MODE_CLASS)).toBe(true);
+			expect(document.documentElement.classList.contains(THEME_PENDING_CLASS)).toBe(false);
 			expect(cacheWriteSpy).toHaveBeenCalledWith(DARK_MODE_CACHE_KEY, 'dark');
 		});
 

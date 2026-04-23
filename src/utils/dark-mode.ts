@@ -6,6 +6,7 @@ export const DARK_MODE_STORAGE_KEY = 'oj_dark_mode';
 export const DARK_MODE_CACHE_KEY = 'oj_dark_mode_cache';
 export const DARK_MODE_CLASS = 'oj-dark-mode';
 export const INFO_PAGE_CLASS = 'oj-info-page';
+export const THEME_PENDING_CLASS = 'oj-theme-pending';
 
 export type DarkModePreference = 'dark' | 'light';
 
@@ -22,6 +23,7 @@ const applyDarkMode = (mode: DarkModePreference) => {
 		return;
 	}
 
+	root.classList.remove(THEME_PENDING_CLASS);
 	root.classList.toggle(INFO_PAGE_CLASS, paths.info.includes(window.location.pathname));
 
 	if (mode === 'dark') {

@@ -1,6 +1,11 @@
 import { defineContentScript } from '#imports';
 import '@/utils/dark-mode.css';
-import { DARK_MODE_CACHE_KEY, DARK_MODE_CLASS, INFO_PAGE_CLASS } from '@/utils/dark-mode.ts';
+import {
+	DARK_MODE_CACHE_KEY,
+	DARK_MODE_CLASS,
+	INFO_PAGE_CLASS,
+	THEME_PENDING_CLASS,
+} from '@/utils/dark-mode.ts';
 import { paths } from '@/utils/paths.ts';
 
 const readCachedMode = (): 'dark' | 'light' | null => {
@@ -21,11 +26,14 @@ export default defineContentScript({
 	main() {
 		const root = document.documentElement;
 		const cachedMode = readCachedMode();
+		const clearPendingTheme = () => {
+			root.classList.remove(THEME_PENDING_CLASS);
+		};
 
-		// Only pre-apply dark mode when we have an explicit cached preference.
-		// Falling back to matchMedia here causes a dark flash for users who saved
-		// a light preference before the synchronous cache was introduced.
-		if (cachedMode === 'dark') {
+		if (cachedMode === null) {
+			root.classList.add(THEME_PENDING_CLASS);
+			window.setTimeout(clearPendingTheme, 1500);
+		} else if (cachedMode === 'dark') {
 			root.classList.add(DARK_MODE_CLASS);
 			root.style.colorScheme = 'dark';
 		}
