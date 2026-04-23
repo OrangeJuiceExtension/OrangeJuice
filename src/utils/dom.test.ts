@@ -44,6 +44,18 @@ describe('dom', () => {
 			expect(username).toBe('testuser');
 		});
 
+		it('should return username when the user id param is not first', async () => {
+			document.body.innerHTML = `
+				<span class="pagetop">
+					<a href="user?foo=bar&id=testuser" id="me">testuser ▾</a>
+				</span>
+			`;
+
+			const username = await dom.getUsername(document.body);
+
+			expect(username).toBe('testuser');
+		});
+
 		it('should return username without up arrow', async () => {
 			document.body.innerHTML = `
 				<span class="pagetop">
@@ -320,6 +332,56 @@ describe('dom', () => {
 			const token = await dom.getAuthToken('123', ActivityId.FavoriteSubmissions);
 
 			expect(token).toBeUndefined();
+			getPageDomSpy.mockRestore();
+		});
+
+		it('should prefer a matching comment action link over earlier item links', async () => {
+			const itemDiv = document.createElement('body');
+			itemDiv.innerHTML = `
+				<table class="fatitem">
+					<tr>
+						<td class="subtext">
+							<a href="fave?foo=bar&id=100&auth=story-auth">favorite</a>
+							<a href="flag?foo=bar&id=100&auth=story-flag-auth">flag</a>
+						</td>
+					</tr>
+				</table>
+				<tr class="athing comtr" id="200">
+					<td class="default">
+						<span class="comhead">
+							<a href="fave?foo=bar&id=200&auth=comment-auth">favorite</a>
+							<a href="flag?foo=bar&id=200&auth=comment-flag-auth">flag</a>
+						</span>
+					</td>
+				</tr>
+			`;
+			const getPageDomSpy = vi.spyOn(dom, 'getPageDom').mockResolvedValue(itemDiv);
+
+			const favoriteToken = await dom.getAuthToken('200', ActivityId.FavoriteComments);
+			const flagToken = await dom.getAuthToken('200', ActivityId.FlagsComments);
+
+			expect(favoriteToken).toBe('comment-auth');
+			expect(flagToken).toBe('comment-flag-auth');
+			getPageDomSpy.mockRestore();
+		});
+
+		it('should fall back to a matching hide link with reordered params', async () => {
+			const itemDiv = document.createElement('body');
+			itemDiv.innerHTML = `
+				<table class="fatitem">
+					<tr>
+						<td class="subtext">
+							<a href="hide?foo=bar&id=100&auth=story-hide-auth">hide</a>
+							<a href="hide?foo=bar&id=200&auth=comment-hide-auth">hide</a>
+						</td>
+					</tr>
+				</table>
+			`;
+			const getPageDomSpy = vi.spyOn(dom, 'getPageDom').mockResolvedValue(itemDiv);
+
+			const token = await dom.getAuthToken('200', ActivityId.FavoriteSubmissions);
+
+			expect(token).toBe('comment-hide-auth');
 			getPageDomSpy.mockRestore();
 		});
 	});

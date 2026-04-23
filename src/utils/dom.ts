@@ -64,6 +64,47 @@ const fetchHmacFromPage = async (url: string): Promise<string> => {
 };
 
 const authMatchPattern = /auth=([^&]+)/;
+const getHrefQueryParam = (
+	href: string,
+	param: string,
+	baseUrl = paths.base
+): string | undefined => {
+	const url = new URL(href, baseUrl);
+	return url.searchParams.get(param) ?? undefined;
+};
+
+const findLinkByPathnameAndQueryParam = (
+	root: ParentNode,
+	selector: string,
+	pathname: string,
+	param: string,
+	value?: string,
+	baseUrl = paths.base
+): HTMLAnchorElement | undefined => {
+	const candidates = root.querySelectorAll<HTMLAnchorElement>(selector);
+
+	for (const candidate of candidates) {
+		const href = candidate.getAttribute('href');
+		if (!href) {
+			continue;
+		}
+
+		const url = new URL(href, baseUrl);
+		if (url.pathname !== pathname) {
+			continue;
+		}
+
+		const paramValue = url.searchParams.get(param);
+		if (paramValue && (value === undefined || paramValue === value)) {
+			return candidate;
+		}
+	}
+
+	return;
+};
+
+const findUserLink = (root: ParentNode): HTMLAnchorElement | undefined =>
+	findLinkByPathnameAndQueryParam(root, 'span.pagetop a', '/user', 'id');
 
 const getAuthToken = async (
 	commentId: string,
@@ -85,11 +126,23 @@ const getAuthToken = async (
 	token = hmacInput?.value;
 
 	if (!token) {
-		let actionLink = itemDiv.querySelector<HTMLAnchorElement>(`a[href*="${actionName}?id="]`);
+		let actionLink = findLinkByPathnameAndQueryParam(
+			itemDiv,
+			`a[href*="${actionName}?"]`,
+			`/${actionName}`,
+			'id',
+			commentId
+		);
 		if (!actionLink) {
 			// fall back to looking at the hide link. a job item only has that.
 			// ie: https://news.ycombinator.com/item?id=46840801
-			actionLink = itemDiv.querySelector<HTMLAnchorElement>(`a[href*="hide?id="]`);
+			actionLink = findLinkByPathnameAndQueryParam(
+				itemDiv,
+				'a[href*="hide?"]',
+				'/hide',
+				'id',
+				commentId
+			);
 		}
 		token = actionLink?.href.match(authMatchPattern)?.[1];
 	}
@@ -107,7 +160,7 @@ const setStoredUsername = async (username: string): Promise<void> => {
 };
 
 const getUsernameFromPage = (doc: HTMLElement): string | undefined => {
-	const userLink = doc.querySelector<HTMLAnchorElement>('span.pagetop a[href*="user?id="]');
+	const userLink = findUserLink(doc);
 	const username = userLink?.textContent.split(' ')[0];
 	return username || undefined;
 };
@@ -394,8 +447,10 @@ export const dom = {
 	getHiddenInputValue,
 	getPageDom,
 	fetchHmacFromPage,
+	getHrefQueryParam,
 	getUsername,
 	getItemAuthor,
+	findLinkByPathnameAndQueryParam,
 	ensureTopBarReadableText,
 	getItemIdFromLocation,
 	isClickModified,
