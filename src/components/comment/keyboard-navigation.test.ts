@@ -655,6 +655,31 @@ describe('keyboardNavigation', () => {
 
 			invalidate();
 		});
+
+		it('should not redraw focus when clicking an already active comment again', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+			const comment = getComment(comments, 0);
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			await activateFirstComment(commentData, comments);
+
+			const activeComment = commentData.getActiveComment();
+			if (!activeComment) {
+				throw new Error('Expected active comment to exist');
+			}
+
+			const activateSpy = vi.spyOn(activeComment, 'activate');
+			const deactivateSpy = vi.spyOn(activeComment, 'deactivate');
+
+			dispatchClick(comment, comment);
+			await Promise.resolve();
+
+			expect(commentData.getActiveComment()).toBe(activeComment);
+			expect(activateSpy).not.toHaveBeenCalled();
+			expect(deactivateSpy).not.toHaveBeenCalled();
+
+			invalidate();
+		});
 	});
 
 	describe('document click handler', () => {

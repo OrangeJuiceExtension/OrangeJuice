@@ -35,6 +35,9 @@ export class CommentData {
 	}
 
 	async activate(comment: HNComment): Promise<void> {
+		if (this.activeComment === comment) {
+			return;
+		}
 		await this.deactivate();
 		this.activeComment = comment;
 		comment.activate();
