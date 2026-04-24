@@ -54,6 +54,26 @@ describe('CommentData', () => {
 		expect(data.getActiveComment()).toBeUndefined();
 	});
 
+	it('should not deactivate and reactivate an already active comment', async () => {
+		const comments = createComments(doc, 1);
+		const data = new CommentData(comments);
+		const activateSpy = vi.spyOn(comments[0], 'activate');
+		const deactivateSpy = vi.spyOn(comments[0], 'deactivate');
+		const storeSpy = vi.spyOn(data, 'storeActiveCommentId');
+
+		await data.activate(comments[0]);
+		activateSpy.mockClear();
+		deactivateSpy.mockClear();
+		storeSpy.mockClear();
+
+		await data.activate(comments[0]);
+
+		expect(data.getActiveComment()).toBe(comments[0]);
+		expect(activateSpy).not.toHaveBeenCalled();
+		expect(deactivateSpy).not.toHaveBeenCalled();
+		expect(storeSpy).not.toHaveBeenCalled();
+	});
+
 	it('should skip hidden comments when getting next', () => {
 		const comments = createComments(doc, 3, { collapsedIds: [2] });
 		const data = new CommentData(comments);
