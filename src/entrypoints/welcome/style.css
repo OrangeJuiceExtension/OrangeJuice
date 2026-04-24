@@ -273,6 +273,49 @@ html.oj-dark-mode .oj-welcome-theme-toggle .oj-dark-mode-icon--moon {
 	gap: 1rem;
 }
 
+.oj-welcome-feedback__intro {
+	max-width: 44rem;
+	margin: 0 0 1.25rem;
+	color: var(--text-light);
+}
+
+.oj-welcome-feedback-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 1rem;
+}
+
+.oj-welcome-feedback-card {
+	display: block;
+	padding: 1.25rem;
+	color: inherit;
+	text-decoration: none;
+	background: var(--bg);
+	border: 1px solid var(--border);
+	border-radius: 16px;
+	box-shadow: 0 10px 24px var(--shadow);
+	transition:
+		transform 0.2s ease,
+		border-color 0.2s ease,
+		box-shadow 0.2s ease;
+}
+
+.oj-welcome-feedback-card:hover {
+	border-color: var(--primary);
+	box-shadow: 0 16px 34px var(--shadow);
+	transform: translateY(-2px);
+}
+
+.oj-welcome-feedback-card h3 {
+	margin-bottom: 0.45rem;
+	font-size: 1.22rem;
+	color: var(--text);
+}
+
+.oj-welcome-feedback-card p:last-child {
+	color: var(--text-light);
+}
+
 .oj-welcome-step {
 	display: grid;
 	grid-template-columns: auto 1fr;
