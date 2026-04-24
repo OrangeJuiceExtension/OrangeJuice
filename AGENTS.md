@@ -21,6 +21,7 @@ Agents must follow:
 - Package manager: bun (never anything else)
 - Tests: `bun run test` (not any other service test, like pnpm or node).
 - It is always ok to run `bun run`
+- If you change `docs/docs-theme.css` or any docs page that references it (`docs/index.html`, `docs/privacy.html`, `docs/terms.html`), always bump the `docs-theme.css?v=...` cache-buster in those pages so the deployed site picks up the new stylesheet.
 
 ### Code style
 - Prefer for...of over forEach.
