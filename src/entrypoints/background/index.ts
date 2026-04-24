@@ -1,4 +1,8 @@
-import { defineBackground } from '#imports';
+import { browser, defineBackground } from '#imports';
+import {
+	createWelcomeInstallApi,
+	registerWelcomePageOnInstall,
+} from '@/entrypoints/background/welcome-on-install.ts';
 import { createBackgroundServices } from '@/services/manager.ts';
 
 export const main = () => {
@@ -13,6 +17,16 @@ export const main = () => {
 	// keepAlive();
 
 	createBackgroundServices();
+	registerWelcomePageOnInstall(
+		createWelcomeInstallApi({
+			addInstalledListener: browser.runtime.onInstalled.addListener.bind(
+				browser.runtime.onInstalled
+			),
+			createTab: browser.tabs.create.bind(browser.tabs),
+			getWelcomePageUrl: () => browser.runtime.getURL('/welcome.html'),
+			installReason: browser.runtime.OnInstalledReason?.INSTALL,
+		})
+	);
 };
 
 export default defineBackground({ main });

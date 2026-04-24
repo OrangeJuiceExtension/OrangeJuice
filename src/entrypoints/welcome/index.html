@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Welcome to Orange Juice</title>
+	</head>
+	<body class="oj-welcome-page">
+		<div class="oj-welcome-topbar">
+			<button
+				type="button"
+				class="oj-welcome-theme-toggle"
+				aria-label="Toggle dark mode"
+			></button>
+		</div>
+
+		<main class="oj-welcome-shell">
+			<section class="oj-welcome-hero">
+				<div class="oj-welcome-brand">
+					<img
+						class="oj-welcome-brand__logo"
+						id="oj-welcome-logo"
+						alt="Orange Juice logo"
+						width="96"
+						height="96"
+					>
+					<div class="oj-welcome-brand__copy">
+						<p class="oj-welcome-eyebrow">Installed</p>
+						<h1 class="oj-welcome-title">Orange Juice is ready.</h1>
+						<p class="oj-welcome-subtitle">
+							A better Hacker News experience, without changing the shape of Hacker
+							News.
+						</p>
+					</div>
+				</div>
+
+				<p class="oj-welcome-description">
+					You now have inline replies, unread comment highlighting, keyboard navigation,
+					following, favorites, and a pile of smaller fixes that make HN feel less
+					stubborn.
+				</p>
+
+				<div class="oj-welcome-actions">
+					<a
+						class="oj-welcome-btn oj-welcome-btn--primary"
+						href="https://news.ycombinator.com"
+					>
+						Open Hacker News
+					</a>
+					<a
+						class="oj-welcome-btn oj-welcome-btn--secondary"
+						id="oj-welcome-preferences"
+						href="#"
+					>
+						Set Preferences
+					</a>
+					<a
+						class="oj-welcome-btn oj-welcome-btn--secondary"
+						href="https://oj-hn.com"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						View Website
+					</a>
+					<a
+						class="oj-welcome-btn oj-welcome-btn--secondary"
+						href="https://github.com/OrangeJuiceExtension/OrangeJuice"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						GitHub
+					</a>
+				</div>
+			</section>
+
+			<section
+				class="oj-welcome-section oj-welcome-section--features"
+				aria-labelledby="oj-welcome-features"
+			>
+				<h2 class="oj-welcome-section__title" id="oj-welcome-features">
+					What you just added
+				</h2>
+				<div class="oj-welcome-feature-grid">
+					<article class="oj-welcome-feature-card">
+						<p class="oj-welcome-feature-card__eyebrow">Replies</p>
+						<h3>Answer in place</h3>
+						<p>
+							Reply inline, quote selected text, and stay inside the thread instead of
+							bouncing between pages.
+						</p>
+					</article>
+					<article class="oj-welcome-feature-card">
+						<p class="oj-welcome-feature-card__eyebrow">Reading flow</p>
+						<h3>Stop rescanning threads</h3>
+						<p>
+							Unread comment highlighting, collapse controls, and keyboard navigation
+							make long discussions manageable again.
+						</p>
+					</article>
+					<article class="oj-welcome-feature-card">
+						<p class="oj-welcome-feature-card__eyebrow">Signal</p>
+						<h3>Keep the parts that matter</h3>
+						<p>
+							Favorite comments, follow users, and mute noise without turning Hacker
+							News into a different product.
+						</p>
+					</article>
+				</div>
+			</section>
+
+			<section
+				class="oj-welcome-section oj-welcome-section--steps"
+				aria-labelledby="oj-welcome-start"
+			>
+				<h2 class="oj-welcome-section__title" id="oj-welcome-start">Start here</h2>
+				<div class="oj-welcome-steps">
+					<article class="oj-welcome-step">
+						<span class="oj-welcome-step__number">1</span>
+						<div>
+							<h3>Open HN normally</h3>
+							<p>
+								The extension works on the site you already use. There is no
+								migration or separate app.
+							</p>
+						</div>
+					</article>
+					<article class="oj-welcome-step">
+						<span class="oj-welcome-step__number">2</span>
+						<div>
+							<h3>Adjust preferences</h3>
+							<p>
+								Pick your read-story behavior, focus box, and tab-opening defaults
+								from the preferences page.
+							</p>
+						</div>
+					</article>
+					<article class="oj-welcome-step">
+						<span class="oj-welcome-step__number">3</span>
+						<div>
+							<h3>Small stuff adds up</h3>
+							<p>
+								Most of the value is cumulative: fewer dead clicks, less thread
+								drift, and faster reading.
+							</p>
+						</div>
+					</article>
+				</div>
+			</section>
+		</main>
+
+		<script type="module" src="main.ts"></script>
+	</body>
+</html>
