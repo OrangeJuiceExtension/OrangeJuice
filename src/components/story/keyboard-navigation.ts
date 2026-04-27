@@ -116,7 +116,7 @@ export const keyboardNavigation = async (
 	await keyboardHandlers.checkNavState(storyData);
 
 	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: shrug
-	const keydownHandler = (e: KeyboardEvent) => {
+	const keydownHandler = async (e: KeyboardEvent) => {
 		if (dom.isEditableField(doc.activeElement)) {
 			return;
 		}
@@ -178,6 +178,11 @@ export const keyboardNavigation = async (
 			case 'r':
 				if (!combo && storyData.getActiveStory()) {
 					keyboardHandlers.reply(storyData);
+				}
+				break;
+			case 'y':
+				if (!combo && storyData.getActiveStory()) {
+					await keyboardHandlers.copyHnUrl(storyData);
 				}
 				break;
 			case 'Enter':

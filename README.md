@@ -37,6 +37,7 @@ This is not a complete list of features, but rather a selection that showcases t
 | Following Feed | Follow people and open a dedicated activity page for recent comments and submissions. | Cached locally with per-user refresh, reorder, and collapse state. |
 | Hide Read Stories | ![Hide read stories light](docs/assets/hide-read-light.png) | ![Hide read stories dark](docs/assets/hide-read-dark.png) |
 | Keyboard Navigation | ![Keyboard navigation light](docs/assets/screenshot-help-light.png) | ![Keyboard navigation dark](docs/assets/screenshot-help-dark.png) |
+| Copy HN Link (`y`) | ![Copy HN link light](docs/assets/link-copied-light.png) | ![Copy HN link dark](docs/assets/link-copied-dark.png) |
 | Mermaid Diagram Rendering | [![Mermaid rendering light](docs/assets/mermaid-light.png)](docs/assets/mermaid-light.png) | [![Mermaid rendering dark](docs/assets/mermaid-dark.png)](docs/assets/mermaid-dark.png) |
 
 Ideally, you shouldn’t really notice it at all. The features should feel subtle but natural: visible, useful, and aligned with what most users would expect the site to have supported in the first place. As we grow the feature set, it should always be with respect to the original design.
@@ -78,6 +79,8 @@ There are a number of urls which are not exposed in the regular HN ux. Add a 'mo
 
 ## Keyboard Navigation
 Navigate stories and comments efficiently with keyboard shortcuts.
+
+Use `y` on an active story or comment to copy its Hacker News permalink to the clipboard, with a small confirmation toast that stays out of the layout.
 
 ## Dark Mode
 Adds a site-wide dark mode that preserves Hacker News visual structure while improving contrast and readability across stories, comments, templates, and help dialogs.
