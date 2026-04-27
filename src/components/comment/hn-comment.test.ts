@@ -19,6 +19,7 @@ describe('HNComment', () => {
 		dead?: boolean;
 		author?: string;
 		postedDate?: string;
+		ageHref?: string;
 	}) => {
 		const row = doc.createElement('tr');
 		row.id = 'comment-1';
@@ -34,20 +35,27 @@ describe('HNComment', () => {
 			comhead.appendChild(dead);
 			row.appendChild(comhead);
 		}
+		const defaultCell = doc.createElement('td');
+		defaultCell.classList.add('default');
+		const comhead = doc.createElement('span');
+		comhead.classList.add('comhead');
 		if (options?.author) {
 			const author = doc.createElement('a');
 			author.classList.add('hnuser');
 			author.textContent = options.author;
-			row.appendChild(author);
+			comhead.appendChild(author);
 		}
 		if (options?.postedDate) {
 			const age = doc.createElement('span');
 			age.classList.add('age');
 			age.setAttribute('title', options.postedDate);
-			row.appendChild(age);
+			const ageLink = doc.createElement('a');
+			ageLink.href = options.ageHref ?? 'item?id=1';
+			ageLink.textContent = '1 hour ago';
+			age.appendChild(ageLink);
+			comhead.appendChild(age);
 		}
-		const defaultCell = doc.createElement('td');
-		defaultCell.classList.add('default');
+		defaultCell.appendChild(comhead);
 		row.appendChild(defaultCell);
 		doc.body.appendChild(row);
 		return row;
@@ -70,6 +78,18 @@ describe('HNComment', () => {
 			const comment = new HNComment(row);
 
 			expect(comment.getAuthor()).toBe('alice');
+		});
+
+		it('should expose the HN comment url from the age link', () => {
+			const row = createCommentRow({
+				author: 'alice',
+				postedDate: '2024-01-01',
+				ageHref: 'item?id=1#comment-1',
+			});
+
+			const comment = new HNComment(row);
+
+			expect(comment.getHnUrl()).toBe('https://news.ycombinator.com/item?id=1#comment-1');
 		});
 
 		it('should mark collapsed when coll or noshow class exists', () => {

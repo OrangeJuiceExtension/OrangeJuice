@@ -1,3 +1,4 @@
+import { copyTextToClipboard, showCopyFeedback } from '@/components/common/copy-feedback.ts';
 import { hideReadStoriesOnce } from '@/components/story/hide-read-stories.ts';
 import type { HNStory } from '@/components/story/hn-story.ts';
 import type { StoryData } from '@/components/story/story-data.ts';
@@ -160,6 +161,19 @@ export class KeyboardHandlers {
 			openSafeUrlInNewTab(activeStory.url);
 			openSafeUrlInNewTab(activeStory.commentsUrl);
 		}
+	}
+
+	async copyHnUrl(storyData: StoryData): Promise<boolean> {
+		const url = storyData.getActiveStory()?.getHnUrl();
+		if (!url) {
+			return false;
+		}
+
+		const didCopy = await copyTextToClipboard(url);
+		if (didCopy) {
+			showCopyFeedback(this.doc, 'Copied HN link');
+		}
+		return didCopy;
 	}
 
 	openByPosition(storyData: StoryData, key: string) {

@@ -1,4 +1,5 @@
 import type { Browser } from '#imports';
+import { resolveHnUrl } from '@/components/common/copy-feedback.ts';
 import { STORY_HIDDEN } from '@/components/story/hide-read-stories.ts';
 import { focusClass1, focusClass2, focusClass3 } from '@/components/story/story-data.ts';
 import { paths } from '@/utils/paths.ts';
@@ -15,6 +16,7 @@ const FAVORITE_LINK = 'button.oj_favorite_link';
 const FLAG_LINK = 'a[href^="flag?"]';
 const STORY_ID_ATTR = 'data-story-id';
 const TITLE_LINK_SELECTOR = 'span.titleline > a';
+const STORY_AGE_LINK_SELECTOR = '.subline .age a';
 const DIMMED_TITLE_OPACITY = '0.45';
 
 export class HNStory {
@@ -249,6 +251,17 @@ export class HNStory {
 			return true;
 		}
 		return false;
+	}
+
+	getHnUrl(): string | undefined {
+		const href = this.subtextRow
+			?.querySelector<HTMLAnchorElement>(STORY_AGE_LINK_SELECTOR)
+			?.getAttribute('href');
+		if (!href) {
+			return;
+		}
+
+		return resolveHnUrl(href);
 	}
 
 	static getStoryIdFromElement(element: HTMLElement): string | null {

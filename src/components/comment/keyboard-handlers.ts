@@ -1,5 +1,6 @@
 import type { CommentData } from '@/components/comment/comment-data.ts';
 import type { HNComment } from '@/components/comment/hn-comment.ts';
+import { copyTextToClipboard, showCopyFeedback } from '@/components/common/copy-feedback.ts';
 import { createClientServices } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
 
@@ -134,6 +135,19 @@ export class KeyboardHandlers {
 
 	favorite(commentData: CommentData) {
 		commentData.favorite();
+	}
+
+	async copyHnUrl(commentData: CommentData): Promise<boolean> {
+		const url = commentData.getActiveComment()?.getHnUrl();
+		if (!url) {
+			return false;
+		}
+
+		const didCopy = await copyTextToClipboard(url);
+		if (didCopy) {
+			showCopyFeedback(this.doc, 'Copied HN link');
+		}
+		return didCopy;
 	}
 
 	flag(commentData: CommentData) {

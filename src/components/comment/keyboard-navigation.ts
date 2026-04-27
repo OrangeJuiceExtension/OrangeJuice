@@ -169,6 +169,11 @@ export const keyboardNavigation = async (
 					keyboardHandlers.favorite(commentData);
 				}
 				break;
+			case 'y':
+				if (!combo && commentData.getActiveComment()) {
+					await keyboardHandlers.copyHnUrl(commentData);
+				}
+				break;
 			case 'X':
 				if (combo && commentData.getActiveComment()) {
 					keyboardHandlers.flag(commentData);

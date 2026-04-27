@@ -35,32 +35,39 @@ const createStoryRows = (
 
 	const subtextRow = doc.createElement('tr');
 	const subtextCell = doc.createElement('td');
+	const subline = doc.createElement('span');
+	subline.classList.add('subline');
 	const score = doc.createElement('span');
 	score.classList.add('score');
 	score.textContent = options?.points ?? '42 points';
-	subtextCell.appendChild(score);
+	subline.appendChild(score);
 
 	if (options?.author) {
 		const author = doc.createElement('a');
 		author.classList.add('hnuser');
 		author.textContent = options.author;
-		subtextCell.appendChild(author);
+		subline.appendChild(author);
 	}
 
 	if (options?.postedDate) {
 		const age = doc.createElement('span');
 		age.classList.add('age');
 		age.setAttribute('title', options.postedDate);
-		subtextCell.appendChild(age);
+		const ageLink = doc.createElement('a');
+		ageLink.href = options?.commentsHref ?? 'item?id=123';
+		ageLink.textContent = '1 hour ago';
+		age.appendChild(ageLink);
+		subline.appendChild(age);
 	}
 
 	if (options?.commentsText) {
 		const commentsLink = doc.createElement('a');
 		commentsLink.textContent = options.commentsText;
 		commentsLink.setAttribute('href', options?.commentsHref ?? 'item?id=123');
-		subtextCell.appendChild(commentsLink);
+		subline.appendChild(commentsLink);
 	}
 
+	subtextCell.appendChild(subline);
 	subtextRow.appendChild(subtextCell);
 
 	const spacerRow = doc.createElement('tr');
@@ -117,6 +124,18 @@ describe('HNStory', () => {
 			expect(storyRow.getAttribute('data-story-id')).toBe('777');
 			expect(subtextRow.getAttribute('data-story-id')).toBe('777');
 			expect(spacerRow.getAttribute('data-story-id')).toBe('777');
+		});
+
+		it('should expose the HN story url from the age link', () => {
+			const { storyRow } = createStoryRows(doc, {
+				id: '456',
+				postedDate: '2024-01-01',
+				commentsHref: 'item?id=456',
+			});
+
+			const story = new HNStory(storyRow);
+
+			expect(story.getHnUrl()).toBe(`${paths.base}/item?id=456`);
 		});
 
 		it('should normalize relative title hrefs', () => {

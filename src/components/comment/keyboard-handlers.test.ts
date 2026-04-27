@@ -7,6 +7,7 @@ import { createClientServices } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
 import lStorage from '@/utils/local-storage.ts';
 import { parseReferenceLinks } from '@/utils/parse-reference-links.ts';
+import { paths } from '@/utils/paths.ts';
 
 vi.mock('@/services/manager.ts', () => ({
 	createClientServices: vi.fn(() => ({
@@ -115,6 +116,37 @@ describe('commentKeyboardHandlers', () => {
 		await keyboardHandlers.checkActiveState(setup.commentData);
 
 		expect(setup.commentData.getActiveComment()?.id).toBe('comment-1');
+	});
+
+	it('should copy the active comment HN url', async () => {
+		const setup = createCommentData(doc, 1);
+		const first = setup.commentData.first();
+		if (!first) {
+			throw new Error('Expected item to exist');
+		}
+		const defaultCell = doc.createElement('td');
+		defaultCell.className = 'default';
+		first.commentRow.appendChild(defaultCell);
+		defaultCell.innerHTML = `
+			<span class="comhead">
+				<span class="age" title="2024-01-01">
+					<a href="item?id=1#comment-1">1 hour ago</a>
+				</span>
+			</span>
+		`;
+		first.parse();
+		await setup.commentData.activate(first);
+		const writeText = vi.fn().mockResolvedValue(undefined);
+		Object.defineProperty(navigator, 'clipboard', {
+			value: { writeText },
+			configurable: true,
+		});
+
+		const didCopy = await keyboardHandlers.copyHnUrl(setup.commentData);
+
+		expect(didCopy).toBe(true);
+		expect(writeText).toHaveBeenCalledWith(`${paths.base}/item?id=1#comment-1`);
+		expect(doc.getElementById('oj-copy-feedback')?.textContent).toBe('Copied HN link');
 	});
 
 	describe('move', () => {

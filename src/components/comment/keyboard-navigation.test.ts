@@ -67,6 +67,7 @@ const createTestContext = (commentCount = 3): TestContext => {
 	vi.spyOn(KeyboardHandlers.prototype, 'escape');
 	vi.spyOn(KeyboardHandlers.prototype, 'reply');
 	vi.spyOn(KeyboardHandlers.prototype, 'favorite');
+	vi.spyOn(KeyboardHandlers.prototype, 'copyHnUrl');
 	vi.spyOn(KeyboardHandlers.prototype, 'flag');
 	vi.spyOn(KeyboardHandlers.prototype, 'next');
 	vi.spyOn(KeyboardHandlers.prototype, 'previous');
@@ -214,6 +215,7 @@ describe('keyboardNavigation', () => {
 			{ name: 'd should call downvote', key: 'd', handler: 'downvote' },
 			{ name: 'r should call reply', key: 'r', handler: 'reply' },
 			{ name: 'f should call favorite', key: 'f', handler: 'favorite' },
+			{ name: 'y should call copyHnUrl', key: 'y', handler: 'copyHnUrl' },
 			{ name: 'X should call flag', key: 'X', handler: 'flag' },
 		];
 

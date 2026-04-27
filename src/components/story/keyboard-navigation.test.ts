@@ -51,10 +51,19 @@ const createStoryRows = (doc: Document, count: number) => {
 		subtextCell.setAttribute('colspan', '3');
 		const subtext = doc.createElement('span');
 		subtext.classList.add('subtext');
+		const subline = doc.createElement('span');
+		subline.classList.add('subline');
 		const score = doc.createElement('span');
 		score.classList.add('score');
 		score.textContent = `${i} points`;
-		subtext.appendChild(score);
+		const age = doc.createElement('span');
+		age.classList.add('age');
+		const ageLink = doc.createElement('a');
+		ageLink.href = `item?id=${i}`;
+		ageLink.textContent = '1 hour ago';
+		age.appendChild(ageLink);
+		subline.append(score, age);
+		subtext.appendChild(subline);
 		subtextCell.appendChild(subtext);
 		subtextRow.appendChild(subtextCell);
 
@@ -338,6 +347,30 @@ describe('story keyboard navigation', () => {
 
 		await vi.waitFor(() => {
 			expect(storyData.getActiveStory()?.id).toBe('2');
+		});
+	});
+
+	it('should copy the active story HN url with y', async () => {
+		const storyData = createStoryData(doc);
+		const first = storyData.first();
+		if (!first) {
+			throw new Error('Expected story to exist');
+		}
+		storyData.activate(first);
+		const writeText = vi.fn().mockResolvedValue(undefined);
+		Object.defineProperty(navigator, 'clipboard', {
+			value: { writeText },
+			configurable: true,
+		});
+
+		await keyboardNavigation(ctx, doc, storyData, { helpModalOpen: false });
+		doc.dispatchEvent(new KeyboardEvent('keydown', { key: 'y' }));
+
+		await vi.waitFor(() => {
+			expect(writeText).toHaveBeenCalledWith(`${paths.base}/item?id=1`);
+		});
+		await vi.waitFor(() => {
+			expect(doc.getElementById('oj-copy-feedback')?.textContent).toBe('Copied HN link');
 		});
 	});
 

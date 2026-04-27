@@ -3,6 +3,7 @@ import { hideReadStoriesOnce } from '@/components/story/hide-read-stories.ts';
 import { KeyboardHandlers } from '@/components/story/keyboard-handlers.ts';
 import { StoryData } from '@/components/story/story-data.ts';
 import lStorage from '@/utils/local-storage.ts';
+import { paths } from '@/utils/paths.ts';
 
 const ACTIVE_STORY_KEY = 'oj_active_story_id2';
 const NAV_STATE_KEY = 'oj_page_nav_state';
@@ -41,10 +42,19 @@ const createStoryRows = (doc: Document, count: number) => {
 		const subtextRow = doc.createElement('tr');
 		const subtextCell = doc.createElement('td');
 		subtextCell.setAttribute('colspan', '3');
+		const subline = doc.createElement('span');
+		subline.classList.add('subline');
 		const score = doc.createElement('span');
 		score.classList.add('score');
 		score.textContent = `${i} points`;
-		subtextCell.appendChild(score);
+		const age = doc.createElement('span');
+		age.classList.add('age');
+		const ageLink = doc.createElement('a');
+		ageLink.href = `item?id=${i}`;
+		ageLink.textContent = '1 hour ago';
+		age.appendChild(ageLink);
+		subline.append(score, age);
+		subtextCell.appendChild(subline);
 		subtextRow.appendChild(subtextCell);
 
 		const spacerRow = doc.createElement('tr');
@@ -115,6 +125,28 @@ describe('Story KeyboardHandlers', () => {
 			expect(storyData.getActiveStory()?.id).toBe(testCase.expectedId);
 			expect(lStorage.setItem).toHaveBeenCalledWith(NAV_STATE_KEY, null);
 		}
+	});
+
+	it('should copy the active story HN url', async () => {
+		const bigbox = doc.createElement('div');
+		const rows = createStoryRows(doc, 1);
+		const storyData = new StoryData(bigbox, rows);
+		const first = storyData.first();
+		if (!first) {
+			throw new Error('Expected story to exist');
+		}
+		await storyData.activate(first);
+		const writeText = vi.fn().mockResolvedValue(undefined);
+		Object.defineProperty(navigator, 'clipboard', {
+			value: { writeText },
+			configurable: true,
+		});
+
+		const didCopy = await new KeyboardHandlers(doc).copyHnUrl(storyData);
+
+		expect(didCopy).toBe(true);
+		expect(writeText).toHaveBeenCalledWith(`${paths.base}/item?id=1`);
+		expect(doc.getElementById('oj-copy-feedback')?.textContent).toBe('Copied HN link');
 	});
 
 	it('should skip dead or hidden HN rows when activating from next-page nav state', async () => {

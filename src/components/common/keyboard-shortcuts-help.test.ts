@@ -32,6 +32,8 @@ describe('keyboard shortcuts help', () => {
 
 		expect(text).toContain('z');
 		expect(text).toContain('Scroll selected comment to top of window');
+		expect(text).toContain('Copy selected story HN link');
+		expect(text).toContain('Copy selected comment HN link');
 	});
 
 	it('should include website and github links', () => {

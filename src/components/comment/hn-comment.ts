@@ -1,3 +1,4 @@
+import { resolveHnUrl } from '@/components/common/copy-feedback.ts';
 import { dom } from '@/utils/dom.ts';
 import { parseReferenceLinks } from '@/utils/parse-reference-links.ts';
 
@@ -13,6 +14,7 @@ const FLAG_LINK_1 = '.oj_flag_link';
 const FLAG_LINK_2 = 'a[href*="flag"]';
 const REPLY_LINK = 'a[href^="reply"]';
 const COMMENT_ID_ATTR = 'data-comment-id';
+const COMMENT_AGE_LINK_SELECTOR = '.comhead .age a';
 
 export const focusClass = 'oj_focused_comment';
 export const focusClassDefault = 'oj_focused_comment_default';
@@ -268,6 +270,17 @@ export class HNComment {
 			return [];
 		}
 		return parseReferenceLinks(commtext);
+	}
+
+	getHnUrl(): string | undefined {
+		const href = this.commentRow
+			.querySelector<HTMLAnchorElement>(COMMENT_AGE_LINK_SELECTOR)
+			?.getAttribute('href');
+		if (!href) {
+			return;
+		}
+
+		return resolveHnUrl(href);
 	}
 
 	getIndentLevel(): number {
