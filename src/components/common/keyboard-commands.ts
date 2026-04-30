@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import lStorage from '@/utils/local-storage.ts';
 
 export type KeyboardCommandGroup = 'navigation' | 'stories' | 'comments';
@@ -25,26 +24,6 @@ export const KEYBOARD_COMMANDS_STORAGE_KEY = 'oj_keyboard_commands';
 
 const keyboardCommandGroups = ['navigation', 'stories', 'comments'] as const;
 const keyboardModifierModes = ['anyCombo', 'none', 'noneExceptShift', 'any'] as const;
-const keyboardModifierModeSchema = z.enum(keyboardModifierModes);
-const keyboardCommandBindingSchema = z.object({
-	key: z.string().min(1),
-	modifierMode: keyboardModifierModeSchema.optional(),
-});
-const keyboardCommandSchema = z.object({
-	bindings: z.array(keyboardCommandBindingSchema),
-	description: z.string(),
-	displayKey: z.string(),
-	group: z.enum(keyboardCommandGroups),
-	id: z.string(),
-	showInHelp: z.boolean().optional(),
-});
-const keyboardCommandConfigSchema = z
-	.object({
-		navigation: z.array(keyboardCommandSchema),
-		stories: z.array(keyboardCommandSchema),
-		comments: z.array(keyboardCommandSchema),
-	})
-	.strict();
 
 const numberBindings = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map((key) => ({
 	key,
@@ -412,26 +391,75 @@ export const keyboardCommands = {
 
 let activeKeyboardCommands: KeyboardCommandConfig = keyboardCommands;
 
-const formatZodError = (error: z.ZodError): string => {
-	const issue = error.issues[0];
-	if (!issue) {
-		return 'Shortcut JSON is invalid.';
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isKeyboardCommandGroup = (value: unknown): value is KeyboardCommandGroup =>
+	typeof value === 'string' && keyboardCommandGroups.includes(value as KeyboardCommandGroup);
+
+const isKeyboardModifierMode = (value: unknown): value is KeyboardModifierMode =>
+	typeof value === 'string' && keyboardModifierModes.includes(value as KeyboardModifierMode);
+
+const validateBindings = (
+	value: unknown,
+	group: KeyboardCommandGroup,
+	commandId: string
+): KeyboardCommandBinding[] => {
+	if (!Array.isArray(value)) {
+		throw new Error(`${group}.${commandId}.bindings must be an array.`);
 	}
-	const path = issue.path.length > 0 ? `${issue.path.join('.')}: ` : '';
-	return `${path}${issue.message}`;
+
+	return value.map((binding, index) => {
+		if (!isRecord(binding)) {
+			throw new Error(`${group}.${commandId}.bindings[${index}] must be an object.`);
+		}
+		const { key, modifierMode } = binding;
+		if (typeof key !== 'string' || key.length === 0) {
+			throw new Error(`${group}.${commandId}.bindings[${index}].key must be a string.`);
+		}
+		if (modifierMode !== undefined && !isKeyboardModifierMode(modifierMode)) {
+			throw new Error(
+				`${group}.${commandId}.bindings[${index}].modifierMode must be one of ${keyboardModifierModes.join(', ')}.`
+			);
+		}
+		return modifierMode === undefined ? { key } : { key, modifierMode };
+	});
 };
 
-const validateCommandIdentity = (
-	command: KeyboardCommand,
+const validateCommand = (
+	value: unknown,
 	defaultCommand: KeyboardCommand,
 	group: KeyboardCommandGroup
-): void => {
-	if (command.id !== defaultCommand.id) {
+): KeyboardCommand => {
+	if (!isRecord(value)) {
+		throw new Error(`${group}.${defaultCommand.id} must be an object.`);
+	}
+
+	const { id, description, displayKey, showInHelp } = value;
+	if (id !== defaultCommand.id) {
 		throw new Error(`${group}.${defaultCommand.id}.id must remain "${defaultCommand.id}".`);
 	}
-	if (command.group !== group) {
+	if (value.group !== group) {
 		throw new Error(`${group}.${defaultCommand.id}.group must remain "${group}".`);
 	}
+	if (typeof description !== 'string') {
+		throw new Error(`${group}.${defaultCommand.id}.description must be a string.`);
+	}
+	if (typeof displayKey !== 'string') {
+		throw new Error(`${group}.${defaultCommand.id}.displayKey must be a string.`);
+	}
+	if (showInHelp !== undefined && typeof showInHelp !== 'boolean') {
+		throw new Error(`${group}.${defaultCommand.id}.showInHelp must be a boolean.`);
+	}
+
+	return {
+		bindings: validateBindings(value.bindings, group, defaultCommand.id),
+		description,
+		displayKey,
+		group,
+		id: defaultCommand.id,
+		...(showInHelp === undefined ? {} : { showInHelp }),
+	};
 };
 
 export const parseKeyboardCommandConfig = (json: string): KeyboardCommandConfig => {
@@ -442,28 +470,32 @@ export const parseKeyboardCommandConfig = (json: string): KeyboardCommandConfig 
 		throw new Error('Shortcut JSON could not be parsed.');
 	}
 
-	const result = keyboardCommandConfigSchema.safeParse(parsed);
-	if (!result.success) {
-		throw new Error(formatZodError(result.error));
+	if (!isRecord(parsed)) {
+		throw new Error('Shortcut JSON must be an object.');
 	}
 
+	const config = {} as Record<KeyboardCommandGroup, KeyboardCommand[]>;
 	for (const group of keyboardCommandGroups) {
-		const commands = result.data[group];
+		const commands = parsed[group];
 		const defaultCommands = keyboardCommands[group];
+		if (!Array.isArray(commands)) {
+			throw new Error(`${group} must be an array.`);
+		}
 		if (commands.length !== defaultCommands.length) {
 			throw new Error(`${group} must contain ${defaultCommands.length} commands.`);
 		}
-		for (let index = 0; index < commands.length; index += 1) {
-			const command = commands[index];
-			const defaultCommand = defaultCommands[index];
-			if (!(command && defaultCommand)) {
-				throw new Error(`${group} contains an unsupported command.`);
-			}
-			validateCommandIdentity(command, defaultCommand, group);
+		config[group] = commands.map((command, index) =>
+			validateCommand(command, defaultCommands[index], group)
+		);
+	}
+
+	for (const key of Object.keys(parsed)) {
+		if (!isKeyboardCommandGroup(key)) {
+			throw new Error(`${key} is not a supported shortcut group.`);
 		}
 	}
 
-	return result.data;
+	return config;
 };
 
 export const serializeKeyboardCommandConfig = (
