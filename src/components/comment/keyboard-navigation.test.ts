@@ -361,6 +361,62 @@ describe('keyboardNavigation', () => {
 			invalidate();
 		});
 
+		it('n should select first comment when no comment is active', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			dispatchKeydown(doc, 'n');
+
+			await vi.waitFor(() => {
+				expect(commentData.getActiveComment()?.id).toBe('item-1');
+			});
+			expect(getComment(comments, 0).classList.contains(focusClass)).toBe(true);
+
+			invalidate();
+		});
+
+		it('N should select first comment when no comment is active', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			dispatchKeydown(doc, 'N', { shiftKey: true });
+
+			await vi.waitFor(() => {
+				expect(commentData.getActiveComment()?.id).toBe('item-1');
+			});
+			expect(getComment(comments, 0).classList.contains(focusClass)).toBe(true);
+
+			invalidate();
+		});
+
+		it('p should select first comment when no comment is active', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			dispatchKeydown(doc, 'p');
+
+			await vi.waitFor(() => {
+				expect(commentData.getActiveComment()?.id).toBe('item-1');
+			});
+			expect(getComment(comments, 0).classList.contains(focusClass)).toBe(true);
+
+			invalidate();
+		});
+
+		it('P should select first comment when no comment is active', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			dispatchKeydown(doc, 'P', { shiftKey: true });
+
+			await vi.waitFor(() => {
+				expect(commentData.getActiveComment()?.id).toBe('item-1');
+			});
+			expect(getComment(comments, 0).classList.contains(focusClass)).toBe(true);
+
+			invalidate();
+		});
+
 		it('t should scroll to top', async () => {
 			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
@@ -454,10 +510,6 @@ describe('keyboardNavigation', () => {
 			{ key: 'x', handler: 'flag' },
 			{ key: 'J', handler: 'moveAtSameOrHigherIndent' },
 			{ key: 'K', handler: 'moveAtSameOrHigherIndent' },
-			{ key: 'N', handler: 'moveAtSameIndent' },
-			{ key: 'P', handler: 'moveAtSameIndent' },
-			{ key: 'p', handler: 'move' },
-			{ key: 'n', handler: 'move' },
 			{ key: 'u', handler: 'upvote' },
 			{ key: 'd', handler: 'downvote' },
 			{ key: 'c', handler: 'collapseToggle' },
