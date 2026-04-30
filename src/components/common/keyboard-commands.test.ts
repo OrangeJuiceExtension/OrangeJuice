@@ -64,4 +64,21 @@ describe('keyboard commands', () => {
 			'navigation.go-home.id must remain "go-home".'
 		);
 	});
+
+	it('should include the invalid shortcut path when config shape validation fails', () => {
+		const nextConfig = {
+			...keyboardCommands,
+			navigation: [
+				{
+					...keyboardCommands.navigation[0],
+					bindings: [{ key: '' }],
+				},
+				...keyboardCommands.navigation.slice(1),
+			],
+		};
+
+		expect(() => parseKeyboardCommandConfig(JSON.stringify(nextConfig))).toThrow(
+			'navigation[0].bindings[0].key must not be empty.'
+		);
+	});
 });

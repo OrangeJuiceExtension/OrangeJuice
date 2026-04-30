@@ -1,3 +1,5 @@
+import type { core } from 'zod/mini';
+import { array, boolean, config, literal, minLength, object, optional, string } from 'zod/mini';
 import lStorage from '@/utils/local-storage.ts';
 
 export type KeyboardCommandGroup = 'navigation' | 'stories' | 'comments';
@@ -24,6 +26,28 @@ export const KEYBOARD_COMMANDS_STORAGE_KEY = 'oj_keyboard_commands';
 
 const keyboardCommandGroups = ['navigation', 'stories', 'comments'] as const;
 const keyboardModifierModes = ['anyCombo', 'none', 'noneExceptShift', 'any'] as const;
+
+config({ jitless: true });
+
+const keyboardModifierModeSchema = literal(keyboardModifierModes);
+const keyboardCommandGroupSchema = literal(keyboardCommandGroups);
+const keyboardCommandBindingSchema = object({
+	key: string().check(minLength(1)),
+	modifierMode: optional(keyboardModifierModeSchema),
+});
+const keyboardCommandSchema = object({
+	bindings: array(keyboardCommandBindingSchema),
+	description: string(),
+	displayKey: string(),
+	group: keyboardCommandGroupSchema,
+	id: string(),
+	showInHelp: optional(boolean()),
+});
+const keyboardCommandConfigSchema = object({
+	navigation: array(keyboardCommandSchema),
+	stories: array(keyboardCommandSchema),
+	comments: array(keyboardCommandSchema),
+});
 
 const numberBindings = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map((key) => ({
 	key,
@@ -397,63 +421,51 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const isKeyboardCommandGroup = (value: unknown): value is KeyboardCommandGroup =>
 	typeof value === 'string' && keyboardCommandGroups.includes(value as KeyboardCommandGroup);
 
-const isKeyboardModifierMode = (value: unknown): value is KeyboardModifierMode =>
-	typeof value === 'string' && keyboardModifierModes.includes(value as KeyboardModifierMode);
-
-const validateBindings = (
-	value: unknown,
-	group: KeyboardCommandGroup,
-	commandId: string
-): KeyboardCommandBinding[] => {
-	if (!Array.isArray(value)) {
-		throw new Error(`${group}.${commandId}.bindings must be an array.`);
+const formatZodIssuePath = (path: readonly PropertyKey[]): string => {
+	if (path.length === 0) {
+		return 'Shortcut JSON';
 	}
 
-	return value.map((binding, index) => {
-		if (!isRecord(binding)) {
-			throw new Error(`${group}.${commandId}.bindings[${index}] must be an object.`);
+	let formatted = '';
+	for (const part of path) {
+		if (typeof part === 'number') {
+			formatted = `${formatted}[${part}]`;
+			continue;
 		}
-		const { key, modifierMode } = binding;
-		if (typeof key !== 'string' || key.length === 0) {
-			throw new Error(`${group}.${commandId}.bindings[${index}].key must be a string.`);
-		}
-		if (modifierMode !== undefined && !isKeyboardModifierMode(modifierMode)) {
-			throw new Error(
-				`${group}.${commandId}.bindings[${index}].modifierMode must be one of ${keyboardModifierModes.join(', ')}.`
-			);
-		}
-		return modifierMode === undefined ? { key } : { key, modifierMode };
-	});
+		formatted = formatted ? `${formatted}.${String(part)}` : String(part);
+	}
+	return formatted;
+};
+
+const formatZodIssue = (issue: core.$ZodIssue): string => {
+	const path = formatZodIssuePath(issue.path);
+	if (issue.code === 'invalid_type' && 'expected' in issue) {
+		return `${path} must be a ${String(issue.expected)}.`;
+	}
+	if (issue.code === 'invalid_value' && 'values' in issue) {
+		return `${path} must be one of ${issue.values.map(String).join(', ')}.`;
+	}
+	if (issue.code === 'too_small') {
+		return `${path} must not be empty.`;
+	}
+	return `${path}: ${issue.message}`;
 };
 
 const validateCommand = (
-	value: unknown,
+	command: KeyboardCommand,
 	defaultCommand: KeyboardCommand,
 	group: KeyboardCommandGroup
 ): KeyboardCommand => {
-	if (!isRecord(value)) {
-		throw new Error(`${group}.${defaultCommand.id} must be an object.`);
-	}
-
-	const { id, description, displayKey, showInHelp } = value;
+	const { bindings, id, description, displayKey, showInHelp } = command;
 	if (id !== defaultCommand.id) {
 		throw new Error(`${group}.${defaultCommand.id}.id must remain "${defaultCommand.id}".`);
 	}
-	if (value.group !== group) {
+	if (command.group !== group) {
 		throw new Error(`${group}.${defaultCommand.id}.group must remain "${group}".`);
-	}
-	if (typeof description !== 'string') {
-		throw new Error(`${group}.${defaultCommand.id}.description must be a string.`);
-	}
-	if (typeof displayKey !== 'string') {
-		throw new Error(`${group}.${defaultCommand.id}.displayKey must be a string.`);
-	}
-	if (showInHelp !== undefined && typeof showInHelp !== 'boolean') {
-		throw new Error(`${group}.${defaultCommand.id}.showInHelp must be a boolean.`);
 	}
 
 	return {
-		bindings: validateBindings(value.bindings, group, defaultCommand.id),
+		bindings,
 		description,
 		displayKey,
 		group,
@@ -474,13 +486,15 @@ export const parseKeyboardCommandConfig = (json: string): KeyboardCommandConfig 
 		throw new Error('Shortcut JSON must be an object.');
 	}
 
+	const result = keyboardCommandConfigSchema.safeParse(parsed, { jitless: true });
+	if (!result.success) {
+		throw new Error(formatZodIssue(result.error.issues[0]));
+	}
+
 	const config = {} as Record<KeyboardCommandGroup, KeyboardCommand[]>;
 	for (const group of keyboardCommandGroups) {
-		const commands = parsed[group];
+		const commands = result.data[group];
 		const defaultCommands = keyboardCommands[group];
-		if (!Array.isArray(commands)) {
-			throw new Error(`${group} must be an array.`);
-		}
 		if (commands.length !== defaultCommands.length) {
 			throw new Error(`${group} must contain ${defaultCommands.length} commands.`);
 		}
