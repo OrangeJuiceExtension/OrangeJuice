@@ -39,7 +39,7 @@
 		"react": "^19.2.5",
 		"react-dom": "^19.2.5",
 		"tailwindcss": "^4.2.4",
-		"zod": "^4.3.6"
+		"zod": "^4.4.1"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.13",
@@ -56,11 +56,11 @@
 		"lefthook": "^2.1.6",
 		"oxipng": "^1.0.1",
 		"playwright": "^1.59.1",
-		"postcss": "^8.5.10",
+		"postcss": "^8.5.12",
 		"postcss-preset-env": "^11.2.1",
 		"sharp": "^0.34.5",
 		"typescript": "^6.0.3",
-		"ultracite": "7.6.1",
+		"ultracite": "7.6.2",
 		"vitest": "^4.1.5",
 		"vitest-localstorage-mock": "^0.1.2",
 		"web-ext": "^10.1.0",
