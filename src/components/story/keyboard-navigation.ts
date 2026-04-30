@@ -1,5 +1,8 @@
 import type { ContentScriptContext } from '#imports';
-import { getKeyboardCommand } from '@/components/common/keyboard-commands.ts';
+import {
+	getKeyboardCommand,
+	loadKeyboardCommandConfig,
+} from '@/components/common/keyboard-commands.ts';
 import type { KeyboardNavState } from '@/components/common/keyboard-navigation.ts';
 import { KeyboardHandlers } from '@/components/story/keyboard-handlers.ts';
 import {
@@ -107,6 +110,7 @@ export const keyboardNavigation = async (
 	storyData: StoryData,
 	navState?: KeyboardNavState
 ): Promise<void> => {
+	await loadKeyboardCommandConfig();
 	await syncFocusBoxStyle(doc);
 	registerPreferencesUpdateHandler(ctx, async () => {
 		await syncFocusBoxStyle(doc);

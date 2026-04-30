@@ -2,7 +2,10 @@ import type { ContentScriptContext } from '#imports';
 import type { CommentData } from '@/components/comment/comment-data.ts';
 import { focusClass, focusClassDefault } from '@/components/comment/hn-comment.ts';
 import { KeyboardHandlers } from '@/components/comment/keyboard-handlers.ts';
-import { getKeyboardCommand } from '@/components/common/keyboard-commands.ts';
+import {
+	getKeyboardCommand,
+	loadKeyboardCommandConfig,
+} from '@/components/common/keyboard-commands.ts';
 import type { KeyboardNavState } from '@/components/common/keyboard-navigation.ts';
 import { getEnableFocusBoxPreference } from '@/utils/preferences.ts';
 import { registerPreferencesUpdateHandler } from '@/utils/preferences-live.ts';
@@ -55,6 +58,7 @@ export const keyboardNavigation = async (
 	commentData: CommentData,
 	navState?: KeyboardNavState
 ): Promise<void> => {
+	await loadKeyboardCommandConfig();
 	await syncFocusBoxStyle(doc);
 	registerPreferencesUpdateHandler(ctx, async () => {
 		await syncFocusBoxStyle(doc);

@@ -1,5 +1,8 @@
 import type { ContentScriptContext } from '#imports';
-import { getKeyboardCommand } from '@/components/common/keyboard-commands.ts';
+import {
+	getKeyboardCommand,
+	loadKeyboardCommandConfig,
+} from '@/components/common/keyboard-commands.ts';
 import { getKeyboardShortcutsHelp } from '@/components/common/keyboard-shortcuts-help.tsx';
 import { showModal } from '@/components/common/modal.ts';
 import { paths } from '@/utils/paths.ts';
@@ -8,16 +11,18 @@ export interface KeyboardNavState {
 	helpModalOpen: boolean;
 }
 
-export const keyboardNavigation = (
+export const keyboardNavigation = async (
 	ctx: ContentScriptContext,
 	doc: Document,
 	username?: string
-): KeyboardNavState => {
+): Promise<KeyboardNavState> => {
+	await loadKeyboardCommandConfig();
+
 	const state: KeyboardNavState = {
 		helpModalOpen: false,
 	};
 
-	const keydownHandler = (event: KeyboardEvent) => {
+	const keydownHandler = async (event: KeyboardEvent): Promise<void> => {
 		let locationUrl: string | undefined;
 		const command = getKeyboardCommand('navigation', event);
 
@@ -36,7 +41,7 @@ export const keyboardNavigation = (
 				showModal({
 					doc,
 					ctx,
-					content: getKeyboardShortcutsHelp(doc),
+					content: await getKeyboardShortcutsHelp(doc),
 					variant: 'shortcuts',
 					onClose: () => {
 						state.helpModalOpen = false;

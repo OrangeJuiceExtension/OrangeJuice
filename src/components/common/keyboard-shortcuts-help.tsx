@@ -1,11 +1,19 @@
 import { browser } from '#imports';
-import { type KeyboardCommand, keyboardCommands } from '@/components/common/keyboard-commands.ts';
+import {
+	getKeyboardCommandConfig,
+	type KeyboardCommand,
+	loadKeyboardCommandConfig,
+	parseKeyboardCommandConfig,
+	saveKeyboardCommandConfig,
+	serializeKeyboardCommandConfig,
+} from '@/components/common/keyboard-commands.ts';
 import './keyboard-shortcuts-help.css';
 
 const LOGO_PATH = '/icon/orange_juice_icon_128x128.png';
 const WEBSITE_URL = 'https://oj-hn.com';
 const EMAIL = 'hello@oj-hn.com';
 const GITHUB_URL = 'https://github.com/OrangeJuiceExtension/OrangeJuice';
+const SHORTCUTS_FILENAME = 'orange-juice-keyboard-shortcuts.json';
 
 const getLogoUrl = (): string => browser.runtime?.getURL?.(LOGO_PATH) ?? LOGO_PATH;
 
@@ -57,10 +65,23 @@ const createColumn = (doc: Document, heading: string): HTMLDivElement => {
 	return column;
 };
 
-export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
-	const container = doc.createElement('div');
-	container.className = 'oj-shortcuts-help';
+const createButton = (doc: Document, label: string, className?: string): HTMLButtonElement => {
+	const button = doc.createElement('button');
+	button.className = className ?? 'oj-shortcuts-help__button';
+	button.textContent = label;
+	button.type = 'button';
+	return button;
+};
 
+const setEditorError = (error: HTMLElement, message: string): void => {
+	error.hidden = false;
+	error.textContent = message;
+};
+
+const getErrorMessage = (error: unknown): string =>
+	error instanceof Error ? error.message : 'Shortcut JSON is invalid.';
+
+const renderShortcuts = (doc: Document, container: HTMLElement, message?: string): void => {
 	const topRow = doc.createElement('div');
 	topRow.className = 'oj-shortcuts-help__row oj-shortcuts-help__row--top';
 
@@ -80,10 +101,23 @@ export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
 		createExternalLink(doc, GITHUB_URL, 'GitHub'),
 		createExternalLink(doc, `mailto:${EMAIL}?subject=Question about OJ`, 'Email')
 	);
-	brand.append(logo, links);
+	const editButton = createButton(doc, 'Edit shortcuts', 'oj-shortcuts-help__edit-button');
+	editButton.addEventListener('click', () => {
+		renderEditor(doc, container);
+	});
+	brand.append(logo, links, editButton);
+	if (message) {
+		const status = doc.createElement('div');
+		status.className = 'oj-shortcuts-help__status';
+		status.role = 'status';
+		status.textContent = message;
+		brand.append(status);
+	}
+
+	const keyboardCommandConfig = getKeyboardCommandConfig();
 
 	const navColumn = createColumn(doc, 'Navigation shortcuts');
-	appendShortcutTable(doc, navColumn, keyboardCommands.navigation);
+	appendShortcutTable(doc, navColumn, keyboardCommandConfig.navigation);
 
 	topRow.append(brand, navColumn);
 
@@ -91,13 +125,113 @@ export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
 	bottomRow.className = 'oj-shortcuts-help__row';
 
 	const storiesColumn = createColumn(doc, 'Stories shortcuts');
-	appendShortcutTable(doc, storiesColumn, keyboardCommands.stories);
+	appendShortcutTable(doc, storiesColumn, keyboardCommandConfig.stories);
 
 	const commentsColumn = createColumn(doc, 'Comments shortcuts');
-	appendShortcutTable(doc, commentsColumn, keyboardCommands.comments);
+	appendShortcutTable(doc, commentsColumn, keyboardCommandConfig.comments);
 
 	bottomRow.append(storiesColumn, commentsColumn);
-	container.append(topRow, bottomRow);
+	container.replaceChildren(topRow, bottomRow);
+};
+
+const downloadShortcuts = (doc: Document, textarea: HTMLTextAreaElement): void => {
+	const blob = new Blob([textarea.value], { type: 'application/json' });
+	const url = URL.createObjectURL(blob);
+	const link = doc.createElement('a');
+	link.href = url;
+	link.download = SHORTCUTS_FILENAME;
+	link.rel = 'noopener';
+	doc.body.append(link);
+	link.click();
+	link.remove();
+	URL.revokeObjectURL(url);
+};
+
+const renderEditor = (doc: Document, container: HTMLElement): void => {
+	const editor = doc.createElement('div');
+	editor.className = 'oj-shortcuts-editor';
+
+	const heading = doc.createElement('h2');
+	heading.className = 'oj-shortcuts-help__heading';
+	heading.textContent = 'Edit keyboard shortcuts';
+
+	const textarea = doc.createElement('textarea');
+	textarea.className = 'oj-shortcuts-editor__textarea';
+	textarea.spellcheck = false;
+	textarea.value = serializeKeyboardCommandConfig();
+	textarea.setAttribute('aria-label', 'Keyboard shortcuts JSON');
+
+	const error = doc.createElement('div');
+	error.className = 'oj-shortcuts-editor__error';
+	error.hidden = true;
+	error.role = 'alert';
+
+	const fileInput = doc.createElement('input');
+	fileInput.accept = '.json,application/json';
+	fileInput.className = 'oj-shortcuts-editor__file-input';
+	fileInput.type = 'file';
+
+	fileInput.addEventListener('change', async () => {
+		const file = fileInput.files?.[0];
+		fileInput.value = '';
+		if (!file) {
+			return;
+		}
+		if (!file.name.toLowerCase().endsWith('.json')) {
+			setEditorError(error, 'Choose a .json file.');
+			return;
+		}
+
+		try {
+			const text = await file.text();
+			const config = parseKeyboardCommandConfig(text);
+			textarea.value = serializeKeyboardCommandConfig(config);
+			error.hidden = true;
+			error.textContent = '';
+		} catch (parseError) {
+			setEditorError(error, getErrorMessage(parseError));
+		}
+	});
+
+	const controls = doc.createElement('div');
+	controls.className = 'oj-shortcuts-editor__controls';
+
+	const uploadButton = createButton(doc, 'Upload JSON');
+	uploadButton.addEventListener('click', () => {
+		fileInput.click();
+	});
+
+	const downloadButton = createButton(doc, 'Download JSON');
+	downloadButton.addEventListener('click', () => {
+		downloadShortcuts(doc, textarea);
+	});
+
+	const cancelButton = createButton(doc, 'Cancel');
+	cancelButton.addEventListener('click', () => {
+		renderShortcuts(doc, container);
+	});
+
+	const saveButton = createButton(doc, 'Save shortcuts', 'oj-shortcuts-help__button primary');
+	saveButton.addEventListener('click', async () => {
+		try {
+			await saveKeyboardCommandConfig(textarea.value);
+			renderShortcuts(doc, container, 'Keyboard shortcuts saved.');
+		} catch (saveError) {
+			setEditorError(error, getErrorMessage(saveError));
+		}
+	});
+
+	controls.append(uploadButton, downloadButton, cancelButton, saveButton);
+	editor.append(heading, textarea, error, controls, fileInput);
+	container.replaceChildren(editor);
+};
+
+export const getKeyboardShortcutsHelp = async (doc: Document): Promise<HTMLElement> => {
+	await loadKeyboardCommandConfig();
+
+	const container = doc.createElement('div');
+	container.className = 'oj-shortcuts-help';
+	renderShortcuts(doc, container);
 
 	return container;
 };

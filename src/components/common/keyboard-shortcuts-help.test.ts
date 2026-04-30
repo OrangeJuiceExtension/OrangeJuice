@@ -1,13 +1,20 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import {
+	KEYBOARD_COMMANDS_STORAGE_KEY,
+	keyboardCommands,
+	serializeKeyboardCommandConfig,
+} from '@/components/common/keyboard-commands.ts';
 import { getKeyboardShortcutsHelp } from '@/components/common/keyboard-shortcuts-help.tsx';
+import lStorage from '@/utils/local-storage.ts';
 
 describe('keyboard shortcuts help', () => {
 	let help: HTMLElement;
 	const waitForRender = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
 	beforeEach(async () => {
+		await lStorage.setItem(KEYBOARD_COMMANDS_STORAGE_KEY, null);
 		const doc = document.implementation.createHTMLDocument();
-		help = getKeyboardShortcutsHelp(doc);
+		help = await getKeyboardShortcutsHelp(doc);
 		doc.body.appendChild(help);
 		await waitForRender();
 	});
@@ -69,5 +76,72 @@ describe('keyboard shortcuts help', () => {
 		expect(emailLink?.getAttribute('href')).toBe(
 			'mailto:hello@oj-hn.com?subject=Question about OJ'
 		);
+	});
+
+	it('should show the JSON editor and restore help on cancel', () => {
+		const editButton = help.querySelector<HTMLButtonElement>('.oj-shortcuts-help__edit-button');
+		editButton?.click();
+
+		expect(help.querySelector('textarea')?.textContent).toBeDefined();
+		expect(help.textContent).toContain('Edit keyboard shortcuts');
+
+		const cancelButton = Array.from(help.querySelectorAll('button')).find(
+			(button) => button.textContent === 'Cancel'
+		);
+		cancelButton?.click();
+
+		expect(help.textContent).toContain('Navigation shortcuts');
+		expect(help.querySelector('textarea')).toBeNull();
+	});
+
+	it('should reject invalid JSON when saving shortcuts', async () => {
+		const editButton = help.querySelector<HTMLButtonElement>('.oj-shortcuts-help__edit-button');
+		editButton?.click();
+
+		const textarea = help.querySelector<HTMLTextAreaElement>('textarea');
+		if (!textarea) {
+			throw new Error('Expected editor textarea');
+		}
+		textarea.value = '{bad json';
+
+		const saveButton = Array.from(help.querySelectorAll('button')).find(
+			(button) => button.textContent === 'Save shortcuts'
+		);
+		saveButton?.click();
+		await waitForRender();
+
+		expect(help.textContent).toContain('Shortcut JSON could not be parsed.');
+		expect(await lStorage.getItem(KEYBOARD_COMMANDS_STORAGE_KEY)).toBeNull();
+	});
+
+	it('should save valid JSON and return to the help view', async () => {
+		const editButton = help.querySelector<HTMLButtonElement>('.oj-shortcuts-help__edit-button');
+		editButton?.click();
+
+		const textarea = help.querySelector<HTMLTextAreaElement>('textarea');
+		if (!textarea) {
+			throw new Error('Expected editor textarea');
+		}
+		const nextConfig = {
+			...keyboardCommands,
+			navigation: [
+				{
+					...keyboardCommands.navigation[0],
+					displayKey: 'Custom Home',
+				},
+				...keyboardCommands.navigation.slice(1),
+			],
+		};
+		textarea.value = serializeKeyboardCommandConfig(nextConfig);
+
+		const saveButton = Array.from(help.querySelectorAll('button')).find(
+			(button) => button.textContent === 'Save shortcuts'
+		);
+		saveButton?.click();
+		await waitForRender();
+
+		expect(help.textContent).toContain('Keyboard shortcuts saved.');
+		expect(help.textContent).toContain('Custom Home');
+		expect(await lStorage.getItem(KEYBOARD_COMMANDS_STORAGE_KEY)).toContain('Custom Home');
 	});
 });

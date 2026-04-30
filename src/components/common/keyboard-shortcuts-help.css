@@ -37,6 +37,33 @@
 		}
 	}
 
+	.oj-shortcuts-help__button,
+	.oj-shortcuts-help__edit-button {
+		padding: 6px 10px;
+		font: inherit;
+		font-weight: bold;
+		color: #242424;
+		cursor: pointer;
+		background: transparent;
+		border: 1px solid #ff6600;
+		border-radius: 4px;
+	}
+
+	.oj-shortcuts-help__button.primary {
+		color: #fff;
+		background: #ff6600;
+	}
+
+	.oj-shortcuts-help__edit-button {
+		margin-top: 18px;
+	}
+
+	.oj-shortcuts-help__status {
+		margin-top: 12px;
+		font-weight: bold;
+		color: #2f7d32;
+	}
+
 	.oj-shortcuts-help__column {
 		flex: 1;
 	}
@@ -63,6 +90,44 @@
 
 	.oj-shortcuts-help__desc {
 		padding: 3px 8px;
+	}
+
+	.oj-shortcuts-editor {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.oj-shortcuts-editor__textarea {
+		box-sizing: border-box;
+		width: 100%;
+		min-height: 52vh;
+		padding: 10px;
+		font-family:
+			ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		font-size: 12px;
+		line-height: 1.45;
+		color: #242424;
+		resize: vertical;
+		background: #fff;
+		border: 1px solid #d5c6a6;
+		border-radius: 4px;
+	}
+
+	.oj-shortcuts-editor__error {
+		font-weight: bold;
+		color: #b3261e;
+	}
+
+	.oj-shortcuts-editor__controls {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		justify-content: flex-end;
+	}
+
+	.oj-shortcuts-editor__file-input {
+		display: none;
 	}
 }
 
@@ -95,6 +160,33 @@ html.oj-dark-mode .oj-shortcuts-help {
 		}
 	}
 
+	.oj-shortcuts-help__button,
+	.oj-shortcuts-help__edit-button {
+		color: #fff2d4;
+		background: #292d2f;
+		border-color: #4d6170;
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+	}
+
+	.oj-shortcuts-help__button.primary {
+		color: #fff;
+		background: #ff6600 !important;
+		border-color: #ff6600 !important;
+		box-shadow:
+			0 1px 0 rgba(255, 255, 255, 0.18) inset,
+			0 0 0 1px rgba(255, 102, 0, 0.28);
+	}
+
+	.oj-shortcuts-help__button.primary:hover,
+	.oj-shortcuts-help__button.primary:focus-visible {
+		background: #ff7a1a !important;
+		border-color: #ff7a1a !important;
+	}
+
+	.oj-shortcuts-help__status {
+		color: #8fca78;
+	}
+
 	.oj-shortcuts-help__table tr {
 		border-bottom: 1px solid #4a4031;
 	}
@@ -109,5 +201,15 @@ html.oj-dark-mode .oj-shortcuts-help {
 
 	.oj-shortcuts-help__desc {
 		color: #cdbd9f;
+	}
+
+	.oj-shortcuts-editor__textarea {
+		color: #fff2d4;
+		background: #1f1a14;
+		border-color: #4a4031;
+	}
+
+	.oj-shortcuts-editor__error {
+		color: #ffb4ab;
 	}
 }
