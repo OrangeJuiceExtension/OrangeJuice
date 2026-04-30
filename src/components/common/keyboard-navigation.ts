@@ -1,7 +1,7 @@
 import type { ContentScriptContext } from '#imports';
+import { getKeyboardCommand } from '@/components/common/keyboard-commands.ts';
 import { getKeyboardShortcutsHelp } from '@/components/common/keyboard-shortcuts-help.tsx';
 import { showModal } from '@/components/common/modal.ts';
-import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 
 export interface KeyboardNavState {
@@ -17,13 +17,12 @@ export const keyboardNavigation = (
 		helpModalOpen: false,
 	};
 
-	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: it is ok
 	const keydownHandler = (event: KeyboardEvent) => {
 		let locationUrl: string | undefined;
+		const command = getKeyboardCommand('navigation', event);
 
-		switch (event.key) {
-			// Help!
-			case '?': {
+		switch (command?.id) {
+			case 'show-help': {
 				if (state.helpModalOpen) {
 					return;
 				}
@@ -33,60 +32,50 @@ export const keyboardNavigation = (
 					return;
 				}
 
-				const combo = dom.isComboKey(event);
-				if (combo && !state.helpModalOpen) {
-					state.helpModalOpen = true;
-					showModal({
-						doc,
-						ctx,
-						content: getKeyboardShortcutsHelp(doc),
-						variant: 'shortcuts',
-						onClose: () => {
-							state.helpModalOpen = false;
-						},
-					});
-				}
+				state.helpModalOpen = true;
+				showModal({
+					doc,
+					ctx,
+					content: getKeyboardShortcutsHelp(doc),
+					variant: 'shortcuts',
+					onClose: () => {
+						state.helpModalOpen = false;
+					},
+				});
 				break;
 			}
 
-			// H: Home
-			case 'Ó': {
+			case 'go-home': {
 				locationUrl = paths.base;
 				break;
 			}
 
-			// S: Submit
-			case 'Í': {
+			case 'go-submit': {
 				locationUrl = `${paths.base}/submit`;
 				break;
 			}
 
-			// O: Show
-			case 'Ø': {
+			case 'go-show': {
 				locationUrl = `${paths.base}/show`;
 				break;
 			}
 
-			// A: Ask
-			case 'Å': {
+			case 'go-ask': {
 				locationUrl = `${paths.base}/ask`;
 				break;
 			}
 
-			// N: New
-			case '˜': {
+			case 'go-new': {
 				locationUrl = `${paths.base}/newest`;
 				break;
 			}
 
-			// P: Profile
-			case '∏': {
+			case 'go-profile': {
 				locationUrl = username ? `${paths.base}/user?id=${username}` : undefined;
 				break;
 			}
 
-			// T: Threads
-			case 'ˇ': {
+			case 'go-threads': {
 				locationUrl = username ? `${paths.base}/threads?id=${username}` : undefined;
 				break;
 			}

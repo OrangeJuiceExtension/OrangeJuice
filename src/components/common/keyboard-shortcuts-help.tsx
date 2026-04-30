@@ -1,59 +1,6 @@
 import { browser } from '#imports';
+import { type KeyboardCommand, keyboardCommands } from '@/components/common/keyboard-commands.ts';
 import './keyboard-shortcuts-help.css';
-
-const SHORTCUTS_COMMENTS = [
-	{ key: 'j / J', description: 'Move down by one / jump to same or higher-level comment' },
-	{ key: 'k / K', description: 'Move up by one / jump to same or higher-level comment' },
-	{ key: 'n / p', description: 'Move down / up and expand collapsed comments' },
-	{ key: 'N / P', description: 'Move down / up at same indent level' },
-	{ key: 'c', description: 'Collapse/expand comment' },
-	{ key: 'C', description: 'Collapse root of selected comment' },
-	{ key: 'r', description: 'Reply to selected comment' },
-	{ key: 'u', description: 'Upvote selected comment' },
-	{ key: 'd', description: 'Downvote selected comment' },
-	{ key: 'f', description: 'Favorite selected comment' },
-	{ key: 'y', description: 'Copy selected comment HN link' },
-	{ key: 'X', description: 'Flag selected comment' },
-	{ key: '0-9', description: 'Open reference link by number' },
-	{ key: 'z', description: 'Scroll selected comment to top of window' },
-	{ key: 't', description: 'Scroll to top of page' },
-	{ key: 'b', description: 'Go back (if paginated)' },
-	{ key: 'esc', description: 'Unfocus comment or close reply box' },
-] as const;
-
-const SHORTCUTS_STORIES = [
-	{ key: '↑ / ↓', description: 'Move up / down' },
-	{ key: '←', description: 'Open story comments (new tab)' },
-	{ key: '⇧ + ←', description: 'Open story comments' },
-	{ key: '→', description: 'Open story url (new tab)' },
-	{ key: '⇧ + →', description: 'Open story url' },
-	{ key: 'j / k', description: 'Move down / up' },
-	{ key: 'Enter', description: 'Open selected story in new tab' },
-	{ key: 'O', description: 'Open story and comments in new tabs' },
-	{ key: 'u', description: 'Upvote selected story' },
-	{ key: 'f', description: 'Favorite selected story' },
-	{ key: 'y', description: 'Copy selected story HN link' },
-	{ key: 'X', description: 'Flag selected story' },
-	{ key: 'r', description: 'Reply to story (go to comments)' },
-	{ key: '1-9, 0', description: 'Open story at position 1-10' },
-	{ key: 'm', description: 'Click more link' },
-	{ key: 'b', description: 'Go back (if paginated)' },
-	{ key: 'h', description: 'Toggle hide read stories checkbox' },
-	{ key: 'H', description: 'Hide read stories' },
-	{ key: 'esc', description: 'Unfocus story' },
-] as const;
-
-const SHORTCUTS_COMMON = [
-	{ key: 'H', description: 'Home' },
-	{ key: 'S', description: 'Submit' },
-	{ key: 'O', description: 'Show' },
-	{ key: 'A', description: 'Ask' },
-	{ key: 'N', description: 'New' },
-	{ key: 'P', description: 'Profile' },
-	{ key: 'T', description: 'Threads' },
-	{ key: '?', description: 'Show help dialog' },
-	{ key: 'esc', description: 'Hide help dialog' },
-] as const;
 
 const LOGO_PATH = '/icon/orange_juice_icon_128x128.png';
 const WEBSITE_URL = 'https://oj-hn.com';
@@ -65,17 +12,21 @@ const getLogoUrl = (): string => browser.runtime?.getURL?.(LOGO_PATH) ?? LOGO_PA
 const appendShortcutTable = (
 	doc: Document,
 	parent: HTMLElement,
-	shortcuts: ReadonlyArray<{ key: string; description: string }>
+	shortcuts: readonly KeyboardCommand[]
 ): void => {
 	const table = doc.createElement('table');
 	table.className = 'oj-shortcuts-help__table';
 	const tbody = doc.createElement('tbody');
 
-	for (const { key, description } of shortcuts) {
+	for (const { displayKey, description, showInHelp = true } of shortcuts) {
+		if (!showInHelp) {
+			continue;
+		}
+
 		const row = doc.createElement('tr');
 		const keyCell = doc.createElement('td');
 		keyCell.className = 'oj-shortcuts-help__key';
-		keyCell.textContent = key;
+		keyCell.textContent = displayKey;
 		const descCell = doc.createElement('td');
 		descCell.className = 'oj-shortcuts-help__desc';
 		descCell.textContent = description;
@@ -136,7 +87,7 @@ export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
 	note.className = 'oj-shortcuts-help__note';
 	note.textContent = '(requires alt or ⌥)';
 	navColumn.append(note);
-	appendShortcutTable(doc, navColumn, SHORTCUTS_COMMON);
+	appendShortcutTable(doc, navColumn, keyboardCommands.navigation);
 
 	topRow.append(brand, navColumn);
 
@@ -144,10 +95,10 @@ export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
 	bottomRow.className = 'oj-shortcuts-help__row';
 
 	const storiesColumn = createColumn(doc, 'Stories shortcuts');
-	appendShortcutTable(doc, storiesColumn, SHORTCUTS_STORIES);
+	appendShortcutTable(doc, storiesColumn, keyboardCommands.stories);
 
 	const commentsColumn = createColumn(doc, 'Comments shortcuts');
-	appendShortcutTable(doc, commentsColumn, SHORTCUTS_COMMENTS);
+	appendShortcutTable(doc, commentsColumn, keyboardCommands.comments);
 
 	bottomRow.append(storiesColumn, commentsColumn);
 	container.append(topRow, bottomRow);

@@ -1,4 +1,5 @@
 import type { ContentScriptContext } from '#imports';
+import { getKeyboardCommand } from '@/components/common/keyboard-commands.ts';
 import type { KeyboardNavState } from '@/components/common/keyboard-navigation.ts';
 import { KeyboardHandlers } from '@/components/story/keyboard-handlers.ts';
 import {
@@ -130,106 +131,86 @@ export const keyboardNavigation = async (
 			return;
 		}
 
-		const combo = dom.isComboKey(e);
-		const modifier = e.ctrlKey || e.metaKey || e.altKey;
+		const command = getKeyboardCommand('stories', e);
 
-		switch (e.key) {
-			case 'ArrowDown':
+		switch (command?.id) {
+			case 'move-down':
 				keyboardHandlers.move(storyData, 'down');
 				break;
-			case 'ArrowUp':
+			case 'move-up':
 				keyboardHandlers.move(storyData, 'up');
 				break;
-			case 'ArrowLeft':
-				if (!modifier && storyData.getActiveStory()) {
-					keyboardHandlers.openComments(storyData, !e.shiftKey);
+			case 'open-comments-new-tab':
+				if (storyData.getActiveStory()) {
+					keyboardHandlers.openComments(storyData, true);
 				}
 				break;
-			case 'ArrowRight':
-				if (!modifier && storyData.getActiveStory()) {
-					keyboardHandlers.openStoryUrl(storyData, !e.shiftKey);
+			case 'open-comments':
+				if (storyData.getActiveStory()) {
+					keyboardHandlers.openComments(storyData, false);
 				}
 				break;
-			// j: Go down
-			case 'J':
-			case 'j':
-				keyboardHandlers.move(storyData, 'down');
+			case 'open-story-new-tab':
+				if (storyData.getActiveStory()) {
+					keyboardHandlers.openStoryUrl(storyData, true);
+				}
 				break;
-			// k: Go up
-			case 'K':
-			case 'k':
-				keyboardHandlers.move(storyData, 'up');
+			case 'open-story':
+				if (storyData.getActiveStory()) {
+					keyboardHandlers.openStoryUrl(storyData, false);
+				}
 				break;
-			case 'u':
-				if (!combo && storyData.getActiveStory()) {
+			case 'upvote':
+				if (storyData.getActiveStory()) {
 					keyboardHandlers.vote(storyData);
 				}
 				break;
-			case 'f':
-				if (!combo && storyData.getActiveStory()) {
+			case 'favorite':
+				if (storyData.getActiveStory()) {
 					keyboardHandlers.favorite(storyData);
 				}
 				break;
-			case 'X':
-				if (!combo && storyData.getActiveStory()) {
+			case 'flag':
+				if (storyData.getActiveStory()) {
 					keyboardHandlers.flag(storyData);
 				}
 				break;
-			case 'r':
-				if (!combo && storyData.getActiveStory()) {
+			case 'reply':
+				if (storyData.getActiveStory()) {
 					keyboardHandlers.reply(storyData);
 				}
 				break;
-			case 'y':
-				if (!combo && storyData.getActiveStory()) {
+			case 'copy-hn-url':
+				if (storyData.getActiveStory()) {
 					await keyboardHandlers.copyHnUrl(storyData);
 				}
 				break;
-			case 'Enter':
-				if (!combo && storyData.getActiveStory()) {
+			case 'open-selected':
+				if (storyData.getActiveStory()) {
 					keyboardHandlers.open(storyData);
 				}
 				break;
-			case 'O':
-				if (combo && storyData.getActiveStory()) {
+			case 'open-with-comments':
+				if (storyData.getActiveStory()) {
 					keyboardHandlers.openWithComments(storyData);
 				}
 				break;
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-			case '0':
-				if (!combo) {
-					keyboardHandlers.openByPosition(storyData, e.key);
-				}
+			case 'open-position':
+				keyboardHandlers.openByPosition(storyData, e.key);
 				break;
-			case 'm':
-				if (!combo) {
-					keyboardHandlers.clickMore(doc);
-				}
+			case 'more':
+				keyboardHandlers.clickMore(doc);
 				break;
-			case 'b':
-				if (!combo) {
-					keyboardHandlers.goBack();
-				}
+			case 'back':
+				keyboardHandlers.goBack();
 				break;
-			case 'h':
-				if (!combo) {
-					keyboardHandlers.toggleHideRead(doc);
-				}
+			case 'toggle-hide-read':
+				keyboardHandlers.toggleHideRead(doc);
 				break;
-			case 'H':
-				if (combo) {
-					keyboardHandlers.hideReadStoriesNow(storyData);
-				}
+			case 'hide-read-now':
+				keyboardHandlers.hideReadStoriesNow(storyData);
 				break;
-			case 'Escape':
+			case 'escape':
 				keyboardHandlers.escape(storyData);
 				break;
 			default:

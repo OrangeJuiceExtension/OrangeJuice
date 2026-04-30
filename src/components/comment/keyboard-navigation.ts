@@ -2,8 +2,8 @@ import type { ContentScriptContext } from '#imports';
 import type { CommentData } from '@/components/comment/comment-data.ts';
 import { focusClass, focusClassDefault } from '@/components/comment/hn-comment.ts';
 import { KeyboardHandlers } from '@/components/comment/keyboard-handlers.ts';
+import { getKeyboardCommand } from '@/components/common/keyboard-commands.ts';
 import type { KeyboardNavState } from '@/components/common/keyboard-navigation.ts';
-import { dom } from '@/utils/dom.ts';
 import { getEnableFocusBoxPreference } from '@/utils/preferences.ts';
 import { registerPreferencesUpdateHandler } from '@/utils/preferences-live.ts';
 
@@ -108,35 +108,31 @@ export const keyboardNavigation = async (
 			return;
 		}
 
-		const combo = dom.isComboKey(e);
-		const nonShiftCombo = e.ctrlKey || e.metaKey || e.altKey;
+		const command = getKeyboardCommand('comments', e);
 
-		switch (e.key) {
-			case 'j':
-				if (!combo) {
-					await keyboardHandlers.move(e, commentData, 'down');
+		switch (command?.id) {
+			case 'move-down':
+				await keyboardHandlers.move(e, commentData, 'down');
+				break;
+			case 'move-up': {
+				const activeComment = commentData.getActiveComment();
+				if (activeComment && !commentData.getPrevious(activeComment, true)) {
+					activeComment.activate();
+					break;
+				}
+				await keyboardHandlers.move(e, commentData, 'up');
+				if (activeComment && !commentData.getActiveComment()) {
+					await keyboardHandlers.activateComment(commentData, activeComment);
 				}
 				break;
-			case 'k':
-				if (!combo) {
-					const activeComment = commentData.getActiveComment();
-					if (activeComment && !commentData.getPrevious(activeComment, true)) {
-						activeComment.activate();
-						break;
-					}
-					await keyboardHandlers.move(e, commentData, 'up');
-					if (activeComment && !commentData.getActiveComment()) {
-						await keyboardHandlers.activateComment(commentData, activeComment);
-					}
-				}
-				break;
-			case 'J':
-				if (!nonShiftCombo && commentData.getActiveComment()) {
+			}
+			case 'move-down-same-or-higher-indent':
+				if (commentData.getActiveComment()) {
 					await keyboardHandlers.moveAtSameOrHigherIndent(commentData, 'down');
 				}
 				break;
-			case 'K':
-				if (!nonShiftCombo && commentData.getActiveComment()) {
+			case 'move-up-same-or-higher-indent':
+				if (commentData.getActiveComment()) {
 					const activeComment = commentData.getActiveComment();
 					await keyboardHandlers.moveAtSameOrHigherIndent(commentData, 'up');
 					if (activeComment && !commentData.getActiveComment()) {
@@ -144,43 +140,40 @@ export const keyboardNavigation = async (
 					}
 				}
 				break;
-			case 'Escape':
 			case 'escape':
-				if (!combo) {
-					if (commentData.replyButton) {
-						const activeComment = commentData.getActiveComment();
-						commentData.replyButton.click();
-						commentData.replyButton = undefined;
-						if (activeComment) {
-							await keyboardHandlers.activateComment(commentData, activeComment);
-						}
-					} else {
-						await keyboardHandlers.escape(commentData);
+				if (commentData.replyButton) {
+					const activeComment = commentData.getActiveComment();
+					commentData.replyButton.click();
+					commentData.replyButton = undefined;
+					if (activeComment) {
+						await keyboardHandlers.activateComment(commentData, activeComment);
 					}
+				} else {
+					await keyboardHandlers.escape(commentData);
 				}
 				break;
-			case 'r':
-				if (!combo && commentData.getActiveComment()) {
+			case 'reply':
+				if (commentData.getActiveComment()) {
 					commentData.replyButton = keyboardHandlers.reply(commentData);
 				}
 				break;
-			case 'f':
-				if (!combo && commentData.getActiveComment()) {
+			case 'favorite':
+				if (commentData.getActiveComment()) {
 					keyboardHandlers.favorite(commentData);
 				}
 				break;
-			case 'y':
-				if (!combo && commentData.getActiveComment()) {
+			case 'copy-hn-url':
+				if (commentData.getActiveComment()) {
 					await keyboardHandlers.copyHnUrl(commentData);
 				}
 				break;
-			case 'X':
-				if (combo && commentData.getActiveComment()) {
+			case 'flag':
+				if (commentData.getActiveComment()) {
 					keyboardHandlers.flag(commentData);
 				}
 				break;
-			case 'n':
-				if (!nonShiftCombo && commentData.getActiveComment()) {
+			case 'move-down-expand':
+				if (commentData.getActiveComment()) {
 					await keyboardHandlers.move(
 						{ ...e, shiftKey: true } as KeyboardEvent,
 						commentData,
@@ -188,8 +181,8 @@ export const keyboardNavigation = async (
 					);
 				}
 				break;
-			case 'p':
-				if (!nonShiftCombo && commentData.getActiveComment()) {
+			case 'move-up-expand':
+				if (commentData.getActiveComment()) {
 					await keyboardHandlers.move(
 						{ ...e, shiftKey: true } as KeyboardEvent,
 						commentData,
@@ -197,61 +190,48 @@ export const keyboardNavigation = async (
 					);
 				}
 				break;
-			case 'N':
-				if (!nonShiftCombo && commentData.getActiveComment()) {
+			case 'move-down-same-indent':
+				if (commentData.getActiveComment()) {
 					await keyboardHandlers.moveAtSameIndent(commentData, 'down');
 				}
 				break;
-			case 'P':
-				if (!nonShiftCombo && commentData.getActiveComment()) {
+			case 'move-up-same-indent':
+				if (commentData.getActiveComment()) {
 					await keyboardHandlers.moveAtSameIndent(commentData, 'up');
 				}
 				break;
-			case 'u':
-				if (!combo && commentData.getActiveComment()) {
+			case 'upvote':
+				if (commentData.getActiveComment()) {
 					keyboardHandlers.upvote(commentData);
 				}
 				break;
-			case 'd':
-				if (!combo && commentData.getActiveComment()) {
+			case 'downvote':
+				if (commentData.getActiveComment()) {
 					keyboardHandlers.downvote(commentData);
 				}
 				break;
-			case 'c':
-				if (!combo && commentData.getActiveComment()) {
+			case 'collapse-toggle':
+				if (commentData.getActiveComment()) {
 					keyboardHandlers.collapseToggle(commentData);
 				}
 				break;
-			case 'C':
-				if (!nonShiftCombo && commentData.getActiveComment()) {
+			case 'collapse-root':
+				if (commentData.getActiveComment()) {
 					await keyboardHandlers.collapseExpandRoot(commentData);
 				}
 				break;
-			case 'z':
-				if (!combo && commentData.getActiveComment()) {
+			case 'scroll-active-to-top':
+				if (commentData.getActiveComment()) {
 					keyboardHandlers.scrollActiveCommentToTop(commentData);
 				}
 				break;
-			case 't':
-				if (!combo) {
-					doc.body.scrollTo(0, 0);
-				}
+			case 'scroll-page-to-top':
+				doc.body.scrollTo(0, 0);
 				break;
-			case 'b':
-				if (!combo) {
-					window.history.back();
-				}
+			case 'back':
+				window.history.back();
 				break;
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
+			case 'open-reference-link':
 				if (commentData.getActiveComment()) {
 					return keyboardHandlers.openReferenceLink(e, commentData);
 				}
