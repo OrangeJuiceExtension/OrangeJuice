@@ -16,6 +16,15 @@ Agents must follow:
 - Always use the GitHub workflow commit message format: conventional commits as `<type>(<scope>)?: <subject>`, with types like `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, or `test`; use `!` or `BREAKING CHANGE:` for breaking changes.
 - Write code that is **accessible, performant, type-safe, and maintainable**. Focus on clarity and explicit intent over brevity.
 
+### Git
+
+- Commit all current changes across as many focused commits as needed, not just the most obvious files.
+- Prefer several small coherent commits over a few broad commits when the diff contains multiple behaviors or concerns.
+- Use `git diff --stat`, `git diff`, and `git status --short` to confirm all changed files are accounted for.
+- Stage hunks or files deliberately so each commit can stand on its own.
+- After committing, verify the worktree is clean with `git status --short`.
+- Do not leave unrelated modified files uncommitted after an explicit add/commit request unless the user asked to preserve them separately.
+
 ### Environment
 - Reference DOM: https://news.hackernews.com
 - Package manager: bun (never anything else)

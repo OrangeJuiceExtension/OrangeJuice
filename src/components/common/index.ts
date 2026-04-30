@@ -20,8 +20,8 @@ export const common: ComponentFeature = {
 		return Promise.all([
 			Promise.resolve().then(() => openInNewTab(ctx, document)),
 			Promise.resolve().then(() => resizeTextarea(ctx, document)),
-			Promise.resolve().then(() => {
-				navState = keyboardNavigation(ctx, document, common.username);
+			Promise.resolve().then(async () => {
+				navState = await keyboardNavigation(ctx, document, common.username);
 			}),
 		]);
 	},

@@ -1,81 +1,40 @@
 import { browser } from '#imports';
+import {
+	getKeyboardCommandConfig,
+	type KeyboardCommand,
+	loadKeyboardCommandConfig,
+	parseKeyboardCommandConfig,
+	saveKeyboardCommandConfig,
+	serializeKeyboardCommandConfig,
+} from '@/components/common/keyboard-commands.ts';
 import './keyboard-shortcuts-help.css';
-
-const SHORTCUTS_COMMENTS = [
-	{ key: 'j / J', description: 'Move down by one / jump to same or higher-level comment' },
-	{ key: 'k / K', description: 'Move up by one / jump to same or higher-level comment' },
-	{ key: 'n / p', description: 'Move down / up and expand collapsed comments' },
-	{ key: 'N / P', description: 'Move down / up at same indent level' },
-	{ key: 'c', description: 'Collapse/expand comment' },
-	{ key: 'C', description: 'Collapse root of selected comment' },
-	{ key: 'r', description: 'Reply to selected comment' },
-	{ key: 'u', description: 'Upvote selected comment' },
-	{ key: 'd', description: 'Downvote selected comment' },
-	{ key: 'f', description: 'Favorite selected comment' },
-	{ key: 'y', description: 'Copy selected comment HN link' },
-	{ key: 'X', description: 'Flag selected comment' },
-	{ key: '0-9', description: 'Open reference link by number' },
-	{ key: 'z', description: 'Scroll selected comment to top of window' },
-	{ key: 't', description: 'Scroll to top of page' },
-	{ key: 'b', description: 'Go back (if paginated)' },
-	{ key: 'esc', description: 'Unfocus comment or close reply box' },
-] as const;
-
-const SHORTCUTS_STORIES = [
-	{ key: '↑ / ↓', description: 'Move up / down' },
-	{ key: '←', description: 'Open story comments (new tab)' },
-	{ key: '⇧ + ←', description: 'Open story comments' },
-	{ key: '→', description: 'Open story url (new tab)' },
-	{ key: '⇧ + →', description: 'Open story url' },
-	{ key: 'j / k', description: 'Move down / up' },
-	{ key: 'Enter', description: 'Open selected story in new tab' },
-	{ key: 'O', description: 'Open story and comments in new tabs' },
-	{ key: 'u', description: 'Upvote selected story' },
-	{ key: 'f', description: 'Favorite selected story' },
-	{ key: 'y', description: 'Copy selected story HN link' },
-	{ key: 'X', description: 'Flag selected story' },
-	{ key: 'r', description: 'Reply to story (go to comments)' },
-	{ key: '1-9, 0', description: 'Open story at position 1-10' },
-	{ key: 'm', description: 'Click more link' },
-	{ key: 'b', description: 'Go back (if paginated)' },
-	{ key: 'h', description: 'Toggle hide read stories checkbox' },
-	{ key: 'H', description: 'Hide read stories' },
-	{ key: 'esc', description: 'Unfocus story' },
-] as const;
-
-const SHORTCUTS_COMMON = [
-	{ key: 'H', description: 'Home' },
-	{ key: 'S', description: 'Submit' },
-	{ key: 'O', description: 'Show' },
-	{ key: 'A', description: 'Ask' },
-	{ key: 'N', description: 'New' },
-	{ key: 'P', description: 'Profile' },
-	{ key: 'T', description: 'Threads' },
-	{ key: '?', description: 'Show help dialog' },
-	{ key: 'esc', description: 'Hide help dialog' },
-] as const;
 
 const LOGO_PATH = '/icon/orange_juice_icon_128x128.png';
 const WEBSITE_URL = 'https://oj-hn.com';
 const EMAIL = 'hello@oj-hn.com';
 const GITHUB_URL = 'https://github.com/OrangeJuiceExtension/OrangeJuice';
+const SHORTCUTS_FILENAME = 'orange-juice-keyboard-shortcuts.json';
 
 const getLogoUrl = (): string => browser.runtime?.getURL?.(LOGO_PATH) ?? LOGO_PATH;
 
 const appendShortcutTable = (
 	doc: Document,
 	parent: HTMLElement,
-	shortcuts: ReadonlyArray<{ key: string; description: string }>
+	shortcuts: readonly KeyboardCommand[]
 ): void => {
 	const table = doc.createElement('table');
 	table.className = 'oj-shortcuts-help__table';
 	const tbody = doc.createElement('tbody');
 
-	for (const { key, description } of shortcuts) {
+	for (const { displayKey, description, showInHelp = true } of shortcuts) {
+		if (!showInHelp) {
+			continue;
+		}
+
 		const row = doc.createElement('tr');
 		const keyCell = doc.createElement('td');
 		keyCell.className = 'oj-shortcuts-help__key';
-		keyCell.textContent = key;
+		keyCell.textContent = displayKey;
 		const descCell = doc.createElement('td');
 		descCell.className = 'oj-shortcuts-help__desc';
 		descCell.textContent = description;
@@ -106,10 +65,23 @@ const createColumn = (doc: Document, heading: string): HTMLDivElement => {
 	return column;
 };
 
-export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
-	const container = doc.createElement('div');
-	container.className = 'oj-shortcuts-help';
+const createButton = (doc: Document, label: string, className?: string): HTMLButtonElement => {
+	const button = doc.createElement('button');
+	button.className = className ?? 'oj-shortcuts-help__button';
+	button.textContent = label;
+	button.type = 'button';
+	return button;
+};
 
+const setEditorError = (error: HTMLElement, message: string): void => {
+	error.hidden = false;
+	error.textContent = message;
+};
+
+const getErrorMessage = (error: unknown): string =>
+	error instanceof Error ? error.message : 'Shortcut JSON is invalid.';
+
+const renderShortcuts = (doc: Document, container: HTMLElement, message?: string): void => {
 	const topRow = doc.createElement('div');
 	topRow.className = 'oj-shortcuts-help__row oj-shortcuts-help__row--top';
 
@@ -129,14 +101,23 @@ export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
 		createExternalLink(doc, GITHUB_URL, 'GitHub'),
 		createExternalLink(doc, `mailto:${EMAIL}?subject=Question about OJ`, 'Email')
 	);
-	brand.append(logo, links);
+	const editButton = createButton(doc, 'Edit shortcuts', 'oj-shortcuts-help__edit-button');
+	editButton.addEventListener('click', () => {
+		renderEditor(doc, container);
+	});
+	brand.append(logo, links, editButton);
+	if (message) {
+		const status = doc.createElement('div');
+		status.className = 'oj-shortcuts-help__status';
+		status.role = 'status';
+		status.textContent = message;
+		brand.append(status);
+	}
+
+	const keyboardCommandConfig = getKeyboardCommandConfig();
 
 	const navColumn = createColumn(doc, 'Navigation shortcuts');
-	const note = doc.createElement('div');
-	note.className = 'oj-shortcuts-help__note';
-	note.textContent = '(requires alt or ⌥)';
-	navColumn.append(note);
-	appendShortcutTable(doc, navColumn, SHORTCUTS_COMMON);
+	appendShortcutTable(doc, navColumn, keyboardCommandConfig.navigation);
 
 	topRow.append(brand, navColumn);
 
@@ -144,13 +125,113 @@ export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
 	bottomRow.className = 'oj-shortcuts-help__row';
 
 	const storiesColumn = createColumn(doc, 'Stories shortcuts');
-	appendShortcutTable(doc, storiesColumn, SHORTCUTS_STORIES);
+	appendShortcutTable(doc, storiesColumn, keyboardCommandConfig.stories);
 
 	const commentsColumn = createColumn(doc, 'Comments shortcuts');
-	appendShortcutTable(doc, commentsColumn, SHORTCUTS_COMMENTS);
+	appendShortcutTable(doc, commentsColumn, keyboardCommandConfig.comments);
 
 	bottomRow.append(storiesColumn, commentsColumn);
-	container.append(topRow, bottomRow);
+	container.replaceChildren(topRow, bottomRow);
+};
+
+const downloadShortcuts = (doc: Document, textarea: HTMLTextAreaElement): void => {
+	const blob = new Blob([textarea.value], { type: 'application/json' });
+	const url = URL.createObjectURL(blob);
+	const link = doc.createElement('a');
+	link.href = url;
+	link.download = SHORTCUTS_FILENAME;
+	link.rel = 'noopener';
+	doc.body.append(link);
+	link.click();
+	link.remove();
+	URL.revokeObjectURL(url);
+};
+
+const renderEditor = (doc: Document, container: HTMLElement): void => {
+	const editor = doc.createElement('div');
+	editor.className = 'oj-shortcuts-editor';
+
+	const heading = doc.createElement('h2');
+	heading.className = 'oj-shortcuts-help__heading';
+	heading.textContent = 'Edit keyboard shortcuts';
+
+	const textarea = doc.createElement('textarea');
+	textarea.className = 'oj-shortcuts-editor__textarea';
+	textarea.spellcheck = false;
+	textarea.value = serializeKeyboardCommandConfig();
+	textarea.setAttribute('aria-label', 'Keyboard shortcuts JSON');
+
+	const error = doc.createElement('div');
+	error.className = 'oj-shortcuts-editor__error';
+	error.hidden = true;
+	error.role = 'alert';
+
+	const fileInput = doc.createElement('input');
+	fileInput.accept = '.json,application/json';
+	fileInput.className = 'oj-shortcuts-editor__file-input';
+	fileInput.type = 'file';
+
+	fileInput.addEventListener('change', async () => {
+		const file = fileInput.files?.[0];
+		fileInput.value = '';
+		if (!file) {
+			return;
+		}
+		if (!file.name.toLowerCase().endsWith('.json')) {
+			setEditorError(error, 'Choose a .json file.');
+			return;
+		}
+
+		try {
+			const text = await file.text();
+			const config = parseKeyboardCommandConfig(text);
+			textarea.value = serializeKeyboardCommandConfig(config);
+			error.hidden = true;
+			error.textContent = '';
+		} catch (parseError) {
+			setEditorError(error, getErrorMessage(parseError));
+		}
+	});
+
+	const controls = doc.createElement('div');
+	controls.className = 'oj-shortcuts-editor__controls';
+
+	const uploadButton = createButton(doc, 'Upload JSON');
+	uploadButton.addEventListener('click', () => {
+		fileInput.click();
+	});
+
+	const downloadButton = createButton(doc, 'Download JSON');
+	downloadButton.addEventListener('click', () => {
+		downloadShortcuts(doc, textarea);
+	});
+
+	const cancelButton = createButton(doc, 'Cancel');
+	cancelButton.addEventListener('click', () => {
+		renderShortcuts(doc, container);
+	});
+
+	const saveButton = createButton(doc, 'Save shortcuts', 'oj-shortcuts-help__button primary');
+	saveButton.addEventListener('click', async () => {
+		try {
+			await saveKeyboardCommandConfig(textarea.value);
+			renderShortcuts(doc, container, 'Keyboard shortcuts saved.');
+		} catch (saveError) {
+			setEditorError(error, getErrorMessage(saveError));
+		}
+	});
+
+	controls.append(uploadButton, downloadButton, cancelButton, saveButton);
+	editor.append(heading, textarea, error, controls, fileInput);
+	container.replaceChildren(editor);
+};
+
+export const getKeyboardShortcutsHelp = async (doc: Document): Promise<HTMLElement> => {
+	await loadKeyboardCommandConfig();
+
+	const container = doc.createElement('div');
+	container.className = 'oj-shortcuts-help';
+	renderShortcuts(doc, container);
 
 	return container;
 };
