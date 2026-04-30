@@ -15,7 +15,8 @@ describe('keyboard shortcuts help', () => {
 	it('should include modifier icons and arrow keys in shortcuts', () => {
 		const text = help.textContent ?? '';
 
-		expect(text).toContain('(requires alt or ⌥)');
+		expect(text).not.toContain('(requires alt or ⌥)');
+		expect(text).toContain('Alt/⌥ + H');
 		expect(text).toContain('⇧');
 		expect(text).toContain('←');
 		expect(text).toContain('→');

@@ -49,13 +49,6 @@
 		border-bottom: 1px solid #ff6600;
 	}
 
-	.oj-shortcuts-help__note {
-		margin-top: 8px;
-		margin-bottom: 6px;
-		font-size: 0.85em;
-		color: #666;
-	}
-
 	.oj-shortcuts-help__table {
 		width: 100%;
 		border-collapse: collapse;
@@ -88,10 +81,6 @@ html.oj-dark-mode .oj-shortcuts-help {
 	.oj-shortcuts-help__heading {
 		color: #fff2d4;
 		border-bottom-color: #ff6600;
-	}
-
-	.oj-shortcuts-help__note {
-		color: #ac9d84;
 	}
 
 	.oj-shortcuts-help__links {

@@ -83,10 +83,6 @@ export const getKeyboardShortcutsHelp = (doc: Document): HTMLElement => {
 	brand.append(logo, links);
 
 	const navColumn = createColumn(doc, 'Navigation shortcuts');
-	const note = doc.createElement('div');
-	note.className = 'oj-shortcuts-help__note';
-	note.textContent = '(requires alt or ⌥)';
-	navColumn.append(note);
 	appendShortcutTable(doc, navColumn, keyboardCommands.navigation);
 
 	topRow.append(brand, navColumn);
