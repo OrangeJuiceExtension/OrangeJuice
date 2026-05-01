@@ -938,4 +938,145 @@ describe('dom', () => {
 			}
 		});
 	});
+
+	describe('getAllComments', () => {
+		it('should return only comment rows with comtr class', () => {
+			document.body.innerHTML = `
+				<table class="fatitem">
+					<tr class="athing submission" id="story-123">
+						<td class="title">Story title</td>
+					</tr>
+				</table>
+				<table class="comment-tree">
+					<tr class="athing comtr" id="comment-1">
+						<td class="default">Comment 1</td>
+					</tr>
+					<tr class="athing comtr" id="comment-2">
+						<td class="default">Comment 2</td>
+					</tr>
+					<tr class="athing comtr" id="comment-3">
+						<td class="default">Comment 3</td>
+					</tr>
+				</table>
+			`;
+
+			const comments = dom.getAllComments(document);
+
+			expect(comments).toHaveLength(3);
+			expect(comments[0]?.id).toBe('comment-1');
+			expect(comments[1]?.id).toBe('comment-2');
+			expect(comments[2]?.id).toBe('comment-3');
+		});
+
+		it('should exclude story submission row', () => {
+			document.body.innerHTML = `
+				<table class="fatitem">
+					<tr class="athing submission" id="story-123">
+						<td class="title">Story title</td>
+					</tr>
+					<tr class="subtext">
+						<span class="score">100 points</span>
+					</tr>
+				</table>
+				<table class="comment-tree">
+					<tr class="athing comtr" id="comment-1">
+						<td class="default">Comment 1</td>
+					</tr>
+				</table>
+			`;
+
+			const comments = dom.getAllComments(document);
+
+			expect(comments).toHaveLength(1);
+			expect(comments[0]?.id).toBe('comment-1');
+			expect(comments.some((c) => c.id === 'story-123')).toBe(false);
+		});
+
+		it('should handle nested comments with different indentation levels', () => {
+			document.body.innerHTML = `
+				<table class="comment-tree">
+					<tr class="athing comtr" id="root-1">
+						<td class="ind" indent="0"><img src="s.gif" width="0"></td>
+						<td class="default">Root comment 1</td>
+					</tr>
+					<tr class="athing comtr" id="child-1">
+						<td class="ind" indent="1"><img src="s.gif" width="40"></td>
+						<td class="default">Child comment 1</td>
+					</tr>
+					<tr class="athing comtr" id="child-2">
+						<td class="ind" indent="2"><img src="s.gif" width="80"></td>
+						<td class="default">Grandchild comment</td>
+					</tr>
+					<tr class="athing comtr" id="root-2">
+						<td class="ind" indent="0"><img src="s.gif" width="0"></td>
+						<td class="default">Root comment 2</td>
+					</tr>
+				</table>
+			`;
+
+			const comments = dom.getAllComments(document);
+
+			expect(comments).toHaveLength(4);
+			expect(comments.map((c) => c.id)).toEqual(['root-1', 'child-1', 'child-2', 'root-2']);
+		});
+
+		it('should return empty array when no comments exist', () => {
+			document.body.innerHTML = `
+				<table class="fatitem">
+					<tr class="athing submission" id="story-123">
+						<td class="title">Story title</td>
+					</tr>
+				</table>
+			`;
+
+			const comments = dom.getAllComments(document);
+
+			expect(comments).toHaveLength(0);
+		});
+
+		it('should return empty array when page is empty', () => {
+			document.body.innerHTML = '';
+
+			const comments = dom.getAllComments(document);
+
+			expect(comments).toHaveLength(0);
+		});
+
+		it('should only select elements with both athing and comtr classes', () => {
+			document.body.innerHTML = `
+				<table>
+					<tr class="athing" id="only-athing">Only athing class</tr>
+					<tr class="comtr" id="only-comtr">Only comtr class</tr>
+					<tr class="athing comtr" id="both-classes">Both classes</tr>
+					<tr class="athing comtr other" id="both-with-extra">Both classes with extra</tr>
+				</table>
+			`;
+
+			const comments = dom.getAllComments(document);
+
+			expect(comments).toHaveLength(2);
+			expect(comments.map((c) => c.id)).toEqual(['both-classes', 'both-with-extra']);
+		});
+
+		it('should work with collapsed comments', () => {
+			document.body.innerHTML = `
+				<table class="comment-tree">
+					<tr class="athing comtr coll" id="collapsed-1">
+						<td class="default">Collapsed comment 1</td>
+					</tr>
+					<tr class="athing comtr noshow" id="hidden-1">
+						<td class="default">Hidden comment 1</td>
+					</tr>
+					<tr class="athing comtr" id="visible-1">
+						<td class="default">Visible comment 1</td>
+					</tr>
+				</table>
+			`;
+
+			const comments = dom.getAllComments(document);
+
+			expect(comments).toHaveLength(3);
+			expect(comments.map((c) => c.id)).toEqual(['collapsed-1', 'hidden-1', 'visible-1']);
+		});
+	});
 });
