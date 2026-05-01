@@ -313,7 +313,7 @@ const toggleActivityState = async (
 };
 
 const getAllComments = (doc: Document): HTMLElement[] => [
-	...doc.querySelectorAll<HTMLElement>('tr.athing'),
+	...doc.querySelectorAll<HTMLElement>('tr.athing.comtr'),
 ];
 
 const mapElementsById = (elements: HTMLElement[]): Map<string, HTMLElement> =>

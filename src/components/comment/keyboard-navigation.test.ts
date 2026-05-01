@@ -361,6 +361,130 @@ describe('keyboardNavigation', () => {
 			invalidate();
 		});
 
+		it('n should select first comment when no comment is active', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			dispatchKeydown(doc, 'n');
+
+			await vi.waitFor(() => {
+				expect(commentData.getActiveComment()?.id).toBe('item-1');
+			});
+			expect(getComment(comments, 0).classList.contains(focusClass)).toBe(true);
+
+			invalidate();
+		});
+
+		it('N should select first comment when no comment is active', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			dispatchKeydown(doc, 'N', { shiftKey: true });
+
+			await vi.waitFor(() => {
+				expect(commentData.getActiveComment()?.id).toBe('item-1');
+			});
+			expect(getComment(comments, 0).classList.contains(focusClass)).toBe(true);
+
+			invalidate();
+		});
+
+		it('p should select first comment when no comment is active', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			dispatchKeydown(doc, 'p');
+
+			await vi.waitFor(() => {
+				expect(commentData.getActiveComment()?.id).toBe('item-1');
+			});
+			expect(getComment(comments, 0).classList.contains(focusClass)).toBe(true);
+
+			invalidate();
+		});
+
+		it('P should select first comment when no comment is active', async () => {
+			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+
+			await keyboardNavigation(ctx, doc, comments, commentData);
+			dispatchKeydown(doc, 'P', { shiftKey: true });
+
+			await vi.waitFor(() => {
+				expect(commentData.getActiveComment()?.id).toBe('item-1');
+			});
+			expect(getComment(comments, 0).classList.contains(focusClass)).toBe(true);
+
+			invalidate();
+		});
+
+		it('should select first actual comment, not story submission row', async () => {
+			const doc = document.implementation.createHTMLDocument();
+			const { ctx, invalidate } = createContext();
+
+			// Create HTML with story submission row and comments
+			doc.body.innerHTML = `
+				<table class="fatitem">
+					<tr class="athing submission" id="story-123">
+						<td class="title">Story title</td>
+					</tr>
+				</table>
+				<table class="comment-tree">
+					<tr class="athing comtr" id="comment-1">
+						<td class="ind" indent="0"><img src="s.gif" width="0"></td>
+						<td class="votelinks"></td>
+						<td class="default">
+							<div class="comhead">
+								<a href="user?id=user1" class="hnuser">user1</a>
+								<span class="age"><a href="item?id=comment-1">1 hour ago</a></span>
+							</div>
+							<div class="commtext">Comment 1</div>
+						</td>
+					</tr>
+					<tr class="athing comtr" id="comment-2">
+						<td class="ind" indent="0"><img src="s.gif" width="0"></td>
+						<td class="votelinks"></td>
+						<td class="default">
+							<div class="comhead">
+								<a href="user?id=user2" class="hnuser">user2</a>
+								<span class="age"><a href="item?id=comment-2">2 hours ago</a></span>
+							</div>
+							<div class="commtext">Comment 2</div>
+						</td>
+					</tr>
+				</table>
+			`;
+
+			// Get actual comment elements (not story submission)
+			const commentElements = [...doc.querySelectorAll<HTMLElement>('tr.athing.comtr')];
+			const commentData = new CommentData(commentElements.map((el) => new HNComment(el)));
+
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(null);
+
+			await keyboardNavigation(ctx, doc, commentElements, commentData);
+
+			// Press 'n' to select first comment
+			dispatchKeydown(doc, 'n');
+
+			await vi.waitFor(() => {
+				expect(commentData.getActiveComment()).toBeDefined();
+			});
+
+			// Verify the active comment is an actual comment, not the story
+			const activeComment = commentData.getActiveComment();
+			expect(activeComment?.id).toBe('comment-1');
+			expect(activeComment?.id).not.toBe('story-123');
+
+			// Verify the story submission row was never selected
+			const storyRow = doc.getElementById('story-123');
+			expect(storyRow?.classList.contains(focusClass)).toBe(false);
+
+			// Verify the first comment row has the focus class
+			const firstCommentRow = doc.getElementById('comment-1');
+			expect(firstCommentRow?.classList.contains(focusClass)).toBe(true);
+
+			invalidate();
+		});
+
 		it('t should scroll to top', async () => {
 			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 
@@ -454,10 +578,6 @@ describe('keyboardNavigation', () => {
 			{ key: 'x', handler: 'flag' },
 			{ key: 'J', handler: 'moveAtSameOrHigherIndent' },
 			{ key: 'K', handler: 'moveAtSameOrHigherIndent' },
-			{ key: 'N', handler: 'moveAtSameIndent' },
-			{ key: 'P', handler: 'moveAtSameIndent' },
-			{ key: 'p', handler: 'move' },
-			{ key: 'n', handler: 'move' },
 			{ key: 'u', handler: 'upvote' },
 			{ key: 'd', handler: 'downvote' },
 			{ key: 'c', handler: 'collapseToggle' },

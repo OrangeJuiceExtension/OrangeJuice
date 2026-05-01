@@ -177,32 +177,32 @@ export const keyboardNavigation = async (
 				}
 				break;
 			case 'move-down-expand':
-				if (commentData.getActiveComment()) {
-					await keyboardHandlers.move(
-						{ ...e, shiftKey: true } as KeyboardEvent,
-						commentData,
-						'down'
-					);
-				}
+				await keyboardHandlers.move(
+					{ ...e, shiftKey: true } as KeyboardEvent,
+					commentData,
+					'down'
+				);
 				break;
 			case 'move-up-expand':
-				if (commentData.getActiveComment()) {
-					await keyboardHandlers.move(
-						{ ...e, shiftKey: true } as KeyboardEvent,
-						commentData,
-						'up'
-					);
-				}
+				await keyboardHandlers.move(
+					{ ...e, shiftKey: true } as KeyboardEvent,
+					commentData,
+					'up'
+				);
 				break;
 			case 'move-down-same-indent':
-				if (commentData.getActiveComment()) {
-					await keyboardHandlers.moveAtSameIndent(commentData, 'down');
+				if (!commentData.getActiveComment()) {
+					await keyboardHandlers.activateFirstItem(commentData, true);
+					break;
 				}
+				await keyboardHandlers.moveAtSameIndent(commentData, 'down');
 				break;
 			case 'move-up-same-indent':
-				if (commentData.getActiveComment()) {
-					await keyboardHandlers.moveAtSameIndent(commentData, 'up');
+				if (!commentData.getActiveComment()) {
+					await keyboardHandlers.activateFirstItem(commentData, true);
+					break;
 				}
+				await keyboardHandlers.moveAtSameIndent(commentData, 'up');
 				break;
 			case 'upvote':
 				if (commentData.getActiveComment()) {
