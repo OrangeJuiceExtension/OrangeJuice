@@ -67,13 +67,15 @@ describe('renderPopupApp', () => {
 		const popup = root.querySelector('main.oj-popup');
 		expect(popup?.className).toBe(expectedClass);
 		expect(popup?.querySelector('.oj-popup__title')?.textContent).toBe('Preferences');
-		expect(popup?.querySelector('.oj-popup__text')?.textContent).toBe(
-			'Control the Orange Juice.'
-		);
 		const logo = popup?.querySelector<HTMLImageElement>('.oj-popup__logo');
 		expect(logo?.alt).toBe('Orange Juice logo');
 		expect(logo?.src.startsWith('chrome-extension://')).toBe(true);
 		expect(logo?.src.endsWith('/icon/orange_juice_icon_128x128.png')).toBe(true);
+		const welcomeLink = popup?.querySelector<HTMLAnchorElement>('.oj-popup__welcome-link');
+		expect(welcomeLink?.textContent).toBe('Open initial welcome page');
+		expect(welcomeLink?.href).toBe('chrome-extension://test-extension-id/welcome.html');
+		expect(welcomeLink?.target).toBe('_blank');
+		expect(welcomeLink?.rel).toBe('noopener');
 	});
 
 	it('loads the focus box preference enabled by default', async () => {

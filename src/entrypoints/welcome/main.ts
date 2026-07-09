@@ -4,7 +4,6 @@ import './style.css';
 const STORAGE_KEY = 'oj_welcome_dark_mode';
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const LOGO_PATH = '/icon/orange_juice_icon_128x128.png';
-const PREFERENCES_PATH = '/popup.html';
 
 const createSvgIcon = (isDark: boolean): SVGSVGElement => {
 	const svg = document.createElementNS(SVG_NAMESPACE, 'svg');
@@ -91,11 +90,6 @@ const initLinks = (): void => {
 	const logo = document.getElementById('oj-welcome-logo');
 	if (logo instanceof HTMLImageElement) {
 		logo.src = browser.runtime.getURL(LOGO_PATH);
-	}
-
-	const preferencesLink = document.getElementById('oj-welcome-preferences');
-	if (preferencesLink instanceof HTMLAnchorElement) {
-		preferencesLink.href = browser.runtime.getURL(PREFERENCES_PATH);
 	}
 };
 
