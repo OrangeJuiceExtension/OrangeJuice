@@ -10,14 +10,14 @@ const authMatchPattern = /auth=([^&]+)/;
 
 export const ActivityId = {
 	Comments: 0,
-	Submissions: 1,
-	Hidden: 2,
-	FlagsSubmissions: 3,
-	FlagsComments: 4,
-	VotesSubmissions: 5,
-	VotesComments: 6,
-	FavoriteSubmissions: 7,
 	FavoriteComments: 8,
+	FavoriteSubmissions: 7,
+	FlagsComments: 4,
+	FlagsSubmissions: 3,
+	Hidden: 2,
+	Submissions: 1,
+	VotesComments: 6,
+	VotesSubmissions: 5,
 };
 
 export type ActivityType = (typeof ActivityId)[keyof typeof ActivityId];
@@ -136,7 +136,6 @@ export class ActivityTrail {
 				return { ...found, type };
 			}
 		}
-		return;
 	}
 
 	async set(detail: ActivityDetail): Promise<void> {
@@ -155,7 +154,7 @@ export class ActivityTrail {
 		for (const activity of activities) {
 			const { id, auth, exp } = activity;
 			// biome-ignore lint/suspicious/noAssignInExpressions: it is ok
-			(stored.items[activity.type] ??= []).push({ id, auth, exp });
+			(stored.items[activity.type] ??= []).push({ auth, exp, id });
 		}
 
 		await this.save(stored);
@@ -198,24 +197,25 @@ export class ActivityTrail {
 
 	async toStored(): Promise<StoredData> {
 		const indexed = await this.getIndexed();
+		const storedData = await this.getStored();
 		const items: StoredActivityTypeModel = {};
 
 		for (const [typeStr, byId] of Object.entries(indexed)) {
 			const type = Number(typeStr) as ActivityType;
 			const details = Object.values(byId ?? {});
-			items[type] = details.map(({ id, auth, exp }) => ({ id, auth, exp }));
+			items[type] = details.map(({ id, auth, exp }) => ({ auth, exp, id }));
 		}
 
 		return {
-			lastSync: this.storedData?.lastSync ?? 0,
 			items,
+			lastSync: storedData.lastSync,
 		};
 	}
 
 	async isExpired(): Promise<boolean> {
 		this.storedData = await this.load();
 
-		const lastSync = this.storedData.lastSync;
+		const { lastSync } = this.storedData;
 		if (lastSync === 0) {
 			return true;
 		}
@@ -260,10 +260,16 @@ class ActivityFetcher {
 	async start() {
 		const isExpired = await this.activityTrail.isExpired();
 		if (isExpired) {
-			for (const activityType of ActivityTypes) {
+			const syncActivityType = async (index: number): Promise<void> => {
+				const activityType = ActivityTypes[index];
+				if (activityType === undefined) {
+					return;
+				}
 				const activities = await this.fetchAllByType(activityType);
 				await this.activityTrail.addActivities(activities);
-			}
+				await syncActivityType(index + 1);
+			};
+			await syncActivityType(0);
 		}
 	}
 
@@ -271,9 +277,15 @@ class ActivityFetcher {
 		type PageFn = (page: number) => Promise<void>;
 
 		async function runPagesSequentially(pages: number[], work: PageFn): Promise<void> {
-			for (const page of pages) {
+			const runPage = async (index: number): Promise<void> => {
+				const page = pages[index];
+				if (page === undefined) {
+					return;
+				}
 				await withBackoff(() => work(page));
-			}
+				await runPage(index + 1);
+			};
+			await runPage(0);
 		}
 
 		const items: ActivityDetail[] = [];
@@ -301,13 +313,19 @@ class ActivityFetcher {
 			}
 		};
 
-		while (pagesToProcess.length > 0) {
+		const processQueuedPages = async (): Promise<void> => {
+			if (pagesToProcess.length === 0) {
+				return;
+			}
 			const currentBatch = pagesToProcess.splice(0, pagesToProcess.length);
 
 			await runPagesSequentially(currentBatch, async (page: number) => {
 				await processPage(page);
 			});
-		}
+			await processQueuedPages();
+		};
+
+		await processQueuedPages();
 
 		return items;
 	}
@@ -339,10 +357,10 @@ class ActivityFetcher {
 
 			if (idMatch && authMatch) {
 				items.push({
-					id: idMatch[1],
-					exp: Date.now() + DAYS_30,
-					type,
 					auth: authMatch[1],
+					exp: Date.now() + DAYS_30,
+					id: idMatch[1],
+					type,
 				});
 			}
 		}
@@ -360,8 +378,8 @@ class ActivityFetcher {
 
 			if (idMatch) {
 				items.push({
-					id: idMatch[1],
 					exp: Date.now() + DAYS_30,
+					id: idMatch[1],
 					type,
 				});
 			}

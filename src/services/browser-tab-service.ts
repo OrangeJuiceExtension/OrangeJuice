@@ -15,8 +15,8 @@ export class BrowserTabService {
 
 		const opts = {
 			...request,
-			index,
 			active: false,
+			index,
 		};
 
 		await browser.tabs.create(opts);

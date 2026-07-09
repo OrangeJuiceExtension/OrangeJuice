@@ -14,18 +14,16 @@ describe('muted-users', () => {
 	});
 
 	describe('getMutedUsers', () => {
-		it('returns an empty list for missing or invalid stored values', async () => {
-			const cases = [
+		describe('missing or invalid stored values', () => {
+			it.each([
 				{ name: 'empty storage', stored: null },
 				{ name: 'plain string', stored: 'pg' },
 				{ name: 'object', stored: { username: 'pg' } },
-			] as const;
-
-			for (const { name, stored } of cases) {
+			] as const)('$name', async ({ name, stored }) => {
 				await lStorage.setItem(MUTED_USERS_STORAGE_KEY, stored);
 
 				await expect(getMutedUsers(), name).resolves.toEqual([]);
-			}
+			});
 		});
 
 		it('normalizes stored muted users by trimming, removing empties, and deduplicating', async () => {

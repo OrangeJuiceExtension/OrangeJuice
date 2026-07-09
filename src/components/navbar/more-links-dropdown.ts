@@ -8,74 +8,74 @@ import { getFollowingPageUrl } from '@/utils/paths.ts';
 
 const linkDetails = [
 	{
-		title: 'leaders',
 		description: 'Users with most karma',
+		title: 'leaders',
 	},
 	{
-		title: 'following',
-		href: getFollowingPageUrl(),
 		description: 'Recent activity from followed users',
+		href: getFollowingPageUrl(),
+		title: 'following',
 	},
 	{
-		title: 'best',
 		description: 'Highest-voted recent stories',
+		title: 'best',
 	},
 	{
-		title: 'pool',
 		description: 'Second chance pool',
+		title: 'pool',
 	},
 	{
-		title: 'active',
 		description: 'Most active current discussions',
+		title: 'active',
 	},
 	{
-		title: 'newpoll',
 		description: 'Create a new poll',
+		title: 'newpoll',
 	},
 	{
-		title: 'shownew',
 		description: 'Show HN new stories',
+		title: 'shownew',
 	},
 	{
-		title: 'asknew',
 		description: 'Ask HN new stories',
+		title: 'asknew',
 	},
 	{
-		title: 'launches',
 		description: 'Show Launch HN stories',
+		title: 'launches',
 	},
 	{
-		title: 'invited',
 		description: 'Invited stories',
+		title: 'invited',
 	},
 	{
-		title: 'classic',
 		description: 'Classic stories',
+		title: 'classic',
 	},
 	{
-		title: 'whoishiring',
-		href: '/submitted?id=whoishiring',
 		description: "Who's hiring",
+		href: '/submitted?id=whoishiring',
+		title: 'whoishiring',
 	},
 	{
-		title: 'bestcomments',
 		description: 'Highest-voted recent comments',
+		title: 'bestcomments',
 	},
 	{
-		title: 'highlights',
 		description: 'Highlighted comments',
+		title: 'highlights',
 	},
 	{
-		title: 'noobstories',
 		description: 'Submissions from new accounts',
+		title: 'noobstories',
 	},
 	{
-		title: 'noobcomments',
 		description: 'Comments from new accounts',
+		title: 'noobcomments',
 	},
 	{
-		title: 'topcolors',
 		description: 'List of custom topcolors',
+		title: 'topcolors',
 	},
 ];
 
@@ -94,7 +94,7 @@ export const moreLinksDropdown = (
 		return;
 	}
 
-	const pathname = window.location.pathname;
+	const { pathname } = window.location;
 	if (pathname.startsWith('/login') || pathname.startsWith('/submit')) {
 		return;
 	}
@@ -145,10 +145,10 @@ export const moreLinksDropdown = (
 	updateButtonText(false);
 
 	createDropdown({
-		triggerElement: moreLinksBtn,
-		dropdownElement: dropdownEl,
-		doc,
 		ctx,
+		doc,
+		dropdownElement: dropdownEl,
 		onToggle: updateButtonText,
+		triggerElement: moreLinksBtn,
 	});
 };

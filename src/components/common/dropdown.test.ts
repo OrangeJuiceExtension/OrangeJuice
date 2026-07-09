@@ -21,10 +21,10 @@ describe('createDropdown', () => {
 
 	it('should toggle dropdown on trigger element click', () => {
 		createDropdown({
-			triggerElement,
-			dropdownElement,
-			doc,
 			ctx: MOCK_CONTEXT,
+			doc,
+			dropdownElement,
+			triggerElement,
 		});
 
 		expect(dropdownElement.classList.contains('active')).toBe(false);
@@ -45,10 +45,10 @@ describe('createDropdown', () => {
 
 	it('should not toggle dropdown on modified click', () => {
 		createDropdown({
-			triggerElement,
-			dropdownElement,
-			doc,
 			ctx: MOCK_CONTEXT,
+			doc,
+			dropdownElement,
+			triggerElement,
 		});
 
 		const clickEvent = new MouseEvent('click', {
@@ -64,10 +64,10 @@ describe('createDropdown', () => {
 
 	it('should close dropdown when clicking outside', () => {
 		createDropdown({
-			triggerElement,
-			dropdownElement,
-			doc,
 			ctx: MOCK_CONTEXT,
+			doc,
+			dropdownElement,
+			triggerElement,
 		});
 
 		vi.spyOn(triggerElement, 'getBoundingClientRect').mockReturnValue({ left: 100 } as DOMRect);
@@ -92,10 +92,10 @@ describe('createDropdown', () => {
 
 	it('should not close dropdown when clicking inside dropdown', () => {
 		createDropdown({
-			triggerElement,
-			dropdownElement,
-			doc,
 			ctx: MOCK_CONTEXT,
+			doc,
+			dropdownElement,
+			triggerElement,
 		});
 
 		vi.spyOn(triggerElement, 'getBoundingClientRect').mockReturnValue({ left: 100 } as DOMRect);
@@ -118,10 +118,10 @@ describe('createDropdown', () => {
 
 	it('should not close dropdown when clicking on trigger element', () => {
 		createDropdown({
-			triggerElement,
-			dropdownElement,
-			doc,
 			ctx: MOCK_CONTEXT,
+			doc,
+			dropdownElement,
+			triggerElement,
 		});
 
 		vi.spyOn(triggerElement, 'getBoundingClientRect').mockReturnValue({ left: 100 } as DOMRect);
@@ -144,10 +144,10 @@ describe('createDropdown', () => {
 
 	it('should update dropdown position on window resize when open', () => {
 		createDropdown({
-			triggerElement,
-			dropdownElement,
-			doc,
 			ctx: MOCK_CONTEXT,
+			doc,
+			dropdownElement,
+			triggerElement,
 		});
 
 		const getBoundingClientRectSpy = vi
@@ -171,10 +171,10 @@ describe('createDropdown', () => {
 
 	it('should not update dropdown position on resize when closed', () => {
 		createDropdown({
-			triggerElement,
-			dropdownElement,
-			doc,
 			ctx: MOCK_CONTEXT,
+			doc,
+			dropdownElement,
+			triggerElement,
 		});
 
 		vi.spyOn(triggerElement, 'getBoundingClientRect').mockReturnValue({ left: 100 } as DOMRect);
@@ -190,11 +190,11 @@ describe('createDropdown', () => {
 		const onToggle = vi.fn();
 
 		createDropdown({
-			triggerElement,
-			dropdownElement,
-			doc,
 			ctx: MOCK_CONTEXT,
+			doc,
+			dropdownElement,
 			onToggle,
+			triggerElement,
 		});
 
 		vi.spyOn(triggerElement, 'getBoundingClientRect').mockReturnValue({ left: 100 } as DOMRect);
@@ -216,11 +216,11 @@ describe('createDropdown', () => {
 		const onToggle = vi.fn();
 
 		createDropdown({
-			triggerElement,
-			dropdownElement,
-			doc,
 			ctx: MOCK_CONTEXT,
+			doc,
+			dropdownElement,
 			onToggle,
+			triggerElement,
 		});
 
 		vi.spyOn(triggerElement, 'getBoundingClientRect').mockReturnValue({ left: 100 } as DOMRect);
@@ -249,16 +249,16 @@ describe('createDropdown', () => {
 		doc.body.append(secondTriggerElement, secondDropdownElement);
 
 		createDropdown({
-			triggerElement,
-			dropdownElement,
-			doc,
 			ctx: MOCK_CONTEXT,
+			doc,
+			dropdownElement,
+			triggerElement,
 		});
 		createDropdown({
-			triggerElement: secondTriggerElement,
-			dropdownElement: secondDropdownElement,
-			doc,
 			ctx: MOCK_CONTEXT,
+			doc,
+			dropdownElement: secondDropdownElement,
+			triggerElement: secondTriggerElement,
 		});
 
 		vi.spyOn(triggerElement, 'getBoundingClientRect').mockReturnValue({ left: 100 } as DOMRect);
@@ -285,10 +285,10 @@ describe('createDropdown', () => {
 
 	it('should clean up event listeners on context invalidation', () => {
 		createDropdown({
-			triggerElement,
-			dropdownElement,
-			doc,
 			ctx: MOCK_CONTEXT,
+			doc,
+			dropdownElement,
+			triggerElement,
 		});
 
 		const triggerRemoveSpy = vi.spyOn(triggerElement, 'removeEventListener');
@@ -296,7 +296,7 @@ describe('createDropdown', () => {
 		const windowRemoveSpy = vi.spyOn(window, 'removeEventListener');
 
 		expect(MOCK_CONTEXT.onInvalidated).toHaveBeenCalled();
-		const onInvalidatedCallback = MOCK_CONTEXT.onInvalidated.mock.calls[0][0];
+		const [[onInvalidatedCallback]] = MOCK_CONTEXT.onInvalidated.mock.calls;
 		onInvalidatedCallback();
 
 		expect(triggerRemoveSpy).toHaveBeenCalledWith('click', expect.any(Function));
@@ -306,10 +306,10 @@ describe('createDropdown', () => {
 
 	it('should return isOpen method', () => {
 		const dropdown = createDropdown({
-			triggerElement,
-			dropdownElement,
-			doc,
 			ctx: MOCK_CONTEXT,
+			doc,
+			dropdownElement,
+			triggerElement,
 		});
 
 		expect(dropdown.isOpen()).toBe(false);

@@ -26,8 +26,6 @@ const validPaths = [...paths.comments, ...paths.specialComments, '/edit'];
 export const comments: ComponentFeature = {
 	id: 'comments',
 	loginRequired: true,
-	matches: [`${paths.base}/*`],
-	runAt: 'document_end',
 	async main(ctx: ContentScriptContext) {
 		if (!validPaths.some((p) => document.location.pathname.startsWith(p))) {
 			return;
@@ -59,4 +57,6 @@ export const comments: ComponentFeature = {
 			Promise.resolve().then(() => replyFocusTextarea(document)),
 		]);
 	},
+	matches: [`${paths.base}/*`],
+	runAt: 'document_end',
 };

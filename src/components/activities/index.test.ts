@@ -9,13 +9,13 @@ vi.mock('@/components/common/activity-buttons', () => ({
 }));
 
 vi.mock('@/utils/activity-trail', () => ({
-	newActivityTrail: vi.fn(),
 	ActivityId: {
-		FavoriteSubmissions: 7,
 		FavoriteComments: 8,
-		FlagsSubmissions: 3,
+		FavoriteSubmissions: 7,
 		FlagsComments: 4,
+		FlagsSubmissions: 3,
 	},
+	newActivityTrail: vi.fn(),
 }));
 
 describe('activities component', () => {
@@ -91,9 +91,9 @@ describe('activities component', () => {
 				window.location.pathname,
 				mockActivityTrail,
 				{
-					componentType: 'favorite',
 					buttonClass: 'oj_favorite_link',
 					buttonLabels: { active: 'unfavorite', inactive: 'favorite' },
+					componentType: 'favorite',
 				}
 			);
 
@@ -103,9 +103,9 @@ describe('activities component', () => {
 				window.location.pathname,
 				mockActivityTrail,
 				{
-					componentType: 'flag',
 					buttonClass: 'oj_flag_link',
 					buttonLabels: { active: 'unflag', inactive: 'flag' },
+					componentType: 'flag',
 				}
 			);
 		});
@@ -124,15 +124,14 @@ describe('activities component', () => {
 			let callCount = 0;
 
 			vi.mocked(initActivityButtons).mockImplementation(() => {
-				callCount++;
+				callCount += 1;
 				return Promise.resolve(callCount === 1 ? mockCleanup1 : mockCleanup2);
 			});
 
 			await activities.main(mockCtx);
 
 			// Get the activity trail listeners that were added
-			const favoriteListener = mockActivityTrail.addListener.mock.calls[0][0];
-			const flagListener = mockActivityTrail.addListener.mock.calls[1][0];
+			const [[favoriteListener], [flagListener]] = mockActivityTrail.addListener.mock.calls;
 
 			// Reset call counts
 			vi.mocked(initActivityButtons).mockClear();
@@ -161,7 +160,7 @@ describe('activities component', () => {
 			let callCount = 0;
 
 			vi.mocked(initActivityButtons).mockImplementation(() => {
-				callCount++;
+				callCount += 1;
 				return Promise.resolve(callCount === 1 ? mockCleanupFavorite : mockCleanupFlag);
 			});
 

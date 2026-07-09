@@ -33,32 +33,32 @@ describe('loginTemplate', () => {
 		shouldWrap: boolean;
 	}[] = [
 		{
+			hasFnid: false,
 			name: 'wraps the login page body',
 			pathname: '/login',
-			username: null,
-			hasFnid: false,
 			shouldWrap: true,
+			username: null,
 		},
 		{
+			hasFnid: false,
 			name: 'wraps submit when logged out',
 			pathname: '/submit',
-			username: null,
-			hasFnid: false,
 			shouldWrap: true,
+			username: null,
 		},
 		{
+			hasFnid: true,
 			name: 'skips submit when fnid is present',
 			pathname: '/submit',
-			username: null,
-			hasFnid: true,
 			shouldWrap: false,
+			username: null,
 		},
 		{
+			hasFnid: false,
 			name: 'does nothing on non-login pages',
 			pathname: '/news',
-			username: null,
-			hasFnid: false,
 			shouldWrap: false,
+			username: null,
 		},
 	];
 

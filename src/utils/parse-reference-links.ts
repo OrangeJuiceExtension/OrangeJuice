@@ -50,8 +50,8 @@ export function parseReferenceLinks(activeItem: HTMLElement): ReferenceLinks[] {
 		const index = Number(matches[1]);
 
 		links.push({
-			index,
 			href: link.href,
+			index,
 		});
 	}
 

@@ -254,9 +254,7 @@ const writeImage = async (render: RenderConfig): Promise<void> => {
 };
 
 const main = async (): Promise<void> => {
-	for (const render of renders) {
-		await writeImage(render);
-	}
+	await Promise.all(renders.map((render) => writeImage(render)));
 };
 
 await main();

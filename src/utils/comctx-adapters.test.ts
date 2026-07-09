@@ -6,11 +6,11 @@ vi.mock('#imports', () => ({
 	browser: {
 		runtime: {
 			id: 'test-id',
-			sendMessage: vi.fn(() => Promise.resolve()),
 			onMessage: {
 				addListener: vi.fn(),
 				removeListener: vi.fn(),
 			},
+			sendMessage: vi.fn(() => Promise.resolve()),
 		},
 		tabs: {
 			query: vi.fn(() => Promise.resolve([])),
@@ -35,12 +35,12 @@ describe('comctx-adapters', () => {
 			await adapter.sendMessage({ type: 'ping' } as any, undefined as any);
 
 			expect(browser.runtime.sendMessage).toHaveBeenCalledWith(expect.any(String), {
-				type: 'ping',
 				meta: {
-					url: 'https://news.ycombinator.com/item?id=1',
 					injector: 'content',
 					message: { type: 'ping' },
+					url: 'https://news.ycombinator.com/item?id=1',
 				},
+				type: 'ping',
 			});
 
 			locationSpy.mockRestore();
@@ -64,8 +64,8 @@ describe('comctx-adapters', () => {
 
 			await adapter.sendMessage(
 				{
-					type: 'ping',
 					meta: { injector: 'content', url: 'https://news.ycombinator.com/item?id=1' },
+					type: 'ping',
 				} as any,
 				undefined as any
 			);
@@ -88,8 +88,8 @@ describe('comctx-adapters', () => {
 
 			await adapter.sendMessage(
 				{
-					type: 'ping',
 					meta: { injector: 'content', url: 'https://news.ycombinator.com/item?id=1' },
+					type: 'ping',
 				} as any,
 				undefined as any
 			);
@@ -103,8 +103,8 @@ describe('comctx-adapters', () => {
 			const adapter = new ProvideAdapter();
 			await adapter.sendMessage(
 				{
-					type: 'ping',
 					meta: { injector: 'popup', url: 'https://news.ycombinator.com/item?id=1' },
+					type: 'ping',
 				} as any,
 				undefined as any
 			);
@@ -123,8 +123,8 @@ describe('comctx-adapters', () => {
 			await expect(
 				adapter.sendMessage(
 					{
-						type: 'ping',
 						meta: { injector: 'popup', url: 'https://news.ycombinator.com/item?id=1' },
+						type: 'ping',
 					} as any,
 					undefined as any
 				)

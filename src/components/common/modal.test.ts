@@ -25,7 +25,7 @@ describe('modal', () => {
 		it('should create modal with string content', () => {
 			const content = '<p>Test content</p>';
 
-			const overlay = createModal({ doc, ctx, content });
+			const overlay = createModal({ content, ctx, doc });
 
 			expect(overlay).toBeDefined();
 			expect(overlay.querySelector('p')?.textContent).toBe('<p>Test content</p>');
@@ -35,21 +35,21 @@ describe('modal', () => {
 			const content = doc.createElement('div');
 			content.textContent = 'Test element';
 
-			const overlay = createModal({ doc, ctx, content });
+			const overlay = createModal({ content, ctx, doc });
 
 			expect(overlay).toBeDefined();
 			expect(overlay.querySelector('div')?.textContent).toBe('Test element');
 		});
 
 		it('should have overlay with correct styles', () => {
-			const overlay = createModal({ doc, ctx, content: 'test' });
+			const overlay = createModal({ content: 'test', ctx, doc });
 
 			expect(overlay.style.position).toBe('fixed');
 			expect(overlay.style.zIndex).toBe('10000');
 		});
 
 		it('should have modal with HN colors', () => {
-			const overlay = createModal({ doc, ctx, content: 'test' });
+			const overlay = createModal({ content: 'test', ctx, doc });
 			const modal = overlay.firstChild as HTMLElement;
 
 			expect(modal.style.backgroundColor).toBe('#f6f6ef');
@@ -59,7 +59,7 @@ describe('modal', () => {
 
 	describe('showModal', () => {
 		it('should append modal to document body', () => {
-			showModal({ doc, ctx, content: 'test' });
+			showModal({ content: 'test', ctx, doc });
 
 			const overlay = doc.body.querySelector('div');
 			expect(overlay).toBeDefined();
@@ -68,13 +68,13 @@ describe('modal', () => {
 
 	describe('closing modal', () => {
 		it('should remove modal when clicking overlay', () => {
-			const overlay = createModal({ doc, ctx, content: 'test' });
+			const overlay = createModal({ content: 'test', ctx, doc });
 			doc.body.appendChild(overlay);
 
 			const clickEvent = new MouseEvent('click', { bubbles: true });
 			Object.defineProperty(clickEvent, 'target', {
-				value: overlay,
 				enumerable: true,
+				value: overlay,
 			});
 			overlay.dispatchEvent(clickEvent);
 
@@ -82,14 +82,14 @@ describe('modal', () => {
 		});
 
 		it('should not remove modal when clicking modal content', () => {
-			const overlay = createModal({ doc, ctx, content: 'test' });
+			const overlay = createModal({ content: 'test', ctx, doc });
 			doc.body.appendChild(overlay);
 			const modal = overlay.firstChild as HTMLElement;
 
 			const clickEvent = new MouseEvent('click', { bubbles: true });
 			Object.defineProperty(clickEvent, 'target', {
-				value: modal,
 				enumerable: true,
+				value: modal,
 			});
 			modal.dispatchEvent(clickEvent);
 
@@ -97,12 +97,12 @@ describe('modal', () => {
 		});
 
 		it('should remove modal on Escape key', () => {
-			const overlay = createModal({ doc, ctx, content: 'test' });
+			const overlay = createModal({ content: 'test', ctx, doc });
 			doc.body.appendChild(overlay);
 
 			const escapeEvent = new KeyboardEvent('keydown', {
-				key: 'Escape',
 				bubbles: true,
+				key: 'Escape',
 			});
 			doc.dispatchEvent(escapeEvent);
 
@@ -110,12 +110,12 @@ describe('modal', () => {
 		});
 
 		it('should remove modal on escape key', () => {
-			const overlay = createModal({ doc, ctx, content: 'test' });
+			const overlay = createModal({ content: 'test', ctx, doc });
 			doc.body.appendChild(overlay);
 
 			const escapeEvent = new KeyboardEvent('keydown', {
-				key: 'escape',
 				bubbles: true,
+				key: 'escape',
 			});
 			doc.dispatchEvent(escapeEvent);
 
@@ -123,7 +123,7 @@ describe('modal', () => {
 		});
 
 		it('should remove modal on context invalidation', () => {
-			const overlay = createModal({ doc, ctx, content: 'test' });
+			const overlay = createModal({ content: 'test', ctx, doc });
 			doc.body.appendChild(overlay);
 
 			invalidateCallback();
@@ -133,7 +133,7 @@ describe('modal', () => {
 
 		it('should clean up event listeners on invalidation', () => {
 			const removeSpy = vi.spyOn(doc, 'removeEventListener');
-			createModal({ doc, ctx, content: 'test' });
+			createModal({ content: 'test', ctx, doc });
 
 			invalidateCallback();
 

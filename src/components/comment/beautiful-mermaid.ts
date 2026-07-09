@@ -30,13 +30,15 @@ const ensurePreviewStyles = (doc: Document): void => {
 };
 
 const renderCommentBlocks = async (comments: HNComment[]): Promise<void> => {
-	for (const comment of comments) {
-		const commtext = comment.commentRow.querySelector<HTMLElement>('.commtext');
-		if (!commtext) {
-			continue;
-		}
-		await renderMermaidsInPreCodeElements(commtext);
-	}
+	await Promise.all(
+		comments.map(async (comment) => {
+			const commtext = comment.commentRow.querySelector<HTMLElement>('.commtext');
+			if (!commtext) {
+				return;
+			}
+			await renderMermaidsInPreCodeElements(commtext);
+		})
+	);
 };
 
 const ensurePreviewElement = (textarea: HTMLTextAreaElement): HTMLDivElement => {
@@ -73,14 +75,13 @@ const setupTextareaPreview = (
 		const runId = latestRunId + 1;
 		latestRunId = runId;
 		try {
-			const svgNodes: SVGElement[] = [];
-			for (const mermaid of mermaids) {
-				const svgs = await createMermaidSvgNodeFromMarkup(mermaid, textarea.ownerDocument);
-				if (!svgs) {
-					continue;
-				}
-				svgNodes.push(svgs);
-			}
+			const svgNodes = (
+				await Promise.all(
+					mermaids.map((mermaid) =>
+						createMermaidSvgNodeFromMarkup(mermaid, textarea.ownerDocument)
+					)
+				)
+			).filter((svgNode): svgNode is SVGElement => Boolean(svgNode));
 			if (runId !== latestRunId) {
 				return;
 			}
@@ -98,7 +99,7 @@ const setupTextareaPreview = (
 
 	const triggerUpdate = (): void => {
 		updatePreview().catch((error: unknown) => {
-			console.error({ msg: 'Failed to update Mermaid preview:', error });
+			console.error({ error, msg: 'Failed to update Mermaid preview:' });
 		});
 	};
 
@@ -184,8 +185,8 @@ export const commentBeautifulMermaid = async (
 	});
 
 	themeObserver.observe(doc.documentElement, {
-		attributes: true,
 		attributeFilter: ['class'],
+		attributes: true,
 	});
 
 	ctx.onInvalidated(() => {

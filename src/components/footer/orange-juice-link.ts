@@ -1,7 +1,7 @@
 import type { ContentScriptContext } from '#imports';
 
 export const addOrangeJuiceLink = (_ctx: ContentScriptContext, doc: Document, version: string) => {
-	const pathname = window.location.pathname;
+	const { pathname } = window.location;
 	if (pathname.startsWith('/login') || pathname.startsWith('/submit')) {
 		return;
 	}

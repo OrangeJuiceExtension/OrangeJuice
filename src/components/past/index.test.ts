@@ -238,7 +238,7 @@ describe('past', () => {
 			const monthSpy = vi.spyOn(monthInput, 'removeEventListener');
 			const daySpy = vi.spyOn(dayInput, 'removeEventListener');
 
-			const onInvalidatedCallback = MOCK_CONTEXT.onInvalidated.mock.calls[0][0];
+			const [[onInvalidatedCallback]] = MOCK_CONTEXT.onInvalidated.mock.calls;
 			onInvalidatedCallback();
 
 			expect(yearSpy).toHaveBeenCalledWith('change', expect.any(Function));

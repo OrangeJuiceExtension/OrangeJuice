@@ -34,9 +34,9 @@ vi.mock('@/utils/preferences.ts', () => ({
 	getReadStoriesVisibilityPreference: vi.fn(async () => 0),
 	getShowHiddenStoriesOptionPreference: vi.fn(async () => true),
 	READ_STORIES_VISIBILITY: {
+		DIM: 2,
 		HIDE: 0,
 		STRIKETHROUGH: 1,
-		DIM: 2,
 	},
 }));
 
@@ -277,7 +277,7 @@ describe('hide_read_stories', () => {
 	describe('feature interactions', () => {
 		it('keeps visited stories visible until the page checkbox is checked', async () => {
 			const storyData = createStoryData();
-			const visitedStory = storyData.hnStories[0];
+			const [visitedStory] = storyData.hnStories;
 			mockGetVisitsForHideReadStories.mockResolvedValue([
 				{ id: visitedStory.id, latestVisit: {} },
 			]);
@@ -319,7 +319,7 @@ describe('hide_read_stories', () => {
 			await lStorage.setItem<StorageState>('oj_hide_read_stories', { checkbox: true });
 
 			const storyData = createStoryData();
-			const visitedStory = storyData.hnStories[0];
+			const [visitedStory] = storyData.hnStories;
 			mockGetVisitsForHideReadStories.mockResolvedValue([
 				{ id: visitedStory.id, latestVisit: {} },
 			]);
@@ -359,7 +359,7 @@ describe('hide_read_stories', () => {
 			);
 
 			const storyData = createStoryData();
-			const visitedStory = storyData.hnStories[0];
+			const [visitedStory] = storyData.hnStories;
 			mockGetVisitsForHideReadStories.mockResolvedValue([
 				{ id: visitedStory.id, latestVisit: {} },
 			]);
@@ -399,33 +399,33 @@ describe('hide_read_stories', () => {
 
 		it.each([
 			{
-				name: 'hides visited stories once when visibility is hide',
-				visibility: READ_STORIES_VISIBILITY.HIDE,
 				assertion: (story: HNStory, titleLink: HTMLAnchorElement | null) => {
 					expect(story.storyRow.style.display).toBe('none');
 					expect(titleLink?.style.textDecoration).toBe('');
 					expect(titleLink?.style.opacity).toBe('');
 				},
+				name: 'hides visited stories once when visibility is hide',
+				visibility: READ_STORIES_VISIBILITY.HIDE,
 			},
 			{
-				name: 'strikes through visited stories once when visibility is strikethrough',
-				visibility: READ_STORIES_VISIBILITY.STRIKETHROUGH,
 				assertion: (story: HNStory, titleLink: HTMLAnchorElement | null) => {
 					expect(story.storyRow.style.display).toBe('');
 					expect(titleLink?.style.textDecoration).toBe('line-through');
 				},
+				name: 'strikes through visited stories once when visibility is strikethrough',
+				visibility: READ_STORIES_VISIBILITY.STRIKETHROUGH,
 			},
 			{
-				name: 'dims visited stories once when visibility is dim',
-				visibility: READ_STORIES_VISIBILITY.DIM,
 				assertion: (story: HNStory, titleLink: HTMLAnchorElement | null) => {
 					expect(story.storyRow.style.display).toBe('');
 					expect(titleLink?.style.opacity).toBe('0.45');
 				},
+				name: 'dims visited stories once when visibility is dim',
+				visibility: READ_STORIES_VISIBILITY.DIM,
 			},
 		])('$name', async ({ visibility, assertion }) => {
 			const storyData = createStoryData();
-			const visitedStory = storyData.hnStories[0];
+			const [visitedStory] = storyData.hnStories;
 			mockGetVisitsForHideReadStories.mockResolvedValue([
 				{ id: visitedStory.id, latestVisit: {} },
 			]);
@@ -553,7 +553,7 @@ describe('hide_read_stories', () => {
 				{ id: story2.id, url: story2.url },
 			];
 
-			mockGetVisits.mockResolvedValueOnce([{ visitTime: 1_234_567_890, transition: 'link' }]);
+			mockGetVisits.mockResolvedValueOnce([{ transition: 'link', visitTime: 1_234_567_890 }]);
 			mockGetVisits.mockResolvedValueOnce([]);
 
 			await service.getVisits(stories);
@@ -585,7 +585,7 @@ describe('hide_read_stories', () => {
 
 			const stories = [{ id: story.id, url: story.url }];
 
-			const visitData = { visitTime: 1_234_567_890, transition: 'link' };
+			const visitData = { transition: 'link', visitTime: 1_234_567_890 };
 			mockGetVisits.mockResolvedValueOnce([visitData]);
 
 			const result = await service.getVisits(stories);
@@ -657,8 +657,8 @@ describe('hide_read_stories', () => {
 				{ id: story3.id, url: story3.url },
 			];
 
-			const visit1 = { visitTime: 1000, transition: 'link' };
-			const visit3 = { visitTime: 3000, transition: 'typed' };
+			const visit1 = { transition: 'link', visitTime: 1000 };
+			const visit3 = { transition: 'typed', visitTime: 3000 };
 
 			mockGetVisits.mockResolvedValueOnce([visit1]);
 			mockGetVisits.mockResolvedValueOnce([]);
@@ -686,12 +686,12 @@ describe('hide_read_stories', () => {
 	describe('checkbox setup', () => {
 		it('should create checkbox on valid page', async () => {
 			Object.defineProperty(window, 'location', {
+				configurable: true,
 				value: {
 					pathname: '/flagged',
 					search: '',
 				},
 				writable: true,
-				configurable: true,
 			});
 
 			const div = document.createElement('div');

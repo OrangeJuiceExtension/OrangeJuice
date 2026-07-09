@@ -51,7 +51,7 @@ const getReplyParams = async (
 	}
 
 	const hmacValue = await dom.fetchHmacFromPage(href);
-	return { goto, replyId, hmacValue };
+	return { goto, hmacValue, replyId };
 };
 
 const createReplyForm = (params: {

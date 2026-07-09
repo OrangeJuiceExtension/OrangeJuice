@@ -10,17 +10,17 @@ export const test = base.extend<{
 	// biome-ignore lint/correctness/noEmptyPattern: who cares
 	context: async ({}, use) => {
 		const context = await chromium.launchPersistentContext('', {
-			headless: false,
 			args: [
 				`--disable-extensions-except=${pathToExtension}`,
 				`--load-extension=${pathToExtension}`,
 			],
+			headless: false,
 		});
 		await use(context);
 		await context.close();
 	},
 	extensionId: async ({ context }, use) => {
-		let background: { url(): string };
+		let background: { url: () => string };
 		if (pathToExtension.endsWith('-mv3')) {
 			[background] = context.serviceWorkers();
 			if (!background) {
@@ -33,8 +33,8 @@ export const test = base.extend<{
 			}
 		}
 
-		const extensionId = background.url().split('/')[2];
+		const [, , extensionId] = background.url().split('/');
 		await use(extensionId);
 	},
 });
-export const expect = test.expect;
+export const { expect } = test;

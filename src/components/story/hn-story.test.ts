@@ -78,7 +78,7 @@ const createStoryRows = (
 	doc.body.appendChild(subtextRow);
 	doc.body.appendChild(spacerRow);
 
-	return { storyRow, subtextRow, spacerRow };
+	return { spacerRow, storyRow, subtextRow };
 };
 
 describe('HNStory', () => {
@@ -92,15 +92,15 @@ describe('HNStory', () => {
 	describe('parse', () => {
 		it('should parse basic fields', () => {
 			const { storyRow } = createStoryRows(doc, {
+				author: 'alice',
+				commentsHref: 'item?id=456',
+				commentsText: '12 comments',
+				href: 'https://example.com/hello',
 				id: '456',
+				points: '10 points',
+				postedDate: '2024-01-01',
 				rank: '3.',
 				title: 'Hello',
-				href: 'https://example.com/hello',
-				points: '10 points',
-				author: 'alice',
-				postedDate: '2024-01-01',
-				commentsText: '12 comments',
-				commentsHref: 'item?id=456',
 			});
 
 			const story = new HNStory(storyRow);
@@ -119,18 +119,19 @@ describe('HNStory', () => {
 		it('should set data-story-id on related rows', () => {
 			const { storyRow, subtextRow, spacerRow } = createStoryRows(doc, { id: '777' });
 
-			new HNStory(storyRow);
+			const story = new HNStory(storyRow);
 
 			expect(storyRow.getAttribute('data-story-id')).toBe('777');
 			expect(subtextRow.getAttribute('data-story-id')).toBe('777');
 			expect(spacerRow.getAttribute('data-story-id')).toBe('777');
+			expect(story.id).toBe('777');
 		});
 
 		it('should expose the HN story url from the age link', () => {
 			const { storyRow } = createStoryRows(doc, {
+				commentsHref: 'item?id=456',
 				id: '456',
 				postedDate: '2024-01-01',
-				commentsHref: 'item?id=456',
 			});
 
 			const story = new HNStory(storyRow);
@@ -150,8 +151,8 @@ describe('HNStory', () => {
 
 		it('should parse discuss as zero comments', () => {
 			const { storyRow } = createStoryRows(doc, {
-				commentsText: 'discuss',
 				commentsHref: 'item?id=123',
+				commentsText: 'discuss',
 			});
 
 			const story = new HNStory(storyRow);
@@ -297,11 +298,12 @@ describe('HNStory', () => {
 	describe('getStoryIdFromElement', () => {
 		it('should resolve id from nested element', () => {
 			const { storyRow } = createStoryRows(doc, { id: '999' });
-			new HNStory(storyRow);
+			const story = new HNStory(storyRow);
 			const inner = doc.createElement('span');
 			storyRow.appendChild(inner);
 
 			expect(HNStory.getStoryIdFromElement(inner)).toBe('999');
+			expect(story.id).toBe('999');
 		});
 	});
 });

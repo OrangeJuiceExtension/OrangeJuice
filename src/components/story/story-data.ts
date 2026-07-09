@@ -201,6 +201,5 @@ export class StoryData {
 				return story;
 			}
 		}
-		return;
 	}
 }

@@ -181,14 +181,14 @@ const submitTopColor = async (target: TopColorSaveTarget, color: string): Promis
 	const submitBody = formValues.toString();
 
 	await fetch(target.submitAction.toString(), {
-		method: target.submitMethod,
 		body: submitBody,
 		cache: 'no-store',
-		redirect: 'manual',
 		credentials: 'include',
 		headers: {
 			'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
 		},
+		method: target.submitMethod,
+		redirect: 'manual',
 	});
 
 	window.location.reload();

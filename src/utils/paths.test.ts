@@ -31,7 +31,7 @@ describe('paths', () => {
 	it('prefers browser runtime URLs, then chrome runtime URLs, then the fallback path', () => {
 		const cases = [
 			{
-				name: 'browser runtime',
+				expected: 'moz-extension://test/following.html',
 				globals: {
 					browser: {
 						runtime: {
@@ -39,10 +39,10 @@ describe('paths', () => {
 						},
 					},
 				},
-				expected: 'moz-extension://test/following.html',
+				name: 'browser runtime',
 			},
 			{
-				name: 'chrome runtime fallback',
+				expected: 'chrome-extension://test/following.html',
 				globals: {
 					chrome: {
 						runtime: {
@@ -50,12 +50,12 @@ describe('paths', () => {
 						},
 					},
 				},
-				expected: 'chrome-extension://test/following.html',
+				name: 'chrome runtime fallback',
 			},
 			{
-				name: 'plain fallback',
-				globals: {},
 				expected: '/following.html',
+				globals: {},
+				name: 'plain fallback',
 			},
 		] satisfies ReadonlyArray<{
 			expected: string;

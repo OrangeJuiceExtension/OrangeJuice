@@ -10,11 +10,19 @@ import {
 
 const renderMermaidMock = vi.fn();
 
+const createDeferred = <T>() => {
+	let resolve!: (value: T) => void;
+	const promise = new Promise<T>((promiseResolve) => {
+		resolve = promiseResolve;
+	});
+	return { promise, resolve };
+};
+
 vi.mock('beautiful-mermaid', () => ({
 	renderMermaid: (code: string, options?: unknown) => renderMermaidMock(code, options),
 	THEMES: {
-		'github-light': { bg: '#ffffff', fg: '#111111' },
 		'github-dark': { bg: '#0d1117', fg: '#e6edf3' },
+		'github-light': { bg: '#ffffff', fg: '#111111' },
 	},
 }));
 
@@ -28,23 +36,23 @@ describe('mermaid utils', () => {
 	describe('extractMermaidFromText', () => {
 		const testCases = [
 			{
-				name: 'extracts one block',
 				input: '<mermaid>graph TD\nA --> B</mermaid>',
+				name: 'extracts one block',
 				want: ['graph TD\nA --> B'],
 			},
 			{
-				name: 'extracts multiple blocks and decodes escapes',
 				input: '<MERMAID>flowchart TD\\nA --> B</MERMAID> x <mermaid>graph LR\\tC --\\"edge\\"--> D</mermaid>',
+				name: 'extracts multiple blocks and decodes escapes',
 				want: ['flowchart TD\nA --> B', 'graph LR\tC --"edge"--> D'],
 			},
 			{
-				name: 'returns empty when closing tag is missing',
 				input: '<mermaid>graph TD\nA --> B',
+				name: 'returns empty when closing tag is missing',
 				want: [],
 			},
 			{
-				name: 'returns empty when content is blank after trim',
 				input: '<mermaid>   </mermaid>',
+				name: 'returns empty when content is blank after trim',
 				want: [],
 			},
 		] as const;
@@ -132,8 +140,8 @@ describe('mermaid utils', () => {
 				'<mermaid>graph TD\\nA --> B</mermaid><mermaid>graph TD\\nB --> C</mermaid>';
 			pre.appendChild(code);
 			container.appendChild(pre);
-			renderMermaidMock.mockImplementation((code: string) => {
-				if (code.includes('A --> B')) {
+			renderMermaidMock.mockImplementation((mermaidCode: string) => {
+				if (mermaidCode.includes('A --> B')) {
 					return '<svg id="first"></svg>';
 				}
 				return '<svg id="second"></svg>';
@@ -144,6 +152,32 @@ describe('mermaid utils', () => {
 			expect(rendered).toHaveLength(2);
 			expect(rendered[0]?.id).toBe('first');
 			expect(rendered[1]?.id).toBe('second');
+			const svgIds = Array.from(
+				container.querySelectorAll<SVGElement>('.oj-mermaid-svg')
+			).map((svg) => svg.id);
+			expect(svgIds).toEqual(['first', 'second']);
+		});
+
+		it('preserves mermaid block order when later renders finish first', async () => {
+			const container = document.createElement('div');
+			const pre = document.createElement('pre');
+			const code = document.createElement('code');
+			code.innerText =
+				'<mermaid>graph TD\\nA --> B</mermaid><mermaid>graph TD\\nB --> C</mermaid>';
+			pre.appendChild(code);
+			container.appendChild(pre);
+			const firstRender = createDeferred<string>();
+			const secondRender = createDeferred<string>();
+			renderMermaidMock
+				.mockReturnValueOnce(firstRender.promise)
+				.mockReturnValueOnce(secondRender.promise);
+
+			const renderedPromise = renderMermaidsInPreCodeElements(container);
+			secondRender.resolve('<svg id="second"></svg>');
+			firstRender.resolve('<svg id="first"></svg>');
+			const rendered = await renderedPromise;
+
+			expect(rendered.map((svg) => svg.id)).toEqual(['first', 'second']);
 			const svgIds = Array.from(
 				container.querySelectorAll<SVGElement>('.oj-mermaid-svg')
 			).map((svg) => svg.id);
@@ -202,6 +236,32 @@ B --> C" id="old-2"></svg>
 			expect(container.querySelector('#old-2')).toBeNull();
 			expect(container.querySelector('#new-1')).toBeTruthy();
 			expect(container.querySelector('#new-2')).toBeTruthy();
+		});
+
+		it('returns rerendered blocks in DOM order when later renders finish first', async () => {
+			const container = document.createElement('div');
+			container.innerHTML = `
+				<svg class="oj-mermaid-svg" ${MERMAID_CODE_ATTRIBUTE}="graph TD
+A --> B" id="old-1"></svg>
+				<svg class="oj-mermaid-svg" ${MERMAID_CODE_ATTRIBUTE}="graph TD
+B --> C" id="old-2"></svg>
+			`;
+			const firstRender = createDeferred<string>();
+			const secondRender = createDeferred<string>();
+			renderMermaidMock
+				.mockReturnValueOnce(firstRender.promise)
+				.mockReturnValueOnce(secondRender.promise);
+
+			const renderedPromise = rerenderMermaidBlocksInElement(container, document);
+			secondRender.resolve('<svg id="new-2"></svg>');
+			firstRender.resolve('<svg id="new-1"></svg>');
+			const rendered = await renderedPromise;
+
+			expect(rendered.map((svg) => svg.id)).toEqual(['new-1', 'new-2']);
+			const svgIds = Array.from(container.querySelectorAll<SVGElement>('svg')).map(
+				(svg) => svg.id
+			);
+			expect(svgIds).toEqual(['new-1', 'new-2']);
 		});
 
 		it('skips blocks without stored mermaid code', async () => {

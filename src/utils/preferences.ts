@@ -7,9 +7,9 @@ export const READ_STORIES_VISIBILITY_STORAGE_KEY = 'readStoriesVisibility';
 export const SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY = 'showHiddenStoriesOption';
 
 export const READ_STORIES_VISIBILITY = {
+	DIM: 2,
 	HIDE: 0,
 	STRIKETHROUGH: 1,
-	DIM: 2,
 } as const;
 
 export type ReadStoriesVisibilityPreference =

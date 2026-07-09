@@ -99,8 +99,6 @@ const findLinkByPathnameAndQueryParam = (
 			return candidate;
 		}
 	}
-
-	return;
 };
 
 const findUserLink = (root: ParentNode): HTMLAnchorElement | undefined =>
@@ -191,22 +189,20 @@ const parseColorToRgb = (value: string): { r: number; g: number; b: number } | u
 	if (shortHexMatch) {
 		const [r, g, b] = shortHexMatch[1].split('');
 		return {
-			r: parseRgbChannel(`${r}${r}`),
-			g: parseRgbChannel(`${g}${g}`),
 			b: parseRgbChannel(`${b}${b}`),
+			g: parseRgbChannel(`${g}${g}`),
+			r: parseRgbChannel(`${r}${r}`),
 		};
 	}
 
 	const hexMatch = color.match(HEX_COLOR_PATTERN);
 	if (hexMatch) {
 		return {
-			r: parseRgbChannel(hexMatch[1].slice(0, 2)),
-			g: parseRgbChannel(hexMatch[1].slice(2, 4)),
 			b: parseRgbChannel(hexMatch[1].slice(4, 6)),
+			g: parseRgbChannel(hexMatch[1].slice(2, 4)),
+			r: parseRgbChannel(hexMatch[1].slice(0, 2)),
 		};
 	}
-
-	return;
 };
 
 const srgbToLinear = (channel: number): number => {
@@ -294,16 +290,16 @@ const toggleActivityState = async (
 		: `${paths.base}/${actionName}?id=${commentId}&auth=${authToken}`;
 
 	const response = await fetch(url, {
-		method: 'GET',
 		credentials: 'include',
+		method: 'GET',
 		redirect: 'manual',
 	});
 
 	if (!response.ok && response.status !== 302 && response.status !== 0) {
 		console.log({
-			error: 'Failed to toggle state for comment',
 			actionName,
 			commentId,
+			error: 'Failed to toggle state for comment',
 			status: response.status,
 			statusText: response.statusText,
 		});
@@ -439,27 +435,27 @@ function newReplyTextareasObserver(callback: (e: KeyboardEvent) => void) {
 }
 
 export const dom = {
-	getAuthToken,
-	toggleActivityState,
-	getAllComments,
-	mapElementsById,
 	createHiddenInput,
-	getHiddenInputValue,
-	getPageDom,
-	fetchHmacFromPage,
-	getHrefQueryParam,
-	getUsername,
-	getItemAuthor,
-	findLinkByPathnameAndQueryParam,
+	createOptions,
+	elementInScrollView,
+	elementPosition,
 	ensureTopBarReadableText,
+	fetchHmacFromPage,
+	findLinkByPathnameAndQueryParam,
+	getAllComments,
+	getAuthToken,
+	getCommentIndentation,
+	getHiddenInputValue,
+	getHrefQueryParam,
+	getItemAuthor,
 	getItemIdFromLocation,
+	getPageDom,
+	getUsername,
 	isClickModified,
 	isComboKey,
 	isEditableField,
-	createOptions,
-	elementPosition,
-	elementInScrollView,
-	getCommentIndentation,
-	removeClassRecursive,
+	mapElementsById,
 	newReplyTextareasObserver,
+	removeClassRecursive,
+	toggleActivityState,
 };

@@ -5,9 +5,9 @@ import { parseReferenceLinks } from '@/utils/parse-reference-links.ts';
 const COMMENTS_REGEX = /\[\s*(\d+)\s*more\s*]/;
 const COLLAPSE_LABEL_REGEX = /^\[–]$/;
 const VOTE_SELECTORS = {
+	DOWNVOTE_ARROW: 'div.votearrow[title="downvote"]',
 	UNVOTE_LINK: 'a[id^="un_"]',
 	UPVOTE_ARROW: 'div.votearrow[title="upvote"]',
-	DOWNVOTE_ARROW: 'div.votearrow[title="downvote"]',
 } as const;
 const FAVORITE_LINK = '.oj_favorite_link';
 const FLAG_LINK_1 = '.oj_flag_link';
@@ -189,7 +189,6 @@ export class HNComment {
 			replyBtn.click();
 			return replyBtn;
 		}
-		return;
 	}
 
 	collapseToggle(): boolean {
@@ -216,7 +215,6 @@ export class HNComment {
 				return link as HTMLAnchorElement;
 			}
 		}
-		return;
 	}
 
 	getExpandRootLink(): HTMLAnchorElement | undefined {
@@ -227,7 +225,6 @@ export class HNComment {
 				return el;
 			}
 		}
-		return;
 	}
 
 	getRootCommentElement(): HTMLElement | undefined {
@@ -251,7 +248,6 @@ export class HNComment {
 				return link;
 			}
 		}
-		return;
 	}
 
 	getPrevSiblingLink(): HTMLAnchorElement | undefined {
@@ -261,7 +257,6 @@ export class HNComment {
 				return link;
 			}
 		}
-		return;
 	}
 
 	getReferenceLinks() {

@@ -11,11 +11,11 @@ describe('withBackoff', () => {
 			.mockResolvedValueOnce(undefined);
 
 		const promise = withBackoff(fn, {
-			sleepBetweenAttemptsMs: 0,
 			baseDelayMs: 10,
-			maxDelayMs: 10,
 			jitter: false,
+			maxDelayMs: 10,
 			retries: 3,
+			sleepBetweenAttemptsMs: 0,
 		});
 
 		const expectation = expect(promise).resolves.toBeUndefined();
@@ -31,11 +31,11 @@ describe('withBackoff', () => {
 		const fn = vi.fn().mockRejectedValue(new Error('fail'));
 
 		const promise = withBackoff(fn, {
-			sleepBetweenAttemptsMs: 0,
 			baseDelayMs: 10,
-			maxDelayMs: 10,
 			jitter: false,
+			maxDelayMs: 10,
 			retries: 1,
+			sleepBetweenAttemptsMs: 0,
 		});
 
 		const expectation = expect(promise).rejects.toThrow('fail');

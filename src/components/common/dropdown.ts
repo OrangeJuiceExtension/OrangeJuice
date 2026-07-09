@@ -55,7 +55,7 @@ export const createDropdown = (options: DropdownOptions) => {
 		dropdownElement.classList.toggle('active');
 		updateOpenState(1 - openState);
 		if (openState === 1) {
-			openDropdownState = { element: dropdownElement, close: closeDropdown };
+			openDropdownState = { close: closeDropdown, element: dropdownElement };
 		} else if (openDropdownState?.element === dropdownElement) {
 			openDropdownState = undefined;
 		}

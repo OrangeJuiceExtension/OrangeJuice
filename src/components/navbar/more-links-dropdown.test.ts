@@ -226,8 +226,7 @@ describe('navbar more-links', () => {
 		await navbar.main(mockContext);
 
 		const pageTops = document.querySelectorAll<HTMLElement>('span.pagetop');
-		const navLinks = pageTops[0];
-		const loginLinks = pageTops[1];
+		const [navLinks, loginLinks] = pageTops;
 
 		expect(navLinks.querySelector('.oj_more_links_dropdown_button')?.textContent).toBe(
 			'more ▾'

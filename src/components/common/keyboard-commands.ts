@@ -44,9 +44,9 @@ const keyboardCommandSchema = object({
 	showInHelp: optional(boolean()),
 });
 const keyboardCommandConfigSchema = object({
+	comments: array(keyboardCommandSchema),
 	navigation: array(keyboardCommandSchema),
 	stories: array(keyboardCommandSchema),
-	comments: array(keyboardCommandSchema),
 });
 
 const numberBindings = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map((key) => ({
@@ -55,360 +55,360 @@ const numberBindings = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map((k
 })) satisfies KeyboardCommandBinding[];
 
 export const keyboardCommands = {
-	navigation: [
-		{
-			id: 'go-home',
-			group: 'navigation',
-			bindings: [{ key: 'Ó' }],
-			displayKey: 'Alt/⌥ + H',
-			description: 'Home',
-		},
-		{
-			id: 'go-submit',
-			group: 'navigation',
-			bindings: [{ key: 'Í' }],
-			displayKey: 'Alt/⌥ + S',
-			description: 'Submit',
-		},
-		{
-			id: 'go-show',
-			group: 'navigation',
-			bindings: [{ key: 'Ø' }],
-			displayKey: 'Alt/⌥ + O',
-			description: 'Show',
-		},
-		{
-			id: 'go-ask',
-			group: 'navigation',
-			bindings: [{ key: 'Å' }],
-			displayKey: 'Alt/⌥ + A',
-			description: 'Ask',
-		},
-		{
-			id: 'go-new',
-			group: 'navigation',
-			bindings: [{ key: '˜' }],
-			displayKey: 'Alt/⌥ + N',
-			description: 'New',
-		},
-		{
-			id: 'go-profile',
-			group: 'navigation',
-			bindings: [{ key: '∏' }],
-			displayKey: 'Alt/⌥ + P',
-			description: 'Profile',
-		},
-		{
-			id: 'go-threads',
-			group: 'navigation',
-			bindings: [{ key: 'ˇ' }],
-			displayKey: 'Alt/⌥ + T',
-			description: 'Threads',
-		},
-		{
-			id: 'show-help',
-			group: 'navigation',
-			bindings: [{ key: '?', modifierMode: 'anyCombo' }],
-			displayKey: '?',
-			description: 'Show help dialog',
-		},
-		{
-			id: 'hide-help',
-			group: 'navigation',
-			bindings: [{ key: 'Escape' }, { key: 'escape' }],
-			displayKey: 'esc',
-			description: 'Hide help dialog',
-		},
-	],
-	stories: [
-		{
-			id: 'move-down',
-			group: 'stories',
-			bindings: [{ key: 'ArrowDown' }, { key: 'j' }, { key: 'J' }],
-			displayKey: '↑ / ↓',
-			description: 'Move up / down',
-		},
-		{
-			id: 'move-up',
-			group: 'stories',
-			bindings: [{ key: 'ArrowUp' }, { key: 'k' }, { key: 'K' }],
-			displayKey: 'j / k',
-			description: 'Move down / up',
-		},
-		{
-			id: 'open-comments-new-tab',
-			group: 'stories',
-			bindings: [{ key: 'ArrowLeft', modifierMode: 'none' }],
-			displayKey: '←',
-			description: 'Open story comments (new tab)',
-		},
-		{
-			id: 'open-comments',
-			group: 'stories',
-			bindings: [{ key: 'ArrowLeft', modifierMode: 'noneExceptShift' }],
-			displayKey: '⇧ + ←',
-			description: 'Open story comments',
-		},
-		{
-			id: 'open-story-new-tab',
-			group: 'stories',
-			bindings: [{ key: 'ArrowRight', modifierMode: 'none' }],
-			displayKey: '→',
-			description: 'Open story url (new tab)',
-		},
-		{
-			id: 'open-story',
-			group: 'stories',
-			bindings: [{ key: 'ArrowRight', modifierMode: 'noneExceptShift' }],
-			displayKey: '⇧ + →',
-			description: 'Open story url',
-		},
-		{
-			id: 'open-selected',
-			group: 'stories',
-			bindings: [{ key: 'Enter', modifierMode: 'none' }],
-			displayKey: 'Enter',
-			description: 'Open selected story in new tab',
-		},
-		{
-			id: 'open-with-comments',
-			group: 'stories',
-			bindings: [{ key: 'O', modifierMode: 'anyCombo' }],
-			displayKey: 'O',
-			description: 'Open story and comments in new tabs',
-		},
-		{
-			id: 'upvote',
-			group: 'stories',
-			bindings: [{ key: 'u', modifierMode: 'none' }],
-			displayKey: 'u',
-			description: 'Upvote selected story',
-		},
-		{
-			id: 'favorite',
-			group: 'stories',
-			bindings: [{ key: 'f', modifierMode: 'none' }],
-			displayKey: 'f',
-			description: 'Favorite selected story',
-		},
-		{
-			id: 'copy-hn-url',
-			group: 'stories',
-			bindings: [{ key: 'y', modifierMode: 'none' }],
-			displayKey: 'y',
-			description: 'Copy selected story HN link',
-		},
-		{
-			id: 'flag',
-			group: 'stories',
-			bindings: [{ key: 'X', modifierMode: 'none' }],
-			displayKey: 'X',
-			description: 'Flag selected story',
-		},
-		{
-			id: 'reply',
-			group: 'stories',
-			bindings: [{ key: 'r', modifierMode: 'none' }],
-			displayKey: 'r',
-			description: 'Reply to story (go to comments)',
-		},
-		{
-			id: 'open-position',
-			group: 'stories',
-			bindings: numberBindings,
-			displayKey: '1-9, 0',
-			description: 'Open story at position 1-10',
-		},
-		{
-			id: 'more',
-			group: 'stories',
-			bindings: [{ key: 'm', modifierMode: 'none' }],
-			displayKey: 'm',
-			description: 'Click more link',
-		},
-		{
-			id: 'back',
-			group: 'stories',
-			bindings: [{ key: 'b', modifierMode: 'none' }],
-			displayKey: 'b',
-			description: 'Go back (if paginated)',
-		},
-		{
-			id: 'toggle-hide-read',
-			group: 'stories',
-			bindings: [{ key: 'h', modifierMode: 'none' }],
-			displayKey: 'h',
-			description: 'Toggle hide read stories checkbox',
-		},
-		{
-			id: 'hide-read-now',
-			group: 'stories',
-			bindings: [{ key: 'H', modifierMode: 'anyCombo' }],
-			displayKey: 'H',
-			description: 'Hide read stories',
-		},
-		{
-			id: 'escape',
-			group: 'stories',
-			bindings: [{ key: 'Escape' }],
-			displayKey: 'esc',
-			description: 'Unfocus story',
-		},
-	],
 	comments: [
 		{
-			id: 'move-down',
-			group: 'comments',
 			bindings: [{ key: 'j', modifierMode: 'none' }],
-			displayKey: 'j / J',
 			description: 'Move down by one / jump to same or higher-level comment',
+			displayKey: 'j / J',
+			group: 'comments',
+			id: 'move-down',
 		},
 		{
-			id: 'move-up',
-			group: 'comments',
 			bindings: [{ key: 'k', modifierMode: 'none' }],
-			displayKey: 'k / K',
 			description: 'Move up by one / jump to same or higher-level comment',
+			displayKey: 'k / K',
+			group: 'comments',
+			id: 'move-up',
 		},
 		{
-			id: 'move-down-same-or-higher-indent',
-			group: 'comments',
 			bindings: [{ key: 'J', modifierMode: 'noneExceptShift' }],
+			description: 'Jump to same or higher-level comment',
 			displayKey: 'J',
-			description: 'Jump to same or higher-level comment',
+			group: 'comments',
+			id: 'move-down-same-or-higher-indent',
 			showInHelp: false,
 		},
 		{
-			id: 'move-up-same-or-higher-indent',
-			group: 'comments',
 			bindings: [{ key: 'K', modifierMode: 'noneExceptShift' }],
-			displayKey: 'K',
 			description: 'Jump to same or higher-level comment',
+			displayKey: 'K',
+			group: 'comments',
+			id: 'move-up-same-or-higher-indent',
 			showInHelp: false,
 		},
 		{
-			id: 'move-down-expand',
-			group: 'comments',
 			bindings: [{ key: 'n', modifierMode: 'noneExceptShift' }],
-			displayKey: 'n / p',
 			description: 'Move down / up and expand collapsed comments',
+			displayKey: 'n / p',
+			group: 'comments',
+			id: 'move-down-expand',
 		},
 		{
-			id: 'move-up-expand',
-			group: 'comments',
 			bindings: [{ key: 'p', modifierMode: 'noneExceptShift' }],
-			displayKey: 'p',
 			description: 'Move up and expand collapsed comments',
+			displayKey: 'p',
+			group: 'comments',
+			id: 'move-up-expand',
 			showInHelp: false,
 		},
 		{
-			id: 'move-down-same-indent',
-			group: 'comments',
 			bindings: [{ key: 'N', modifierMode: 'noneExceptShift' }],
-			displayKey: 'N / P',
 			description: 'Move down / up at same indent level',
+			displayKey: 'N / P',
+			group: 'comments',
+			id: 'move-down-same-indent',
 		},
 		{
-			id: 'move-up-same-indent',
-			group: 'comments',
 			bindings: [{ key: 'P', modifierMode: 'noneExceptShift' }],
-			displayKey: 'P',
 			description: 'Move up at same indent level',
+			displayKey: 'P',
+			group: 'comments',
+			id: 'move-up-same-indent',
 			showInHelp: false,
 		},
 		{
-			id: 'collapse-toggle',
-			group: 'comments',
 			bindings: [{ key: 'c', modifierMode: 'none' }],
-			displayKey: 'c',
 			description: 'Collapse/expand comment',
+			displayKey: 'c',
+			group: 'comments',
+			id: 'collapse-toggle',
 		},
 		{
-			id: 'collapse-root',
-			group: 'comments',
 			bindings: [{ key: 'C', modifierMode: 'noneExceptShift' }],
-			displayKey: 'C',
 			description: 'Collapse root of selected comment',
+			displayKey: 'C',
+			group: 'comments',
+			id: 'collapse-root',
 		},
 		{
-			id: 'reply',
-			group: 'comments',
 			bindings: [{ key: 'r', modifierMode: 'none' }],
-			displayKey: 'r',
 			description: 'Reply to selected comment',
+			displayKey: 'r',
+			group: 'comments',
+			id: 'reply',
 		},
 		{
-			id: 'upvote',
-			group: 'comments',
 			bindings: [{ key: 'u', modifierMode: 'none' }],
-			displayKey: 'u',
 			description: 'Upvote selected comment',
+			displayKey: 'u',
+			group: 'comments',
+			id: 'upvote',
 		},
 		{
-			id: 'downvote',
-			group: 'comments',
 			bindings: [{ key: 'd', modifierMode: 'none' }],
-			displayKey: 'd',
 			description: 'Downvote selected comment',
+			displayKey: 'd',
+			group: 'comments',
+			id: 'downvote',
 		},
 		{
-			id: 'favorite',
-			group: 'comments',
 			bindings: [{ key: 'f', modifierMode: 'none' }],
-			displayKey: 'f',
 			description: 'Favorite selected comment',
+			displayKey: 'f',
+			group: 'comments',
+			id: 'favorite',
 		},
 		{
-			id: 'copy-hn-url',
-			group: 'comments',
 			bindings: [{ key: 'y', modifierMode: 'none' }],
-			displayKey: 'y',
 			description: 'Copy selected comment HN link',
+			displayKey: 'y',
+			group: 'comments',
+			id: 'copy-hn-url',
 		},
 		{
-			id: 'flag',
-			group: 'comments',
 			bindings: [{ key: 'X', modifierMode: 'anyCombo' }],
-			displayKey: 'X',
 			description: 'Flag selected comment',
+			displayKey: 'X',
+			group: 'comments',
+			id: 'flag',
 		},
 		{
-			id: 'open-reference-link',
-			group: 'comments',
 			bindings: numberBindings,
-			displayKey: '0-9',
 			description: 'Open reference link by number',
+			displayKey: '0-9',
+			group: 'comments',
+			id: 'open-reference-link',
 		},
 		{
-			id: 'scroll-active-to-top',
-			group: 'comments',
 			bindings: [{ key: 'z', modifierMode: 'none' }],
-			displayKey: 'z',
 			description: 'Scroll selected comment to top of window',
+			displayKey: 'z',
+			group: 'comments',
+			id: 'scroll-active-to-top',
 		},
 		{
-			id: 'scroll-page-to-top',
-			group: 'comments',
 			bindings: [{ key: 't', modifierMode: 'none' }],
-			displayKey: 't',
 			description: 'Scroll to top of page',
+			displayKey: 't',
+			group: 'comments',
+			id: 'scroll-page-to-top',
 		},
 		{
-			id: 'back',
-			group: 'comments',
 			bindings: [{ key: 'b', modifierMode: 'none' }],
-			displayKey: 'b',
 			description: 'Go back (if paginated)',
+			displayKey: 'b',
+			group: 'comments',
+			id: 'back',
 		},
 		{
-			id: 'escape',
-			group: 'comments',
 			bindings: [
 				{ key: 'Escape', modifierMode: 'none' },
 				{ key: 'escape', modifierMode: 'none' },
 			],
-			displayKey: 'esc',
 			description: 'Unfocus comment or close reply box',
+			displayKey: 'esc',
+			group: 'comments',
+			id: 'escape',
+		},
+	],
+	navigation: [
+		{
+			bindings: [{ key: 'Ó' }],
+			description: 'Home',
+			displayKey: 'Alt/⌥ + H',
+			group: 'navigation',
+			id: 'go-home',
+		},
+		{
+			bindings: [{ key: 'Í' }],
+			description: 'Submit',
+			displayKey: 'Alt/⌥ + S',
+			group: 'navigation',
+			id: 'go-submit',
+		},
+		{
+			bindings: [{ key: 'Ø' }],
+			description: 'Show',
+			displayKey: 'Alt/⌥ + O',
+			group: 'navigation',
+			id: 'go-show',
+		},
+		{
+			bindings: [{ key: 'Å' }],
+			description: 'Ask',
+			displayKey: 'Alt/⌥ + A',
+			group: 'navigation',
+			id: 'go-ask',
+		},
+		{
+			bindings: [{ key: '˜' }],
+			description: 'New',
+			displayKey: 'Alt/⌥ + N',
+			group: 'navigation',
+			id: 'go-new',
+		},
+		{
+			bindings: [{ key: '∏' }],
+			description: 'Profile',
+			displayKey: 'Alt/⌥ + P',
+			group: 'navigation',
+			id: 'go-profile',
+		},
+		{
+			bindings: [{ key: 'ˇ' }],
+			description: 'Threads',
+			displayKey: 'Alt/⌥ + T',
+			group: 'navigation',
+			id: 'go-threads',
+		},
+		{
+			bindings: [{ key: '?', modifierMode: 'anyCombo' }],
+			description: 'Show help dialog',
+			displayKey: '?',
+			group: 'navigation',
+			id: 'show-help',
+		},
+		{
+			bindings: [{ key: 'Escape' }, { key: 'escape' }],
+			description: 'Hide help dialog',
+			displayKey: 'esc',
+			group: 'navigation',
+			id: 'hide-help',
+		},
+	],
+	stories: [
+		{
+			bindings: [{ key: 'ArrowDown' }, { key: 'j' }, { key: 'J' }],
+			description: 'Move up / down',
+			displayKey: '↑ / ↓',
+			group: 'stories',
+			id: 'move-down',
+		},
+		{
+			bindings: [{ key: 'ArrowUp' }, { key: 'k' }, { key: 'K' }],
+			description: 'Move down / up',
+			displayKey: 'j / k',
+			group: 'stories',
+			id: 'move-up',
+		},
+		{
+			bindings: [{ key: 'ArrowLeft', modifierMode: 'none' }],
+			description: 'Open story comments (new tab)',
+			displayKey: '←',
+			group: 'stories',
+			id: 'open-comments-new-tab',
+		},
+		{
+			bindings: [{ key: 'ArrowLeft', modifierMode: 'noneExceptShift' }],
+			description: 'Open story comments',
+			displayKey: '⇧ + ←',
+			group: 'stories',
+			id: 'open-comments',
+		},
+		{
+			bindings: [{ key: 'ArrowRight', modifierMode: 'none' }],
+			description: 'Open story url (new tab)',
+			displayKey: '→',
+			group: 'stories',
+			id: 'open-story-new-tab',
+		},
+		{
+			bindings: [{ key: 'ArrowRight', modifierMode: 'noneExceptShift' }],
+			description: 'Open story url',
+			displayKey: '⇧ + →',
+			group: 'stories',
+			id: 'open-story',
+		},
+		{
+			bindings: [{ key: 'Enter', modifierMode: 'none' }],
+			description: 'Open selected story in new tab',
+			displayKey: 'Enter',
+			group: 'stories',
+			id: 'open-selected',
+		},
+		{
+			bindings: [{ key: 'O', modifierMode: 'anyCombo' }],
+			description: 'Open story and comments in new tabs',
+			displayKey: 'O',
+			group: 'stories',
+			id: 'open-with-comments',
+		},
+		{
+			bindings: [{ key: 'u', modifierMode: 'none' }],
+			description: 'Upvote selected story',
+			displayKey: 'u',
+			group: 'stories',
+			id: 'upvote',
+		},
+		{
+			bindings: [{ key: 'f', modifierMode: 'none' }],
+			description: 'Favorite selected story',
+			displayKey: 'f',
+			group: 'stories',
+			id: 'favorite',
+		},
+		{
+			bindings: [{ key: 'y', modifierMode: 'none' }],
+			description: 'Copy selected story HN link',
+			displayKey: 'y',
+			group: 'stories',
+			id: 'copy-hn-url',
+		},
+		{
+			bindings: [{ key: 'X', modifierMode: 'none' }],
+			description: 'Flag selected story',
+			displayKey: 'X',
+			group: 'stories',
+			id: 'flag',
+		},
+		{
+			bindings: [{ key: 'r', modifierMode: 'none' }],
+			description: 'Reply to story (go to comments)',
+			displayKey: 'r',
+			group: 'stories',
+			id: 'reply',
+		},
+		{
+			bindings: numberBindings,
+			description: 'Open story at position 1-10',
+			displayKey: '1-9, 0',
+			group: 'stories',
+			id: 'open-position',
+		},
+		{
+			bindings: [{ key: 'm', modifierMode: 'none' }],
+			description: 'Click more link',
+			displayKey: 'm',
+			group: 'stories',
+			id: 'more',
+		},
+		{
+			bindings: [{ key: 'b', modifierMode: 'none' }],
+			description: 'Go back (if paginated)',
+			displayKey: 'b',
+			group: 'stories',
+			id: 'back',
+		},
+		{
+			bindings: [{ key: 'h', modifierMode: 'none' }],
+			description: 'Toggle hide read stories checkbox',
+			displayKey: 'h',
+			group: 'stories',
+			id: 'toggle-hide-read',
+		},
+		{
+			bindings: [{ key: 'H', modifierMode: 'anyCombo' }],
+			description: 'Hide read stories',
+			displayKey: 'H',
+			group: 'stories',
+			id: 'hide-read-now',
+		},
+		{
+			bindings: [{ key: 'Escape' }],
+			description: 'Unfocus story',
+			displayKey: 'esc',
+			group: 'stories',
+			id: 'escape',
 		},
 	],
 } as const satisfies KeyboardCommandConfig;
@@ -478,8 +478,8 @@ export const parseKeyboardCommandConfig = (json: string): KeyboardCommandConfig 
 	let parsed: unknown;
 	try {
 		parsed = JSON.parse(json);
-	} catch {
-		throw new Error('Shortcut JSON could not be parsed.');
+	} catch (error) {
+		throw new Error('Shortcut JSON could not be parsed.', { cause: error });
 	}
 
 	if (!isRecord(parsed)) {
@@ -491,14 +491,14 @@ export const parseKeyboardCommandConfig = (json: string): KeyboardCommandConfig 
 		throw new Error(formatZodIssue(result.error.issues[0]));
 	}
 
-	const config = {} as Record<KeyboardCommandGroup, KeyboardCommand[]>;
+	const parsedConfig = {} as Record<KeyboardCommandGroup, KeyboardCommand[]>;
 	for (const group of keyboardCommandGroups) {
 		const commands = result.data[group];
 		const defaultCommands = keyboardCommands[group];
 		if (commands.length !== defaultCommands.length) {
 			throw new Error(`${group} must contain ${defaultCommands.length} commands.`);
 		}
-		config[group] = commands.map((command, index) =>
+		parsedConfig[group] = commands.map((command, index) =>
 			validateCommand(command, defaultCommands[index], group)
 		);
 	}
@@ -509,12 +509,12 @@ export const parseKeyboardCommandConfig = (json: string): KeyboardCommandConfig 
 		}
 	}
 
-	return config;
+	return parsedConfig;
 };
 
 export const serializeKeyboardCommandConfig = (
-	config: KeyboardCommandConfig = activeKeyboardCommands
-): string => JSON.stringify(config, null, 2);
+	commandConfig: KeyboardCommandConfig = activeKeyboardCommands
+): string => JSON.stringify(commandConfig, null, 2);
 
 export const getKeyboardCommandConfig = (): KeyboardCommandConfig => activeKeyboardCommands;
 
@@ -534,9 +534,12 @@ export const loadKeyboardCommandConfig = async (): Promise<KeyboardCommandConfig
 };
 
 export const saveKeyboardCommandConfig = async (json: string): Promise<KeyboardCommandConfig> => {
-	const config = parseKeyboardCommandConfig(json);
-	await lStorage.setItem(KEYBOARD_COMMANDS_STORAGE_KEY, serializeKeyboardCommandConfig(config));
-	activeKeyboardCommands = config;
+	const commandConfig = parseKeyboardCommandConfig(json);
+	await lStorage.setItem(
+		KEYBOARD_COMMANDS_STORAGE_KEY,
+		serializeKeyboardCommandConfig(commandConfig)
+	);
+	activeKeyboardCommands = commandConfig;
 	return activeKeyboardCommands;
 };
 
@@ -561,9 +564,9 @@ const matchesModifierMode = (event: KeyboardEvent, modifierMode: KeyboardModifie
 export const getKeyboardCommand = (
 	group: KeyboardCommandGroup,
 	event: KeyboardEvent,
-	config: KeyboardCommandConfig = activeKeyboardCommands
+	commandConfig: KeyboardCommandConfig = activeKeyboardCommands
 ): KeyboardCommand | undefined =>
-	config[group].find((command) =>
+	commandConfig[group].find((command) =>
 		command.bindings.some(
 			({ key, modifierMode = 'any' }) =>
 				event.key === key && matchesModifierMode(event, modifierMode)

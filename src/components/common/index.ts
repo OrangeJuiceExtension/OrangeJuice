@@ -14,8 +14,6 @@ export const getNavState = (): KeyboardNavState | undefined => navState;
 export const common: ComponentFeature = {
 	id: 'common',
 	loginRequired: false,
-	matches: [`${paths.base}/*`],
-	runAt: 'document_end',
 	main(ctx: ContentScriptContext) {
 		return Promise.all([
 			Promise.resolve().then(() => openInNewTab(ctx, document)),
@@ -25,4 +23,6 @@ export const common: ComponentFeature = {
 			}),
 		]);
 	},
+	matches: [`${paths.base}/*`],
+	runAt: 'document_end',
 };

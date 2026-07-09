@@ -20,7 +20,7 @@ export class HighlightUnreadCommentsService {
 				await lStorage.setItem<ReadCommentsList>(ojReadCommentsKey, readCommentsList);
 			}
 		} catch (e) {
-			console.error({ error: 'error in expireOldComments', e });
+			console.error({ e, error: 'error in expireOldComments' });
 		}
 	}
 }

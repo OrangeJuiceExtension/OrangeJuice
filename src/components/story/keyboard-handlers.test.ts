@@ -81,28 +81,26 @@ describe('Story KeyboardHandlers', () => {
 		vi.mocked(hideReadStoriesOnce).mockResolvedValue();
 	});
 
-	it('should use nav state when active story id is missing', async () => {
-		const cases = [
+	describe('missing active story nav state', () => {
+		it.each([
 			{
+				expectedId: '2',
+				hideStoryId: '1',
 				name: 'next selects first visible',
 				navState: 'next',
-				hideStoryId: '1',
-				expectedId: '2',
 			},
 			{
+				expectedId: '2',
+				hideStoryId: '3',
 				name: 'prev selects last visible',
 				navState: 'prev',
-				hideStoryId: '3',
-				expectedId: '2',
 			},
-		];
-
-		for (const testCase of cases) {
+		])('$name', async ({ expectedId, hideStoryId, navState }) => {
 			doc = document.implementation.createHTMLDocument();
 			const bigbox = doc.createElement('div');
 			const rows = createStoryRows(doc, 3);
 			const storyData = new StoryData(bigbox, rows);
-			const toHide = storyData.get(testCase.hideStoryId);
+			const toHide = storyData.get(hideStoryId);
 			if (!toHide) {
 				throw new Error('Expected story to exist');
 			}
@@ -113,7 +111,7 @@ describe('Story KeyboardHandlers', () => {
 					return Promise.resolve({ '/news?p=1': 'missing' });
 				}
 				if (key === NAV_STATE_KEY) {
-					return Promise.resolve(testCase.navState as 'next' | 'prev');
+					return Promise.resolve(navState as 'next' | 'prev');
 				}
 				return Promise.resolve(null);
 			});
@@ -122,9 +120,9 @@ describe('Story KeyboardHandlers', () => {
 
 			await keyboardHandlers.checkNavState(storyData);
 
-			expect(storyData.getActiveStory()?.id).toBe(testCase.expectedId);
+			expect(storyData.getActiveStory()?.id).toBe(expectedId);
 			expect(lStorage.setItem).toHaveBeenCalledWith(NAV_STATE_KEY, null);
-		}
+		});
 	});
 
 	it('should copy the active story HN url', async () => {
@@ -138,8 +136,8 @@ describe('Story KeyboardHandlers', () => {
 		await storyData.activate(first);
 		const writeText = vi.fn().mockResolvedValue(undefined);
 		Object.defineProperty(navigator, 'clipboard', {
-			value: { writeText },
 			configurable: true,
+			value: { writeText },
 		});
 
 		const didCopy = await new KeyboardHandlers(doc).copyHnUrl(storyData);
@@ -153,7 +151,7 @@ describe('Story KeyboardHandlers', () => {
 		const bigbox = doc.createElement('div');
 		const rows = createStoryRows(doc, 3);
 		const storyData = new StoryData(bigbox, rows);
-		const firstRow = rows[0];
+		const [firstRow] = rows;
 		if (!firstRow) {
 			throw new Error('Expected story row to exist');
 		}
@@ -298,6 +296,7 @@ describe('Story KeyboardHandlers', () => {
 		it('should navigate to first page when current page is 2', async () => {
 			let href = 'https://news.ycombinator.com/news?p=2';
 			Object.defineProperty(window, 'location', {
+				configurable: true,
 				value: {
 					get href() {
 						return href;
@@ -308,7 +307,6 @@ describe('Story KeyboardHandlers', () => {
 					search: '?p=2',
 				},
 				writable: true,
-				configurable: true,
 			});
 
 			const keyboardHandlers = new KeyboardHandlers(doc);
@@ -320,6 +318,7 @@ describe('Story KeyboardHandlers', () => {
 		it('should navigate to stored prev URL when on next= page', async () => {
 			let href = 'https://news.ycombinator.com/newest?next=47619421&n=31';
 			Object.defineProperty(window, 'location', {
+				configurable: true,
 				value: {
 					get href() {
 						return href;
@@ -330,7 +329,6 @@ describe('Story KeyboardHandlers', () => {
 					search: '?next=47619421&n=31',
 				},
 				writable: true,
-				configurable: true,
 			});
 			vi.mocked(lStorage.getItem).mockResolvedValueOnce('/newest');
 
@@ -344,6 +342,7 @@ describe('Story KeyboardHandlers', () => {
 		it('should navigate to pathname when on next= page with no stored prev URL', async () => {
 			let href = 'https://news.ycombinator.com/newest?next=47619421&n=31';
 			Object.defineProperty(window, 'location', {
+				configurable: true,
 				value: {
 					get href() {
 						return href;
@@ -351,11 +350,10 @@ describe('Story KeyboardHandlers', () => {
 					set href(value: string) {
 						href = value;
 					},
-					search: '?next=47619421&n=31',
 					pathname: '/newest',
+					search: '?next=47619421&n=31',
 				},
 				writable: true,
-				configurable: true,
 			});
 			vi.mocked(lStorage.getItem).mockResolvedValueOnce(null);
 
@@ -367,12 +365,12 @@ describe('Story KeyboardHandlers', () => {
 
 		it('should do nothing when on the first page with no pagination params', async () => {
 			Object.defineProperty(window, 'location', {
+				configurable: true,
 				value: {
 					href: 'https://news.ycombinator.com/newest',
 					search: '',
 				},
 				writable: true,
-				configurable: true,
 			});
 			const historyBack = vi.spyOn(window.history, 'back').mockImplementation(() => {});
 
@@ -386,6 +384,7 @@ describe('Story KeyboardHandlers', () => {
 		it('should decrement page when current page is greater than 2', async () => {
 			let href = 'https://news.ycombinator.com/news?p=5';
 			Object.defineProperty(window, 'location', {
+				configurable: true,
 				value: {
 					get href() {
 						return href;
@@ -396,7 +395,6 @@ describe('Story KeyboardHandlers', () => {
 					search: '?p=5',
 				},
 				writable: true,
-				configurable: true,
 			});
 
 			const keyboardHandlers = new KeyboardHandlers(doc);

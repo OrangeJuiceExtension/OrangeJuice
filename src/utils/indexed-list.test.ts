@@ -26,14 +26,14 @@ describe('IndexedList', () => {
 
 		it('should create a list with items', () => {
 			const items = createTestItems();
-			const list = new IndexedList(items, (item) => item.id);
+			const list = new IndexedList(items, (entry) => entry.id);
 
 			expect(list.length).toBe(5);
 		});
 
 		it('should index items by key function', () => {
 			const items = createTestItems();
-			const list = new IndexedList(items, (item) => item.id);
+			const list = new IndexedList(items, (entry) => entry.id);
 
 			expect(list.get('a')).toEqual({ id: 'a', value: 1 });
 			expect(list.get('c')).toEqual({ id: 'c', value: 3 });
@@ -46,20 +46,20 @@ describe('IndexedList', () => {
 			const items = createTestItems();
 			const list = new IndexedList(items, (item) => item.id);
 
-			const item = list.get('b');
-			expect(item).toEqual({ id: 'b', value: 2 });
+			const foundItem = list.get('b');
+			expect(foundItem).toEqual({ id: 'b', value: 2 });
 		});
 
 		it('should return undefined for non-existent key', () => {
 			const items = createTestItems();
 			const list = new IndexedList(items, (item) => item.id);
 
-			const item = list.get('nonexistent');
-			expect(item).toBeUndefined();
+			const foundItem = list.get('nonexistent');
+			expect(foundItem).toBeUndefined();
 		});
 
 		it('should handle empty list', () => {
-			const list = new IndexedList<TestItem>([], (item) => item.id);
+			const list = new IndexedList<TestItem>([], (entry) => entry.id);
 
 			const item = list.get('a');
 			expect(item).toBeUndefined();
@@ -69,7 +69,7 @@ describe('IndexedList', () => {
 	describe('getNext', () => {
 		it('should return next item', () => {
 			const items = createTestItems();
-			const list = new IndexedList(items, (item) => item.id);
+			const list = new IndexedList(items, (entry) => entry.id);
 
 			const first = list.get('a');
 			const next = first ? list.getNext(first) : undefined;
@@ -287,8 +287,8 @@ describe('IndexedList', () => {
 			const list = new IndexedList(items, (item) => item.id);
 
 			// The second item with id 'a' will overwrite the first in the index
-			const item = list.get('a');
-			expect(item).toEqual({ id: 'a', value: 2 });
+			const foundItem = list.get('a');
+			expect(foundItem).toEqual({ id: 'a', value: 2 });
 		});
 
 		it('should handle numeric keys', () => {

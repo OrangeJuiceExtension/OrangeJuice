@@ -91,25 +91,27 @@ async function main() {
 	const logo = sharp(logoPath).ensureAlpha();
 
 	// Generate and overwrite
-	for (const { filePath, size } of targets) {
-		const outRel = path.relative(projectRoot, filePath);
+	await Promise.all(
+		targets.map(async ({ filePath, size }) => {
+			const outRel = path.relative(projectRoot, filePath);
 
-		// Resize with nice downsampling; preserve alpha if present
-		const buf = await logo
-			.clone()
-			.resize(size, size, {
-				fit: 'cover', // typical icon behavior; change to "contain" if you want padding
-			})
-			.png({
-				compressionLevel: 9,
-				adaptiveFiltering: true,
-				palette: false, // keep full color
-			})
-			.toBuffer();
+			// Resize with nice downsampling; preserve alpha if present
+			const buf = await logo
+				.clone()
+				.resize(size, size, {
+					fit: 'cover', // typical icon behavior; change to "contain" if you want padding
+				})
+				.png({
+					adaptiveFiltering: true,
+					compressionLevel: 9,
+					palette: false, // keep full color
+				})
+				.toBuffer();
 
-		fs.writeFileSync(filePath, buf);
-		console.log(`  wrote ${outRel} (${size}x${size})`);
-	}
+			fs.writeFileSync(filePath, buf);
+			console.log(`  wrote ${outRel} (${size}x${size})`);
+		})
+	);
 
 	// Lossless PNG optimize using oxipng (fast, very effective)
 	// oxipng CLI is available via the package bin

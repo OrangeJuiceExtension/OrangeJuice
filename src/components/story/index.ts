@@ -30,8 +30,6 @@ const allowedPaths = [
 export const story: ComponentFeature = {
 	id: 'story',
 	loginRequired: false,
-	matches: [`${paths.base}/*`],
-	runAt: 'document_end',
 	async main(ctx: ContentScriptContext) {
 		if (
 			!allowedPaths.includes(window.location.pathname) ||
@@ -55,6 +53,8 @@ export const story: ComponentFeature = {
 		await hideReadStories(ctx, document, storyData);
 		return keyboardNavigation(ctx, document, storyData, getNavState());
 	},
+	matches: [`${paths.base}/*`],
+	runAt: 'document_end',
 };
 
 /**

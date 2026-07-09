@@ -115,8 +115,6 @@ export class HNStory {
 				return Number.parseInt(match[1], 10);
 			}
 		}
-
-		return;
 	}
 
 	hide() {

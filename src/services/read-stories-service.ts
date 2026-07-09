@@ -29,13 +29,13 @@ export class ReadStoriesService {
 					}
 					return { id: story.id };
 				} catch (e) {
-					console.log({ error: 'failed to getVisits', e, story });
+					console.log({ e, error: 'failed to getVisits', story });
 					return { id: story.id };
 				}
 			});
 			return Promise.all(visitPromises);
 		} catch (e) {
-			console.error({ error: 'Error in ReadStoriesService.getVisits', e });
+			console.error({ e, error: 'Error in ReadStoriesService.getVisits' });
 			return Promise.resolve([]);
 		}
 	}

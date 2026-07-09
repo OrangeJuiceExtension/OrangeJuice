@@ -29,8 +29,8 @@ describe('topLeadersKarma', () => {
 		vi.mocked(apiModule.getUserInfo).mockImplementation(async (username) => {
 			called = true;
 			return {
-				id: username || '',
 				created: 1_609_459_200,
+				id: username || '',
 				karma: 100,
 				submitted: [1, 2, 3],
 			} as HNUser;
@@ -61,8 +61,8 @@ describe('topLeadersKarma', () => {
 		const getUserInfoSpy = vi
 			.mocked(apiModule.getUserInfo)
 			.mockImplementation(async (_username: string) => ({
-				id: 'testuser',
 				created: 1_234_567_890,
+				id: 'testuser',
 				karma: 1000,
 				submitted: [],
 			}));
@@ -70,7 +70,7 @@ describe('topLeadersKarma', () => {
 		await topLeadersKarma(mockDoc);
 
 		expect(getUserInfoSpy).toHaveBeenCalledTimes(10);
-		for (let i = 0; i < 10; i++) {
+		for (let i = 0; i < 10; i += 1) {
 			expect(getUserInfoSpy).toHaveBeenCalledWith(`user${i}`);
 		}
 	});
@@ -101,8 +101,8 @@ describe('topLeadersKarma', () => {
 		vi.mocked(apiModule.getUserInfo).mockImplementation(async (username: string) => {
 			const karmaMap: Record<string, number> = { alice: 5000, bob: 3000 };
 			return {
-				id: username,
 				created: 1_234_567_890,
+				id: username,
 				karma: karmaMap[username] || 0,
 				submitted: [],
 			} as HNUser;
@@ -138,8 +138,8 @@ describe('topLeadersKarma', () => {
 		`;
 
 		const getUserInfoSpy = vi.mocked(apiModule.getUserInfo).mockResolvedValue({
-			id: 'validuser',
 			created: 1_234_567_890,
+			id: 'validuser',
 			karma: 2000,
 			submitted: [],
 		});
@@ -184,8 +184,8 @@ describe('topLeadersKarma', () => {
 		`;
 
 		const getUserInfoSpy = vi.mocked(apiModule.getUserInfo).mockResolvedValue({
-			id: 'alice',
 			created: 1_234_567_890,
+			id: 'alice',
 			karma: 5000,
 			submitted: [],
 		});
@@ -216,8 +216,8 @@ describe('topLeadersKarma', () => {
 		`;
 
 		const getUserInfoSpy = vi.mocked(apiModule.getUserInfo).mockResolvedValue({
-			id: 'testuser',
 			created: 1_234_567_890,
+			id: 'testuser',
 			karma: 1000,
 			submitted: [],
 		});
@@ -253,8 +253,8 @@ describe('topLeadersKarma', () => {
 			await new Promise((resolve) => setTimeout(resolve, 10));
 			callOrder.push(`end-${username}`);
 			return {
-				id: username,
 				created: 1_234_567_890,
+				id: username,
 				karma: 1000,
 				submitted: [],
 			};

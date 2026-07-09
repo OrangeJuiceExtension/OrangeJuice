@@ -5,9 +5,9 @@ describe('backticksToCode', () => {
 	beforeEach(() => {
 		document.body.innerHTML = '';
 		Object.defineProperty(document, 'location', {
+			configurable: true,
 			value: { pathname: '/item' },
 			writable: true,
-			configurable: true,
 		});
 	});
 
@@ -119,9 +119,9 @@ describe('backticksToCode', () => {
 
 	it('should process on valid comment paths', () => {
 		Object.defineProperty(document, 'location', {
+			configurable: true,
 			value: { pathname: '/item?id=123' },
 			writable: true,
-			configurable: true,
 		});
 
 		document.body.innerHTML = `

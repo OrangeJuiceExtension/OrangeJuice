@@ -8,11 +8,11 @@ import {
 
 const createVisit = (overrides: Partial<Browser.history.VisitItem>): Browser.history.VisitItem => ({
 	id: 'history-id',
-	visitId: 'visit-id',
-	referringVisitId: 'ref-visit-id',
-	visitTime: 0,
-	transition: 'link',
 	isLocal: false,
+	referringVisitId: 'ref-visit-id',
+	transition: 'link',
+	visitId: 'visit-id',
+	visitTime: 0,
 	...overrides,
 });
 
@@ -65,7 +65,7 @@ describe('ReadStoriesService', () => {
 				{ id: '2', url: 'https://example.com/2' },
 			];
 			const visited: Browser.history.VisitItem[] = [
-				createVisit({ visitTime: 2000, transition: 'typed' }),
+				createVisit({ transition: 'typed', visitTime: 2000 }),
 			];
 			const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -75,7 +75,7 @@ describe('ReadStoriesService', () => {
 			const result = await service.getVisits(stories);
 
 			expect(result).toEqual([
-				{ id: '1', latestVisit: createVisit({ visitTime: 2000, transition: 'typed' }) },
+				{ id: '1', latestVisit: createVisit({ transition: 'typed', visitTime: 2000 }) },
 				{ id: '2' },
 			]);
 			expect(logSpy).toHaveBeenCalledWith(

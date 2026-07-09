@@ -16,8 +16,7 @@ export const getSystemPreference = (): DarkModePreference => {
 };
 
 const applyDarkMode = (mode: DarkModePreference) => {
-	const root = document.documentElement;
-	const head = document.head;
+	const { documentElement: root, head } = document;
 
 	if (!(root && head)) {
 		return;

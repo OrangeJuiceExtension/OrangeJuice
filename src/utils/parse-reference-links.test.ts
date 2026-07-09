@@ -22,49 +22,49 @@ describe('parseReferenceLinks', () => {
 
 	const testCases = [
 		{
-			name: 'bracket notation [1]',
+			expected: [{ href: 'https://example.com/', index: 100 }],
 			html: '<p>[100] <a href="https://example.com">Example</a></p>',
-			expected: [{ index: 100, href: 'https://example.com/' }],
+			name: 'bracket notation [1]',
 		},
 		{
-			name: 'bracket and colon notation [1]:',
+			expected: [{ href: 'https://example.com/', index: 1 }],
 			html: '<p>[1]: <a href="https://example.com">Example</a></p>',
-			expected: [{ index: 1, href: 'https://example.com/' }],
+			name: 'bracket and colon notation [1]:',
 		},
 		{
-			name: 'number and colon 1:',
+			expected: [{ href: 'https://example.com/', index: 1 }],
 			html: '<p>1: <a href="https://example.com">Example</a></p>',
-			expected: [{ index: 1, href: 'https://example.com/' }],
+			name: 'number and colon 1:',
 		},
 		{
-			name: 'number and period 1.',
+			expected: [{ href: 'https://example.com/', index: 1 }],
 			html: '<p>1. <a href="https://example.com">Example</a></p>',
-			expected: [{ index: 1, href: 'https://example.com/' }],
+			name: 'number and period 1.',
 		},
 		{
-			name: 'just a number',
+			expected: [{ href: 'https://example.com/', index: 1 }],
 			html: '<p>1 <a href="https://example.com">Example</a></p>',
-			expected: [{ index: 1, href: 'https://example.com/' }],
+			name: 'just a number',
 		},
 		{
-			name: 'bullet point marker -',
+			expected: [{ href: 'https://example.com/', index: 1 }],
 			html: '<p>- [1] <a href="https://example.com">Example</a></p>',
-			expected: [{ index: 1, href: 'https://example.com/' }],
+			name: 'bullet point marker -',
 		},
 		{
-			name: 'asterisk bullet point marker *',
+			expected: [{ href: 'https://example.org/', index: 2 }],
 			html: '<p>* [2] <a href="https://example.org">Example</a></p>',
-			expected: [{ index: 2, href: 'https://example.org/' }],
+			name: 'asterisk bullet point marker *',
 		},
 		{
-			name: 'no space with newline',
+			expected: [{ href: 'https://example.org/', index: 0 }],
 			html: '<p>[0]\n<a href="https://example.org">Example</a></p>',
-			expected: [{ index: 0, href: 'https://example.org/' }],
+			name: 'no space with newline',
 		},
 		{
-			name: 'no space',
+			expected: [{ href: 'https://example.org/', index: 0 }],
 			html: '<p>[0]<a href="https://example.org">Example</a></p>',
-			expected: [{ index: 0, href: 'https://example.org/' }],
+			name: 'no space',
 		},
 	];
 
@@ -81,28 +81,28 @@ describe('parseReferenceLinks', () => {
 
 	const skipTestCases = [
 		{
-			name: 'paragraphs without links',
+			expected: [
+				{ href: 'https://example.com/', index: 1 },
+				{ href: 'https://example.org/', index: 2 },
+			],
 			html: `
 				<p>[1] <a href="https://example.com">First</a></p>
 				<p>Some text without a link</p>
 				<p>[2] <a href="https://example.org">Second</a></p>
 			`,
-			expected: [
-				{ index: 1, href: 'https://example.com/' },
-				{ index: 2, href: 'https://example.org/' },
-			],
+			name: 'paragraphs without links',
 		},
 		{
-			name: 'paragraphs without matching index pattern',
+			expected: [
+				{ href: 'https://example.com/', index: 1 },
+				{ href: 'https://example.net/', index: 2 },
+			],
 			html: `
 				<p>[1] <a href="https://example.com">Valid</a></p>
 				<p>Random text <a href="https://example.org">Invalid</a></p>
 				<p>[2] <a href="https://example.net">Valid</a></p>
 			`,
-			expected: [
-				{ index: 1, href: 'https://example.com/' },
-				{ index: 2, href: 'https://example.net/' },
-			],
+			name: 'paragraphs without matching index pattern',
 		},
 	];
 
@@ -125,7 +125,7 @@ describe('parseReferenceLinks', () => {
 
 		const result = parseReferenceLinks(element);
 
-		expect(result).toEqual([{ index: 1, href: 'https://example.com/' }]);
+		expect(result).toEqual([{ href: 'https://example.com/', index: 1 }]);
 	});
 
 	it('should skip when first child node has no textContent', () => {
@@ -147,28 +147,28 @@ describe('parseReferenceLinks', () => {
 
 	const multiLinkTestCases = [
 		{
-			name: 'multiple reference links',
+			expected: [
+				{ href: 'https://example.com/', index: 1 },
+				{ href: 'https://example.org/', index: 2 },
+				{ href: 'https://example.net/', index: 3 },
+			],
 			html: `
 				<p>[1] <a href="https://example.com">First</a></p>
 				<p>[2] <a href="https://example.org">Second</a></p>
 				<p>[3] <a href="https://example.net">Third</a></p>
 			`,
-			expected: [
-				{ index: 1, href: 'https://example.com/' },
-				{ index: 2, href: 'https://example.org/' },
-				{ index: 3, href: 'https://example.net/' },
-			],
+			name: 'multiple reference links',
 		},
 		{
-			name: 'various bracket and colon combinations',
+			expected: [
+				{ href: 'https://example1.com/', index: 1 },
+				{ href: 'https://example2.com/', index: 2 },
+			],
 			html: `
 				<p>[1]: <a href="https://example1.com">Example 1</a></p>
 				<p>[2]. <a href="https://example2.com">Example 2</a></p>
 			`,
-			expected: [
-				{ index: 1, href: 'https://example1.com/' },
-				{ index: 2, href: 'https://example2.com/' },
-			],
+			name: 'various bracket and colon combinations',
 		},
 	];
 
@@ -191,6 +191,6 @@ describe('parseReferenceLinks', () => {
 
 		const result = parseReferenceLinks(element);
 
-		expect(result).toEqual([{ index: 1, href: 'https://example.com/' }]);
+		expect(result).toEqual([{ href: 'https://example.com/', index: 1 }]);
 	});
 });

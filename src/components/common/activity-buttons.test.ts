@@ -7,8 +7,6 @@ import { idExtractors, initActivityButtons } from './activity-buttons';
 
 vi.mock('@/utils/dom', () => ({
 	dom: {
-		getAuthToken: vi.fn(),
-		toggleActivityState: vi.fn(),
 		findLinkByPathnameAndQueryParam: (
 			root: ParentNode,
 			selector: string,
@@ -32,14 +30,23 @@ vi.mock('@/utils/dom', () => ({
 					return candidate;
 				}
 			}
-			return;
 		},
+		getAuthToken: vi.fn(),
 		getHrefQueryParam: (href: string, param: string, baseUrl = window.location.origin) => {
 			const url = new URL(href, baseUrl);
 			return url.searchParams.get(param) ?? undefined;
 		},
+		toggleActivityState: vi.fn(),
 	},
 }));
+
+const createDeferred = <T>() => {
+	let resolve!: (value: T) => void;
+	const promise = new Promise<T>((promiseResolve) => {
+		resolve = promiseResolve;
+	});
+	return { promise, resolve };
+};
 
 describe('activity-buttons', () => {
 	let doc: Document;
@@ -53,8 +60,8 @@ describe('activity-buttons', () => {
 		doc = document.implementation.createHTMLDocument();
 		mockActivityTrail = {
 			get: vi.fn().mockResolvedValue(undefined),
-			set: vi.fn().mockResolvedValue(undefined),
 			remove: vi.fn().mockResolvedValue(true),
+			set: vi.fn().mockResolvedValue(undefined),
 		};
 		vi.clearAllMocks();
 	});
@@ -187,15 +194,15 @@ describe('activity-buttons', () => {
 		};
 
 		const favoriteConfig: ActivityButtonConfig = {
-			componentType: 'favorite',
 			buttonClass: 'oj_favorite_link',
 			buttonLabels: { active: 'unfavorite', inactive: 'favorite' },
+			componentType: 'favorite',
 		};
 
 		const flagConfig: ActivityButtonConfig = {
-			componentType: 'flag',
 			buttonClass: 'oj_flag_link',
 			buttonLabels: { active: 'unflag', inactive: 'flag' },
+			componentType: 'flag',
 		};
 
 		it('should create favorite button for submission in subline', async () => {
@@ -232,10 +239,10 @@ describe('activity-buttons', () => {
 		it('should show active state when item is already favorited', async () => {
 			createSubline('12345');
 			mockActivityTrail.get.mockResolvedValueOnce({
-				id: '12345',
-				type: ActivityId.FavoriteSubmissions,
 				auth: 'auth123',
 				exp: Date.now() + 1_000_000,
+				id: '12345',
+				type: ActivityId.FavoriteSubmissions,
 			});
 
 			await initActivityButtons(
@@ -346,6 +353,41 @@ describe('activity-buttons', () => {
 			expect(buttons.length).toBe(3); // 2 sublines + 1 comhead all get favorite buttons
 		});
 
+		it('should keep each button state attached to the correct nav when activity lookups resolve out of order', async () => {
+			const firstSubline = createSubline('11111');
+			const secondSubline = createSubline('22222');
+			const firstLookup = createDeferred<undefined>();
+			const secondLookup = createDeferred<{
+				auth: string;
+				exp: number;
+				id: string;
+				type: ActivityType;
+			}>();
+			mockActivityTrail.get
+				.mockReturnValueOnce(firstLookup.promise)
+				.mockReturnValueOnce(secondLookup.promise);
+
+			const initPromise = initActivityButtons(
+				doc,
+				'/',
+				mockActivityTrail as unknown as ActivityTrail,
+				favoriteConfig
+			);
+			secondLookup.resolve({
+				auth: 'auth222',
+				exp: Date.now() + 1_000_000,
+				id: '22222',
+				type: ActivityId.FavoriteSubmissions,
+			});
+			firstLookup.resolve(undefined);
+			await initPromise;
+
+			expect(firstSubline.querySelector('.oj_favorite_link')?.textContent).toBe('favorite');
+			expect(secondSubline.querySelector('.oj_favorite_link')?.textContent).toBe(
+				'unfavorite'
+			);
+		});
+
 		describe('button click behavior', () => {
 			it('should toggle inactive to active on click', async () => {
 				createSubline('12345');
@@ -365,10 +407,10 @@ describe('activity-buttons', () => {
 				button.click();
 				await vi.waitFor(() => {
 					expect(mockActivityTrail.set).toHaveBeenCalledWith({
-						id: '12345',
-						type: ActivityId.FavoriteSubmissions,
 						auth: 'auth123',
 						exp: expect.any(Number),
+						id: '12345',
+						type: ActivityId.FavoriteSubmissions,
 					});
 				});
 
@@ -378,10 +420,10 @@ describe('activity-buttons', () => {
 			it('should toggle active to inactive on click', async () => {
 				createSubline('12345');
 				mockActivityTrail.get.mockResolvedValue({
-					id: '12345',
-					type: ActivityId.FavoriteSubmissions,
 					auth: 'auth123',
 					exp: Date.now() + 1_000_000,
+					id: '12345',
+					type: ActivityId.FavoriteSubmissions,
 				});
 				vi.mocked(dom.toggleActivityState).mockResolvedValueOnce(true);
 
@@ -481,10 +523,10 @@ describe('activity-buttons', () => {
 			it('should use existing auth from activity detail', async () => {
 				createSubline('12345');
 				mockActivityTrail.get.mockResolvedValue({
-					id: '12345',
-					type: ActivityId.FavoriteSubmissions,
 					auth: 'existing_auth',
 					exp: Date.now() + 1_000_000,
+					id: '12345',
+					type: ActivityId.FavoriteSubmissions,
 				});
 				vi.mocked(dom.toggleActivityState).mockResolvedValueOnce(true);
 
@@ -550,9 +592,9 @@ describe('activity-buttons', () => {
 
 				await vi.waitFor(() => {
 					expect(consoleErrorSpy).toHaveBeenCalledWith({
+						config: favoriteConfig,
 						error: expect.any(Error),
 						pathname: '/',
-						config: favoriteConfig,
 					});
 				});
 
@@ -605,40 +647,40 @@ describe('activity-buttons', () => {
 		describe('activity type mapping', () => {
 			const tests = [
 				{
+					config: favoriteConfig,
+					createNav: createSubline,
+					expectedType: ActivityId.FavoriteSubmissions,
 					name: 'favorite in subline',
-					createNav: createSubline,
-					config: favoriteConfig,
-					expectedType: ActivityId.FavoriteSubmissions,
 				},
 				{
-					name: 'favorite in comhead',
-					createNav: createComhead,
 					config: favoriteConfig,
+					createNav: createComhead,
 					expectedType: ActivityId.FavoriteComments,
+					name: 'favorite in comhead',
 				},
 				{
-					name: 'favorite in subtext',
-					createNav: createSubtext,
 					config: favoriteConfig,
-					expectedType: ActivityId.FavoriteSubmissions,
-				},
-				{
-					name: 'flag in subline',
-					createNav: createSubline,
-					config: flagConfig,
-					expectedType: ActivityId.FlagsSubmissions,
-				},
-				{
-					name: 'flag in comhead',
-					createNav: createComhead,
-					config: flagConfig,
-					expectedType: ActivityId.FlagsComments,
-				},
-				{
-					name: 'flag in subtext',
 					createNav: createSubtext,
+					expectedType: ActivityId.FavoriteSubmissions,
+					name: 'favorite in subtext',
+				},
+				{
 					config: flagConfig,
+					createNav: createSubline,
 					expectedType: ActivityId.FlagsSubmissions,
+					name: 'flag in subline',
+				},
+				{
+					config: flagConfig,
+					createNav: createComhead,
+					expectedType: ActivityId.FlagsComments,
+					name: 'flag in comhead',
+				},
+				{
+					config: flagConfig,
+					createNav: createSubtext,
+					expectedType: ActivityId.FlagsSubmissions,
+					name: 'flag in subtext',
 				},
 			];
 

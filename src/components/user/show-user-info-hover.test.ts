@@ -57,10 +57,10 @@ describe('showUserInfoOnHover', () => {
 
 	const mockUserInfo = (userName: string, overrides = {}) => {
 		vi.mocked(apiModule.getUserInfo).mockResolvedValueOnce({
-			id: userName,
-			created: Math.floor(Date.now() / 1000) - 365 * 24 * 60 * 60, // 1 year ago
-			karma: 1000,
 			about: 'Test user bio',
+			created: Math.floor(Date.now() / 1000) - 365 * 24 * 60 * 60, // 1 year ago
+			id: userName,
+			karma: 1000,
 			submitted: Array.from({ length: 50 }),
 			...overrides,
 		});
@@ -251,8 +251,8 @@ describe('showUserInfoOnHover', () => {
 			clientY: 9999,
 		});
 		Object.defineProperty(hideEvent, 'target', {
-			value: document.body,
 			enumerable: true,
+			value: document.body,
 		});
 		document.dispatchEvent(hideEvent);
 
@@ -288,8 +288,8 @@ describe('showUserInfoOnHover', () => {
 			clientY: 9999,
 		});
 		Object.defineProperty(hideEvent, 'target', {
-			value: document.body,
 			enumerable: true,
+			value: document.body,
 		});
 		document.dispatchEvent(hideEvent);
 
@@ -303,15 +303,15 @@ describe('showUserInfoOnHover', () => {
 		mockUserInfo('testuser');
 
 		userLink.getBoundingClientRect = vi.fn(() => ({
+			bottom: 120,
+			height: 20,
 			left: 100,
 			right: 200,
+			toJSON: () => ({}),
 			top: 100,
-			bottom: 120,
 			width: 100,
-			height: 20,
 			x: 100,
 			y: 100,
-			toJSON: () => ({}),
 		}));
 
 		showUserInfoOnHover(mockCtx, document);
@@ -330,8 +330,8 @@ describe('showUserInfoOnHover', () => {
 		});
 
 		Object.defineProperty(mouseMoveEvent, 'target', {
-			value: userLink,
 			enumerable: true,
+			value: userLink,
 		});
 
 		document.dispatchEvent(mouseMoveEvent);
@@ -377,8 +377,8 @@ describe('showUserInfoOnHover', () => {
 			clientY: 9999,
 		});
 		Object.defineProperty(hideEvent, 'target', {
-			value: document.body,
 			enumerable: true,
+			value: document.body,
 		});
 		document.dispatchEvent(hideEvent);
 
@@ -422,10 +422,10 @@ describe('showUserInfoOnHover', () => {
 				new Promise((resolve) => {
 					setTimeout(() => {
 						resolve({
-							id: 'testuser',
-							created: Math.floor(Date.now() / 1000),
-							karma: 1000,
 							about: '',
+							created: Math.floor(Date.now() / 1000),
+							id: 'testuser',
+							karma: 1000,
 							submitted: [],
 						});
 					}, 100);

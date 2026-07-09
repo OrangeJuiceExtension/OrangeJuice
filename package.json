@@ -60,6 +60,7 @@
 		"postcss-preset-env": "^11.3.2",
 		"sharp": "^0.35.3",
 		"typescript": "^7.0.2",
+		"typescript-language-server-tsserver": "npm:typescript@^6.0.3",
 		"ultracite": "7.9.3",
 		"vitest": "^4.1.10",
 		"vitest-localstorage-mock": "^0.1.2",

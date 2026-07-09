@@ -7,9 +7,9 @@ const FIXED_NOW = new Date('2023-01-01T00:00:00.000Z').getTime();
 
 vi.mock('@/utils/local-storage.ts', () => ({
 	default: {
+		clear: vi.fn(async () => {}),
 		getItem: vi.fn(async () => null),
 		setItem: vi.fn(async () => {}),
-		clear: vi.fn(async () => {}),
 	},
 }));
 
@@ -24,9 +24,9 @@ describe('ActivityTrail', () => {
 	describe('set and get', () => {
 		it('should store and retrieve an activity by id and type', async () => {
 			const activity: ActivityDetail = {
+				exp: Date.now() + DAYS_30,
 				id: '123',
 				type: ActivityId.Comments,
-				exp: Date.now() + DAYS_30,
 			};
 
 			await activityTrail.set(activity);
@@ -37,10 +37,10 @@ describe('ActivityTrail', () => {
 
 		it('should store and retrieve an activity with auth', async () => {
 			const activity: ActivityDetail = {
-				id: '456',
-				type: ActivityId.FavoriteSubmissions,
 				auth: 'test-auth-token',
 				exp: Date.now() + DAYS_30,
+				id: '456',
+				type: ActivityId.FavoriteSubmissions,
 			};
 
 			await activityTrail.set(activity);
@@ -54,9 +54,9 @@ describe('ActivityTrail', () => {
 
 		it('should retrieve activity by id only when type is not provided', async () => {
 			const activity: ActivityDetail = {
+				exp: Date.now() + DAYS_30,
 				id: '789',
 				type: ActivityId.Submissions,
-				exp: Date.now() + DAYS_30,
 			};
 
 			await activityTrail.set(activity);
@@ -72,15 +72,15 @@ describe('ActivityTrail', () => {
 
 		it('should overwrite existing activity with same id and type', async () => {
 			const activity1: ActivityDetail = {
+				exp: Date.now() + 1000,
 				id: '100',
 				type: ActivityId.Hidden,
-				exp: Date.now() + 1000,
 			};
 
 			const activity2: ActivityDetail = {
+				exp: Date.now() + 2000,
 				id: '100',
 				type: ActivityId.Hidden,
-				exp: Date.now() + 2000,
 			};
 
 			await activityTrail.set(activity1);
@@ -94,9 +94,9 @@ describe('ActivityTrail', () => {
 	describe('remove', () => {
 		it('should remove an existing activity', async () => {
 			const activity: ActivityDetail = {
+				exp: Date.now() + DAYS_30,
 				id: '200',
 				type: ActivityId.VotesSubmissions,
-				exp: Date.now() + DAYS_30,
 			};
 
 			await activityTrail.set(activity);
@@ -113,9 +113,9 @@ describe('ActivityTrail', () => {
 
 		it('should return false when removing non-existent activity', async () => {
 			const activity: ActivityDetail = {
+				exp: Date.now() + DAYS_30,
 				id: '999',
 				type: ActivityId.Comments,
-				exp: Date.now() + DAYS_30,
 			};
 
 			const removed = await activityTrail.remove(activity);
@@ -126,56 +126,71 @@ describe('ActivityTrail', () => {
 	describe('addActivities', () => {
 		it('should add multiple activities at once', async () => {
 			const activities: ActivityDetail[] = [
-				{ id: '1', type: ActivityId.Comments, exp: Date.now() + DAYS_30 },
-				{ id: '2', type: ActivityId.Submissions, exp: Date.now() + DAYS_30 },
-				{ id: '3', type: ActivityId.Hidden, exp: Date.now() + DAYS_30 },
+				{ exp: Date.now() + DAYS_30, id: '1', type: ActivityId.Comments },
+				{ exp: Date.now() + DAYS_30, id: '2', type: ActivityId.Submissions },
+				{ exp: Date.now() + DAYS_30, id: '3', type: ActivityId.Hidden },
 			];
 
 			await activityTrail.addActivities(activities);
 
-			for (const activity of activities) {
-				const result = await activityTrail.get({ id: activity.id, type: activity.type });
-				expect(result).toEqual(activity);
-			}
+			await Promise.all(
+				activities.map(async (activity) => {
+					const result = await activityTrail.get({
+						id: activity.id,
+						type: activity.type,
+					});
+					expect(result).toEqual(activity);
+				})
+			);
 		});
 
 		it('should add activities with same type', async () => {
 			const activities: ActivityDetail[] = [
-				{ id: '10', type: ActivityId.Comments, exp: Date.now() + DAYS_30 },
-				{ id: '11', type: ActivityId.Comments, exp: Date.now() + DAYS_30 },
-				{ id: '12', type: ActivityId.Comments, exp: Date.now() + DAYS_30 },
+				{ exp: Date.now() + DAYS_30, id: '10', type: ActivityId.Comments },
+				{ exp: Date.now() + DAYS_30, id: '11', type: ActivityId.Comments },
+				{ exp: Date.now() + DAYS_30, id: '12', type: ActivityId.Comments },
 			];
 
 			await activityTrail.addActivities(activities);
 
-			for (const activity of activities) {
-				const result = await activityTrail.get({ id: activity.id, type: activity.type });
-				expect(result).toEqual(activity);
-			}
+			await Promise.all(
+				activities.map(async (activity) => {
+					const result = await activityTrail.get({
+						id: activity.id,
+						type: activity.type,
+					});
+					expect(result).toEqual(activity);
+				})
+			);
 		});
 
 		it('should add activities with auth tokens', async () => {
 			const activities: ActivityDetail[] = [
 				{
-					id: '20',
-					type: ActivityId.FavoriteSubmissions,
 					auth: 'auth1',
 					exp: Date.now() + DAYS_30,
+					id: '20',
+					type: ActivityId.FavoriteSubmissions,
 				},
 				{
-					id: '21',
-					type: ActivityId.FavoriteComments,
 					auth: 'auth2',
 					exp: Date.now() + DAYS_30,
+					id: '21',
+					type: ActivityId.FavoriteComments,
 				},
 			];
 
 			await activityTrail.addActivities(activities);
 
-			for (const activity of activities) {
-				const result = await activityTrail.get({ id: activity.id, type: activity.type });
-				expect(result).toEqual(activity);
-			}
+			await Promise.all(
+				activities.map(async (activity) => {
+					const result = await activityTrail.get({
+						id: activity.id,
+						type: activity.type,
+					});
+					expect(result).toEqual(activity);
+				})
+			);
 		});
 	});
 
@@ -185,9 +200,9 @@ describe('ActivityTrail', () => {
 			activityTrail.addListener(listener);
 
 			const activity: ActivityDetail = {
+				exp: Date.now() + DAYS_30,
 				id: '300',
 				type: ActivityId.FlagsComments,
-				exp: Date.now() + DAYS_30,
 			};
 
 			await activityTrail.set(activity);
@@ -200,9 +215,9 @@ describe('ActivityTrail', () => {
 			const listener = vi.fn(async () => {});
 
 			const activity: ActivityDetail = {
+				exp: Date.now() + DAYS_30,
 				id: '400',
 				type: ActivityId.VotesComments,
-				exp: Date.now() + DAYS_30,
 			};
 
 			await activityTrail.set(activity);
@@ -221,9 +236,9 @@ describe('ActivityTrail', () => {
 			activityTrail.addListener(listener2);
 
 			const activity: ActivityDetail = {
+				exp: Date.now() + DAYS_30,
 				id: '500',
 				type: ActivityId.FavoriteComments,
-				exp: Date.now() + DAYS_30,
 			};
 
 			await activityTrail.set(activity);
@@ -237,9 +252,9 @@ describe('ActivityTrail', () => {
 			const cleanup = activityTrail.addListener(listener);
 
 			const activity: ActivityDetail = {
+				exp: Date.now() + DAYS_30,
 				id: '600',
 				type: ActivityId.Hidden,
-				exp: Date.now() + DAYS_30,
 			};
 
 			await activityTrail.set(activity);
@@ -256,9 +271,9 @@ describe('ActivityTrail', () => {
 			activityTrail.addListener(listener);
 
 			const activity: ActivityDetail = {
+				exp: Date.now() + DAYS_30,
 				id: '700',
 				type: ActivityId.Submissions,
-				exp: Date.now() + DAYS_30,
 			};
 
 			await activityTrail.set(activity);
@@ -275,8 +290,8 @@ describe('ActivityTrail', () => {
 			activityTrail.addListener(listener);
 
 			const activities: ActivityDetail[] = [
-				{ id: '800', type: ActivityId.Comments, exp: Date.now() + DAYS_30 },
-				{ id: '801', type: ActivityId.Submissions, exp: Date.now() + DAYS_30 },
+				{ exp: Date.now() + DAYS_30, id: '800', type: ActivityId.Comments },
+				{ exp: Date.now() + DAYS_30, id: '801', type: ActivityId.Submissions },
 			];
 
 			await activityTrail.addActivities(activities);
@@ -289,7 +304,7 @@ describe('ActivityTrail', () => {
 		it('should load data from localStorage', async () => {
 			const storedData = {
 				items: {
-					[ActivityId.Comments]: [{ id: '900', exp: Date.now() + DAYS_30 }],
+					[ActivityId.Comments]: [{ exp: Date.now() + DAYS_30, id: '900' }],
 				},
 				lastSync: Date.now(),
 			};
@@ -300,23 +315,23 @@ describe('ActivityTrail', () => {
 			const result = await trail.get({ id: '900', type: ActivityId.Comments });
 
 			expect(result).toEqual({
+				exp: storedData.items[ActivityId.Comments][0].exp,
 				id: '900',
 				type: ActivityId.Comments,
-				exp: storedData.items[ActivityId.Comments][0].exp,
 			});
 		});
 
 		it('should save data to localStorage when setting activity', async () => {
 			const activity: ActivityDetail = {
+				exp: Date.now() + DAYS_30,
 				id: '1000',
 				type: ActivityId.Submissions,
-				exp: Date.now() + DAYS_30,
 			};
 
 			await activityTrail.set(activity);
 
 			expect(lStorage.setItem).toHaveBeenCalled();
-			const callArgs = vi.mocked(lStorage.setItem).mock.calls[0];
+			const [callArgs] = vi.mocked(lStorage.setItem).mock.calls;
 			expect(callArgs[0]).toBe('oj_activity_trail');
 			expect(callArgs[1]).toHaveProperty('items');
 			expect(callArgs[1]).toHaveProperty('lastSync');
@@ -326,15 +341,15 @@ describe('ActivityTrail', () => {
 			const beforeTime = Date.now();
 
 			const activity: ActivityDetail = {
+				exp: Date.now() + DAYS_30,
 				id: '1100',
 				type: ActivityId.Hidden,
-				exp: Date.now() + DAYS_30,
 			};
 
 			await activityTrail.set(activity);
 
 			const afterTime = Date.now();
-			const callArgs = vi.mocked(lStorage.setItem).mock.calls[0];
+			const [callArgs] = vi.mocked(lStorage.setItem).mock.calls;
 			const savedData = callArgs[1] as { lastSync: number };
 
 			expect(savedData.lastSync).toBeGreaterThanOrEqual(beforeTime);
@@ -405,12 +420,12 @@ describe('ActivityTrail', () => {
 	describe('toStored', () => {
 		it('should convert indexed data to stored format', async () => {
 			const activities: ActivityDetail[] = [
-				{ id: '1200', type: ActivityId.Comments, exp: Date.now() + DAYS_30 },
+				{ exp: Date.now() + DAYS_30, id: '1200', type: ActivityId.Comments },
 				{
+					auth: 'test-auth',
+					exp: Date.now() + DAYS_30,
 					id: '1201',
 					type: ActivityId.Submissions,
-					exp: Date.now() + DAYS_30,
-					auth: 'test-auth',
 				},
 			];
 
@@ -424,9 +439,9 @@ describe('ActivityTrail', () => {
 
 		it('should omit type from stored items', async () => {
 			const activity: ActivityDetail = {
+				exp: Date.now() + DAYS_30,
 				id: '1300',
 				type: ActivityId.Hidden,
-				exp: Date.now() + DAYS_30,
 			};
 
 			await activityTrail.set(activity);
@@ -441,10 +456,10 @@ describe('ActivityTrail', () => {
 
 		it('should preserve auth in stored format', async () => {
 			const activity: ActivityDetail = {
-				id: '1400',
-				type: ActivityId.FavoriteSubmissions,
 				auth: 'secret-auth',
 				exp: Date.now() + DAYS_30,
+				id: '1400',
+				type: ActivityId.FavoriteSubmissions,
 			};
 
 			await activityTrail.set(activity);
@@ -458,32 +473,32 @@ describe('ActivityTrail', () => {
 	describe('multiple activity types', () => {
 		it('should handle different activity types independently', async () => {
 			const activities: ActivityDetail[] = [
-				{ id: '1', type: ActivityId.Comments, exp: Date.now() + DAYS_30 },
-				{ id: '1', type: ActivityId.Submissions, exp: Date.now() + DAYS_30 },
-				{ id: '1', type: ActivityId.Hidden, exp: Date.now() + DAYS_30 },
+				{ exp: Date.now() + DAYS_30, id: '1', type: ActivityId.Comments },
+				{ exp: Date.now() + DAYS_30, id: '1', type: ActivityId.Submissions },
+				{ exp: Date.now() + DAYS_30, id: '1', type: ActivityId.Hidden },
 			];
 
-			for (const activity of activities) {
-				await activityTrail.set(activity);
-			}
+			await activityTrail.addActivities(activities);
 
-			for (const activity of activities) {
-				const result = await activityTrail.get({ id: '1', type: activity.type });
-				expect(result).toEqual(activity);
-			}
+			await Promise.all(
+				activities.map(async (activity) => {
+					const result = await activityTrail.get({ id: '1', type: activity.type });
+					expect(result).toEqual(activity);
+				})
+			);
 		});
 
 		it('should only remove activity of specified type', async () => {
 			const activity1: ActivityDetail = {
+				exp: Date.now() + DAYS_30,
 				id: '2',
 				type: ActivityId.Comments,
-				exp: Date.now() + DAYS_30,
 			};
 
 			const activity2: ActivityDetail = {
+				exp: Date.now() + DAYS_30,
 				id: '2',
 				type: ActivityId.Submissions,
-				exp: Date.now() + DAYS_30,
 			};
 
 			await activityTrail.set(activity1);

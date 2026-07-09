@@ -48,7 +48,7 @@ const buildStoryRow = (doc: Document, id: string, rank: number) => {
 	const spacerRow = doc.createElement('tr');
 	spacerRow.classList.add('spacer');
 
-	return { storyRow, subtextRow, spacerRow };
+	return { spacerRow, storyRow, subtextRow };
 };
 
 const setupStoryDom = (doc: Document) => {
@@ -78,48 +78,42 @@ vi.mock('@/components/common/index.ts', () => ({
 
 describe('story index', () => {
 	it('should wait for hide read stories before keyboard navigation', async () => {
-		const cases = [{ name: 'next page selection waits for hide', path: '/news' }];
+		document.body.replaceChildren();
+		setupStoryDom(document);
+		window.history.replaceState({}, '', '/news');
 
-		for (const testCase of cases) {
-			document.body.replaceChildren();
-			setupStoryDom(document);
-			window.history.replaceState({}, '', testCase.path);
+		const { hideReadStories } = await import('@/components/story/hide-read-stories.ts');
+		const { keyboardNavigation } = await import('@/components/story/keyboard-navigation.ts');
 
-			const { hideReadStories } = await import('@/components/story/hide-read-stories.ts');
-			const { keyboardNavigation } = await import(
-				'@/components/story/keyboard-navigation.ts'
-			);
-
-			const events: string[] = [];
-			let resolveHide: (() => void) | undefined;
-			vi.mocked(hideReadStories).mockImplementation(() => {
-				events.push('hide-start');
-				return new Promise<void>((resolve) => {
-					resolveHide = () => {
-						events.push('hide-done');
-						resolve();
-					};
-				});
+		const events: string[] = [];
+		let resolveHide: (() => void) | undefined;
+		vi.mocked(hideReadStories).mockImplementation(() => {
+			events.push('hide-start');
+			return new Promise<void>((resolve) => {
+				resolveHide = () => {
+					events.push('hide-done');
+					resolve();
+				};
 			});
-			// biome-ignore lint/suspicious/useAwait: tests
-			vi.mocked(keyboardNavigation).mockImplementation(async () => {
-				events.push('keyboard');
-			});
+		});
+		vi.mocked(keyboardNavigation).mockImplementation(() => {
+			events.push('keyboard');
+			return Promise.resolve();
+		});
 
-			const ctx = { onInvalidated: vi.fn() } as unknown as ContentScriptContext;
+		const ctx = { onInvalidated: vi.fn() } as unknown as ContentScriptContext;
 
-			const runPromise = story.main(ctx);
+		const runPromise = story.main(ctx);
 
-			expect(events).toEqual(['hide-start']);
+		expect(events).toEqual(['hide-start']);
 
-			if (!resolveHide) {
-				throw new Error('Expected hideReadStories to be called');
-			}
-			resolveHide();
-
-			await runPromise;
-
-			expect(events).toEqual(['hide-start', 'hide-done', 'keyboard']);
+		if (!resolveHide) {
+			throw new Error('Expected hideReadStories to be called');
 		}
+		resolveHide();
+
+		await runPromise;
+
+		expect(events).toEqual(['hide-start', 'hide-done', 'keyboard']);
 	});
 });

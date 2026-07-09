@@ -42,63 +42,63 @@ const getSafeRelativePath = (path: string): string | undefined => {
 		}
 		return `${resolved.pathname}${resolved.search}${resolved.hash}`;
 	} catch {
-		return;
+		// Ignore invalid dropdown paths.
 	}
 };
 
 const getLinks = (user: string, logoutPath?: string): DropdownLink[] => {
 	const links: DropdownLink[] = [
 		{
-			title: 'profile',
 			path: createUserPath('/user', user),
+			title: 'profile',
 		},
 		{
-			title: 'submissions',
 			path: createUserPath('/submitted', user),
+			title: 'submissions',
 		},
 		{
-			title: 'comments',
 			path: createUserPath('/threads', user),
+			title: 'comments',
 		},
 		{
-			title: 'following',
 			path: getFollowingPageUrl(),
+			title: 'following',
 		},
 		{
-			title: 'hidden',
 			path: '/hidden',
+			title: 'hidden',
 		},
 		{
-			title: 'flagged submissions',
 			path: createUserPath('/flagged', user),
+			title: 'flagged submissions',
 		},
 		{
-			title: 'flagged comments',
 			path: createUserPath('/flagged', user, { kind: 'comment' }),
+			title: 'flagged comments',
 		},
 		{
-			title: 'upvoted submissions',
 			path: createUserPath('/upvoted', user),
+			title: 'upvoted submissions',
 		},
 		{
-			title: 'upvoted comments',
 			path: createUserPath('/upvoted', user, { comments: 't' }),
+			title: 'upvoted comments',
 		},
 		{
-			title: 'favorite submissions',
 			path: createUserPath('/favorites', user),
+			title: 'favorite submissions',
 		},
 		{
-			title: 'favorite comments',
 			path: createUserPath('/favorites', user, { comments: 't' }),
+			title: 'favorite comments',
 		},
 	];
 
 	const safeLogoutPath = logoutPath ? getSafeRelativePath(logoutPath) : undefined;
 	if (safeLogoutPath) {
 		links.push({
-			title: 'logout',
 			path: safeLogoutPath,
+			title: 'logout',
 		});
 	}
 
@@ -112,7 +112,7 @@ const removeTopLogoutLink = (pageTop: Element): string | undefined => {
 	}
 
 	const logoutPath = logoutLink.getAttribute('href') ?? undefined;
-	const previousSibling = logoutLink.previousSibling;
+	const { previousSibling } = logoutLink;
 	if (previousSibling && previousSibling.nodeType === Node.TEXT_NODE) {
 		previousSibling.textContent = (previousSibling.textContent ?? '')
 			.replace(TRAILING_PIPE_REGEX, '')
@@ -170,10 +170,10 @@ export const profileLinksDropdown = (ctx: ContentScriptContext, doc: Document) =
 	updateUserLinkText(false);
 
 	createDropdown({
-		triggerElement: userLink,
-		dropdownElement: dropdownEl,
-		doc,
 		ctx,
+		doc,
+		dropdownElement: dropdownEl,
 		onToggle: updateUserLinkText,
+		triggerElement: userLink,
 	});
 };

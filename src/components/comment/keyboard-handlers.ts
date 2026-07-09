@@ -126,7 +126,7 @@ export class KeyboardHandlers {
 
 		return createClientServices()
 			.getBrowserTabService()
-			.createTab({ url: link.href, active: dom.isComboKey(event) });
+			.createTab({ active: dom.isComboKey(event), url: link.href });
 	}
 
 	reply(commentData: CommentData) {
@@ -209,7 +209,7 @@ export class KeyboardHandlers {
 
 		if (link) {
 			link.click();
-			const targetId = link.href.split('#')[1];
+			const [, targetId] = link.href.split('#');
 			const targetComment = commentData.get(targetId);
 			if (targetComment) {
 				await commentData.deactivate();
@@ -249,20 +249,25 @@ export class KeyboardHandlers {
 		}
 
 		const baseIndent = activeComment.getIndentLevel();
-		let candidate = this.getNextItem(commentData, direction, true);
-		while (candidate) {
-			if (candidate.getIndentLevel() <= baseIndent) {
-				await this.activateComment(commentData, candidate);
-				this.handleScrolling(commentData, candidate, direction);
+		const findCandidate = (nextCandidate: HNComment | undefined): HNComment | undefined => {
+			if (!nextCandidate) {
 				return;
 			}
-			candidate =
+			if (nextCandidate.getIndentLevel() <= baseIndent) {
+				return nextCandidate;
+			}
+			const followingCandidate =
 				direction === 'down'
-					? commentData.getNext(candidate, true)
-					: commentData.getPrevious(candidate, true);
-		}
+					? commentData.getNext(nextCandidate, true)
+					: commentData.getPrevious(nextCandidate, true);
+			return findCandidate(followingCandidate);
+		};
 
-		return;
+		const candidate = findCandidate(this.getNextItem(commentData, direction, true));
+		if (candidate) {
+			await this.activateComment(commentData, candidate);
+			this.handleScrolling(commentData, candidate, direction);
+		}
 	}
 
 	upvote(commentData: CommentData) {
@@ -319,7 +324,6 @@ export class KeyboardHandlers {
 			}
 			current = commentData.getPrevious(current, false);
 		}
-		return;
 	}
 
 	private expandParentIfNeeded(commentData: CommentData, target: HNComment): void {

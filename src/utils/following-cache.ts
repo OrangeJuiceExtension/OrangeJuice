@@ -111,9 +111,9 @@ export const setCachedFollowingSection = async (
 	const { username, user, items } = section;
 	const storedUser = user ? (({ id: _id, ...rest }) => rest)(user) : undefined;
 	cache.sections[username] = {
+		expiresAt: Date.now() + FOLLOWING_CACHE_TTL_MS,
 		items: items.map(({ by: _by, ...item }) => item),
 		user: storedUser,
-		expiresAt: Date.now() + FOLLOWING_CACHE_TTL_MS,
 	};
 	await setStoredCache(cache);
 };

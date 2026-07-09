@@ -24,28 +24,28 @@ export const keyboardNavigation = async (
 
 	const keydownHandler = async (event: KeyboardEvent): Promise<void> => {
 		let locationUrl: string | undefined;
-		const command = getKeyboardCommand('navigation', event);
+		const commandId: string | undefined = getKeyboardCommand('navigation', event)?.id;
 
-		switch (command?.id) {
+		switch (commandId) {
 			case 'show-help': {
 				if (state.helpModalOpen) {
 					return;
 				}
 				// someone could be typing and hit '?'
-				const tagName = (event.target as HTMLElement).tagName;
+				const { tagName } = event.target as HTMLElement;
 				if (tagName === 'TEXTAREA' || tagName === 'INPUT') {
 					return;
 				}
 
 				state.helpModalOpen = true;
 				showModal({
-					doc,
-					ctx,
 					content: await getKeyboardShortcutsHelp(doc),
-					variant: 'shortcuts',
+					ctx,
+					doc,
 					onClose: () => {
 						state.helpModalOpen = false;
 					},
+					variant: 'shortcuts',
 				});
 				break;
 			}

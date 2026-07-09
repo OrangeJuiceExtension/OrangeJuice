@@ -27,6 +27,7 @@ describe('keyboardNavigation', () => {
 		// Mock window.location with a fresh object for each test
 		locationHref = 'https://news.ycombinator.com';
 		Object.defineProperty(window, 'location', {
+			configurable: true,
 			value: {
 				get href() {
 					return locationHref;
@@ -36,7 +37,6 @@ describe('keyboardNavigation', () => {
 				},
 			},
 			writable: true,
-			configurable: true,
 		});
 	});
 

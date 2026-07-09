@@ -24,9 +24,9 @@ function getImageURL(url: string) {
 }
 
 export const apiModule = {
-	getUserInfo,
-	getItemInfo,
 	getImageURL,
+	getItemInfo,
+	getUserInfo,
 };
 
 // Field	Description

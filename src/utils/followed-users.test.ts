@@ -15,18 +15,16 @@ describe('followed-users', () => {
 	});
 
 	describe('getFollowedUsers', () => {
-		it('returns an empty list for missing or invalid stored values', async () => {
-			const cases = [
+		describe('missing or invalid stored values', () => {
+			it.each([
 				{ name: 'empty storage', stored: null },
 				{ name: 'plain string', stored: 'pg' },
 				{ name: 'object', stored: { username: 'pg' } },
-			] as const;
-
-			for (const { name, stored } of cases) {
+			] as const)('$name', async ({ name, stored }) => {
 				await lStorage.setItem(FOLLOWED_USERS_STORAGE_KEY, stored);
 
 				await expect(getFollowedUsers(), name).resolves.toEqual([]);
-			}
+			});
 		});
 
 		it('normalizes stored followed users by trimming, removing empties, and deduplicating', async () => {
@@ -97,39 +95,37 @@ describe('followed-users', () => {
 	});
 
 	describe('reorderFollowedUsers', () => {
-		it('moves a followed user before the drop target while preserving the rest of the order', async () => {
-			const cases = [
+		describe('moving a followed user before the drop target', () => {
+			it.each([
 				{
-					name: 'moves a later user earlier',
-					initial: ['alice', 'bob', 'carol'],
-					username: 'carol',
-					targetUsername: 'alice',
 					expected: ['carol', 'alice', 'bob'],
+					initial: ['alice', 'bob', 'carol'],
+					name: 'moves a later user earlier',
+					targetUsername: 'alice',
+					username: 'carol',
 				},
 				{
-					name: 'moves an earlier user later',
-					initial: ['alice', 'bob', 'carol'],
-					username: 'alice',
-					targetUsername: 'carol',
 					expected: ['bob', 'carol', 'alice'],
+					initial: ['alice', 'bob', 'carol'],
+					name: 'moves an earlier user later',
+					targetUsername: 'carol',
+					username: 'alice',
 				},
 				{
-					name: 'normalizes both usernames before reordering',
-					initial: ['alice', 'bob', 'carol'],
-					username: ' carol ',
-					targetUsername: ' bob ',
 					expected: ['alice', 'carol', 'bob'],
+					initial: ['alice', 'bob', 'carol'],
+					name: 'normalizes both usernames before reordering',
+					targetUsername: ' bob ',
+					username: ' carol ',
 				},
-			] as const;
-
-			for (const { expected, initial, name, targetUsername, username } of cases) {
+			] as const)('$name', async ({ expected, initial, name, targetUsername, username }) => {
 				await setFollowedUsers(initial);
 
 				await expect(reorderFollowedUsers(username, targetUsername), name).resolves.toEqual(
 					expected
 				);
 				await expect(getFollowedUsers(), name).resolves.toEqual(expected);
-			}
+			});
 		});
 
 		it('leaves the stored order unchanged when one of the usernames is not followed', async () => {

@@ -470,7 +470,7 @@ const extractUsernameFromAnchor = (anchor: HTMLAnchorElement): string | undefine
 		const username = url.searchParams.get('id')?.trim();
 		return username || undefined;
 	} catch {
-		return;
+		// Ignore invalid profile links.
 	}
 };
 
@@ -804,9 +804,9 @@ const bindSummaryDragHandle = (
 			}
 
 			const draggedItem = getSummaryItemByUsername(summary, draggedUsername);
-			const insertionMarker = getSummaryInsertionMarker(summary);
-			if (draggedItem && insertionMarker) {
-				summary.insertBefore(draggedItem, insertionMarker);
+			const summaryInsertionMarker = getSummaryInsertionMarker(summary);
+			if (draggedItem && summaryInsertionMarker) {
+				summary.insertBefore(draggedItem, summaryInsertionMarker);
 			}
 			const nextOrder = getSummaryOrder(summary);
 			clearSummaryDragState(summary);
@@ -952,18 +952,23 @@ const loadSection = async (
 		itemInfoById.set(item.id, item);
 	}
 
-	const resolveStory = async (
+	const resolveStory = (
 		item: HNItemInfo
 	): Promise<Pick<FollowedDisplayItem, 'storyId' | 'storyTitle' | 'storyUrl'>> => {
-		let currentParentId = item.parent;
-		while (typeof currentParentId === 'number') {
-			let parentItem = itemInfoById.get(currentParentId);
+		const resolveParent = async (
+			parentId: number | undefined
+		): Promise<Pick<FollowedDisplayItem, 'storyId' | 'storyTitle' | 'storyUrl'>> => {
+			if (typeof parentId !== 'number') {
+				return {};
+			}
+
+			let parentItem = itemInfoById.get(parentId);
 			if (!parentItem) {
-				parentItem = (await apiModule.getItemInfo(`${currentParentId}`)) ?? undefined;
+				parentItem = (await apiModule.getItemInfo(`${parentId}`)) ?? undefined;
 				if (!parentItem) {
 					return {};
 				}
-				itemInfoById.set(currentParentId, parentItem);
+				itemInfoById.set(parentId, parentItem);
 			}
 
 			if (parentItem.title) {
@@ -974,9 +979,10 @@ const loadSection = async (
 				};
 			}
 
-			currentParentId = parentItem.parent;
-		}
-		return {};
+			return resolveParent(parentItem.parent);
+		};
+
+		return resolveParent(item.parent);
 	};
 
 	const itemsWithStoryTitles: FollowedDisplayItem[] = await Promise.all(
@@ -1127,8 +1133,13 @@ const renderFollowingSections = async (
 	const list = doc.createElement('div');
 	list.className = 'oj-following__sections';
 
-	for (const section of sections) {
-		const isExpanded = await isFollowingSectionExpanded(section.username);
+	const sectionsWithExpansion = await Promise.all(
+		sections.map(async (section) => ({
+			isExpanded: await isFollowingSectionExpanded(section.username),
+			section,
+		}))
+	);
+	for (const { isExpanded, section } of sectionsWithExpansion) {
 		const article = doc.createElement('section');
 		article.className = 'oj-following__section';
 		article.id = createSectionId(section.username);
@@ -1295,7 +1306,7 @@ export const renderFollowingPage = async (
 	try {
 		await renderFollowingSections(ctx, doc, root, options);
 	} catch (error) {
-		console.error({ error: 'Failed to render following page', cause: error });
+		console.error({ cause: error, error: 'Failed to render following page' });
 		const errorElement = doc.createElement('div');
 		errorElement.className = 'oj-following__error';
 		errorElement.textContent = 'Could not load followed activity right now.';
@@ -1451,8 +1462,6 @@ const enhanceUserLinks = async (
 export const follow: ComponentFeature = {
 	id: 'follow',
 	loginRequired: false,
-	matches: [`${paths.base}/*`],
-	runAt: 'document_end',
 	async main(ctx: ContentScriptContext) {
 		if (isFollowingPage()) {
 			await renderFollowingPage(ctx, document, { currentUsername: follow.username });
@@ -1462,4 +1471,6 @@ export const follow: ComponentFeature = {
 
 		await enhanceUserLinks(ctx, document, follow.username);
 	},
+	matches: [`${paths.base}/*`],
+	runAt: 'document_end',
 };

@@ -135,9 +135,9 @@ export const keyboardNavigation = async (
 			return;
 		}
 
-		const command = getKeyboardCommand('stories', e);
+		const commandId: string | undefined = getKeyboardCommand('stories', e)?.id;
 
-		switch (command?.id) {
+		switch (commandId) {
 			case 'move-down':
 				keyboardHandlers.move(storyData, 'down');
 				break;

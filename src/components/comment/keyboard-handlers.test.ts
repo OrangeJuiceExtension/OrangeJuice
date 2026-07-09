@@ -138,8 +138,8 @@ describe('commentKeyboardHandlers', () => {
 		await setup.commentData.activate(first);
 		const writeText = vi.fn().mockResolvedValue(undefined);
 		Object.defineProperty(navigator, 'clipboard', {
-			value: { writeText },
 			configurable: true,
+			value: { writeText },
 		});
 
 		const didCopy = await keyboardHandlers.copyHnUrl(setup.commentData);
@@ -590,7 +590,7 @@ describe('commentKeyboardHandlers', () => {
 		it('should remove focus class from active item', async () => {
 			const setup = createCommentData(doc, 1);
 			const first = setup.commentData.first();
-			const row = setup.rows[0];
+			const [row] = setup.rows;
 			if (!(first && row)) {
 				throw new Error('Expected item to exist');
 			}
@@ -628,7 +628,7 @@ describe('commentKeyboardHandlers', () => {
 	describe('activate', () => {
 		it('should activate the specified element', async () => {
 			const setup = createCommentData(doc, 2);
-			const row = setup.rows[1];
+			const [, row] = setup.rows;
 			if (!row) {
 				throw new Error('Expected item to exist');
 			}
@@ -659,7 +659,7 @@ describe('commentKeyboardHandlers', () => {
 	describe('reply', () => {
 		it('should click reply button when it exists', async () => {
 			const setup = createCommentData(doc, 1);
-			const row = setup.rows[0];
+			const [row] = setup.rows;
 			const first = setup.commentData.first();
 			if (!(row && first)) {
 				throw new Error('Expected item to exist');
@@ -692,7 +692,7 @@ describe('commentKeyboardHandlers', () => {
 	describe('favorite', () => {
 		it('should click favorite link when it exists', async () => {
 			const setup = createCommentData(doc, 1);
-			const row = setup.rows[0];
+			const [row] = setup.rows;
 			const first = setup.commentData.first();
 			if (!(row && first)) {
 				throw new Error('Expected item to exist');
@@ -723,7 +723,7 @@ describe('commentKeyboardHandlers', () => {
 	describe('flag', () => {
 		it('should click flag link when it exists', async () => {
 			const setup = createCommentData(doc, 1);
-			const row = setup.rows[0];
+			const [row] = setup.rows;
 			const first = setup.commentData.first();
 			if (!(row && first)) {
 				throw new Error('Expected item to exist');
@@ -754,7 +754,7 @@ describe('commentKeyboardHandlers', () => {
 	describe('collapseToggle', () => {
 		it('should click collapse link when it exists', async () => {
 			const setup = createCommentData(doc, 1);
-			const row = setup.rows[0];
+			const [row] = setup.rows;
 			const first = setup.commentData.first();
 			if (!(row && first)) {
 				throw new Error('Expected item to exist');
@@ -787,8 +787,7 @@ describe('commentKeyboardHandlers', () => {
 		it('should click root toggle and activate root when collapse root link exists', async () => {
 			const setup = createCommentData(doc, 2);
 
-			const rootRow = setup.rows[0];
-			const childRow = setup.rows[1];
+			const [rootRow, childRow] = setup.rows;
 			const root = setup.commentData.first();
 			const child = setup.commentData.get('comment-2');
 
@@ -837,8 +836,7 @@ describe('commentKeyboardHandlers', () => {
 		it('should not click toggle when collapse root link text is different', async () => {
 			const setup = createCommentData(doc, 2);
 
-			const rootRow = setup.rows[0];
-			const childRow = setup.rows[1];
+			const [rootRow, childRow] = setup.rows;
 			const root = setup.commentData.first();
 			const child = setup.commentData.get('comment-2');
 
@@ -876,7 +874,7 @@ describe('commentKeyboardHandlers', () => {
 	describe('navigateToThreadLink', () => {
 		it('should navigate to next link', async () => {
 			const setup = createCommentData(doc, 3);
-			const row = setup.rows[0];
+			const [row] = setup.rows;
 			const first = setup.commentData.first();
 			if (!(row && first)) {
 				throw new Error('Expected item to exist');
@@ -896,7 +894,7 @@ describe('commentKeyboardHandlers', () => {
 
 		it('should navigate to prev link', async () => {
 			const setup = createCommentData(doc, 3);
-			const row = setup.rows[1];
+			const [, row] = setup.rows;
 			const second = setup.commentData.get('comment-2');
 			if (!(row && second)) {
 				throw new Error('Expected item to exist');
@@ -929,8 +927,7 @@ describe('commentKeyboardHandlers', () => {
 
 		it('should properly deactivate previous comment when navigating to prev link', async () => {
 			const setup = createCommentData(doc, 3);
-			const firstRow = setup.rows[0];
-			const secondRow = setup.rows[1];
+			const [firstRow, secondRow] = setup.rows;
 			const first = setup.commentData.first();
 			const second = setup.commentData.get('comment-2');
 			if (!(firstRow && secondRow && first && second)) {
@@ -955,8 +952,7 @@ describe('commentKeyboardHandlers', () => {
 
 		it('should properly deactivate previous comment when navigating to next link', async () => {
 			const setup = createCommentData(doc, 3);
-			const firstRow = setup.rows[0];
-			const secondRow = setup.rows[1];
+			const [firstRow, secondRow] = setup.rows;
 			const first = setup.commentData.first();
 			const second = setup.commentData.get('comment-2');
 			if (!(firstRow && secondRow && first && second)) {
@@ -1110,7 +1106,7 @@ describe('commentKeyboardHandlers', () => {
 		it('should keep top comment active when moving up at start boundary', async () => {
 			const setup = createCommentData(doc, 4);
 			const second = setup.commentData.get('comment-2');
-			const secondRow = setup.rows[1];
+			const [, secondRow] = setup.rows;
 			if (!(second && secondRow)) {
 				throw new Error('Expected item to exist');
 			}
@@ -1237,7 +1233,7 @@ describe('commentKeyboardHandlers', () => {
 	describe('votes', () => {
 		it('should click upvote button when no unvote exists', async () => {
 			const setup = createCommentData(doc, 1);
-			const row = setup.rows[0];
+			const [row] = setup.rows;
 			const first = setup.commentData.first();
 			if (!(row && first)) {
 				throw new Error('Expected item to exist');
@@ -1256,7 +1252,7 @@ describe('commentKeyboardHandlers', () => {
 
 		it('should click downvote button when no unvote exists', async () => {
 			const setup = createCommentData(doc, 1);
-			const row = setup.rows[0];
+			const [row] = setup.rows;
 			const first = setup.commentData.first();
 			if (!(row && first)) {
 				throw new Error('Expected item to exist');
@@ -1275,7 +1271,7 @@ describe('commentKeyboardHandlers', () => {
 
 		it('should click unvote button when it exists', async () => {
 			const setup = createCommentData(doc, 1);
-			const row = setup.rows[0];
+			const [row] = setup.rows;
 			const first = setup.commentData.first();
 			if (!(row && first)) {
 				throw new Error('Expected item to exist');
@@ -1301,7 +1297,7 @@ describe('commentKeyboardHandlers', () => {
 	describe('openReferenceLink', () => {
 		it('should open the referenced link when available', async () => {
 			const setup = createCommentData(doc, 1);
-			const row = setup.rows[0];
+			const [row] = setup.rows;
 			const first = setup.commentData.first();
 			if (!(row && first)) {
 				throw new Error('Expected item to exist');
@@ -1316,23 +1312,23 @@ describe('commentKeyboardHandlers', () => {
 			} as unknown as ReturnType<typeof createClientServices>);
 
 			vi.mocked(parseReferenceLinks).mockReturnValue([
-				{ index: 1, href: 'https://example.com' },
+				{ href: 'https://example.com', index: 1 },
 			]);
 
 			await keyboardHandlers.openReferenceLink(
 				{
-					key: '1',
+					altKey: false,
 					ctrlKey: false,
+					key: '1',
 					metaKey: false,
 					shiftKey: false,
-					altKey: false,
 				} as KeyboardEvent,
 				setup.commentData
 			);
 
 			expect(createTab).toHaveBeenCalledWith({
-				url: 'https://example.com',
 				active: false,
+				url: 'https://example.com',
 			});
 		});
 	});
@@ -1386,7 +1382,7 @@ describe('commentKeyboardHandlers', () => {
 
 		it('should skip dead comment when activating last comment after back navigation', async () => {
 			const setup = createCommentData(doc, 3);
-			const deadRow = setup.rows[2];
+			const [, , deadRow] = setup.rows;
 			if (!deadRow) {
 				throw new Error('Expected item to exist');
 			}
