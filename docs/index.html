@@ -42,7 +42,7 @@
 		<link href="https://oj-hn.com" rel="canonical">
 		<link href="./assets/image-128.png" rel="icon" type="image/png">
 		<link href="./assets/image-128.png" rel="apple-touch-icon">
-		<link href="./docs-theme.css?v=2026-04-27" rel="stylesheet">
+		<link href="./docs-theme.css?v=2026-07-09" rel="stylesheet">
 		<link href="./sitemap.xml" rel="sitemap" type="application/xml">
 		<script defer src="./docs-theme.js?v=2026-02-09"></script>
 		<script type="application/ld+json">
@@ -98,55 +98,48 @@
 			></button>
 		</div>
 		<div class="container">
-			<header>
-				<div class="logo">
-					<img
-						alt="Orange Juice banner with the logo floating in a bright sky"
-						class="logo-banner logo-banner--light"
-						height="630"
-						src="./assets/og-card-1200x630.png"
-						width="1200"
-					>
-					<img
-						alt="Orange Juice banner with the logo floating in a dark sky"
-						class="logo-banner logo-banner--dark"
-						height="630"
-						src="./assets/og-card-dark-1200x630.png"
-						width="1200"
-					>
-					<span>Orange Juice</span>
-					<span class="oj-docs-logo-subtitle">Hacker News Browser Extension</span>
+			<header class="oj-home-hero">
+				<div class="oj-home-hero__copy">
+					<p class="oj-home-hero__eyebrow">Hacker News browser extension</p>
+					<h1>Orange Juice</h1>
+					<p class="oj-home-hero__headline">
+						Spend your time reading, not re-finding your place.
+					</p>
+					<p class="oj-home-hero__summary">
+						Hide stories you have already read, reply inside a thread, keep track of new
+						comments, and move through Hacker News without breaking your flow.
+					</p>
+					<div class="cta-group oj-home-hero__actions">
+						<a class="btn btn-primary" href="#installation">Install Orange Juice</a>
+						<a class="btn btn-secondary" href="#features">See features</a>
+					</div>
 				</div>
-				<p class="tagline">
-					Read faster, reply in context, and keep your flow on Hacker News
-				</p>
-				<p class="hero-why">
-					Orange Juice does not replace Hacker News. It adds the quality-of-life features
-					regular readers keep wishing were already there, so you can reply, catch up, and
-					move through threads with less back-and-forth.
-				</p>
-				<div class="cta-group">
-					<a class="btn btn-secondary" href="#why-install"> Why Install? </a>
-					<a class="btn btn-secondary" href="#features"> Features </a>
-					<a class="btn btn-secondary" href="#trust"> Safety </a>
-					<a class="btn btn-primary" href="#installation"> Install </a>
-				</div>
-				<nav aria-label="Share Orange Juice" class="share-group">
+				<div class="oj-home-hero__product">
 					<a
-						class="btn btn-share"
-						href="https://twitter.com/intent/tweet?text=Orange%20Juice%20makes%20Hacker%20News%20sweeter.%20Inline%20replies%2C%20unread%20tracking%2C%20following%2C%20and%20more.&url=https%3A%2F%2Foj-hn.com%2F"
-						rel="noopener noreferrer"
-						target="_blank"
+						aria-label="Open full-size hide read stories screenshot"
+						class="oj-home-hero__shot oj-home-hero__shot--light screenshot-link"
+						href="./assets/hide-read-light.png"
 					>
-						Share on X
+						<img
+							alt="Hacker News with Orange Juice hiding stories that have already been read"
+							height="741"
+							src="./assets/hide-read-light.png"
+							width="700"
+						>
 					</a>
 					<a
-						class="btn btn-share"
-						href="mailto:?subject=Orange%20Juice%20-%20Make%20Hacker%20News%20Sweeter&body=Orange%20Juice%20is%20a%20browser%20extension%20for%20Hacker%20News%20with%20inline%20replies%2C%20unread%20tracking%2C%20following%2C%20and%20more.%0A%0Ahttps%3A%2F%2Foj-hn.com%2F"
+						aria-label="Open full-size hide read stories screenshot"
+						class="oj-home-hero__shot oj-home-hero__shot--dark screenshot-link"
+						href="./assets/hide-read-dark.png"
 					>
-						Share by Email
+						<img
+							alt="Hacker News in dark mode with Orange Juice hiding stories that have already been read"
+							height="741"
+							src="./assets/hide-read-dark.png"
+							width="700"
+						>
 					</a>
-				</nav>
+				</div>
 			</header>
 
 			<main>
@@ -160,22 +153,13 @@
 							gets to the point faster than any feature checklist.
 						</p>
 					</div>
-					<figure class="praise-figure">
-						<a
-							aria-label="Open full-size praise screenshot from GitHub user regions99rockery"
-							class="praise-link"
-							href="./assets/praise/gh-regions99rockery.png"
-						>
-							<img
-								alt="GitHub praise reading: Ty for this extension, it greatly improves HN for me. I can't imagine using HN without orangejuice now."
-								class="praise-image"
-								height="210"
-								loading="lazy"
-								src="./assets/praise/gh-regions99rockery.png"
-								width="1223"
-							>
-						</a>
-					</figure>
+					<blockquote class="praise-quote">
+						<p>
+							“Ty for this extension, it greatly improves HN for me. I can't imagine
+							using HN without orangejuice now.”
+						</p>
+						<cite>regions99rockery on GitHub</cite>
+					</blockquote>
 				</section>
 
 				<section class="section why-install" id="why-install">
@@ -212,14 +196,6 @@
 							</p>
 						</article>
 						<article class="why-card">
-							<p class="why-badge">Following</p>
-							<h3 class="feature-title">Track people, not just threads</h3>
-							<p class="feature-desc">
-								Follow HN users, open a combined activity feed, and mute noisy users
-								so their comments fade into the background.
-							</p>
-						</article>
-						<article class="why-card">
 							<p class="why-badge">Keyboard Flow</p>
 							<h3 class="feature-title">Move faster without the mouse</h3>
 							<p class="feature-desc">
@@ -233,6 +209,14 @@
 							<p class="feature-desc">
 								Dark mode, better code styling, and cleaner comment structure reduce
 								friction when threads get deep or technical.
+							</p>
+						</article>
+						<article class="why-card">
+							<p class="why-badge">Following</p>
+							<h3 class="feature-title">Track people, not just threads</h3>
+							<p class="feature-desc">
+								Follow HN users, open a combined activity feed, and mute noisy users
+								so their comments fade into the background.
 							</p>
 						</article>
 					</div>
@@ -382,74 +366,6 @@
 						</article>
 
 						<article class="showcase-card">
-							<h3 class="feature-title">Following Feed</h3>
-							<p class="feature-desc">
-								Follow users from anywhere on HN and open a dedicated feed of their
-								recent comments and submissions. Reorder users by dragging, collapse
-								sections you do not want open by default, and refresh one person at
-								a time without reloading everything else.
-							</p>
-							<div class="showcase-text-list">
-								<p class="feature-desc">
-									Small follow buttons appear next to usernames across Hacker
-									News.
-								</p>
-								<p class="feature-desc">
-									The <code>/following</code> page keeps the normal HN look
-									instead of inventing a separate UI.
-								</p>
-								<p class="feature-desc">
-									Recent fetched activity is cached locally to keep the page fast,
-									with per-user refresh controls when you want a fresh pull.
-								</p>
-							</div>
-						</article>
-
-						<article class="showcase-card">
-							<h3 class="feature-title">Hide Read Stories</h3>
-							<p class="feature-desc">
-								Clear out items you already opened and focus your attention on new
-								stories.
-							</p>
-							<div class="screenshot-pair">
-								<figure class="shot">
-									<a
-										aria-label="Open full-size hide read stories screenshot in light mode"
-										class="screenshot-link"
-										href="./assets/hide-read-light.png"
-									>
-										<img
-											alt="Hide read stories in light mode"
-											class="screenshot-image"
-											height="740"
-											loading="lazy"
-											src="./assets/hide-read-light.png"
-											width="700"
-										>
-									</a>
-									<figcaption>Light mode</figcaption>
-								</figure>
-								<figure class="shot">
-									<a
-										aria-label="Open full-size hide read stories screenshot in dark mode"
-										class="screenshot-link"
-										href="./assets/hide-read-dark.png"
-									>
-										<img
-											alt="Hide read stories in dark mode"
-											class="screenshot-image"
-											height="740"
-											loading="lazy"
-											src="./assets/hide-read-dark.png"
-											width="700"
-										>
-									</a>
-									<figcaption>Dark mode</figcaption>
-								</figure>
-							</div>
-						</article>
-
-						<article class="showcase-card">
 							<h3 class="feature-title">Keyboard Navigation</h3>
 							<p class="feature-desc">
 								Move through stories and comments faster with keyboard shortcuts, so
@@ -585,10 +501,39 @@
 						<article class="showcase-card">
 							<h3 class="feature-title">GitHub Emoji Shortcodes</h3>
 							<p class="feature-desc">
-								Render comment shortcodes like <code>:heart:</code> and
+								Render comment shortcodes like <code>:heart:</code>
+								<span aria-hidden="true">→</span>
+								<span aria-label="red heart" role="img">❤️</span>
+								and
 								<code>:+1:</code>
-								as emoji while leaving code examples untouched.
+								<span aria-hidden="true">→</span>
+								<span aria-label="thumbs up" role="img">👍</span>
+								while leaving code examples untouched.
 							</p>
+						</article>
+
+						<article class="showcase-card">
+							<h3 class="feature-title">Following Feed</h3>
+							<p class="feature-desc">
+								Follow users from anywhere on HN and open a dedicated feed of their
+								recent comments and submissions. Reorder users by dragging, collapse
+								sections you do not want open by default, and refresh one person at
+								a time without reloading everything else.
+							</p>
+							<div class="showcase-text-list">
+								<p class="feature-desc">
+									Small follow buttons appear next to usernames across Hacker
+									News.
+								</p>
+								<p class="feature-desc">
+									The <code>/following</code> page keeps the normal HN look
+									instead of inventing a separate UI.
+								</p>
+								<p class="feature-desc">
+									Recent fetched activity is cached locally to keep the page fast,
+									with per-user refresh controls when you want a fresh pull.
+								</p>
+							</div>
 						</article>
 
 						<article class="showcase-card showcase-card--more">
@@ -682,109 +627,6 @@
 							>
 								Install for Firefox
 							</a>
-						</div>
-					</div>
-
-					<div class="install-divider" id="github-release">
-						<span class="install-divider-label">or install manually from GitHub</span>
-					</div>
-
-					<h3 class="oj-docs-install-heading">From GitHub releases</h3>
-
-					<div class="install-github-download">
-						<a
-							class="btn btn-secondary install-github-download-btn"
-							href="https://github.com/OrangeJuiceExtension/OrangeJuice/releases/latest"
-							rel="noopener noreferrer"
-							target="_blank"
-						>
-							Download latest release (.zip)
-						</a>
-					</div>
-
-					<p class="install-browser-pick">Then load it into your browser:</p>
-
-					<div class="install-browsers install-browsers--github">
-						<div class="install-browser-card">
-							<div class="install-browser-header">
-								<img
-									alt=""
-									class="install-browser-logo"
-									height="48"
-									src="assets/chrome-logo.svg"
-									width="48"
-								>
-							</div>
-							<h3 class="install-browser-name">Chrome</h3>
-							<ul class="oj-docs-install-list">
-								<li>
-									Open Chrome and navigate to
-									<code class="oj-docs-code-inline">chrome://extensions/</code>
-								</li>
-								<li>Enable "Developer mode" in the top right</li>
-								<li>
-									Click "Load unpacked" and select the extracted
-									<code class="oj-docs-code-inline">.zip</code>
-									folder
-								</li>
-								<li>
-									The extension should now be active, now visit
-									<a
-										href="https://news.ycombinator.com"
-										rel="noopener noreferrer"
-										target="_blank"
-										>Hacker News</a
-									>
-									to see it in action.
-								</li>
-							</ul>
-						</div>
-						<div class="install-browser-card">
-							<div class="install-browser-header">
-								<img
-									alt=""
-									class="install-browser-logo"
-									height="48"
-									src="assets/firefox-logo.svg"
-									width="48"
-								>
-							</div>
-							<h3 class="install-browser-name">Firefox</h3>
-							<ul class="oj-docs-install-list">
-								<li>
-									Open Firefox and navigate to
-									<code class="oj-docs-code-inline"
-										>about:debugging#/runtime/this-firefox</code
-									>
-								</li>
-								<li>Click "Load Temporary Add-on..."</li>
-								<li>
-									Select the
-									<code class="oj-docs-code-inline">manifest.json</code>
-									file from the extracted folder
-								</li>
-								<li>
-									The extension should now be active, now visit
-									<a
-										href="https://news.ycombinator.com"
-										rel="noopener noreferrer"
-										target="_blank"
-										>Hacker News</a
-									>
-									to see it in action.
-								</li>
-							</ul>
-							<div class="note oj-docs-note">
-								<strong>Note:</strong>
-								Temporary extensions are removed on restart. For a permanent
-								installation, use
-								<a
-									href="https://addons.mozilla.org/en-US/firefox/addon/orange-juice-hn/"
-									rel="noopener noreferrer"
-									target="_blank"
-									>Firefox Add-ons</a
-								>.
-							</div>
 						</div>
 					</div>
 				</section>
