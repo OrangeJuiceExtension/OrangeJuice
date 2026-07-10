@@ -41,7 +41,7 @@ const createComments = (
 		rows.push(row);
 		comments.push(new HNComment(row));
 	}
-	return { rows, commentData: new CommentData(comments) };
+	return { commentData: new CommentData(comments), rows };
 };
 
 const createContext = (): { ctx: ContentScriptContext; invalidate: () => void } => {
@@ -83,13 +83,13 @@ const createTestContext = (commentCount = 3): TestContext => {
 	vi.spyOn(KeyboardHandlers.prototype, 'checkActiveState');
 	vi.spyOn(lStorage, 'getItem').mockResolvedValue(null);
 
-	return { doc, comments, ctx, commentData, invalidate };
+	return { commentData, comments, ctx, doc, invalidate };
 };
 
 const dispatchKeydown = (doc: Document, key: string, options: Partial<KeyboardEvent> = {}) => {
 	const event = new KeyboardEvent('keydown', {
-		key,
 		bubbles: true,
+		key,
 		...options,
 	});
 	doc.dispatchEvent(event);
@@ -101,8 +101,8 @@ const dispatchClick = (dispatcher: EventTarget, target: HTMLElement) => {
 		bubbles: true,
 	});
 	Object.defineProperty(clickEvent, 'target', {
-		value: target,
 		enumerable: true,
+		value: target,
 	});
 	dispatcher.dispatchEvent(clickEvent);
 };
@@ -195,28 +195,28 @@ describe('keyboardNavigation', () => {
 
 	describe('keyboard shortcuts', () => {
 		const keyHandlerTests = [
-			{ name: 'j should move down', key: 'j', handler: 'move' },
-			{ name: 'k should move up', key: 'k', handler: 'move' },
+			{ handler: 'move', key: 'j', name: 'j should move down' },
+			{ handler: 'move', key: 'k', name: 'k should move up' },
 			{
-				name: 'J should jump down by thread level',
+				handler: 'moveAtSameOrHigherIndent',
 				key: 'J',
-				handler: 'moveAtSameOrHigherIndent',
+				name: 'J should jump down by thread level',
 			},
 			{
-				name: 'K should jump up by thread level',
-				key: 'K',
 				handler: 'moveAtSameOrHigherIndent',
+				key: 'K',
+				name: 'K should jump up by thread level',
 			},
-			{ name: 'n should move down with expand behavior', key: 'n', handler: 'move' },
-			{ name: 'p should move up with expand behavior', key: 'p', handler: 'move' },
-			{ name: 'N should move down at same indent', key: 'N', handler: 'moveAtSameIndent' },
-			{ name: 'P should move up at same indent', key: 'P', handler: 'moveAtSameIndent' },
-			{ name: 'u should call upvote', key: 'u', handler: 'upvote' },
-			{ name: 'd should call downvote', key: 'd', handler: 'downvote' },
-			{ name: 'r should call reply', key: 'r', handler: 'reply' },
-			{ name: 'f should call favorite', key: 'f', handler: 'favorite' },
-			{ name: 'y should call copyHnUrl', key: 'y', handler: 'copyHnUrl' },
-			{ name: 'X should call flag', key: 'X', handler: 'flag' },
+			{ handler: 'move', key: 'n', name: 'n should move down with expand behavior' },
+			{ handler: 'move', key: 'p', name: 'p should move up with expand behavior' },
+			{ handler: 'moveAtSameIndent', key: 'N', name: 'N should move down at same indent' },
+			{ handler: 'moveAtSameIndent', key: 'P', name: 'P should move up at same indent' },
+			{ handler: 'upvote', key: 'u', name: 'u should call upvote' },
+			{ handler: 'downvote', key: 'd', name: 'd should call downvote' },
+			{ handler: 'reply', key: 'r', name: 'r should call reply' },
+			{ handler: 'favorite', key: 'f', name: 'f should call favorite' },
+			{ handler: 'copyHnUrl', key: 'y', name: 'y should call copyHnUrl' },
+			{ handler: 'flag', key: 'X', name: 'X should call flag' },
 		];
 
 		describe('runs a bunch of tests in a loop', () => {
@@ -573,16 +573,16 @@ describe('keyboardNavigation', () => {
 
 	describe('handlers requiring active item', () => {
 		const requiresActiveItemTests = [
-			{ key: 'r', handler: 'reply' },
-			{ key: 'f', handler: 'favorite' },
-			{ key: 'x', handler: 'flag' },
-			{ key: 'J', handler: 'moveAtSameOrHigherIndent' },
-			{ key: 'K', handler: 'moveAtSameOrHigherIndent' },
-			{ key: 'u', handler: 'upvote' },
-			{ key: 'd', handler: 'downvote' },
-			{ key: 'c', handler: 'collapseToggle' },
-			{ key: 'z', handler: 'scrollActiveCommentToTop' },
-			{ key: '0', handler: 'openReferenceLink' },
+			{ handler: 'reply', key: 'r' },
+			{ handler: 'favorite', key: 'f' },
+			{ handler: 'flag', key: 'x' },
+			{ handler: 'moveAtSameOrHigherIndent', key: 'J' },
+			{ handler: 'moveAtSameOrHigherIndent', key: 'K' },
+			{ handler: 'upvote', key: 'u' },
+			{ handler: 'downvote', key: 'd' },
+			{ handler: 'collapseToggle', key: 'c' },
+			{ handler: 'scrollActiveCommentToTop', key: 'z' },
+			{ handler: 'openReferenceLink', key: '0' },
 		];
 
 		for (const { key, handler } of requiresActiveItemTests) {
@@ -603,19 +603,19 @@ describe('keyboardNavigation', () => {
 
 	describe('combo key handling', () => {
 		const comboKeyTests = [
-			{ key: 'r', handler: 'reply' },
-			{ key: 'f', handler: 'favorite' },
-			{ key: 'x', handler: 'flag' },
-			{ key: 'J', handler: 'moveAtSameOrHigherIndent' },
-			{ key: 'K', handler: 'moveAtSameOrHigherIndent' },
-			{ key: 'N', handler: 'moveAtSameIndent' },
-			{ key: 'P', handler: 'moveAtSameIndent' },
-			{ key: 'p', handler: 'move' },
-			{ key: 'n', handler: 'move' },
-			{ key: 'u', handler: 'upvote' },
-			{ key: 'd', handler: 'downvote' },
-			{ key: 'c', handler: 'collapseToggle' },
-			{ key: 'z', handler: 'scrollActiveCommentToTop' },
+			{ handler: 'reply', key: 'r' },
+			{ handler: 'favorite', key: 'f' },
+			{ handler: 'flag', key: 'x' },
+			{ handler: 'moveAtSameOrHigherIndent', key: 'J' },
+			{ handler: 'moveAtSameOrHigherIndent', key: 'K' },
+			{ handler: 'moveAtSameIndent', key: 'N' },
+			{ handler: 'moveAtSameIndent', key: 'P' },
+			{ handler: 'move', key: 'p' },
+			{ handler: 'move', key: 'n' },
+			{ handler: 'upvote', key: 'u' },
+			{ handler: 'downvote', key: 'd' },
+			{ handler: 'collapseToggle', key: 'c' },
+			{ handler: 'scrollActiveCommentToTop', key: 'z' },
 		];
 
 		for (const { key, handler } of comboKeyTests) {

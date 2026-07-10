@@ -21,18 +21,18 @@ vi.mock('@/utils/dark-mode.ts', () => ({
 
 vi.mock('@/utils/preferences.ts', () => ({
 	ENABLE_FOCUS_BOX_STORAGE_KEY: 'enableFocusBox',
-	OPEN_STORY_NEW_TAB_STORAGE_KEY: 'openStoryNewTab',
-	READ_STORIES_VISIBILITY: {
-		HIDE: 0,
-		STRIKETHROUGH: 1,
-		DIM: 2,
-	},
-	READ_STORIES_VISIBILITY_STORAGE_KEY: 'readStoriesVisibility',
-	SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY: 'showHiddenStoriesOption',
 	getEnableFocusBoxPreference: vi.fn(async () => true),
 	getOpenStoryNewTabPreference: vi.fn(async () => true),
 	getReadStoriesVisibilityPreference: vi.fn(async () => 0),
 	getShowHiddenStoriesOptionPreference: vi.fn(async () => true),
+	OPEN_STORY_NEW_TAB_STORAGE_KEY: 'openStoryNewTab',
+	READ_STORIES_VISIBILITY: {
+		DIM: 2,
+		HIDE: 0,
+		STRIKETHROUGH: 1,
+	},
+	READ_STORIES_VISIBILITY_STORAGE_KEY: 'readStoriesVisibility',
+	SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY: 'showHiddenStoriesOption',
 	setEnableFocusBoxPreference: vi.fn(async () => {}),
 	setOpenStoryNewTabPreference: vi.fn(async () => {}),
 	setReadStoriesVisibilityPreference: vi.fn(async () => {}),
@@ -49,14 +49,14 @@ describe('renderPopupApp', () => {
 
 	it.each([
 		{
+			expectedClass: 'oj-popup oj-popup--light',
 			name: 'uses the default light theme when storage is empty',
 			storedTheme: 'light' as DarkModePreference,
-			expectedClass: 'oj-popup oj-popup--light',
 		},
 		{
+			expectedClass: 'oj-popup oj-popup--dark',
 			name: 'uses the stored dark theme when available',
 			storedTheme: 'dark' as DarkModePreference,
-			expectedClass: 'oj-popup oj-popup--dark',
 		},
 	])('$name', async ({ storedTheme, expectedClass }) => {
 		vi.mocked(getDarkModePreference).mockResolvedValueOnce(storedTheme);
@@ -67,13 +67,15 @@ describe('renderPopupApp', () => {
 		const popup = root.querySelector('main.oj-popup');
 		expect(popup?.className).toBe(expectedClass);
 		expect(popup?.querySelector('.oj-popup__title')?.textContent).toBe('Preferences');
-		expect(popup?.querySelector('.oj-popup__text')?.textContent).toBe(
-			'Control the Orange Juice.'
-		);
 		const logo = popup?.querySelector<HTMLImageElement>('.oj-popup__logo');
 		expect(logo?.alt).toBe('Orange Juice logo');
 		expect(logo?.src.startsWith('chrome-extension://')).toBe(true);
 		expect(logo?.src.endsWith('/icon/orange_juice_icon_128x128.png')).toBe(true);
+		const welcomeLink = popup?.querySelector<HTMLAnchorElement>('.oj-popup__welcome-link');
+		expect(welcomeLink?.textContent).toBe('Open initial welcome page');
+		expect(welcomeLink?.href).toBe('chrome-extension://test-extension-id/welcome.html');
+		expect(welcomeLink?.target).toBe('_blank');
+		expect(welcomeLink?.rel).toBe('noopener');
 	});
 
 	it('loads the focus box preference enabled by default', async () => {

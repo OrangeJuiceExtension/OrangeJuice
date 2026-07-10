@@ -119,8 +119,8 @@ describe('handleReplyClick', () => {
 	});
 
 	it.each([
-		{ name: 'ctrl+enter', ctrlKey: true, metaKey: false },
-		{ name: 'cmd+enter', ctrlKey: false, metaKey: true },
+		{ ctrlKey: true, metaKey: false, name: 'ctrl+enter' },
+		{ ctrlKey: false, metaKey: true, name: 'cmd+enter' },
 	])('should submit the inline reply form with $name', async ({ ctrlKey, metaKey }) => {
 		const link1 = getByTestId<HTMLAnchorElement>(document.body, 'test-a-1');
 		await handleReplyClick(link1);
@@ -135,8 +135,8 @@ describe('handleReplyClick', () => {
 			new KeyboardEvent('keydown', {
 				bubbles: true,
 				cancelable: true,
-				key: 'Enter',
 				ctrlKey,
+				key: 'Enter',
 				metaKey,
 			})
 		);

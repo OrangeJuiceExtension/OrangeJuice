@@ -67,15 +67,12 @@
 	color: var(--popup-accent);
 }
 
-.oj-popup__text {
-	margin: 0;
-	font-size: 0.92rem;
-	line-height: 1.45;
-	color: var(--popup-muted);
-}
-
-.oj-popup__text a,
-.oj-popup__text a:visited {
+.oj-popup__welcome-link,
+.oj-popup__welcome-link:visited {
+	display: inline-block;
+	margin-top: 8px;
+	font-size: 0.84rem;
+	font-weight: 600;
 	color: var(--popup-accent);
 }
 

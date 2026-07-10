@@ -18,12 +18,12 @@ const getNavbarElement = (doc: Document): HTMLElement | null => {
 export const navbar: ComponentFeature = {
 	id: 'navbar',
 	loginRequired: true,
+	async main(ctx: ContentScriptContext) {
+		const navbarElement = getNavbarElement(document);
+
+		await darkModeToggle(ctx, document, navbarElement);
+		moreLinksDropdown(ctx, document, navbarElement);
+	},
 	matches: [`${paths.base}/*`],
 	runAt: 'document_end',
-	async main(ctx: ContentScriptContext) {
-		const navbar = getNavbarElement(document);
-
-		await darkModeToggle(ctx, document, navbar);
-		moreLinksDropdown(ctx, document, navbar);
-	},
 };

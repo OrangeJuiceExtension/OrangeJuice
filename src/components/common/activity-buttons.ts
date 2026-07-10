@@ -92,8 +92,6 @@ const activityTypeFromClassList = (
 				return;
 		}
 	}
-
-	return;
 };
 
 const normalizeLabel = (label: string | null | undefined): string =>
@@ -126,100 +124,106 @@ export const initActivityButtons = async (
 
 	const cleanupHandlers: (() => void)[] = [];
 
-	for (const nav of navs) {
-		if (hasButtonAlready(nav, config)) {
-			continue;
-		}
+	await Promise.all(
+		navs.map(async (nav) => {
+			if (hasButtonAlready(nav, config)) {
+				return;
+			}
 
-		const { element: idElement, id: commentId } = extractId(nav);
-		if (!commentId) {
-			continue;
-		}
+			const { element: idElement, id: commentId } = extractId(nav);
+			if (!commentId) {
+				return;
+			}
 
-		const activityType: ActivityType | undefined = activityTypeFromClassList(
-			config.componentType,
-			nav.classList
-		);
-		if (!activityType) {
-			continue;
-		}
+			const activityType: ActivityType | undefined = activityTypeFromClassList(
+				config.componentType,
+				nav.classList
+			);
+			if (!activityType) {
+				return;
+			}
 
-		const activityDetail = await activityTrail.get({
-			id: commentId,
-			type: activityType,
-		});
+			const activityDetail = await activityTrail.get({
+				id: commentId,
+				type: activityType,
+			});
 
-		const button = doc.createElement('button');
-		button.textContent = activityDetail
-			? config.buttonLabels.active
-			: config.buttonLabels.inactive;
-		button.classList.add('oj_link_button', config.buttonClass);
+			const button = doc.createElement('button');
+			button.textContent = activityDetail
+				? config.buttonLabels.active
+				: config.buttonLabels.inactive;
+			button.classList.add('oj_link_button', config.buttonClass);
 
-		const handleClick = async (e: Event) => {
-			e.stopPropagation();
-			e.preventDefault();
+			const handleClick = async (e: Event) => {
+				e.stopPropagation();
+				e.preventDefault();
 
-			button.disabled = true;
-			try {
-				const activityDetail = await activityTrail.get({
-					id: commentId,
-					type: activityType,
-				});
+				button.disabled = true;
+				try {
+					const latestActivityDetail = await activityTrail.get({
+						id: commentId,
+						type: activityType,
+					});
 
-				let authToken: string | undefined = activityDetail?.auth;
-				if (!activityDetail) {
-					authToken = await dom.getAuthToken(commentId, activityType);
-				}
-				if (!authToken) {
-					console.log({ error: 'unable to find auth token', commentId, activityType });
-					return;
-				}
-
-				const isActive = activityDetail !== undefined;
-				const success = await dom.toggleActivityState(
-					commentId,
-					isActive,
-					authToken,
-					activityType
-				);
-
-				if (success) {
-					if (activityDetail) {
-						await activityTrail.remove(activityDetail);
-					} else {
-						await activityTrail.set({
-							id: commentId,
-							type: activityType,
-							auth: authToken,
-							exp: Date.now() + DAYS_30,
+					let authToken: string | undefined = latestActivityDetail?.auth;
+					if (!latestActivityDetail) {
+						authToken = await dom.getAuthToken(commentId, activityType);
+					}
+					if (!authToken) {
+						console.log({
+							activityType,
+							commentId,
+							error: 'unable to find auth token',
 						});
+						return;
 					}
 
-					button.textContent = isActive
-						? config.buttonLabels.inactive
-						: config.buttonLabels.active;
+					const isActive = latestActivityDetail !== undefined;
+					const success = await dom.toggleActivityState(
+						commentId,
+						isActive,
+						authToken,
+						activityType
+					);
+
+					if (success) {
+						if (latestActivityDetail) {
+							await activityTrail.remove(latestActivityDetail);
+						} else {
+							await activityTrail.set({
+								auth: authToken,
+								exp: Date.now() + DAYS_30,
+								id: commentId,
+								type: activityType,
+							});
+						}
+
+						button.textContent = isActive
+							? config.buttonLabels.inactive
+							: config.buttonLabels.active;
+					}
+				} catch (error) {
+					console.error({ config, error, pathname });
+				} finally {
+					button.disabled = false;
 				}
-			} catch (error) {
-				console.error({ error, pathname, config });
-			} finally {
-				button.disabled = false;
-			}
-		};
+			};
 
-		button.addEventListener('click', handleClick);
+			button.addEventListener('click', handleClick);
 
-		const separator = doc.createElement('span');
-		separator.textContent = ' | ';
+			const separator = doc.createElement('span');
+			separator.textContent = ' | ';
 
-		cleanupHandlers.push(() => {
-			button.removeEventListener('click', handleClick);
-			separator.remove();
-			button.remove();
-		});
+			cleanupHandlers.push(() => {
+				button.removeEventListener('click', handleClick);
+				separator.remove();
+				button.remove();
+			});
 
-		idElement?.parentElement?.insertBefore(button, idElement.nextSibling);
-		idElement?.parentElement?.insertBefore(separator, idElement.nextSibling);
-	}
+			idElement?.parentElement?.insertBefore(button, idElement.nextSibling);
+			idElement?.parentElement?.insertBefore(separator, idElement.nextSibling);
+		})
+	);
 
 	return () => {
 		for (const h of cleanupHandlers) {

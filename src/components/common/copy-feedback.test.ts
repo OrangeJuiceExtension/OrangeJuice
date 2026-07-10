@@ -20,8 +20,8 @@ describe('copy feedback', () => {
 
 	it('returns false when clipboard api is unavailable', async () => {
 		Object.defineProperty(navigator, 'clipboard', {
-			value: undefined,
 			configurable: true,
+			value: undefined,
 		});
 
 		await expect(copyTextToClipboard('hello')).resolves.toBe(false);
@@ -30,8 +30,8 @@ describe('copy feedback', () => {
 	it('writes to the clipboard when available', async () => {
 		const writeText = vi.fn().mockResolvedValue(undefined);
 		Object.defineProperty(navigator, 'clipboard', {
-			value: { writeText },
 			configurable: true,
+			value: { writeText },
 		});
 
 		await expect(copyTextToClipboard('hello')).resolves.toBe(true);

@@ -529,11 +529,11 @@ describe('follow component', () => {
 					height: 10,
 					left: 40,
 					right: 80,
+					toJSON: () => '',
 					top: 0,
 					width: 40,
 					x: 40,
 					y: 0,
-					toJSON: () => '',
 				}) as DOMRect;
 		}
 		if (bobItem) {
@@ -543,18 +543,18 @@ describe('follow component', () => {
 					height: 10,
 					left: 90,
 					right: 120,
+					toJSON: () => '',
 					top: 0,
 					width: 30,
 					x: 90,
 					y: 0,
-					toJSON: () => '',
 				}) as DOMRect;
 		}
 
 		const dragStartEvent = new MouseEvent('mousedown', {
 			bubbles: true,
-			cancelable: true,
 			button: 0,
+			cancelable: true,
 			clientX: 100,
 		});
 		bobLink?.dispatchEvent(dragStartEvent);

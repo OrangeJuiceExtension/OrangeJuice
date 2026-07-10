@@ -18,9 +18,9 @@ describe('prefill', () => {
 	describe('navbar submit link title prefill', () => {
 		it('adds expected title prefixes on show/ask pages', () => {
 			const cases = [
-				{ path: '/show', expectedTitle: 'Show HN: ' },
-				{ path: '/shownew', expectedTitle: 'Show HN: ' },
-				{ path: '/ask', expectedTitle: 'Ask HN: ' },
+				{ expectedTitle: 'Show HN: ', path: '/show' },
+				{ expectedTitle: 'Show HN: ', path: '/shownew' },
+				{ expectedTitle: 'Ask HN: ', path: '/ask' },
 			] as const;
 
 			for (const testCase of cases) {

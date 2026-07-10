@@ -85,8 +85,8 @@ export const highlightUnreadComments = async (
 	}
 
 	readCommentsList[itemId] = {
-		expiry: itemData.expiry || Date.now() + THREE_DAYS_IN_MS,
 		comments: [...new Set([...currentComments, ...readComments])],
+		expiry: itemData.expiry || Date.now() + THREE_DAYS_IN_MS,
 	} as ReadCommentItem;
 
 	await lStorage.setItem<ReadCommentsList>(ojReadCommentsKey, readCommentsList);

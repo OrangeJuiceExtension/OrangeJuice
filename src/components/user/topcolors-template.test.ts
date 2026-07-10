@@ -49,8 +49,8 @@ describe('topcolorsTemplate', () => {
 
 		const writeText = vi.fn().mockResolvedValue(undefined);
 		Object.defineProperty(navigator, 'clipboard', {
-			value: { writeText },
 			configurable: true,
+			value: { writeText },
 		});
 
 		await topcolorsTemplate(document);
@@ -87,8 +87,8 @@ describe('topcolorsTemplate', () => {
 
 		const writeText = vi.fn().mockResolvedValue(undefined);
 		Object.defineProperty(navigator, 'clipboard', {
-			value: { writeText },
 			configurable: true,
+			value: { writeText },
 		});
 
 		const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.45);
@@ -201,8 +201,8 @@ describe('topcolorsTemplate', () => {
 		const reloadMock = vi.spyOn(window.location, 'reload').mockImplementation(() => {});
 		const writeText = vi.fn().mockResolvedValue(undefined);
 		Object.defineProperty(navigator, 'clipboard', {
-			value: { writeText },
 			configurable: true,
+			value: { writeText },
 		});
 
 		await topcolorsTemplate(document);
@@ -221,10 +221,10 @@ describe('topcolorsTemplate', () => {
 			expect(fetchMock).toHaveBeenCalledTimes(2);
 		});
 
-		const firstCall = fetchMock.mock.calls[0];
+		const [firstCall] = fetchMock.mock.calls;
 		expect(firstCall?.[0]).toBe(`${window.location.origin}/user?id=alice`);
 
-		const secondCall = fetchMock.mock.calls[1];
+		const [, secondCall] = fetchMock.mock.calls;
 		expect(secondCall?.[0]).toBe(`${window.location.origin}/xuser`);
 		expect(secondCall?.[1]?.method).toBe('POST');
 

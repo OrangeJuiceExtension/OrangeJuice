@@ -8,7 +8,7 @@ const resolveSafeUrl = (url: string, baseUrl: string): string | undefined => {
 		}
 		return resolved.toString();
 	} catch {
-		return;
+		// Ignore invalid or unsupported URLs.
 	}
 };
 

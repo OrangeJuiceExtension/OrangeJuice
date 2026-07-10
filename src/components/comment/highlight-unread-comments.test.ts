@@ -105,8 +105,8 @@ describe('highlightUnreadComments', () => {
 			const THREE_DAYS_IN_MS = 3 * 24 * 60 * 60 * 1000;
 			const readCommentsList: ReadCommentsList = {
 				'123': {
-					expiry: Date.now() + THREE_DAYS_IN_MS,
 					comments: ['comment1'],
+					expiry: Date.now() + THREE_DAYS_IN_MS,
 				},
 			};
 
@@ -137,8 +137,8 @@ describe('highlightUnreadComments', () => {
 		it('should not highlight comments if no read comments exist', async () => {
 			const readCommentsList: ReadCommentsList = {
 				'123': {
-					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 					comments: [],
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 				},
 			};
 
@@ -160,8 +160,8 @@ describe('highlightUnreadComments', () => {
 		it('should handle multiple new comments', async () => {
 			const readCommentsList: ReadCommentsList = {
 				'123': {
-					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 					comments: ['comment1'],
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 				},
 			};
 
@@ -197,8 +197,8 @@ describe('highlightUnreadComments', () => {
 		it('should handle comment element not found in DOM', async () => {
 			const readCommentsList: ReadCommentsList = {
 				'123': {
-					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 					comments: ['comment1'],
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 				},
 			};
 
@@ -250,8 +250,8 @@ describe('highlightUnreadComments', () => {
 		it('should merge new comments with existing read comments', async () => {
 			const readCommentsList: ReadCommentsList = {
 				'123': {
-					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 					comments: ['comment1'],
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 				},
 			};
 			const setItemSpy = vi.spyOn(lStorage, 'setItem');
@@ -282,8 +282,8 @@ describe('highlightUnreadComments', () => {
 		it('should deduplicate comments in storage', async () => {
 			const readCommentsList: ReadCommentsList = {
 				'123': {
-					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 					comments: ['comment1', 'comment2'],
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 				},
 			};
 			const setItemSpy = vi.spyOn(lStorage, 'setItem');
@@ -313,8 +313,8 @@ describe('highlightUnreadComments', () => {
 			const existingExpiry = Date.now() + 3 * 24 * 60 * 60 * 1000;
 			const readCommentsList: ReadCommentsList = {
 				'123': {
-					expiry: existingExpiry,
 					comments: ['comment1'],
+					expiry: existingExpiry,
 				},
 			};
 			const setItemSpy = vi.spyOn(lStorage, 'setItem');
@@ -363,8 +363,8 @@ describe('highlightUnreadComments', () => {
 		it('should call expireOldComments service', async () => {
 			const readCommentsList: ReadCommentsList = {
 				'123': {
-					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 					comments: [],
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 				},
 			};
 			const expireSpy = vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
@@ -384,8 +384,8 @@ describe('highlightUnreadComments', () => {
 		it('should handle empty comments array', async () => {
 			const readCommentsList: ReadCommentsList = {
 				'123': {
-					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 					comments: [],
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 				},
 			};
 			const setItemSpy = vi.spyOn(lStorage, 'setItem');
@@ -405,8 +405,8 @@ describe('highlightUnreadComments', () => {
 		it('should handle comments without indent cell', async () => {
 			const readCommentsList: ReadCommentsList = {
 				'123': {
-					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 					comments: [],
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
 				},
 			};
 

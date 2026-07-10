@@ -7,25 +7,25 @@ import { InjectAdapter, ProvideAdapter } from '@/utils/comctx-adapters.ts';
 
 // Service registry configuration - add new services here
 const SERVICE_REGISTRY = {
-	Highlight: {
-		namespace: 'oj_highlight_unread',
-		class: HighlightUnreadCommentsService,
+	BrowserTab: {
 		background: true,
-	},
-	ReadStories: {
-		namespace: 'oj_read_stories',
-		class: ReadStoriesService,
-		background: true,
+		class: BrowserTabService,
+		namespace: 'oj_browser_tab_service',
 	},
 	FetchRemote: {
-		namespace: 'oj_fetch_remote',
+		background: true,
 		class: FetchRemoteService,
-		background: true,
+		namespace: 'oj_fetch_remote',
 	},
-	BrowserTab: {
-		namespace: 'oj_browser_tab_service',
-		class: BrowserTabService,
+	Highlight: {
 		background: true,
+		class: HighlightUnreadCommentsService,
+		namespace: 'oj_highlight_unread',
+	},
+	ReadStories: {
+		background: true,
+		class: ReadStoriesService,
+		namespace: 'oj_read_stories',
 	},
 } as const;
 
@@ -58,7 +58,11 @@ export const createClientServices = (): ServicesManager => {
 		const [, injectService] = defineProxy(() => ({}) as InstanceType<typeof config.class>, {
 			namespace: config.namespace,
 		});
-		manager[`get${key}Service`] = () => injectService(injectAdapter);
+		let cachedService: InstanceType<typeof config.class> | undefined;
+		manager[`get${key}Service`] = () => {
+			cachedService ??= injectService(injectAdapter);
+			return cachedService;
+		};
 	}
 
 	cachedClientServices = manager as ServicesManager;

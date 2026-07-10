@@ -41,7 +41,7 @@ export const backticksToCode = (_doc: Document, comments: HTMLElement[]): void =
 
 		let currentNode = walker.nextNode();
 		while (currentNode) {
-			const parentElement = currentNode.parentElement;
+			const { parentElement } = currentNode;
 			if (parentElement?.tagName !== 'CODE') {
 				textNodes.push(currentNode as Text);
 			}

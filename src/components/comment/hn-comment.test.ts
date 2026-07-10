@@ -82,9 +82,9 @@ describe('HNComment', () => {
 
 		it('should expose the HN comment url from the age link', () => {
 			const row = createCommentRow({
+				ageHref: 'item?id=1#comment-1',
 				author: 'alice',
 				postedDate: '2024-01-01',
-				ageHref: 'item?id=1#comment-1',
 			});
 
 			const comment = new HNComment(row);
@@ -203,9 +203,10 @@ describe('HNComment', () => {
 		it('should set data-comment-id attribute', () => {
 			const row = createCommentRow();
 
-			new HNComment(row);
+			const comment = new HNComment(row);
 
 			expect(row.getAttribute('data-comment-id')).toBe('comment-1');
+			expect(comment.id).toBe('comment-1');
 		});
 	});
 
@@ -432,13 +433,13 @@ describe('HNComment', () => {
 			const comment = new HNComment(row);
 
 			vi.mocked(parseReferenceLinks).mockReturnValue([
-				{ index: 1, href: 'https://example.com' },
+				{ href: 'https://example.com', index: 1 },
 			]);
 
 			const links = comment.getReferenceLinks();
 
 			expect(parseReferenceLinks).toHaveBeenCalledWith(commtext);
-			expect(links).toEqual([{ index: 1, href: 'https://example.com' }]);
+			expect(links).toEqual([{ href: 'https://example.com', index: 1 }]);
 		});
 
 		it('should return empty array when no commtext', () => {
@@ -452,11 +453,12 @@ describe('HNComment', () => {
 	describe('getCommentIdFromElement', () => {
 		it('should return comment id from nested element', () => {
 			const row = createCommentRow();
-			new HNComment(row);
+			const comment = new HNComment(row);
 			const inner = doc.createElement('span');
 			row.appendChild(inner);
 
 			expect(HNComment.getCommentIdFromElement(inner)).toBe('comment-1');
+			expect(comment.id).toBe('comment-1');
 		});
 	});
 

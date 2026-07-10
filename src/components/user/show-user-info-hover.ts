@@ -111,7 +111,7 @@ export const showUserInfoOnHover = (
 	};
 
 	const populateUserDiv = async (user: HTMLAnchorElement, userDivBox: HTMLDivElement) => {
-		const userName = user.innerText.trim().split(' ')[0];
+		const [userName] = user.innerText.trim().split(' ');
 		const cachedUserDiv = cachedData.get(userName);
 		if (cachedUserDiv) {
 			cloneChildNodesInto(cachedUserDiv, userDivBox);
@@ -173,8 +173,8 @@ export const showUserInfoOnHover = (
 		await upsertMuteButton(userName, userDivBox);
 	};
 
-	const createUserDiv = (doc: Document) => {
-		const userDiv = doc.createElement('div') as HTMLDivElement;
+	const createUserDiv = (ownerDoc: Document) => {
+		const userDiv = ownerDoc.createElement('div') as HTMLDivElement;
 		userDiv.classList.add(USER_INFO_HOVER_CLASS);
 		return userDiv;
 	};

@@ -120,8 +120,9 @@ describe('remaining', () => {
 
 			const removeEventListenerSpy = vi.spyOn(titleInput, 'removeEventListener');
 
-			const onInvalidatedCallback = (mockContext.onInvalidated as ReturnType<typeof vi.fn>)
-				.mock.calls[0][0];
+			const [[onInvalidatedCallback]] = (
+				mockContext.onInvalidated as ReturnType<typeof vi.fn>
+			).mock.calls;
 			onInvalidatedCallback();
 
 			expect(removeEventListenerSpy).toHaveBeenCalledWith('input', expect.any(Function));

@@ -23,24 +23,24 @@ describe('githubEmoji', () => {
 
 	it.each([
 		{
-			name: 'replaces a simple shortcode',
-			input: '<span class="commtext">I :heart: this</span>',
 			expected: 'I ❤️ this',
+			input: '<span class="commtext">I :heart: this</span>',
+			name: 'replaces a simple shortcode',
 		},
 		{
-			name: 'replaces multiple shortcodes in one text node',
-			input: '<span class="commtext">:+1: :tada: ship it</span>',
 			expected: '👍 🎉 ship it',
+			input: '<span class="commtext">:+1: :tada: ship it</span>',
+			name: 'replaces multiple shortcodes in one text node',
 		},
 		{
-			name: 'leaves unknown shortcodes untouched',
-			input: '<span class="commtext">:not_a_real_emoji:</span>',
 			expected: ':not_a_real_emoji:',
+			input: '<span class="commtext">:not_a_real_emoji:</span>',
+			name: 'leaves unknown shortcodes untouched',
 		},
 		{
-			name: 'supports uppercase shortcode input',
-			input: '<span class="commtext">:HEART:</span>',
 			expected: '❤️',
+			input: '<span class="commtext">:HEART:</span>',
+			name: 'supports uppercase shortcode input',
 		},
 	])('$name', ({ input, expected }) => {
 		const comments = renderComments(input);

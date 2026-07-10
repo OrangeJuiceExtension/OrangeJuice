@@ -56,8 +56,8 @@ export const fetchTitle = (ctx: ContentScriptContext, doc: Document): void => {
 			const title = result as Title;
 			titleInput.value = title.title;
 			titleInput.dispatchEvent(new Event('input', { bubbles: true }));
-		} catch (e) {
-			console.error('Error fetching title:', e);
+		} catch (error) {
+			console.error('Error fetching title:', error);
 		} finally {
 			fetchTitleBtn.disabled = false;
 			fetchTitleBtn.innerText = FETCH_TITLE_LABEL;

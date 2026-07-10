@@ -7,8 +7,8 @@ const renderMermaidMock = vi.fn();
 vi.mock('beautiful-mermaid', () => ({
 	renderMermaid: (code: string, options?: unknown) => renderMermaidMock(code, options),
 	THEMES: {
-		'github-light': { bg: '#ffffff', fg: '#111111' },
 		'github-dark': { bg: '#0d1117', fg: '#e6edf3' },
+		'github-light': { bg: '#ffffff', fg: '#111111' },
 	},
 }));
 

@@ -56,7 +56,7 @@ export const createCheckbox = (doc: Document, visibility: ReadStoriesVisibilityP
 	cell.appendChild(label);
 	row.appendChild(cell);
 
-	return { row, checkbox };
+	return { checkbox, row };
 };
 
 export const STORY_HIDDEN = 'oj_story_hidden';
@@ -150,7 +150,7 @@ const getVisitedStories = async (
 		}
 		return ret;
 	} catch (e) {
-		console.error({ error: 'Error in getVisitedStoryIds', e });
+		console.error({ e, error: 'Error in getVisitedStoryIds' });
 		return [];
 	}
 };
@@ -229,7 +229,7 @@ export const hideReadStories = async (
 		try {
 			await syncCheckboxVisibility();
 		} catch (e) {
-			console.log({ error: 'error update visits', e });
+			console.log({ e, error: 'error update visits' });
 		}
 
 		const pageshow = async () => {
@@ -244,7 +244,7 @@ export const hideReadStories = async (
 			window.removeEventListener('pageshow', pageshow);
 		});
 	} catch (e) {
-		console.error({ error: 'Error in hideread stories', e });
+		console.error({ e, error: 'Error in hideread stories' });
 	}
 };
 
@@ -258,6 +258,6 @@ export const hideReadStoriesOnce = async (storyData: StoryData): Promise<void> =
 		const visibility = await getReadStoriesVisibilityPreference();
 		applyReadStoriesVisibility(readStories, visibility);
 	} catch (e) {
-		console.error({ error: 'Error in hideReadStoriesOnce', e });
+		console.error({ e, error: 'Error in hideReadStoriesOnce' });
 	}
 };

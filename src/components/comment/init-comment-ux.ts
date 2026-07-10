@@ -75,9 +75,9 @@ export const initCommentUX = (
 		// Custom indent width
 		const { element: indentImage, width: indentLevel } = dom.getCommentIndentation(comment);
 		if (indentImage && indentLevel !== undefined) {
-			const indentLevel = indentImage.width / 40;
-			indentImage.width = indentLevel * customWidth;
-			indentImage.dataset.indentLevel = `${indentLevel}`;
+			const computedIndentLevel = indentImage.width / 40;
+			indentImage.width = computedIndentLevel * customWidth;
+			indentImage.dataset.indentLevel = `${computedIndentLevel}`;
 		}
 
 		const commentAuthor = comment.querySelector<HTMLAnchorElement>('a.hnuser');

@@ -79,7 +79,6 @@ export class CommentData {
 			}
 			current = this.comments.getNext(current);
 		}
-		return;
 	}
 
 	getNext(comment: HNComment, skipHidden = true): HNComment | undefined {
@@ -128,7 +127,6 @@ export class CommentData {
 					? this.getNext(current, skipHidden)
 					: this.getPrevious(current, skipHidden);
 		}
-		return;
 	}
 
 	first(): HNComment | undefined {
@@ -158,8 +156,6 @@ export class CommentData {
 			}
 			current = next;
 		}
-
-		return;
 	}
 
 	closestCollapsedUp(): HNComment | undefined {

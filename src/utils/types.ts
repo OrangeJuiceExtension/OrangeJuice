@@ -13,14 +13,14 @@ export interface OJContext {
 
 export const SavedItemType = {
 	Comments: 0,
-	Submissions: 1,
-	Hidden: 2,
-	FlagsSubmissions: 3,
-	FlagsComments: 4,
-	VotesSubmissions: 5,
-	VotesComments: 6,
-	FavoriteSubmissions: 7,
 	FavoriteComments: 8,
+	FavoriteSubmissions: 7,
+	FlagsComments: 4,
+	FlagsSubmissions: 3,
+	Hidden: 2,
+	Submissions: 1,
+	VotesComments: 6,
+	VotesSubmissions: 5,
 };
 
 export type SavedItemType = (typeof SavedItemType)[keyof typeof SavedItemType];

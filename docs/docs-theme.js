@@ -210,7 +210,7 @@ const createSvgIcon = (isDark) => {
 
 		closeButton.addEventListener('click', closeLightbox);
 		lightbox.addEventListener('click', (event) => {
-			const target = event.target;
+			const { target } = event;
 			if (!(target instanceof HTMLElement)) {
 				return;
 			}

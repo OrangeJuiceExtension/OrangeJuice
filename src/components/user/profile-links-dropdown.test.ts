@@ -109,18 +109,18 @@ describe('profileLinksDropdown', () => {
 		expect(links?.length).toBe(12);
 
 		const expectedLinks = [
-			{ title: 'profile', path: 'user?id=testuser' },
-			{ title: 'submissions', path: 'submitted?id=testuser' },
-			{ title: 'comments', path: 'threads?id=testuser' },
-			{ title: 'following', path: 'following.html' },
-			{ title: 'hidden', path: 'hidden' },
-			{ title: 'flagged submissions', path: 'flagged?id=testuser' },
-			{ title: 'flagged comments', path: 'flagged?id=testuser&kind=comment' },
-			{ title: 'upvoted submissions', path: 'upvoted?id=testuser' },
-			{ title: 'upvoted comments', path: 'upvoted?id=testuser&comments=t' },
-			{ title: 'favorite submissions', path: 'favorites?id=testuser' },
-			{ title: 'favorite comments', path: 'favorites?id=testuser&comments=t' },
-			{ title: 'logout', path: 'logout' },
+			{ path: 'user?id=testuser', title: 'profile' },
+			{ path: 'submitted?id=testuser', title: 'submissions' },
+			{ path: 'threads?id=testuser', title: 'comments' },
+			{ path: 'following.html', title: 'following' },
+			{ path: 'hidden', title: 'hidden' },
+			{ path: 'flagged?id=testuser', title: 'flagged submissions' },
+			{ path: 'flagged?id=testuser&kind=comment', title: 'flagged comments' },
+			{ path: 'upvoted?id=testuser', title: 'upvoted submissions' },
+			{ path: 'upvoted?id=testuser&comments=t', title: 'upvoted comments' },
+			{ path: 'favorites?id=testuser', title: 'favorite submissions' },
+			{ path: 'favorites?id=testuser&comments=t', title: 'favorite comments' },
+			{ path: 'logout', title: 'logout' },
 		];
 
 		for (const [index, link] of expectedLinks.entries()) {
@@ -172,7 +172,7 @@ describe('profileLinksDropdown', () => {
 		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
-		const topUserBar = pagetops[1];
+		const [, topUserBar] = pagetops;
 		expect(topUserBar?.textContent).not.toContain('logout');
 		expect(topUserBar?.textContent?.trim().endsWith('|')).toBe(false);
 	});
@@ -185,7 +185,8 @@ describe('profileLinksDropdown', () => {
 		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
-		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
+		const [, topUserBar] = pagetops;
+		const userLink = topUserBar.querySelector<HTMLAnchorElement>('a#me');
 		expect(userLink?.innerHTML).toContain('▾');
 	});
 
@@ -319,7 +320,7 @@ describe('profileLinksDropdown', () => {
 		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
 		const userLinkSpy = vi.spyOn(userLink as HTMLAnchorElement, 'removeEventListener');
 
-		const onInvalidatedCallback = MOCK_CONTEXT.onInvalidated.mock.calls[0][0];
+		const [[onInvalidatedCallback]] = MOCK_CONTEXT.onInvalidated.mock.calls;
 		onInvalidatedCallback();
 
 		expect(userLinkSpy).toHaveBeenCalledWith('click', expect.any(Function));

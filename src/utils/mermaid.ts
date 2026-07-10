@@ -106,31 +106,39 @@ export const renderMermaidsInPreCodeElements = async (
 	const preCodeNodes = Array.from(element.querySelectorAll<HTMLElement>('pre > code'));
 	const results: SVGElement[] = [];
 
-	for (const preCodeNode of preCodeNodes) {
-		const pre = preCodeNode.parentElement;
-		if (!pre) {
-			continue;
-		}
-
-		const mermaids = extractMermaidFromText(preCodeNode.innerText);
-		if (mermaids.length === 0) {
-			continue;
-		}
-
-		let insertionAnchor: Element = pre;
-		let renderedCount = 0;
-		for (const mermaid of mermaids) {
-			const svgNode = await createMermaidSvgNodeFromMarkup(mermaid, doc);
-			if (svgNode) {
-				insertionAnchor.insertAdjacentElement('afterend', svgNode);
-				insertionAnchor = svgNode;
-				renderedCount += 1;
-				results.push(svgNode);
+	const renderedBlocks = await Promise.all(
+		preCodeNodes.map(async (preCodeNode) => {
+			const pre = preCodeNode.parentElement;
+			if (!pre) {
+				return;
 			}
+
+			const mermaids = extractMermaidFromText(preCodeNode.innerText);
+			if (mermaids.length === 0) {
+				return;
+			}
+
+			const svgNodes = (
+				await Promise.all(
+					mermaids.map((mermaid) => createMermaidSvgNodeFromMarkup(mermaid, doc))
+				)
+			).filter((svgNode): svgNode is SVGElement => Boolean(svgNode));
+			return { pre, svgNodes };
+		})
+	);
+
+	for (const renderedBlock of renderedBlocks) {
+		if (!(renderedBlock && renderedBlock.svgNodes.length > 0)) {
+			continue;
 		}
-		if (renderedCount > 0) {
-			pre.remove();
+		const { pre, svgNodes } = renderedBlock;
+		let insertionAnchor: Element = pre;
+		for (const svgNode of svgNodes) {
+			insertionAnchor.insertAdjacentElement('afterend', svgNode);
+			insertionAnchor = svgNode;
+			results.push(svgNode);
 		}
+		pre.remove();
 	}
 
 	return results;
@@ -141,22 +149,22 @@ export const rerenderMermaidBlocksInElement = async (
 	doc: Document
 ): Promise<SVGElement[]> => {
 	const blocks = container.querySelectorAll<HTMLElement>(`.${MERMAID_SVG_CLASS}`);
-	const results: SVGElement[] = [];
-
-	for (const block of blocks) {
-		const mermaid = block.getAttribute(MERMAID_CODE_ATTRIBUTE);
-		if (!mermaid) {
-			continue;
-		}
-		try {
-			const svg = await createMermaidSvgNodeFromMarkup(mermaid, doc);
-			if (svg) {
-				block.replaceWith(svg);
-				results.push(svg);
+	const results = await Promise.all(
+		[...blocks].map(async (block): Promise<SVGElement | undefined> => {
+			const mermaid = block.getAttribute(MERMAID_CODE_ATTRIBUTE);
+			if (!mermaid) {
+				return;
 			}
-		} catch (error) {
-			console.error('Failed to rerender mermaid block:', error);
-		}
-	}
-	return results;
+			try {
+				const svg = await createMermaidSvgNodeFromMarkup(mermaid, doc);
+				if (svg) {
+					block.replaceWith(svg);
+					return svg;
+				}
+			} catch (error) {
+				console.error('Failed to rerender mermaid block:', error);
+			}
+		})
+	);
+	return results.filter((svg): svg is SVGElement => Boolean(svg));
 };

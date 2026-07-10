@@ -9,14 +9,6 @@ import type { ComponentFeature } from '@/utils/types.ts';
 export const submit: ComponentFeature = {
 	id: 'submit',
 	loginRequired: true,
-	matches: [
-		`${paths.base}/submit*`,
-		`${paths.base}/show*`,
-		`${paths.base}/shownew*`,
-		`${paths.base}/ask*`,
-		`${paths.base}/asknew*`,
-	],
-	runAt: 'document_end',
 	main(ctx: ContentScriptContext) {
 		return Promise.all([
 			Promise.resolve().then(() => widenFields(document)),
@@ -25,4 +17,12 @@ export const submit: ComponentFeature = {
 			Promise.resolve().then(() => remaining(ctx, document)),
 		]);
 	},
+	matches: [
+		`${paths.base}/submit*`,
+		`${paths.base}/show*`,
+		`${paths.base}/shownew*`,
+		`${paths.base}/ask*`,
+		`${paths.base}/asknew*`,
+	],
+	runAt: 'document_end',
 };

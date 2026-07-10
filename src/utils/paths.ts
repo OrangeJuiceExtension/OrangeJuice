@@ -1,5 +1,36 @@
 const paths = {
+	actions: [
+		'/login',
+		'/changepw',
+		'/reply',
+		'/vote',
+		'/flag',
+		'/fave',
+		'/hide',
+		'/deadlink',
+		'/xuser',
+		'/x',
+		'/r',
+	],
 	base: 'https://news.ycombinator.com',
+
+	comments: ['/item', '/threads'],
+
+	forms: ['/reply', '/submit', '/newpoll', '/edit', '/delete-confirm', '/submitlink'],
+
+	info: [
+		'/formatdoc',
+		'/newsguidelines.html',
+		'/newswelcome.html',
+		'/newsfaq.html',
+		'/security.html',
+		'/bookmarklet.html',
+		'/showhn.html',
+	],
+
+	misc: ['/leaders', '/user', '/topcolors', '/lists', '/flagged', '/following'],
+
+	specialComments: ['/bestcomments', '/noobcomments', '/newcomments', '/highlights'],
 	stories: [
 		'/',
 		'/newest',
@@ -19,39 +50,7 @@ const paths = {
 		'/launches',
 	],
 
-	comments: ['/item', '/threads'],
-
-	specialComments: ['/bestcomments', '/noobcomments', '/newcomments', '/highlights'],
-
 	userSpecific: ['/submitted', '/hidden', '/upvoted', '/favorites'],
-
-	forms: ['/reply', '/submit', '/newpoll', '/edit', '/delete-confirm', '/submitlink'],
-
-	misc: ['/leaders', '/user', '/topcolors', '/lists', '/flagged', '/following'],
-
-	actions: [
-		'/login',
-		'/changepw',
-		'/reply',
-		'/vote',
-		'/flag',
-		'/fave',
-		'/hide',
-		'/deadlink',
-		'/xuser',
-		'/x',
-		'/r',
-	],
-
-	info: [
-		'/formatdoc',
-		'/newsguidelines.html',
-		'/newswelcome.html',
-		'/newsfaq.html',
-		'/security.html',
-		'/bookmarklet.html',
-		'/showhn.html',
-	],
 };
 
 interface RuntimeUrlApi {

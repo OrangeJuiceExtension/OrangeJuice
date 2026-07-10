@@ -239,8 +239,8 @@ describe('dom', () => {
 		it('should return undefined when offline', async () => {
 			const originalOnLine = navigator.onLine;
 			Object.defineProperty(navigator, 'onLine', {
-				writable: true,
 				value: false,
+				writable: true,
 			});
 
 			const result = await dom.getPageDom('https://example.com');
@@ -248,8 +248,8 @@ describe('dom', () => {
 			expect(result).toBeUndefined();
 
 			Object.defineProperty(navigator, 'onLine', {
-				writable: true,
 				value: originalOnLine,
+				writable: true,
 			});
 		});
 
@@ -434,27 +434,27 @@ describe('dom', () => {
 			}
 
 			element.getBoundingClientRect = vi.fn(() => ({
-				top: 250,
+				bottom: 350,
+				height: 100,
 				left: 100,
 				right: 300,
-				bottom: 350,
+				toJSON: () => {},
+				top: 250,
 				width: 200,
-				height: 100,
 				x: 100,
 				y: 250,
-				toJSON: () => {},
 			}));
 
 			document.body.getBoundingClientRect = vi.fn(() => ({
-				top: 50,
+				bottom: 1000,
+				height: 950,
 				left: 0,
 				right: 1000,
-				bottom: 1000,
+				toJSON: () => {},
+				top: 50,
 				width: 1000,
-				height: 950,
 				x: 0,
 				y: 50,
-				toJSON: () => {},
 			}));
 
 			const position = dom.elementPosition(document, element);
@@ -471,27 +471,27 @@ describe('dom', () => {
 			}
 
 			element.getBoundingClientRect = vi.fn(() => ({
-				top: 0,
+				bottom: 100,
+				height: 100,
 				left: 50,
 				right: 150,
-				bottom: 100,
+				toJSON: () => {},
+				top: 0,
 				width: 100,
-				height: 100,
 				x: 50,
 				y: 0,
-				toJSON: () => {},
 			}));
 
 			document.body.getBoundingClientRect = vi.fn(() => ({
-				top: 0,
+				bottom: 1000,
+				height: 1000,
 				left: 0,
 				right: 1000,
-				bottom: 1000,
+				toJSON: () => {},
+				top: 0,
 				width: 1000,
-				height: 1000,
 				x: 0,
 				y: 0,
-				toJSON: () => {},
 			}));
 
 			const position = dom.elementPosition(document, element);
@@ -509,21 +509,21 @@ describe('dom', () => {
 			}
 
 			element.getBoundingClientRect = vi.fn(() => ({
-				top: 100,
+				bottom: 300,
+				height: 200,
 				left: 0,
 				right: 200,
-				bottom: 300,
+				toJSON: () => {},
+				top: 100,
 				width: 200,
-				height: 200,
 				x: 0,
 				y: 100,
-				toJSON: () => {},
 			}));
 
 			Object.defineProperty(window, 'innerHeight', {
-				writable: true,
 				configurable: true,
 				value: 800,
+				writable: true,
 			});
 
 			const result = dom.elementInScrollView(element);
@@ -539,21 +539,21 @@ describe('dom', () => {
 			}
 
 			element.getBoundingClientRect = vi.fn(() => ({
-				top: -100,
+				bottom: -10,
+				height: 90,
 				left: 0,
 				right: 200,
-				bottom: -10,
+				toJSON: () => {},
+				top: -100,
 				width: 200,
-				height: 90,
 				x: 0,
 				y: -100,
-				toJSON: () => {},
 			}));
 
 			Object.defineProperty(window, 'innerHeight', {
-				writable: true,
 				configurable: true,
 				value: 800,
+				writable: true,
 			});
 
 			const result = dom.elementInScrollView(element);
@@ -569,21 +569,21 @@ describe('dom', () => {
 			}
 
 			element.getBoundingClientRect = vi.fn(() => ({
-				top: 900,
+				bottom: 1100,
+				height: 200,
 				left: 0,
 				right: 200,
-				bottom: 1100,
+				toJSON: () => {},
+				top: 900,
 				width: 200,
-				height: 200,
 				x: 0,
 				y: 900,
-				toJSON: () => {},
 			}));
 
 			Object.defineProperty(window, 'innerHeight', {
-				writable: true,
 				configurable: true,
 				value: 800,
+				writable: true,
 			});
 
 			const result = dom.elementInScrollView(element);
@@ -599,21 +599,21 @@ describe('dom', () => {
 			}
 
 			element.getBoundingClientRect = vi.fn(() => ({
-				top: 0,
+				bottom: 100,
+				height: 100,
 				left: 0,
 				right: 200,
-				bottom: 100,
+				toJSON: () => {},
+				top: 0,
 				width: 200,
-				height: 100,
 				x: 0,
 				y: 0,
-				toJSON: () => {},
 			}));
 
 			Object.defineProperty(window, 'innerHeight', {
-				writable: true,
 				configurable: true,
 				value: 800,
+				writable: true,
 			});
 
 			const result = dom.elementInScrollView(element);
@@ -629,21 +629,21 @@ describe('dom', () => {
 			}
 
 			element.getBoundingClientRect = vi.fn(() => ({
-				top: 600,
+				bottom: 800,
+				height: 200,
 				left: 0,
 				right: 200,
-				bottom: 800,
+				toJSON: () => {},
+				top: 600,
 				width: 200,
-				height: 200,
 				x: 0,
 				y: 600,
-				toJSON: () => {},
 			}));
 
 			Object.defineProperty(window, 'innerHeight', {
-				writable: true,
 				configurable: true,
 				value: 800,
+				writable: true,
 			});
 
 			const result = dom.elementInScrollView(element);
@@ -659,21 +659,21 @@ describe('dom', () => {
 			}
 
 			element.getBoundingClientRect = vi.fn(() => ({
-				top: 700,
+				bottom: 900,
+				height: 200,
 				left: 0,
 				right: 200,
-				bottom: 900,
+				toJSON: () => {},
+				top: 700,
 				width: 200,
-				height: 200,
 				x: 0,
 				y: 700,
-				toJSON: () => {},
 			}));
 
 			Object.defineProperty(window, 'innerHeight', {
-				writable: true,
 				configurable: true,
 				value: 800,
+				writable: true,
 			});
 
 			const result = dom.elementInScrollView(element);
@@ -749,10 +749,10 @@ describe('dom', () => {
 
 		it('should return false when no modifier keys are pressed', () => {
 			const event = new KeyboardEvent('keydown', {
+				altKey: false,
 				ctrlKey: false,
 				metaKey: false,
 				shiftKey: false,
-				altKey: false,
 			});
 
 			const result = dom.isComboKey(event);
@@ -915,7 +915,7 @@ describe('dom', () => {
 
 			// Create nested structure 5 levels deep
 			let current = root;
-			for (let i = 0; i < 5; i++) {
+			for (let i = 0; i < 5; i += 1) {
 				const child = document.createElement('section');
 				child.className = `level-${i} target remove other`;
 				current.appendChild(child);
@@ -929,7 +929,7 @@ describe('dom', () => {
 
 			// Verify all descendants have target and remove classes removed
 			let checkElement: HTMLElement = root;
-			for (let i = 0; i < 5; i++) {
+			for (let i = 0; i < 5; i += 1) {
 				const child = checkElement.firstElementChild as HTMLElement;
 				expect(child.className).not.toContain('target');
 				expect(child.className).not.toContain('remove');

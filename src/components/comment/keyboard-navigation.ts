@@ -64,13 +64,13 @@ export const keyboardNavigation = async (
 		await syncFocusBoxStyle(doc);
 	});
 
-	function prevent(doc: Document, e?: KeyboardEvent) {
-		if (doc.activeElement?.tagName === undefined) {
+	function prevent(activeDoc: Document, e?: KeyboardEvent) {
+		if (activeDoc.activeElement?.tagName === undefined) {
 			return true;
 		}
 
-		if (doc.activeElement.tagName === 'TEXTAREA') {
-			const textarea = doc.activeElement as HTMLTextAreaElement;
+		if (activeDoc.activeElement.tagName === 'TEXTAREA') {
+			const textarea = activeDoc.activeElement as HTMLTextAreaElement;
 			const isReplyTextarea = textarea.closest('tr')?.querySelector('textarea') === textarea;
 			if (isReplyTextarea && e?.key === 'Escape') {
 				return false;
@@ -78,12 +78,12 @@ export const keyboardNavigation = async (
 			return isReplyTextarea;
 		}
 
-		if (doc.activeElement.tagName === 'INPUT') {
+		if (activeDoc.activeElement.tagName === 'INPUT') {
 			return true;
 		}
 
-		if (doc.activeElement.tagName === 'A') {
-			(doc.activeElement as HTMLAnchorElement).blur();
+		if (activeDoc.activeElement.tagName === 'A') {
+			(activeDoc.activeElement as HTMLAnchorElement).blur();
 		}
 
 		if (navState?.helpModalOpen && e) {
@@ -112,9 +112,9 @@ export const keyboardNavigation = async (
 			return;
 		}
 
-		const command = getKeyboardCommand('comments', e);
+		const commandId: string | undefined = getKeyboardCommand('comments', e)?.id;
 
-		switch (command?.id) {
+		switch (commandId) {
 			case 'move-down':
 				await keyboardHandlers.move(e, commentData, 'down');
 				break;

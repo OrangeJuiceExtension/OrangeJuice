@@ -20,6 +20,7 @@ import { PREFERENCES_UPDATED_MESSAGE_TYPE } from '@/utils/preferences-live.ts';
 import './App.css';
 
 const LOGO_PATH = '/icon/orange_juice_icon_128x128.png';
+const WELCOME_PATH = '/welcome.html';
 
 const getLogoUrl = (): string => browser.runtime?.getURL?.(LOGO_PATH) ?? LOGO_PATH;
 
@@ -188,17 +189,14 @@ const createPopupContent = (doc: Document): HTMLElement => {
 	title.className = 'oj-popup__title';
 	title.textContent = 'Preferences';
 
-	const text = doc.createElement('p');
-	text.className = 'oj-popup__text';
-	text.textContent = 'Control the ';
-	const link = doc.createElement('a');
-	link.href = 'https://oj-hn.com';
-	link.rel = 'noopener';
-	link.target = '_blank';
-	link.textContent = 'Orange Juice';
-	text.append(link, '.');
+	const welcomeLink = doc.createElement('a');
+	welcomeLink.className = 'oj-popup__welcome-link';
+	welcomeLink.href = browser.runtime.getURL(WELCOME_PATH);
+	welcomeLink.rel = 'noopener';
+	welcomeLink.target = '_blank';
+	welcomeLink.textContent = 'Open initial welcome page';
 
-	titleGroup.append(title, text);
+	titleGroup.append(title, welcomeLink);
 	header.append(logoLink, titleGroup);
 
 	const settingsList = doc.createElement('div');

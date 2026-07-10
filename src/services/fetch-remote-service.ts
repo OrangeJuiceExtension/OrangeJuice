@@ -7,7 +7,6 @@ export class FetchRemoteService {
 		} catch (e) {
 			console.error('Error in FetchRemoteService:', e);
 		}
-		return;
 	}
 	async fetchJson<T>(url: string): Promise<T | undefined> {
 		try {
@@ -16,6 +15,5 @@ export class FetchRemoteService {
 		} catch (e) {
 			console.error('Error in FetchRemoteService:', e);
 		}
-		return;
 	}
 }

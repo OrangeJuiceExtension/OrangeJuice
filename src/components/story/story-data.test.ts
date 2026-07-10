@@ -58,7 +58,7 @@ describe('StoryData', () => {
 
 	it('should skip rows without id', () => {
 		const bigbox = doc.createElement('div');
-		const rowWithId = createStoryRows(doc, 1)[0];
+		const [rowWithId] = createStoryRows(doc, 1);
 		const rowWithoutId = doc.createElement('tr');
 		const data = new StoryData(bigbox, [rowWithId, rowWithoutId]);
 
@@ -140,7 +140,7 @@ describe('StoryData', () => {
 		const bigbox = doc.createElement('div');
 		const rows = createStoryRows(doc, 1);
 		const data = new StoryData(bigbox, rows);
-		const row = rows[0];
+		const [row] = rows;
 		if (!row) {
 			throw new Error('Expected story row to exist');
 		}
@@ -180,7 +180,7 @@ describe('StoryData', () => {
 		const rows = createStoryRows(doc, 2);
 		const data = new StoryData(bigbox, rows);
 		const handler = vi.fn();
-		const story = data.hnStories[0];
+		const [story] = data.hnStories;
 		if (!story) {
 			throw new Error('Expected story to exist');
 		}

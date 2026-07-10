@@ -87,6 +87,7 @@ const createStoryData = (doc: Document) => {
 const setLocationHref = (href: string) => {
 	let hrefStr = href;
 	Object.defineProperty(window, 'location', {
+		configurable: true,
 		value: {
 			get href() {
 				return hrefStr;
@@ -96,7 +97,6 @@ const setLocationHref = (href: string) => {
 			},
 		},
 		writable: true,
-		configurable: true,
 	});
 };
 
@@ -127,47 +127,45 @@ describe('story keyboard navigation', () => {
 		vi.mocked(hideReadStoriesOnce).mockResolvedValue();
 	});
 
-	it('should handle arrow left/right navigation', async () => {
-		const cases = [
+	describe('arrow left/right navigation', () => {
+		it.each([
 			{
-				name: 'ArrowLeft opens comments in new tab',
-				key: 'ArrowLeft',
-				shiftKey: false,
+				expectedLocation: 'https://news.ycombinator.com',
 				expectedOpen: `${paths.base}/item?id=1`,
-				expectedLocation: 'https://news.ycombinator.com',
-			},
-			{
-				name: 'Shift+ArrowLeft opens comments in same tab',
 				key: 'ArrowLeft',
-				shiftKey: true,
-				expectedOpen: undefined,
+				name: 'ArrowLeft opens comments in new tab',
+				shiftKey: false,
+			},
+			{
 				expectedLocation: `${paths.base}/item?id=1`,
-			},
-			{
-				name: 'ArrowRight opens story url in new tab',
-				key: 'ArrowRight',
-				shiftKey: false,
-				expectedOpen: 'https://example.com/1',
-				expectedLocation: 'https://news.ycombinator.com',
-			},
-			{
-				name: 'Shift+ArrowRight opens story url in same tab',
-				key: 'ArrowRight',
+				expectedOpen: undefined,
+				key: 'ArrowLeft',
+				name: 'Shift+ArrowLeft opens comments in same tab',
 				shiftKey: true,
-				expectedOpen: undefined,
-				expectedLocation: 'https://example.com/1',
 			},
 			{
-				name: 'Ctrl+ArrowRight does nothing',
-				key: 'ArrowRight',
-				shiftKey: false,
-				ctrlKey: true,
-				expectedOpen: undefined,
 				expectedLocation: 'https://news.ycombinator.com',
+				expectedOpen: 'https://example.com/1',
+				key: 'ArrowRight',
+				name: 'ArrowRight opens story url in new tab',
+				shiftKey: false,
 			},
-		];
-
-		for (const testCase of cases) {
+			{
+				expectedLocation: 'https://example.com/1',
+				expectedOpen: undefined,
+				key: 'ArrowRight',
+				name: 'Shift+ArrowRight opens story url in same tab',
+				shiftKey: true,
+			},
+			{
+				ctrlKey: true,
+				expectedLocation: 'https://news.ycombinator.com',
+				expectedOpen: undefined,
+				key: 'ArrowRight',
+				name: 'Ctrl+ArrowRight does nothing',
+				shiftKey: false,
+			},
+		])('$name', async ({ ctrlKey = false, expectedLocation, expectedOpen, key, shiftKey }) => {
 			doc = document.implementation.createHTMLDocument();
 			ctx = { onInvalidated: vi.fn() } as unknown as ContentScriptContext;
 			const storyData = createStoryData(doc);
@@ -180,31 +178,27 @@ describe('story keyboard navigation', () => {
 			setLocationHref('https://news.ycombinator.com');
 			const openSpy = vi.fn();
 			Object.defineProperty(window, 'open', {
+				configurable: true,
 				value: openSpy,
 				writable: true,
-				configurable: true,
 			});
 
 			await keyboardNavigation(ctx, doc, storyData, { helpModalOpen: false });
 
 			const event = new KeyboardEvent('keydown', {
-				key: testCase.key,
-				shiftKey: testCase.shiftKey,
-				ctrlKey: testCase.ctrlKey ?? false,
+				ctrlKey,
+				key,
+				shiftKey,
 			});
 			doc.dispatchEvent(event);
 
-			if (testCase.expectedOpen) {
-				expect(openSpy).toHaveBeenCalledWith(
-					testCase.expectedOpen,
-					'_blank',
-					'noopener,noreferrer'
-				);
+			if (expectedOpen) {
+				expect(openSpy).toHaveBeenCalledWith(expectedOpen, '_blank', 'noopener,noreferrer');
 			} else {
 				expect(openSpy).not.toHaveBeenCalled();
 			}
-			expect(window.location.href).toBe(testCase.expectedLocation);
-		}
+			expect(window.location.href).toBe(expectedLocation);
+		});
 	});
 
 	it('should skip focus styles when the preference is disabled', async () => {
@@ -216,27 +210,25 @@ describe('story keyboard navigation', () => {
 		expect(doc.head.querySelector('style')).toBeNull();
 	});
 
-	it('should move with arrow up/down when no active story', async () => {
-		const cases = [
+	describe('arrow up/down without active story', () => {
+		it.each([
 			{
-				name: 'ArrowDown selects first visible',
-				key: 'ArrowDown',
+				expectedId: '2',
 				hideStoryId: '1',
-				expectedId: '2',
+				key: 'ArrowDown',
+				name: 'ArrowDown selects first visible',
 			},
 			{
-				name: 'ArrowUp selects last visible',
-				key: 'ArrowUp',
-				hideStoryId: '3',
 				expectedId: '2',
+				hideStoryId: '3',
+				key: 'ArrowUp',
+				name: 'ArrowUp selects last visible',
 			},
-		];
-
-		for (const testCase of cases) {
+		])('$name', async ({ expectedId, hideStoryId, key }) => {
 			doc = document.implementation.createHTMLDocument();
 			ctx = { onInvalidated: vi.fn() } as unknown as ContentScriptContext;
 			const storyData = createStoryData(doc);
-			const toHide = storyData.get(testCase.hideStoryId);
+			const toHide = storyData.get(hideStoryId);
 			if (!toHide) {
 				throw new Error('Expected story to exist');
 			}
@@ -244,23 +236,23 @@ describe('story keyboard navigation', () => {
 
 			await keyboardNavigation(ctx, doc, storyData, { helpModalOpen: false });
 
-			const event = new KeyboardEvent('keydown', { key: testCase.key });
+			const event = new KeyboardEvent('keydown', { key });
 			doc.dispatchEvent(event);
 
-			expect(storyData.getActiveStory()?.id).toBe(testCase.expectedId);
-		}
+			expect(storyData.getActiveStory()?.id).toBe(expectedId);
+		});
 	});
 
 	it('should persist active story when selecting by click', async () => {
 		window.history.pushState({}, '', '/news');
 		Object.defineProperty(window, 'location', {
+			configurable: true,
 			value: {
 				href: 'https://news.ycombinator.com/news',
 				pathname: '/news',
 				search: '',
 			},
 			writable: true,
-			configurable: true,
 		});
 		const storyData = createStoryData(doc);
 		const first = storyData.first();
@@ -359,8 +351,8 @@ describe('story keyboard navigation', () => {
 		storyData.activate(first);
 		const writeText = vi.fn().mockResolvedValue(undefined);
 		Object.defineProperty(navigator, 'clipboard', {
-			value: { writeText },
 			configurable: true,
+			value: { writeText },
 		});
 
 		await keyboardNavigation(ctx, doc, storyData, { helpModalOpen: false });

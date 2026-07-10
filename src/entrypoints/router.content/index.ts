@@ -55,7 +55,7 @@ const startActivityFetcher = async (username: string | undefined): Promise<void>
 		const activityFetcher = newActivityFetcher(username);
 		await activityFetcher.start();
 	} catch (e) {
-		console.error({ error: 'Failed to start activity fetcher', e });
+		console.error({ e, error: 'Failed to start activity fetcher' });
 	}
 };
 
@@ -79,17 +79,15 @@ const runComponent = async (
 		await component.main(ctx);
 	} catch (e) {
 		console.error({
-			error: 'Failed to run component',
-			e,
-			stack: (e as Error).stack,
 			component: component.id,
+			e,
+			error: 'Failed to run component',
+			stack: (e as Error).stack,
 		});
 	}
 };
 
 export default defineContentScript({
-	matches: ['https://news.ycombinator.com/*'],
-	runAt: 'document_end',
 	async main(ctx: ContentScriptContext): Promise<void> {
 		const messageHandler = (message: unknown) => {
 			if (
@@ -130,4 +128,6 @@ export default defineContentScript({
 			),
 		]);
 	},
+	matches: ['https://news.ycombinator.com/*'],
+	runAt: 'document_end',
 });

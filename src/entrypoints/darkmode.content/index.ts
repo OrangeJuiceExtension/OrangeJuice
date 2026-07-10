@@ -21,8 +21,6 @@ const readCachedMode = (): 'dark' | 'light' | null => {
 };
 
 export default defineContentScript({
-	matches: ['https://news.ycombinator.com/*'],
-	runAt: 'document_start',
 	main() {
 		const root = document.documentElement;
 		const cachedMode = readCachedMode();
@@ -42,4 +40,6 @@ export default defineContentScript({
 			root.classList.add(INFO_PAGE_CLASS);
 		}
 	},
+	matches: ['https://news.ycombinator.com/*'],
+	runAt: 'document_start',
 });

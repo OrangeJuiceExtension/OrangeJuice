@@ -10,8 +10,6 @@ import type { ComponentFeature } from '@/utils/types.ts';
 export const user: ComponentFeature = {
 	id: 'user',
 	loginRequired: true,
-	matches: [`${paths.base}/*`],
-	runAt: 'document_end',
 	main(ctx: ContentScriptContext) {
 		return Promise.all([
 			Promise.resolve().then(() => showUserInfoOnHover(ctx, document, user.username)),
@@ -21,4 +19,6 @@ export const user: ComponentFeature = {
 			Promise.resolve().then(() => topLeadersKarma(document)),
 		]);
 	},
+	matches: [`${paths.base}/*`],
+	runAt: 'document_end',
 };

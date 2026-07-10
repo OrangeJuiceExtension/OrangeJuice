@@ -10,7 +10,8 @@ export const TAB_ID_NONE = -1;
 
 export class ProvideAdapter implements Adapter<MessageMeta> {
 	sendMessage: SendMessage<MessageMeta> = async (message) => {
-		switch (message.meta.injector) {
+		const injector: string | undefined = message.meta.injector;
+		switch (injector) {
 			case 'content':
 				{
 					const tabs: Browser.tabs.Tab[] = await browser.tabs.query({
@@ -27,11 +28,11 @@ export class ProvideAdapter implements Adapter<MessageMeta> {
 					try {
 						tabs.map((tab) =>
 							browser.tabs.sendMessage(tab.id ?? TAB_ID_NONE, message).catch((e) => {
-								console.log({ error: 'provider tab.sendMessage', e });
+								console.log({ e, error: 'provider tab.sendMessage' });
 							})
 						);
 					} catch (e) {
-						console.log({ error: 'provider content sendMessage', e });
+						console.log({ e, error: 'provider content sendMessage' });
 					}
 				}
 				break;
@@ -63,7 +64,7 @@ export class ProvideAdapter implements Adapter<MessageMeta> {
 			try {
 				callback(message);
 			} catch (e) {
-				console.log({ error: 'failed to execute handler', e });
+				console.log({ e, error: 'failed to execute handler' });
 			}
 			// callback({ ...message, args: [...(message?.args || []), sender] });
 		};
@@ -82,9 +83,9 @@ export class InjectAdapter implements Adapter<MessageMeta> {
 		browser.runtime.sendMessage(browser.runtime.id, {
 			...message,
 			meta: {
-				url: document.location.href.split('#')[0],
 				injector: this.injector,
 				message,
+				url: document.location.href.split('#')[0],
 			},
 		});
 	onMessage: OnMessage<MessageMeta> = (callback) => {

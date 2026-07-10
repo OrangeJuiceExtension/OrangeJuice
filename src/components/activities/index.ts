@@ -13,10 +13,8 @@ export const FLAG_LINK = 'oj_flag_link';
 export const activities: ComponentFeature = {
 	id: 'activities',
 	loginRequired: true,
-	matches: [`${paths.base}/*`],
-	runAt: 'document_end',
 	main(ctx) {
-		const username = activities.username;
+		const { username } = activities;
 		if (!username) {
 			return;
 		}
@@ -26,20 +24,22 @@ export const activities: ComponentFeature = {
 		return Promise.all([
 			Promise.resolve().then(() =>
 				init(ctx, document, activityTrail, {
-					componentType: 'favorite',
 					buttonClass: FAVORITE_LINK,
 					buttonLabels: { active: 'unfavorite', inactive: 'favorite' },
+					componentType: 'favorite',
 				})
 			),
 			Promise.resolve().then(() =>
 				init(ctx, document, activityTrail, {
-					componentType: 'flag',
 					buttonClass: FLAG_LINK,
 					buttonLabels: { active: 'unflag', inactive: 'flag' },
+					componentType: 'flag',
 				})
 			),
 		]);
 	},
+	matches: [`${paths.base}/*`],
+	runAt: 'document_end',
 };
 
 const init = async (

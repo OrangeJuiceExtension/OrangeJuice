@@ -16,13 +16,10 @@ export async function withBackoff(
 		jitter?: boolean;
 	} = {}
 ): Promise<void> {
-	let attempt = 0;
-
-	while (true) {
+	const runAttempt = async (attempt: number): Promise<void> => {
 		try {
 			await sleep(sleepBetweenAttemptsMs);
 			await fn();
-			return;
 		} catch (err) {
 			if (attempt >= retries) {
 				throw err;
@@ -32,7 +29,9 @@ export async function withBackoff(
 			const delay = jitter ? Math.floor(exp * (0.5 + Math.random())) : exp;
 
 			await sleep(delay);
-			attempt++;
+			await runAttempt(attempt + 1);
 		}
-	}
+	};
+
+	await runAttempt(0);
 }

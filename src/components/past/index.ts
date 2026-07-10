@@ -78,9 +78,9 @@ export const chooseDate = (ctx: ContentScriptContext, doc: Document) => {
 		const url = new URL('/front', paths.base);
 		const year = formatDatePart(yearSelect.value);
 		const month = formatDatePart(monthSelect.value);
-		const day = formatDatePart(daySelect.value);
+		const formattedDay = formatDatePart(daySelect.value);
 
-		url.searchParams.set('day', `${year}-${month}-${day}`);
+		url.searchParams.set('day', `${year}-${month}-${formattedDay}`);
 		window.location.href = `${url.pathname}${url.search}`;
 	};
 
@@ -107,9 +107,9 @@ export const chooseDate = (ctx: ContentScriptContext, doc: Document) => {
 export const past: ComponentFeature = {
 	id: 'past',
 	loginRequired: true,
-	matches: [`${paths.base}/front*`],
-	runAt: 'document_end',
 	main(ctx: ContentScriptContext) {
 		chooseDate(ctx, document);
 	},
+	matches: [`${paths.base}/front*`],
+	runAt: 'document_end',
 };
