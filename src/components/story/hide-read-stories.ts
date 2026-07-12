@@ -96,6 +96,8 @@ const setStoredCheckboxState = async (checked: boolean): Promise<void> => {
 	await lStorage.setItem<StorageState>(STORAGE_KEY, { checkbox: checked });
 };
 
+const getCheckboxInsertionTarget = (bigbox: Element): Element => bigbox.closest('tr') ?? bigbox;
+
 export const setupCheckbox = async (
 	bigbox: Element,
 	doc: Document,
@@ -105,12 +107,13 @@ export const setupCheckbox = async (
 		return null;
 	}
 
-	if (!bigbox.parentElement) {
+	const insertionTarget = getCheckboxInsertionTarget(bigbox);
+	if (!insertionTarget.parentElement) {
 		return null;
 	}
 
 	const { row, checkbox } = createCheckbox(doc, visibility);
-	bigbox.parentElement.insertBefore(row, bigbox);
+	insertionTarget.parentElement.insertBefore(row, insertionTarget);
 
 	const storedState = await lStorage.getItem<StorageState>(STORAGE_KEY, { fallback: undefined });
 	if (storedState && storedState.checkbox !== undefined) {

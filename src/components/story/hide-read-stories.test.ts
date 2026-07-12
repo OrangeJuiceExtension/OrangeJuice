@@ -684,6 +684,44 @@ describe('hide_read_stories', () => {
 	});
 
 	describe('checkbox setup', () => {
+		it('inserts the checkbox before the live Hacker News bigbox row', async () => {
+			const div = document.createElement('div');
+			div.innerHTML = storiesWithBigboxHtml;
+			document.body.appendChild(div);
+
+			const bigbox = div.querySelector<HTMLTableRowElement>('tr#bigbox');
+			if (!bigbox) {
+				throw new Error('Expected the live Hacker News bigbox row');
+			}
+
+			const checkbox = await setupCheckbox(bigbox, document, READ_STORIES_VISIBILITY.HIDE);
+			const checkboxRow = checkbox?.closest('tr');
+
+			expect(checkboxRow?.parentElement).toBe(bigbox.parentElement);
+			expect(checkboxRow?.nextElementSibling).toBe(bigbox);
+		});
+
+		it('hides visited stories in the live Hacker News bigbox structure', async () => {
+			const div = document.createElement('div');
+			div.innerHTML = storiesWithBigboxHtml;
+			document.body.appendChild(div);
+			await lStorage.setItem<StorageState>('oj_hide_read_stories', { checkbox: true });
+
+			const bigbox = div.querySelector<HTMLTableRowElement>('tr#bigbox');
+			const storyRow = div.querySelector<HTMLTableRowElement>('tr#story1');
+			if (!(bigbox && storyRow)) {
+				throw new Error('Expected the live Hacker News story markup');
+			}
+
+			const storyData = new StoryData(bigbox, [storyRow]);
+			mockGetVisitsForHideReadStories.mockResolvedValue([{ id: 'story1', latestVisit: {} }]);
+			const ctx = { onInvalidated: vi.fn() } as unknown as ContentScriptContext;
+
+			await hideReadStories(ctx, document, storyData);
+
+			expect(storyRow.style.display).toBe('none');
+		});
+
 		it('should create checkbox on valid page', async () => {
 			Object.defineProperty(window, 'location', {
 				configurable: true,
@@ -745,6 +783,15 @@ describe('hide_read_stories', () => {
 
 			const bigbox = div.querySelector('#bigbox');
 			expect(bigbox).not.toBeNull();
+		});
+
+		it('should match the live Hacker News bigbox row structure', () => {
+			const div = document.createElement('div');
+			div.innerHTML = storiesWithBigboxHtml;
+
+			const bigbox = div.querySelector<HTMLTableRowElement>('tr#bigbox');
+			expect(bigbox).not.toBeNull();
+			expect(bigbox?.querySelector('table.itemlist')).not.toBeNull();
 		});
 
 		it('should have exactly 3 stories', () => {
