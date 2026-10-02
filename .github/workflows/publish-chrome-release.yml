@@ -23,6 +23,9 @@ jobs:
         with:
           bun-version-file: package.json
 
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
       - name: Download Chrome release asset
         id: release
         env:
@@ -46,4 +49,4 @@ jobs:
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
-        run: bunx publish-browser-extension --chrome-zip "${{ steps.release.outputs.asset_name }}"
+        run: ./node_modules/.bin/publish-extension --chrome-zip "${{ steps.release.outputs.asset_name }}"
