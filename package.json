@@ -20,6 +20,7 @@
 		"icons": "bun run scripts/generate-icons.ts",
 		"postinstall": "wxt prepare",
 		"prepare": "lefthook install",
+		"social-images": "bun run scripts/generate-og-image.ts",
 		"test": "vitest",
 		"webext:firefox:lint": "web-ext -w -s .output/firefox-mv2/ lint",
 		"zip": "wxt zip",
