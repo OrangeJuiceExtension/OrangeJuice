@@ -36,7 +36,7 @@ const createSvgIcon = (isDark: boolean): SVGSVGElement => {
 
 const readStoredTheme = (): boolean | null => {
 	try {
-		const stored = localStorage.getItem(STORAGE_KEY);
+		const stored = window.localStorage.getItem(STORAGE_KEY);
 		if (stored === null) {
 			return null;
 		}
@@ -55,7 +55,7 @@ const applyThemeClass = (isDark: boolean): void => {
 
 const writeTheme = (isDark: boolean): void => {
 	try {
-		localStorage.setItem(STORAGE_KEY, isDark ? '1' : '0');
+		window.localStorage.setItem(STORAGE_KEY, isDark ? '1' : '0');
 	} catch {
 		// Ignore storage failures.
 	}
