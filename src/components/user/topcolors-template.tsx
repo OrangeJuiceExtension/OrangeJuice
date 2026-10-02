@@ -1,4 +1,9 @@
 import { hideBody, showBody } from '@/components/common/hide-body.ts';
+import {
+	arrangeSpectrum,
+	SPECTRUM_COLUMNS,
+	type SpectrumColor,
+} from '@/components/user/topcolors-spectrum.ts';
 import { dom } from '@/utils/dom.ts';
 import './topcolors-template.css';
 
@@ -6,7 +11,6 @@ const TOPCOLORS_ROOT_ID = 'oj-topcolors-root';
 
 interface TopColor {
 	hex: string;
-	href: string;
 }
 
 interface TopColorSaveTarget {
@@ -15,74 +19,22 @@ interface TopColorSaveTarget {
 	submitMethod: string;
 }
 
-const SWATCH_SHAPES = ['circle', 'pill', 'diamond', 'squircle', 'hex'] as const;
-type SwatchShape = (typeof SWATCH_SHAPES)[number];
-
 const HEX_REGEX = /#?([0-9a-f]{6})/i;
-
-const TOAST_ID = 'oj-topcolors-toast';
-const TOAST_VISIBLE_CLASS = 'oj-topcolors__toast--visible';
-const TOAST_HIDE_DELAY_MS = 1400;
 const TOP_COLOR_FIELD_NAME = 'topc';
 const FORM_SKIP_INPUT_TYPES = new Set(['button', 'file', 'image', 'reset', 'submit']);
-const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
-
-let toastTimeout: number | undefined;
-
-const pickRandomShape = (): SwatchShape => {
-	const index = Math.floor(Math.random() * SWATCH_SHAPES.length);
-	return SWATCH_SHAPES[index];
-};
+const SWATCH_SELECTOR = '.oj-topcolors__swatch';
+const KEYBOARD_DIRECTIONS = new Set([
+	'ArrowLeft',
+	'ArrowRight',
+	'ArrowUp',
+	'ArrowDown',
+	'Home',
+	'End',
+]);
 
 const normalizeHex = (value: string): string | null => {
 	const match = value.match(HEX_REGEX);
-	if (!match) {
-		return null;
-	}
-	return `#${match[1].toLowerCase()}`;
-};
-
-const showCopyToast = (doc: Document, value: string, shape: SwatchShape) => {
-	let toast = doc.getElementById(TOAST_ID) as HTMLDivElement | null;
-	if (!toast) {
-		toast = doc.createElement('div');
-		toast.id = TOAST_ID;
-		toast.className = 'oj-topcolors__toast';
-		doc.body.appendChild(toast);
-	}
-
-	toast.replaceChildren();
-
-	const toastContent = doc.createElement('span');
-	toastContent.className = 'oj-topcolors__toast-content';
-
-	const swatch = doc.createElement('span');
-	swatch.className = `oj-topcolors__swatch oj-topcolors__swatch--${shape} oj-topcolors__toast-swatch`;
-	swatch.style.backgroundColor = value;
-
-	const label = doc.createElement('span');
-	label.textContent = `Copied ${value}`;
-
-	toastContent.append(swatch, label);
-	toast.appendChild(toastContent);
-	toast.classList.add(TOAST_VISIBLE_CLASS);
-
-	if (toastTimeout) {
-		window.clearTimeout(toastTimeout);
-	}
-
-	toastTimeout = window.setTimeout(() => {
-		toast?.classList.remove(TOAST_VISIBLE_CLASS);
-	}, TOAST_HIDE_DELAY_MS);
-};
-
-const copyToClipboard = async (_doc: Document, value: string): Promise<boolean> => {
-	if (!navigator.clipboard?.writeText) {
-		return false;
-	}
-
-	await navigator.clipboard.writeText(value);
-	return true;
+	return match ? `#${match[1].toLowerCase()}` : null;
 };
 
 const formatTopColorForUserForm = (value: string): string => normalizeHex(value) ?? value;
@@ -180,7 +132,7 @@ const submitTopColor = async (target: TopColorSaveTarget, color: string): Promis
 	formValues.set(TOP_COLOR_FIELD_NAME, formatTopColorForUserForm(color));
 	const submitBody = formValues.toString();
 
-	await fetch(target.submitAction.toString(), {
+	const response = await fetch(target.submitAction.toString(), {
 		body: submitBody,
 		cache: 'no-store',
 		credentials: 'include',
@@ -191,6 +143,9 @@ const submitTopColor = async (target: TopColorSaveTarget, color: string): Promis
 		redirect: 'manual',
 	});
 
+	if (!response.ok && response.type !== 'opaqueredirect') {
+		throw new Error(`Failed to save top color (${response.status}).`);
+	}
 	window.location.reload();
 };
 
@@ -224,7 +179,7 @@ const extractTopColors = (doc: Document): TopColor[] => {
 			continue;
 		}
 
-		deduped.set(hex, { hex, href: isAnchor ? source.href : doc.location.href });
+		deduped.set(hex, { hex });
 	}
 
 	return Array.from(deduped.values());
@@ -253,86 +208,100 @@ const findContentContainer = (doc: Document): HTMLElement | null => {
 	return null;
 };
 
-const createSaveIcon = (doc: Document): SVGSVGElement => {
-	const svg = doc.createElementNS(SVG_NAMESPACE, 'svg');
-	svg.setAttribute('aria-hidden', 'true');
-	svg.setAttribute('class', 'oj-topcolors__save-icon');
-	svg.setAttribute('focusable', 'false');
-	svg.setAttribute('viewBox', '0 0 16 16');
-
-	const outerPath = doc.createElementNS(SVG_NAMESPACE, 'path');
-	outerPath.setAttribute('d', 'M2 2h9l3 3v9H2z');
-	outerPath.setAttribute('fill', 'none');
-	outerPath.setAttribute('stroke', 'currentColor');
-
-	const innerPath = doc.createElementNS(SVG_NAMESPACE, 'path');
-	innerPath.setAttribute('d', 'M5 2h5v4H5zM5 9h6v4H5z');
-	innerPath.setAttribute('fill', 'none');
-	innerPath.setAttribute('stroke', 'currentColor');
-
-	svg.append(outerPath, innerPath);
-	return svg;
+const createElement = <Tag extends keyof HTMLElementTagNameMap>(
+	doc: Document,
+	tag: Tag,
+	name: string,
+	text?: string
+): HTMLElementTagNameMap[Tag] => {
+	const element = doc.createElement(tag);
+	element.className = `oj-topcolors__${name}`;
+	if (text) {
+		element.textContent = text;
+	}
+	return element;
 };
 
-const createTopColorItem = (
+const navigatePalette = (event: KeyboardEvent, palette: HTMLElement): void => {
+	if (!(KEYBOARD_DIRECTIONS.has(event.key) && event.target instanceof HTMLButtonElement)) {
+		return;
+	}
+	event.preventDefault();
+	const view = palette.ownerDocument.defaultView;
+	const buttons = Array.from(palette.querySelectorAll<HTMLButtonElement>(SWATCH_SELECTOR))
+		.map((button) => ({ button, order: Number(view?.getComputedStyle(button).order) }))
+		.sort((a, b) => a.order - b.order)
+		.map(({ button }) => button);
+	const columns =
+		Number.parseInt(view?.getComputedStyle(palette).getPropertyValue('--columns') ?? '', 10) ||
+		1;
+	const index = buttons.indexOf(event.target);
+	const offsets: Record<string, number> = {
+		ArrowDown: columns,
+		ArrowLeft: -1,
+		ArrowRight: 1,
+		ArrowUp: -columns,
+		End: buttons.length - 1 - index,
+		Home: -index,
+	};
+	const next = buttons[Math.max(0, Math.min(buttons.length - 1, index + offsets[event.key]))];
+	event.target.tabIndex = -1;
+	next.tabIndex = 0;
+	next.focus();
+};
+
+const createPalette = (
 	doc: Document,
-	color: TopColor,
-	index: number,
-	saveTarget?: TopColorSaveTarget
-): HTMLLIElement => {
-	const shape = pickRandomShape();
-	const item = doc.createElement('li');
-	item.className = 'oj-topcolors__item';
-
-	const shell = doc.createElement('div');
-	shell.className = 'oj-topcolors__card-shell';
-
-	const card = doc.createElement('a');
-	card.className = 'oj-topcolors__card';
-	card.href = color.href;
-	card.addEventListener('click', async (event) => {
-		event.preventDefault();
-		const didCopy = await copyToClipboard(doc, color.hex);
-		if (didCopy) {
-			showCopyToast(doc, color.hex, shape);
+	colors: SpectrumColor[],
+	neutral: boolean,
+	onPreview: (color: SpectrumColor) => void,
+	onSelect: (color: SpectrumColor, button: HTMLButtonElement) => void,
+	onRestore: () => void
+): HTMLElement => {
+	const palette = createElement(doc, 'div', 'palette');
+	palette.classList.toggle('oj-topcolors__palette--neutral', neutral);
+	palette.setAttribute('role', 'group');
+	palette.setAttribute(
+		'aria-label',
+		neutral ? 'Neutral colors, light to dark' : 'Rainbow colors, light to dark'
+	);
+	for (const [size, columns] of Object.entries(SPECTRUM_COLUMNS)) {
+		palette.style.setProperty(`--columns-${size}`, String(Math.min(columns, colors.length)));
+	}
+	for (const [index, color] of colors.entries()) {
+		const button = createElement(doc, 'button', 'swatch');
+		button.type = 'button';
+		button.tabIndex = index === 0 ? 0 : -1;
+		button.dataset.hex = color.hex;
+		button.setAttribute('aria-label', `${color.hex}, popularity #${color.rank}`);
+		button.setAttribute('aria-pressed', 'false');
+		button.title = `${color.hex} · #${color.rank}`;
+		for (const [size, order] of Object.entries(color.orders)) {
+			button.style.setProperty(`--order-${size}`, String(neutral ? index : order));
+		}
+		const fill = createElement(doc, 'span', 'swatch-fill');
+		fill.style.backgroundColor = color.hex;
+		button.append(fill);
+		button.addEventListener('pointerenter', () => onPreview(color));
+		button.addEventListener('focus', () => onPreview(color));
+		button.addEventListener('click', () => {
+			const tabStop = palette.querySelector<HTMLButtonElement>('[tabindex="0"]');
+			if (tabStop) {
+				tabStop.tabIndex = -1;
+			}
+			button.tabIndex = 0;
+			onSelect(color, button);
+		});
+		palette.append(button);
+	}
+	palette.addEventListener('pointerleave', onRestore);
+	palette.addEventListener('focusout', (event) => {
+		if (!(event.relatedTarget instanceof Node && palette.contains(event.relatedTarget))) {
+			onRestore();
 		}
 	});
-
-	const rank = doc.createElement('span');
-	rank.className = 'oj-topcolors__rank';
-	rank.textContent = `${index + 1}`;
-
-	const swatch = doc.createElement('span');
-	swatch.className = `oj-topcolors__swatch oj-topcolors__swatch--${shape}`;
-	swatch.style.backgroundColor = color.hex;
-
-	const meta = doc.createElement('span');
-	meta.className = 'oj-topcolors__meta';
-	const hex = doc.createElement('span');
-	hex.className = 'oj-topcolors__hex';
-	hex.textContent = color.hex;
-	meta.append(hex);
-
-	card.append(rank, swatch, meta);
-	shell.append(card);
-
-	if (saveTarget) {
-		const saveButton = doc.createElement('button');
-		saveButton.setAttribute('aria-label', `Save ${color.hex} as top color`);
-		saveButton.className = 'oj-topcolors__save-button';
-		saveButton.title = `Save ${color.hex}`;
-		saveButton.type = 'button';
-		saveButton.append(createSaveIcon(doc));
-		saveButton.addEventListener('click', async (event) => {
-			event.preventDefault();
-			event.stopPropagation();
-			await submitTopColor(saveTarget, color.hex);
-		});
-		shell.append(saveButton);
-	}
-
-	item.append(shell);
-	return item;
+	palette.addEventListener('keydown', (event) => navigatePalette(event, palette));
+	return palette;
 };
 
 const createTopcolorsTemplate = (
@@ -342,27 +311,110 @@ const createTopcolorsTemplate = (
 ): HTMLElement => {
 	const section = doc.createElement('section');
 	section.className = 'oj-topcolors';
-
-	const intro = doc.createElement('header');
-	intro.className = 'oj-topcolors__intro';
-
-	const title = doc.createElement('h1');
-	title.className = 'oj-topcolors__title';
-	title.textContent = 'Top Colors';
-
-	const subtitle = doc.createElement('p');
-	subtitle.className = 'oj-topcolors__subtitle';
-	subtitle.textContent = `Browse Hacker News themes by color. ${colors.length} colors available.`;
-
+	const intro = createElement(doc, 'header', 'intro');
+	const title = createElement(doc, 'h1', 'title', 'Top Colors');
+	const subtitle = createElement(
+		doc,
+		'p',
+		'subtitle',
+		`${colors.length.toLocaleString()} community ${colors.length === 1 ? 'color' : 'colors'}. Find your shade of Hacker News.`
+	);
 	intro.append(title, subtitle);
-
-	const list = doc.createElement('ol');
-	list.className = 'oj-topcolors__list';
-	for (const [index, color] of colors.entries()) {
-		list.append(createTopColorItem(doc, color, index, saveTarget));
+	section.append(intro);
+	const arranged = arrangeSpectrum(colors.map((color) => color.hex));
+	let [selected] = arranged;
+	if (!selected) {
+		section.append(createElement(doc, 'p', 'empty', 'No colors to explore yet.'));
+		return section;
 	}
 
-	section.append(intro, list);
+	const inspector = createElement(doc, 'div', 'inspector');
+	const sample = createElement(doc, 'span', 'sample');
+	sample.setAttribute('aria-hidden', 'true');
+	const details = createElement(doc, 'div', 'details');
+	const hex = createElement(doc, 'span', 'hex');
+	const rank = createElement(doc, 'span', 'rank');
+	details.append(hex, rank);
+	const actions = createElement(doc, 'div', 'actions');
+	const copy = createElement(doc, 'button', 'copy-button', 'Copy hex');
+	copy.type = 'button';
+	const status = createElement(doc, 'p', 'status');
+	status.setAttribute('role', 'status');
+	const restoreHint = (): void => {
+		status.textContent = 'Hover to explore. Click to select. Arrow keys to browse.';
+	};
+	restoreHint();
+	copy.addEventListener('click', async () => {
+		const value = selected.hex;
+		try {
+			if (!navigator.clipboard?.writeText) {
+				throw new Error('Clipboard unavailable');
+			}
+			await navigator.clipboard.writeText(value);
+			status.textContent = `Copied ${value}`;
+		} catch {
+			status.textContent = `Could not copy. Select and copy the hex code: ${value}`;
+		}
+	});
+	actions.append(copy);
+	if (saveTarget) {
+		const save = createElement(doc, 'button', 'save-button', 'Use this color');
+		save.type = 'button';
+		save.addEventListener('click', async () => {
+			save.disabled = true;
+			status.textContent = `Saving ${selected.hex}…`;
+			try {
+				await submitTopColor(saveTarget, selected.hex);
+			} catch {
+				status.textContent = 'Could not save your color. Please try again.';
+			} finally {
+				save.disabled = false;
+			}
+		});
+		actions.append(save);
+	}
+	inspector.append(sample, details, actions);
+	section.append(inspector, status);
+
+	const preview = (color: SpectrumColor): void => {
+		sample.style.backgroundColor = color.hex;
+		hex.textContent = color.hex;
+		rank.textContent = `#${color.rank} in popularity`;
+	};
+	let selectedButton: HTMLButtonElement | null = null;
+	const select = (color: SpectrumColor, button: HTMLButtonElement): void => {
+		selectedButton?.setAttribute('aria-pressed', 'false');
+		selected = color;
+		selectedButton = button;
+		button.setAttribute('aria-pressed', 'true');
+		preview(color);
+		restoreHint();
+	};
+	const spectrum = arranged.filter(({ neutral }) => !neutral);
+	const neutrals = arranged
+		.filter(({ neutral }) => neutral)
+		.sort((a, b) => b.lightness - a.lightness);
+	for (const [paletteColors, neutral] of [
+		[spectrum, false],
+		[neutrals, true],
+	] as const) {
+		if (paletteColors.length === 0) {
+			continue;
+		}
+		const heading = createElement(
+			doc,
+			'h2',
+			'palette-heading',
+			neutral ? 'The quiet tones' : 'The spectrum'
+		);
+		section.append(
+			heading,
+			createPalette(doc, paletteColors, neutral, preview, select, () => preview(selected))
+		);
+	}
+	selectedButton = section.querySelector<HTMLButtonElement>(`[data-hex="${selected.hex}"]`);
+	selectedButton?.setAttribute('aria-pressed', 'true');
+	preview(selected);
 	return section;
 };
 
