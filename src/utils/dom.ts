@@ -186,9 +186,11 @@ const parseRgbChannel = (value: string): number => Number.parseInt(value, 16);
 
 const parseColorToRgb = (value: string): { r: number; g: number; b: number } | undefined => {
 	const color = value.trim();
-	const shortHexMatch = color.match(SHORT_HEX_COLOR_PATTERN);
-	if (shortHexMatch) {
-		const [r, g, b] = shortHexMatch[1].split('');
+	const shortHex = color.match(SHORT_HEX_COLOR_PATTERN)?.[1];
+	if (shortHex) {
+		const r = shortHex.charAt(0);
+		const g = shortHex.charAt(1);
+		const b = shortHex.charAt(2);
 		return {
 			b: parseRgbChannel(`${b}${b}`),
 			g: parseRgbChannel(`${g}${g}`),
@@ -196,12 +198,12 @@ const parseColorToRgb = (value: string): { r: number; g: number; b: number } | u
 		};
 	}
 
-	const hexMatch = color.match(HEX_COLOR_PATTERN);
-	if (hexMatch) {
+	const hex = color.match(HEX_COLOR_PATTERN)?.[1];
+	if (hex) {
 		return {
-			b: parseRgbChannel(hexMatch[1].slice(4, 6)),
-			g: parseRgbChannel(hexMatch[1].slice(2, 4)),
-			r: parseRgbChannel(hexMatch[1].slice(0, 2)),
+			b: parseRgbChannel(hex.slice(4, 6)),
+			g: parseRgbChannel(hex.slice(2, 4)),
+			r: parseRgbChannel(hex.slice(0, 2)),
 		};
 	}
 };

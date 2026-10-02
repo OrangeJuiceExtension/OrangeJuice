@@ -38,9 +38,11 @@ export function parseReferenceLinks(activeItem: HTMLElement): ReferenceLinks[] {
 		if (!child.childNodes[0]?.textContent) {
 			continue;
 		}
-		const splitText = child.childNodes[0].textContent.trim().split(' ');
-		const stringToMatch =
-			['-', '*'].includes(splitText[0]) && splitText[1] ? splitText[1] : splitText[0];
+		const [firstWord, secondWord] = child.childNodes[0].textContent.trim().split(' ');
+		if (!firstWord) {
+			continue;
+		}
+		const stringToMatch = ['-', '*'].includes(firstWord) && secondWord ? secondWord : firstWord;
 		const matches = stringToMatch.match(indexMarkerRegex);
 
 		if (!matches) {

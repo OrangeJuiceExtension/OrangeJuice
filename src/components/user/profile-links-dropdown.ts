@@ -132,18 +132,18 @@ export const profileLinksDropdown = (ctx: ContentScriptContext, doc: Document) =
 	}
 
 	// There are multiple pagetops and we want the second one
-	const pageTop = doc.querySelectorAll('.pagetop');
-	if (pageTop.length < 2) {
+	const [, userPageTop] = doc.querySelectorAll('.pagetop');
+	if (!userPageTop) {
 		return;
 	}
 
-	const userLink = pageTop[1].querySelector<HTMLAnchorElement>('a#me');
+	const userLink = userPageTop.querySelector<HTMLAnchorElement>('a#me');
 	if (!userLink) {
 		return false;
 	}
 
 	const userName = userLink.innerText.trim();
-	const logoutPath = removeTopLogoutLink(pageTop[1]);
+	const logoutPath = removeTopLogoutLink(userPageTop);
 
 	const style = doc.createElement('style');
 	style.textContent = createDropdownStyle(COMPONENT_NAME);
@@ -165,7 +165,7 @@ export const profileLinksDropdown = (ctx: ContentScriptContext, doc: Document) =
 		dropdownEl.append(anchorEl);
 	}
 
-	pageTop[1].closest('table')?.parentElement?.append(dropdownEl);
+	userPageTop.closest('table')?.parentElement?.append(dropdownEl);
 
 	updateUserLinkText(false);
 

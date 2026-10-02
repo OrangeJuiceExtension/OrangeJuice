@@ -24,11 +24,12 @@ function findLogoFile(): string {
 		.filter((f) => f.toLowerCase().endsWith('.png'))
 		.map((f) => path.join(assetsDir, f));
 
-	if (files.length === 0) {
+	const [firstFile] = files;
+	if (!firstFile) {
 		throw new Error(`No PNG files found in ${assetsDir}`);
 	}
 
-	return files[0];
+	return firstFile;
 }
 
 // Infer size from filename (supports lots of patterns)

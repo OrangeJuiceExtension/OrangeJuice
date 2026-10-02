@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { StoryData } from '@/components/story/story-data.ts';
 
 const createStoryRows = (doc: Document, count: number) => {
@@ -59,6 +59,7 @@ describe('StoryData', () => {
 	it('should skip rows without id', () => {
 		const bigbox = doc.createElement('div');
 		const [rowWithId] = createStoryRows(doc, 1);
+		assert.isDefined(rowWithId);
 		const rowWithoutId = doc.createElement('tr');
 		const data = new StoryData(bigbox, [rowWithId, rowWithoutId]);
 

@@ -89,8 +89,8 @@ export class HNStory {
 			return;
 		}
 		const scoreText = subtext.querySelector('span.score')?.textContent;
-		const match = scoreText?.match(POINTS_REGEX);
-		return match ? Number.parseInt(match[1], 10) : undefined;
+		const points = scoreText?.match(POINTS_REGEX)?.[1];
+		return points ? Number.parseInt(points, 10) : undefined;
 	}
 
 	parseComments(subtext?: HTMLElement): number | undefined {
@@ -110,9 +110,9 @@ export class HNStory {
 				return 0;
 			}
 
-			const match = text?.match(COMMENTS_REGEX);
-			if (match) {
-				return Number.parseInt(match[1], 10);
+			const count = text?.match(COMMENTS_REGEX)?.[1];
+			if (count) {
+				return Number.parseInt(count, 10);
 			}
 		}
 	}

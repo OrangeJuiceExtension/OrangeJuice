@@ -4,6 +4,7 @@ import { addIndentation, createCommentRow } from '@/components/comment/constants
 import { HNComment } from '@/components/comment/hn-comment.ts';
 import { KeyboardHandlers } from '@/components/comment/keyboard-handlers.ts';
 import { createClientServices } from '@/services/manager.ts';
+import { getRequiredItem } from '@/test/required-item.ts';
 import { dom } from '@/utils/dom.ts';
 import lStorage from '@/utils/local-storage.ts';
 import { parseReferenceLinks } from '@/utils/parse-reference-links.ts';
@@ -222,10 +223,10 @@ describe('commentKeyboardHandlers', () => {
 					throw new Error('Expected item to exist');
 				}
 
-				addIndentation(doc, setup.rows[0], 0);
-				addIndentation(doc, setup.rows[1], 0);
-				addIndentation(doc, setup.rows[2], 1);
-				addIndentation(doc, setup.rows[3], 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 1), 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 2), 1);
+				addIndentation(doc, getRequiredItem(setup.rows, 3), 0);
 				await setup.commentData.activate(first);
 
 				await keyboardHandlers.move(event, setup.commentData, 'down');
@@ -241,13 +242,13 @@ describe('commentKeyboardHandlers', () => {
 					throw new Error('Expected item to exist');
 				}
 
-				addIndentation(doc, setup.rows[0], 0);
-				addIndentation(doc, setup.rows[1], 0);
-				addIndentation(doc, setup.rows[2], 1);
-				addIndentation(doc, setup.rows[3], 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 1), 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 2), 1);
+				addIndentation(doc, getRequiredItem(setup.rows, 3), 0);
 				await setup.commentData.activate(first);
 
-				setup.rows[1]?.classList.add('coll');
+				getRequiredItem(setup.rows, 1).classList.add('coll');
 
 				await keyboardHandlers.move(event, setup.commentData, 'down');
 
@@ -262,16 +263,16 @@ describe('commentKeyboardHandlers', () => {
 					throw new Error('Expected item to exist');
 				}
 
-				addIndentation(doc, setup.rows[0], 0);
-				addIndentation(doc, setup.rows[1], 0);
-				addIndentation(doc, setup.rows[2], 2);
-				addIndentation(doc, setup.rows[3], 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 1), 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 2), 2);
+				addIndentation(doc, getRequiredItem(setup.rows, 3), 0);
 				await setup.commentData.activate(first);
 
 				const toggleLink = doc.createElement('a');
 				toggleLink.classList.add('togg', 'clicky');
 				toggleLink.textContent = '[2 more]';
-				setup.rows[1]?.appendChild(toggleLink);
+				getRequiredItem(setup.rows, 1).appendChild(toggleLink);
 				const clickSpy = vi.spyOn(toggleLink, 'click');
 
 				await keyboardHandlers.move(event, setup.commentData, 'down');
@@ -288,19 +289,19 @@ describe('commentKeyboardHandlers', () => {
 					throw new Error('Expected item to exist');
 				}
 
-				addIndentation(doc, setup.rows[0], 0);
-				addIndentation(doc, setup.rows[1], 1);
-				addIndentation(doc, setup.rows[2], 1);
-				addIndentation(doc, setup.rows[3], 0);
-				setup.rows[0]?.classList.add('coll');
-				setup.rows[1]?.classList.add('noshow');
-				setup.rows[2]?.classList.add('noshow');
+				addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+				addIndentation(doc, getRequiredItem(setup.rows, 2), 1);
+				addIndentation(doc, getRequiredItem(setup.rows, 3), 0);
+				getRequiredItem(setup.rows, 0).classList.add('coll');
+				getRequiredItem(setup.rows, 1).classList.add('noshow');
+				getRequiredItem(setup.rows, 2).classList.add('noshow');
 				await setup.commentData.activate(first);
 
 				const toggleLink = doc.createElement('a');
 				toggleLink.classList.add('togg', 'clicky');
 				toggleLink.textContent = '[2 more]';
-				setup.rows[0]?.appendChild(toggleLink);
+				getRequiredItem(setup.rows, 0).appendChild(toggleLink);
 				const clickSpy = vi.spyOn(toggleLink, 'click');
 
 				await keyboardHandlers.move(event, setup.commentData, 'down');
@@ -318,23 +319,23 @@ describe('commentKeyboardHandlers', () => {
 					throw new Error('Expected item to exist');
 				}
 
-				addIndentation(doc, setup.rows[0], 0);
-				addIndentation(doc, setup.rows[1], 0);
-				addIndentation(doc, setup.rows[2], 1);
-				addIndentation(doc, setup.rows[3], 0);
-				setup.rows[1]?.classList.add('coll');
-				setup.rows[2]?.classList.add('noshow');
+				addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 1), 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 2), 1);
+				addIndentation(doc, getRequiredItem(setup.rows, 3), 0);
+				getRequiredItem(setup.rows, 1).classList.add('coll');
+				getRequiredItem(setup.rows, 2).classList.add('noshow');
 				await setup.commentData.activate(first);
 
 				const toggleLink = doc.createElement('a');
 				toggleLink.classList.add('togg', 'clicky');
 				toggleLink.textContent = '[1 more]';
-				setup.rows[1]?.appendChild(toggleLink);
+				getRequiredItem(setup.rows, 1).appendChild(toggleLink);
 
 				await keyboardHandlers.move(eventShift, setup.commentData, 'down');
 
-				setup.rows[1]?.classList.remove('coll');
-				setup.rows[2]?.classList.remove('noshow');
+				getRequiredItem(setup.rows, 1).classList.remove('coll');
+				getRequiredItem(setup.rows, 2).classList.remove('noshow');
 
 				await keyboardHandlers.move(event, setup.commentData, 'down');
 
@@ -367,7 +368,7 @@ describe('commentKeyboardHandlers', () => {
 				const toggleLink = doc.createElement('a');
 				toggleLink.classList.add('togg', 'clicky');
 				toggleLink.textContent = '[–]';
-				setup.rows[1]?.appendChild(toggleLink);
+				getRequiredItem(setup.rows, 1).appendChild(toggleLink);
 				const clickSpy = vi.spyOn(toggleLink, 'click');
 
 				await keyboardHandlers.move(event, setup.commentData, 'down');
@@ -418,17 +419,17 @@ describe('commentKeyboardHandlers', () => {
 					throw new Error('Expected item to exist');
 				}
 
-				addIndentation(doc, setup.rows[0], 0);
-				addIndentation(doc, setup.rows[1], 1);
-				addIndentation(doc, setup.rows[2], 0);
-				setup.rows[0]?.classList.add('coll');
-				setup.rows[1]?.classList.add('noshow');
+				addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+				addIndentation(doc, getRequiredItem(setup.rows, 2), 0);
+				getRequiredItem(setup.rows, 0).classList.add('coll');
+				getRequiredItem(setup.rows, 1).classList.add('noshow');
 				await setup.commentData.activate(third);
 
 				const toggleLink = doc.createElement('a');
 				toggleLink.classList.add('togg', 'clicky');
 				toggleLink.textContent = '[1 more]';
-				setup.rows[0]?.appendChild(toggleLink);
+				getRequiredItem(setup.rows, 0).appendChild(toggleLink);
 				const clickSpy = vi.spyOn(toggleLink, 'click');
 
 				await keyboardHandlers.move(event, setup.commentData, 'up');
@@ -445,13 +446,13 @@ describe('commentKeyboardHandlers', () => {
 					throw new Error('Expected item to exist');
 				}
 
-				addIndentation(doc, setup.rows[0], 0);
-				addIndentation(doc, setup.rows[1], 1);
-				addIndentation(doc, setup.rows[2], 1);
-				addIndentation(doc, setup.rows[3], 0);
-				setup.rows[0]?.classList.add('coll');
-				setup.rows[1]?.classList.add('noshow');
-				setup.rows[2]?.classList.add('noshow');
+				addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+				addIndentation(doc, getRequiredItem(setup.rows, 2), 1);
+				addIndentation(doc, getRequiredItem(setup.rows, 3), 0);
+				getRequiredItem(setup.rows, 0).classList.add('coll');
+				getRequiredItem(setup.rows, 1).classList.add('noshow');
+				getRequiredItem(setup.rows, 2).classList.add('noshow');
 				await setup.commentData.activate(fourth);
 
 				await keyboardHandlers.move(event, setup.commentData, 'up');
@@ -467,19 +468,19 @@ describe('commentKeyboardHandlers', () => {
 					throw new Error('Expected item to exist');
 				}
 
-				addIndentation(doc, setup.rows[0], 0);
-				addIndentation(doc, setup.rows[1], 1);
-				addIndentation(doc, setup.rows[2], 1);
-				addIndentation(doc, setup.rows[3], 0);
-				setup.rows[0]?.classList.add('coll');
-				setup.rows[1]?.classList.add('noshow');
-				setup.rows[2]?.classList.add('noshow');
+				addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+				addIndentation(doc, getRequiredItem(setup.rows, 2), 1);
+				addIndentation(doc, getRequiredItem(setup.rows, 3), 0);
+				getRequiredItem(setup.rows, 0).classList.add('coll');
+				getRequiredItem(setup.rows, 1).classList.add('noshow');
+				getRequiredItem(setup.rows, 2).classList.add('noshow');
 				await setup.commentData.activate(fourth);
 
 				const toggleLink = doc.createElement('a');
 				toggleLink.classList.add('togg', 'clicky');
 				toggleLink.textContent = '[2 more]';
-				setup.rows[0]?.appendChild(toggleLink);
+				getRequiredItem(setup.rows, 0).appendChild(toggleLink);
 				const clickSpy = vi.spyOn(toggleLink, 'click');
 
 				await keyboardHandlers.move(event, setup.commentData, 'up');
@@ -496,19 +497,19 @@ describe('commentKeyboardHandlers', () => {
 					throw new Error('Expected item to exist');
 				}
 
-				addIndentation(doc, setup.rows[0], 0);
-				addIndentation(doc, setup.rows[1], 1);
-				addIndentation(doc, setup.rows[2], 2);
-				addIndentation(doc, setup.rows[3], 0);
-				setup.rows[0]?.classList.add('coll');
-				setup.rows[1]?.classList.add('noshow');
-				setup.rows[2]?.classList.add('noshow');
+				addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+				addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+				addIndentation(doc, getRequiredItem(setup.rows, 2), 2);
+				addIndentation(doc, getRequiredItem(setup.rows, 3), 0);
+				getRequiredItem(setup.rows, 0).classList.add('coll');
+				getRequiredItem(setup.rows, 1).classList.add('noshow');
+				getRequiredItem(setup.rows, 2).classList.add('noshow');
 				await setup.commentData.activate(fourth);
 
 				const toggleLink = doc.createElement('a');
 				toggleLink.classList.add('togg', 'clicky');
 				toggleLink.textContent = '[2 more]';
-				setup.rows[0]?.appendChild(toggleLink);
+				getRequiredItem(setup.rows, 0).appendChild(toggleLink);
 				const clickSpy = vi.spyOn(toggleLink, 'click');
 
 				await keyboardHandlers.move(event, setup.commentData, 'up');
@@ -1006,11 +1007,11 @@ describe('commentKeyboardHandlers', () => {
 				throw new Error('Expected item to exist');
 			}
 
-			addIndentation(doc, setup.rows[0], 0);
-			addIndentation(doc, setup.rows[1], 1);
-			addIndentation(doc, setup.rows[2], 0);
-			addIndentation(doc, setup.rows[3], 1);
-			addIndentation(doc, setup.rows[4], 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 2), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 3), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 4), 0);
 			await setup.commentData.activate(first);
 
 			await keyboardHandlers.moveAtSameIndent(setup.commentData, 'down');
@@ -1025,11 +1026,11 @@ describe('commentKeyboardHandlers', () => {
 				throw new Error('Expected item to exist');
 			}
 
-			addIndentation(doc, setup.rows[0], 0);
-			addIndentation(doc, setup.rows[1], 0);
-			addIndentation(doc, setup.rows[2], 1);
-			addIndentation(doc, setup.rows[3], 0);
-			addIndentation(doc, setup.rows[4], 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 1), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 2), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 3), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 4), 0);
 			await setup.commentData.activate(fifth);
 
 			await keyboardHandlers.moveAtSameIndent(setup.commentData, 'up');
@@ -1044,12 +1045,12 @@ describe('commentKeyboardHandlers', () => {
 				throw new Error('Expected item to exist');
 			}
 
-			addIndentation(doc, setup.rows[0], 0);
-			addIndentation(doc, setup.rows[1], 1);
-			addIndentation(doc, setup.rows[2], 2);
-			addIndentation(doc, setup.rows[3], 1);
-			addIndentation(doc, setup.rows[4], 2);
-			addIndentation(doc, setup.rows[5], 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 2), 2);
+			addIndentation(doc, getRequiredItem(setup.rows, 3), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 4), 2);
+			addIndentation(doc, getRequiredItem(setup.rows, 5), 0);
 			await setup.commentData.activate(first);
 
 			await keyboardHandlers.moveAtSameIndent(setup.commentData, 'down');
@@ -1064,12 +1065,12 @@ describe('commentKeyboardHandlers', () => {
 				throw new Error('Expected item to exist');
 			}
 
-			addIndentation(doc, setup.rows[0], 0);
-			addIndentation(doc, setup.rows[1], 1);
-			addIndentation(doc, setup.rows[2], 2);
-			addIndentation(doc, setup.rows[3], 1);
-			addIndentation(doc, setup.rows[4], 2);
-			addIndentation(doc, setup.rows[5], 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 2), 2);
+			addIndentation(doc, getRequiredItem(setup.rows, 3), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 4), 2);
+			addIndentation(doc, getRequiredItem(setup.rows, 5), 0);
 			await setup.commentData.activate(fourth);
 
 			await keyboardHandlers.moveAtSameIndent(setup.commentData, 'up');
@@ -1092,10 +1093,10 @@ describe('commentKeyboardHandlers', () => {
 				throw new Error('Expected item to exist');
 			}
 
-			addIndentation(doc, setup.rows[0], 0);
-			addIndentation(doc, setup.rows[1], 1);
-			addIndentation(doc, setup.rows[2], 2);
-			addIndentation(doc, setup.rows[3], 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 2), 2);
+			addIndentation(doc, getRequiredItem(setup.rows, 3), 1);
 			await setup.commentData.activate(fourth);
 
 			await keyboardHandlers.moveAtSameIndent(setup.commentData, 'down');
@@ -1111,10 +1112,10 @@ describe('commentKeyboardHandlers', () => {
 				throw new Error('Expected item to exist');
 			}
 
-			addIndentation(doc, setup.rows[0], 0);
-			addIndentation(doc, setup.rows[1], 1);
-			addIndentation(doc, setup.rows[2], 2);
-			addIndentation(doc, setup.rows[3], 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 2), 2);
+			addIndentation(doc, getRequiredItem(setup.rows, 3), 1);
 			await setup.commentData.activate(second);
 			secondRow.classList.remove('oj_focused_comment');
 
@@ -1131,10 +1132,10 @@ describe('commentKeyboardHandlers', () => {
 				throw new Error('Expected item to exist');
 			}
 
-			addIndentation(doc, setup.rows[0], 0);
-			addIndentation(doc, setup.rows[1], 1);
-			addIndentation(doc, setup.rows[2], 0);
-			addIndentation(doc, setup.rows[3], 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 2), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 3), 1);
 			await setup.commentData.activate(first);
 
 			await keyboardHandlers.moveAtSameIndent(setup.commentData, 'down');
@@ -1151,12 +1152,12 @@ describe('commentKeyboardHandlers', () => {
 				throw new Error('Expected item to exist');
 			}
 
-			addIndentation(doc, setup.rows[0], 0);
-			addIndentation(doc, setup.rows[1], 1);
-			addIndentation(doc, setup.rows[2], 2);
-			addIndentation(doc, setup.rows[3], 1);
-			addIndentation(doc, setup.rows[4], 2);
-			addIndentation(doc, setup.rows[5], 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 2), 2);
+			addIndentation(doc, getRequiredItem(setup.rows, 3), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 4), 2);
+			addIndentation(doc, getRequiredItem(setup.rows, 5), 0);
 			await setup.commentData.activate(second);
 
 			await keyboardHandlers.moveAtSameOrHigherIndent(setup.commentData, 'down');
@@ -1171,11 +1172,11 @@ describe('commentKeyboardHandlers', () => {
 				throw new Error('Expected item to exist');
 			}
 
-			addIndentation(doc, setup.rows[0], 0);
-			addIndentation(doc, setup.rows[1], 1);
-			addIndentation(doc, setup.rows[2], 2);
-			addIndentation(doc, setup.rows[3], 3);
-			addIndentation(doc, setup.rows[4], 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 2), 2);
+			addIndentation(doc, getRequiredItem(setup.rows, 3), 3);
+			addIndentation(doc, getRequiredItem(setup.rows, 4), 1);
 			await setup.commentData.activate(third);
 
 			await keyboardHandlers.moveAtSameOrHigherIndent(setup.commentData, 'down');
@@ -1190,12 +1191,12 @@ describe('commentKeyboardHandlers', () => {
 				throw new Error('Expected item to exist');
 			}
 
-			addIndentation(doc, setup.rows[0], 0);
-			addIndentation(doc, setup.rows[1], 1);
-			addIndentation(doc, setup.rows[2], 2);
-			addIndentation(doc, setup.rows[3], 1);
-			addIndentation(doc, setup.rows[4], 2);
-			addIndentation(doc, setup.rows[5], 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 2), 2);
+			addIndentation(doc, getRequiredItem(setup.rows, 3), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 4), 2);
+			addIndentation(doc, getRequiredItem(setup.rows, 5), 0);
 			await setup.commentData.activate(fifth);
 
 			await keyboardHandlers.moveAtSameOrHigherIndent(setup.commentData, 'up');
@@ -1210,10 +1211,10 @@ describe('commentKeyboardHandlers', () => {
 				throw new Error('Expected item to exist');
 			}
 
-			addIndentation(doc, setup.rows[0], 0);
-			addIndentation(doc, setup.rows[1], 1);
-			addIndentation(doc, setup.rows[2], 2);
-			addIndentation(doc, setup.rows[3], 3);
+			addIndentation(doc, getRequiredItem(setup.rows, 0), 0);
+			addIndentation(doc, getRequiredItem(setup.rows, 1), 1);
+			addIndentation(doc, getRequiredItem(setup.rows, 2), 2);
+			addIndentation(doc, getRequiredItem(setup.rows, 3), 3);
 			await setup.commentData.activate(fourth);
 
 			await keyboardHandlers.moveAtSameOrHigherIndent(setup.commentData, 'down');
@@ -1358,7 +1359,7 @@ describe('commentKeyboardHandlers', () => {
 
 		it('should activate last collapsed comment after back navigation', async () => {
 			const setup = createCommentData(doc, 3);
-			setup.rows[2]?.classList.add('coll');
+			getRequiredItem(setup.rows, 2).classList.add('coll');
 			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue(null);
 			vi.spyOn(lStorage, 'getItem').mockResolvedValueOnce('prev');
 
@@ -1370,7 +1371,7 @@ describe('commentKeyboardHandlers', () => {
 
 		it('should skip noshow comment when activating last comment after back navigation', async () => {
 			const setup = createCommentData(doc, 3);
-			setup.rows[2]?.classList.add('noshow');
+			getRequiredItem(setup.rows, 2).classList.add('noshow');
 			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue(null);
 			vi.spyOn(lStorage, 'getItem').mockResolvedValueOnce('prev');
 
@@ -1418,7 +1419,7 @@ describe('commentKeyboardHandlers', () => {
 
 		it('should activate stored collapsed root comment when item id is available', async () => {
 			const setup = createCommentData(doc, 2);
-			setup.rows[1]?.classList.add('coll');
+			getRequiredItem(setup.rows, 1).classList.add('coll');
 			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
 			vi.spyOn(lStorage, 'getItem')
 				.mockResolvedValueOnce(null)

@@ -488,7 +488,8 @@ export const parseKeyboardCommandConfig = (json: string): KeyboardCommandConfig 
 
 	const result = keyboardCommandConfigSchema.safeParse(parsed, { jitless: true });
 	if (!result.success) {
-		throw new Error(formatZodIssue(result.error.issues[0]));
+		const [issue] = result.error.issues;
+		throw new Error(issue ? formatZodIssue(issue) : 'Invalid shortcut configuration.');
 	}
 
 	const parsedConfig = {} as Record<KeyboardCommandGroup, KeyboardCommand[]>;
@@ -498,9 +499,13 @@ export const parseKeyboardCommandConfig = (json: string): KeyboardCommandConfig 
 		if (commands.length !== defaultCommands.length) {
 			throw new Error(`${group} must contain ${defaultCommands.length} commands.`);
 		}
-		parsedConfig[group] = commands.map((command, index) =>
-			validateCommand(command, defaultCommands[index], group)
-		);
+		parsedConfig[group] = defaultCommands.map((defaultCommand, index) => {
+			const command = commands[index];
+			if (!command) {
+				throw new Error(`${group} is missing command ${defaultCommand.id}.`);
+			}
+			return validateCommand(command, defaultCommand, group);
+		});
 	}
 
 	for (const key of Object.keys(parsed)) {

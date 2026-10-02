@@ -34,8 +34,8 @@ const KEYBOARD_DIRECTIONS = new Set([
 ]);
 
 const normalizeHex = (value: string): string | null => {
-	const match = value.match(HEX_REGEX);
-	return match ? `#${match[1].toLowerCase()}` : null;
+	const hex = value.match(HEX_REGEX)?.[1];
+	return hex ? `#${hex.toLowerCase()}` : null;
 };
 
 const formatTopColorForUserForm = (value: string): string => normalizeHex(value) ?? value;
@@ -245,7 +245,14 @@ const navigatePalette = (event: KeyboardEvent, palette: HTMLElement): void => {
 		End: buttons.length - 1 - index,
 		Home: -index,
 	};
-	const next = buttons[Math.max(0, Math.min(buttons.length - 1, index + offsets[event.key]))];
+	const offset = offsets[event.key];
+	if (offset === undefined || index < 0) {
+		return;
+	}
+	const next = buttons[Math.max(0, Math.min(buttons.length - 1, index + offset))];
+	if (!next) {
+		return;
+	}
 	event.target.tabIndex = -1;
 	next.tabIndex = 0;
 	next.focus();
@@ -323,11 +330,12 @@ const createTopcolorsTemplate = (
 	intro.append(title, subtitle);
 	section.append(intro);
 	const arranged = arrangeSpectrum(colors.map((color) => color.hex));
-	let [selected] = arranged;
-	if (!selected) {
+	const [initialColor] = arranged;
+	if (!initialColor) {
 		section.append(createElement(doc, 'p', 'empty', 'No colors to explore yet.'));
 		return section;
 	}
+	let selected: SpectrumColor = initialColor;
 
 	const inspector = createElement(doc, 'div', 'inspector');
 	const sample = createElement(doc, 'span', 'sample');

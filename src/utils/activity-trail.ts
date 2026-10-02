@@ -352,14 +352,14 @@ class ActivityFetcher {
 
 		for (const link of links) {
 			const href = link.getAttribute('href') || '';
-			const idMatch = href.match(idMatchPattern);
-			const authMatch = href.match(authMatchPattern);
+			const id = href.match(idMatchPattern)?.[1];
+			const auth = href.match(authMatchPattern)?.[1];
 
-			if (idMatch && authMatch) {
+			if (id && auth) {
 				items.push({
-					auth: authMatch[1],
+					auth,
 					exp: Date.now() + DAYS_30,
-					id: idMatch[1],
+					id,
 					type,
 				});
 			}
@@ -374,12 +374,12 @@ class ActivityFetcher {
 
 		for (const link of links) {
 			const href = link.getAttribute('href') || '';
-			const idMatch = href.match(idMatchPattern);
+			const id = href.match(idMatchPattern)?.[1];
 
-			if (idMatch) {
+			if (id) {
 				items.push({
 					exp: Date.now() + DAYS_30,
-					id: idMatch[1],
+					id,
 					type,
 				});
 			}

@@ -1,10 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { browser, type ContentScriptContext } from '#imports';
 import { createClientServices } from '@/services/manager.ts';
 import { ReadStoriesService } from '@/services/read-stories-service.ts';
 import { stripFixtureElements } from '@/test/fixture-html.ts';
+import { getRequiredItem } from '@/test/required-item.ts';
 import lStorage from '@/utils/local-storage.ts';
 import {
 	getReadStoriesVisibilityPreference,
@@ -278,6 +279,7 @@ describe('hide_read_stories', () => {
 		it('keeps visited stories visible until the page checkbox is checked', async () => {
 			const storyData = createStoryData();
 			const [visitedStory] = storyData.hnStories;
+			assert.isDefined(visitedStory);
 			mockGetVisitsForHideReadStories.mockResolvedValue([
 				{ id: visitedStory.id, latestVisit: {} },
 			]);
@@ -320,6 +322,7 @@ describe('hide_read_stories', () => {
 
 			const storyData = createStoryData();
 			const [visitedStory] = storyData.hnStories;
+			assert.isDefined(visitedStory);
 			mockGetVisitsForHideReadStories.mockResolvedValue([
 				{ id: visitedStory.id, latestVisit: {} },
 			]);
@@ -360,6 +363,7 @@ describe('hide_read_stories', () => {
 
 			const storyData = createStoryData();
 			const [visitedStory] = storyData.hnStories;
+			assert.isDefined(visitedStory);
 			mockGetVisitsForHideReadStories.mockResolvedValue([
 				{ id: visitedStory.id, latestVisit: {} },
 			]);
@@ -426,6 +430,7 @@ describe('hide_read_stories', () => {
 		])('$name', async ({ visibility, assertion }) => {
 			const storyData = createStoryData();
 			const [visitedStory] = storyData.hnStories;
+			assert.isDefined(visitedStory);
 			mockGetVisitsForHideReadStories.mockResolvedValue([
 				{ id: visitedStory.id, latestVisit: {} },
 			]);
@@ -594,8 +599,8 @@ describe('hide_read_stories', () => {
 			if (!result) {
 				throw new Error('expected result to be defined');
 			}
-			expect(result[0].id).toBe('12345678');
-			expect(result[0].latestVisit).toEqual(visitData);
+			expect(getRequiredItem(result, 0).id).toBe('12345678');
+			expect(getRequiredItem(result, 0).latestVisit).toEqual(visitData);
 
 			document.body.removeChild(storyRow);
 		});
@@ -623,8 +628,8 @@ describe('hide_read_stories', () => {
 			if (!result) {
 				throw new Error('expected result to be defined');
 			}
-			expect(result[0].id).toBe('87654321');
-			expect(result[0].latestVisit).toBeUndefined();
+			expect(getRequiredItem(result, 0).id).toBe('87654321');
+			expect(getRequiredItem(result, 0).latestVisit).toBeUndefined();
 
 			document.body.removeChild(storyRow);
 		});
@@ -670,12 +675,12 @@ describe('hide_read_stories', () => {
 			if (!result) {
 				throw new Error('expected result to be defined');
 			}
-			expect(result[0].id).toBe('1');
-			expect(result[0].latestVisit).toEqual(visit1);
-			expect(result[1].id).toBe('2');
-			expect(result[1].latestVisit).toBeUndefined();
-			expect(result[2].id).toBe('3');
-			expect(result[2].latestVisit).toEqual(visit3);
+			expect(getRequiredItem(result, 0).id).toBe('1');
+			expect(getRequiredItem(result, 0).latestVisit).toEqual(visit1);
+			expect(getRequiredItem(result, 1).id).toBe('2');
+			expect(getRequiredItem(result, 1).latestVisit).toBeUndefined();
+			expect(getRequiredItem(result, 2).id).toBe('3');
+			expect(getRequiredItem(result, 2).latestVisit).toEqual(visit3);
 
 			document.body.removeChild(storyRow1);
 			document.body.removeChild(storyRow2);

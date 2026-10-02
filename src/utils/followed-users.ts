@@ -55,8 +55,8 @@ export const reorderFollowedUsers = async (
 	}
 
 	const nextUsernames = [...followedUsers];
-	const [movedUsername] = nextUsernames.splice(fromIndex, 1);
-	nextUsernames.splice(targetIndex, 0, movedUsername);
+	nextUsernames.splice(fromIndex, 1);
+	nextUsernames.splice(targetIndex, 0, normalizedUsername);
 
 	return setFollowedUsers(nextUsernames);
 };

@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { stripFixtureElements } from '@/test/fixture-html.ts';
 import { navbar } from './index';
 
@@ -227,6 +227,8 @@ describe('navbar more-links', () => {
 
 		const pageTops = document.querySelectorAll<HTMLElement>('span.pagetop');
 		const [navLinks, loginLinks] = pageTops;
+		assert.isDefined(navLinks);
+		assert.isDefined(loginLinks);
 
 		expect(navLinks.querySelector('.oj_more_links_dropdown_button')?.textContent).toBe(
 			'more ▾'

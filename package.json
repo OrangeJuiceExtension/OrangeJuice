@@ -11,7 +11,7 @@
 		"build:safari:convert": "bun run build:safari && ./scripts/safari.sh",
 		"build-watch": "chokidar --initial --silent \"src/**/*\" -c \"bun run build\"",
 		"check": "bun ./node_modules/ultracite/dist/index.js check",
-		"ci": "CI=true bun run --parallel check test build build:firefox && bun run webext:firefox:lint && bun run clean && CI=true bun run --parallel zip zip:firefox",
+		"ci": "CI=true bun run --parallel check compile test build build:firefox && bun run webext:firefox:lint && bun run clean && CI=true bun run --parallel zip zip:firefox",
 		"clean": "rm -rf .output build-docs playwright-report",
 		"compile": "tsc --noEmit",
 		"dev": "wxt",

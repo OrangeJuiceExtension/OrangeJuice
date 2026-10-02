@@ -70,8 +70,8 @@ export const highlightUnreadComments = async (
 		currentComments.push(comment.id);
 	}
 
-	const itemData = readCommentsList[itemId] || {};
-	const readComments = itemData.comments || [];
+	const itemData = readCommentsList[itemId];
+	const readComments = itemData?.comments ?? [];
 
 	if (readComments.length > 0) {
 		const newComments = currentComments.filter((id) => !readComments.includes(id));
@@ -86,8 +86,8 @@ export const highlightUnreadComments = async (
 
 	readCommentsList[itemId] = {
 		comments: [...new Set([...currentComments, ...readComments])],
-		expiry: itemData.expiry || Date.now() + THREE_DAYS_IN_MS,
-	} as ReadCommentItem;
+		expiry: itemData?.expiry ?? Date.now() + THREE_DAYS_IN_MS,
+	};
 
 	await lStorage.setItem<ReadCommentsList>(ojReadCommentsKey, readCommentsList);
 };

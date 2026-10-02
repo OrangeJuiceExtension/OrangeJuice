@@ -32,7 +32,7 @@ describe('past', () => {
 
 			const options = monthInput.querySelectorAll('option');
 			expect(options.length).toBe(1);
-			expect(options[0].value).toBe('1');
+			expect(options[0]?.value).toBe('1');
 		});
 
 		it('should allow all months for past years', () => {
@@ -52,7 +52,7 @@ describe('past', () => {
 			const options = dayInput.querySelectorAll('option');
 			expect(options.length).toBe(25);
 			// biome-ignore lint/style/useAtIndex: tests
-			expect(options[options.length - 1].value).toBe('25');
+			expect(options[options.length - 1]?.value).toBe('25');
 		});
 
 		it('should allow all 31 days for past months', () => {

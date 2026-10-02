@@ -63,7 +63,7 @@ describe('arrangeSpectrum', () => {
 		{ hex: '#008c0a', name: 'deep green', neutral: false },
 	])('groups $name by colorfulness rather than brightness', ({ hex, neutral }) => {
 		const [color] = arrangeSpectrum([hex]);
-		expect(color.neutral).toBe(neutral);
+		expect(color?.neutral).toBe(neutral);
 	});
 
 	it.each(

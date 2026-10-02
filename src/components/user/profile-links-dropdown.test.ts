@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getRequiredItem } from '@/test/required-item.ts';
 import { profileLinksDropdown } from './profile-links-dropdown.ts';
 
 const MOCK_CONTEXT = {
@@ -124,8 +125,8 @@ describe('profileLinksDropdown', () => {
 		];
 
 		for (const [index, link] of expectedLinks.entries()) {
-			expect(links?.[index].innerHTML).toBe(link.title);
-			expect(links?.[index].href).toContain(link.path);
+			expect(links?.[index]?.innerHTML).toBe(link.title);
+			expect(links?.[index]?.href).toContain(link.path);
 		}
 	});
 
@@ -173,8 +174,9 @@ describe('profileLinksDropdown', () => {
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
 		const [, topUserBar] = pagetops;
-		expect(topUserBar?.textContent).not.toContain('logout');
-		expect(topUserBar?.textContent?.trim().endsWith('|')).toBe(false);
+		assert.isDefined(topUserBar);
+		expect(topUserBar.textContent).not.toContain('logout');
+		expect(topUserBar.textContent?.trim().endsWith('|')).toBe(false);
 	});
 
 	it('should append arrow indicator to username', () => {
@@ -186,6 +188,7 @@ describe('profileLinksDropdown', () => {
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
 		const [, topUserBar] = pagetops;
+		assert.isDefined(topUserBar);
 		const userLink = topUserBar.querySelector<HTMLAnchorElement>('a#me');
 		expect(userLink?.innerHTML).toContain('▾');
 	});
@@ -198,7 +201,7 @@ describe('profileLinksDropdown', () => {
 		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
-		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
+		const userLink = getRequiredItem(pagetops, 1).querySelector<HTMLAnchorElement>('a#me');
 		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
 
 		expect(dropdown?.classList.contains('active')).toBe(false);
@@ -229,7 +232,7 @@ describe('profileLinksDropdown', () => {
 		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
-		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
+		const userLink = getRequiredItem(pagetops, 1).querySelector<HTMLAnchorElement>('a#me');
 		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
 
 		expect(dropdown?.classList.contains('active')).toBe(false);
@@ -253,7 +256,7 @@ describe('profileLinksDropdown', () => {
 		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
-		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
+		const userLink = getRequiredItem(pagetops, 1).querySelector<HTMLAnchorElement>('a#me');
 		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
 
 		const getBoundingClientRectSpy = vi
@@ -283,7 +286,7 @@ describe('profileLinksDropdown', () => {
 		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
-		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
+		const userLink = getRequiredItem(pagetops, 1).querySelector<HTMLAnchorElement>('a#me');
 		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
 
 		vi.spyOn(userLink as HTMLAnchorElement, 'getBoundingClientRect').mockReturnValue({
@@ -317,7 +320,7 @@ describe('profileLinksDropdown', () => {
 		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
-		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
+		const userLink = getRequiredItem(pagetops, 1).querySelector<HTMLAnchorElement>('a#me');
 		const userLinkSpy = vi.spyOn(userLink as HTMLAnchorElement, 'removeEventListener');
 
 		const [[onInvalidatedCallback]] = MOCK_CONTEXT.onInvalidated.mock.calls;
@@ -346,7 +349,7 @@ describe('profileLinksDropdown', () => {
 		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
-		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
+		const userLink = getRequiredItem(pagetops, 1).querySelector<HTMLAnchorElement>('a#me');
 		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
 
 		vi.spyOn(userLink as HTMLAnchorElement, 'getBoundingClientRect').mockReturnValue({
@@ -381,7 +384,7 @@ describe('profileLinksDropdown', () => {
 		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
-		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
+		const userLink = getRequiredItem(pagetops, 1).querySelector<HTMLAnchorElement>('a#me');
 		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
 
 		vi.spyOn(userLink as HTMLAnchorElement, 'getBoundingClientRect').mockReturnValue({
@@ -413,7 +416,7 @@ describe('profileLinksDropdown', () => {
 		profileLinksDropdown(MOCK_CONTEXT, doc);
 
 		const pagetops = doc.querySelectorAll('span.pagetop');
-		const userLink = pagetops[1].querySelector<HTMLAnchorElement>('a#me');
+		const userLink = getRequiredItem(pagetops, 1).querySelector<HTMLAnchorElement>('a#me');
 		const dropdown = doc.querySelector<HTMLDivElement>('.oj_profile_dropdown');
 
 		vi.spyOn(userLink as HTMLAnchorElement, 'getBoundingClientRect').mockReturnValue({
