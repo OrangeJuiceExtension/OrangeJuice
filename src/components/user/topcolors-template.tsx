@@ -395,7 +395,7 @@ const createTopcolorsTemplate = (
 	const spectrum = arranged.filter(({ neutral }) => !neutral);
 	const neutrals = arranged
 		.filter(({ neutral }) => neutral)
-		.sort((a, b) => b.lightness - a.lightness);
+		.sort((a, b) => b.luminance - a.luminance);
 	for (const [paletteColors, neutral] of [
 		[spectrum, false],
 		[neutrals, true],

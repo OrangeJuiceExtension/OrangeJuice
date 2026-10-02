@@ -1,4 +1,5 @@
 import { ActivityId, type ActivityType } from '@/utils/activity-trail.ts';
+import { getRelativeLuminance } from '@/utils/color-luminance.ts';
 import lStorage from '@/utils/local-storage.ts';
 import { paths } from '@/utils/paths';
 
@@ -205,22 +206,12 @@ const parseColorToRgb = (value: string): { r: number; g: number; b: number } | u
 	}
 };
 
-const srgbToLinear = (channel: number): number => {
-	const normalized = channel / 255;
-	if (normalized <= 0.040_45) {
-		return normalized / 12.92;
-	}
-	return ((normalized + 0.055) / 1.055) ** 2.4;
-};
-
 const isDarkColor = (value: string): boolean => {
 	const rgb = parseColorToRgb(value);
 	if (!rgb) {
 		return false;
 	}
-	const luminance =
-		0.2126 * srgbToLinear(rgb.r) + 0.7152 * srgbToLinear(rgb.g) + 0.0722 * srgbToLinear(rgb.b);
-	return luminance < DARK_COLOR_LUMINANCE_THRESHOLD;
+	return getRelativeLuminance(rgb.r, rgb.g, rgb.b) < DARK_COLOR_LUMINANCE_THRESHOLD;
 };
 
 const getTopBarCell = (doc: Document): HTMLTableCellElement | undefined => {

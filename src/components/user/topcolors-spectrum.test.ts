@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { arrangeSpectrum, SPECTRUM_COLUMNS } from '@/components/user/topcolors-spectrum.ts';
 
+const BRIGHTNESS_CASES = [
+	{ darker: '#66cc66', lighter: '#00ff00', name: 'green' },
+	{ darker: '#cccc66', lighter: '#ffff00', name: 'yellow' },
+	{ darker: '#66cccc', lighter: '#00ffff', name: 'cyan' },
+] as const;
+
 describe('arrangeSpectrum', () => {
 	it.each([
 		{ hexes: [], name: 'empty' },
@@ -60,6 +66,30 @@ describe('arrangeSpectrum', () => {
 		expect(color.neutral).toBe(neutral);
 	});
 
+	it.each(
+		Object.entries(SPECTRUM_COLUMNS).flatMap(([size, columns]) =>
+			BRIGHTNESS_CASES.map((colors) => ({ ...colors, columns, size }))
+		)
+	)(
+		'puts visibly brighter $name above darker shades at $size size',
+		({ darker, lighter, columns, size }) => {
+			const otherHues = Array.from(
+				{ length: (columns - 1) * 2 },
+				(_, index) => `#${(30 + index).toString(16).padStart(2, '0')}0000`
+			);
+			const colors = arrangeSpectrum([darker, lighter, ...otherHues]);
+			const order = (color: (typeof colors)[number]): number =>
+				color.orders[size as keyof typeof SPECTRUM_COLUMNS];
+			const rendered = colors
+				.filter(({ neutral }) => !neutral)
+				.sort((a, b) => order(a) - order(b));
+			const lightIndex = rendered.findIndex(({ hex }) => hex === lighter);
+			const darkIndex = rendered.findIndex(({ hex }) => hex === darker);
+			expect(lightIndex % columns).toBe(darkIndex % columns);
+			expect(lightIndex).toBeLessThan(darkIndex);
+		}
+	);
+
 	it.each(Object.entries(SPECTRUM_COLUMNS))(
 		'builds unique positions with light-to-dark columns at %s size',
 		(size, columns) => {
@@ -71,12 +101,16 @@ describe('arrangeSpectrum', () => {
 			const getOrder = (color: (typeof colors)[number]): number =>
 				color.orders[size as keyof typeof SPECTRUM_COLUMNS];
 			expect(new Set(colors.map(getOrder)).size).toBe(hexes.length);
+			// CSS grid fills gaps in order values, which would shift the last row into other hues.
+			expect(colors.map(getOrder).sort((a, b) => a - b)).toEqual(
+				hexes.map((_, index) => index)
+			);
 			for (let column = 0; column < columns; column += 1) {
 				const shades = colors
 					.filter((color) => getOrder(color) % columns === column)
 					.sort((a, b) => getOrder(a) - getOrder(b));
-				expect(shades.map(({ lightness }) => lightness)).toEqual(
-					shades.map(({ lightness }) => lightness).sort((a, b) => b - a)
+				expect(shades.map(({ luminance }) => luminance)).toEqual(
+					shades.map(({ luminance }) => luminance).sort((a, b) => b - a)
 				);
 			}
 		}
