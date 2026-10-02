@@ -263,7 +263,7 @@ const createPalette = (
 	palette.setAttribute('role', 'group');
 	palette.setAttribute(
 		'aria-label',
-		neutral ? 'Neutral colors, light to dark' : 'Rainbow colors, light to dark'
+		neutral ? 'Muted and neutral colors, light to dark' : 'Rainbow colors, light to dark'
 	);
 	for (const [size, columns] of Object.entries(SPECTRUM_COLUMNS)) {
 		palette.style.setProperty(`--columns-${size}`, String(Math.min(columns, colors.length)));

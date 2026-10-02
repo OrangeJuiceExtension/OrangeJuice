@@ -1,5 +1,6 @@
 export const SPECTRUM_COLUMNS = { medium: 24, small: 12, wide: 32 } as const;
-const NEUTRAL_CHROMA = 0.08;
+const MIN_SPECTRUM_CHROMA = 0.08;
+const MIN_SPECTRUM_SATURATION = 0.4;
 const HUE_SECTOR_DEGREES = 60;
 const FULL_CIRCLE_DEGREES = 360;
 const RGB_MAX = 255;
@@ -21,6 +22,9 @@ const describeColor = (hex: string, index: number): SpectrumColor => {
 	const max = Math.max(...channels);
 	const min = Math.min(...channels);
 	const chroma = max - min;
+	const lightness = (max + min) / 2;
+	// Relative saturation catches tinted grays while keeping colorful pastels and deep shades.
+	const saturation = chroma === 0 ? 0 : chroma / (1 - Math.abs(2 * lightness - 1));
 	let hue = 0;
 	if (chroma > 0) {
 		if (max === red) {
@@ -34,8 +38,8 @@ const describeColor = (hex: string, index: number): SpectrumColor => {
 	return {
 		hex,
 		hue: (hue * HUE_SECTOR_DEGREES + FULL_CIRCLE_DEGREES) % FULL_CIRCLE_DEGREES,
-		lightness: (max + min) / 2,
-		neutral: chroma < NEUTRAL_CHROMA,
+		lightness,
+		neutral: chroma < MIN_SPECTRUM_CHROMA || saturation < MIN_SPECTRUM_SATURATION,
 		orders: { medium: 0, small: 0, wide: 0 },
 		rank: index + 1,
 	};

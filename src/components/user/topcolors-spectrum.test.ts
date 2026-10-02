@@ -35,6 +35,31 @@ describe('arrangeSpectrum', () => {
 		).toEqual(['#ff0000', '#00ff00', '#0000ff']);
 	});
 
+	it.each([
+		{ hex: '#7a8c96', name: 'blue gray', neutral: true },
+		{ hex: '#8080a0', name: 'gray lavender', neutral: true },
+		{ hex: '#bc8f8f', name: 'dusty rose', neutral: true },
+		{ hex: '#a77464', name: 'muted brown', neutral: true },
+		{ hex: '#c3b091', name: 'khaki', neutral: true },
+		{ hex: '#a6bba0', name: 'sage gray', neutral: true },
+		{ hex: '#91cac4', name: 'muted teal', neutral: true },
+		{ hex: '#789abc', name: 'slate blue', neutral: true },
+		{ hex: '#ffffff', name: 'white', neutral: true },
+		{ hex: '#000000', name: 'black', neutral: true },
+		{ hex: '#888888', name: 'gray', neutral: true },
+		{ hex: '#fff4f0', name: 'nearly white peach', neutral: true },
+		{ hex: '#100000', name: 'nearly black red', neutral: true },
+		{ hex: '#ff6600', name: 'HN orange', neutral: false },
+		{ hex: '#aabbff', name: 'pastel blue', neutral: false },
+		{ hex: '#ffe0e0', name: 'pastel pink', neutral: false },
+		{ hex: '#6699cc', name: 'clear blue', neutral: false },
+		{ hex: '#285577', name: 'deep blue', neutral: false },
+		{ hex: '#008c0a', name: 'deep green', neutral: false },
+	])('groups $name by colorfulness rather than brightness', ({ hex, neutral }) => {
+		const [color] = arrangeSpectrum([hex]);
+		expect(color.neutral).toBe(neutral);
+	});
+
 	it.each(
 		Object.entries(SPECTRUM_COLUMNS)
 	)('builds unique positions with light-to-dark columns at %s size', (size, columns) => {
