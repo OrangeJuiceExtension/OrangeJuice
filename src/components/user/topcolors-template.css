@@ -129,7 +129,7 @@
 		--columns: var(--columns-wide);
 		display: grid;
 		grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
-		gap: 4px;
+		gap: 3px;
 	}
 
 	.oj-topcolors__swatch {
@@ -139,7 +139,7 @@
 		order: var(--order-wide);
 		width: 100%;
 		min-width: 0;
-		height: clamp(24px, 2.5vw, 34px);
+		height: 24px;
 		padding: 0;
 		cursor: pointer;
 		scroll-margin-block: 150px 16px;
@@ -180,7 +180,7 @@
 	}
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1200px) {
 	.oj-topcolors .oj-topcolors__palette {
 		--columns: var(--columns-medium);
 	}

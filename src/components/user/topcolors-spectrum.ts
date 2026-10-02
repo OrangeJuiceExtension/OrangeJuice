@@ -1,4 +1,4 @@
-export const SPECTRUM_COLUMNS = { medium: 24, small: 12, wide: 32 } as const;
+export const SPECTRUM_COLUMNS = { medium: 24, small: 12, wide: 40 } as const;
 const MIN_SPECTRUM_CHROMA = 0.08;
 const MIN_SPECTRUM_SATURATION = 0.4;
 const HUE_SECTOR_DEGREES = 60;
