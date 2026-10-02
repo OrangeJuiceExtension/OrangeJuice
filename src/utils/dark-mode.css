@@ -139,15 +139,6 @@ html.oj-dark-mode {
 	.oj-hn-body {
 		color: #e8e6e3;
 	}
-
-	.oj-hn-footer {
-		color: #b5b2ac;
-
-		a,
-		.yclinks a {
-			color: #ac9d84;
-		}
-	}
 }
 
 html.oj-topbar-readable {
@@ -173,6 +164,15 @@ html.oj-dark-mode {
 	.oj-nav-dropdown a,
 	.oj-nav-dropdown a:visited {
 		color: #fff2d4 !important;
+	}
+
+	.oj-hn-footer {
+		color: #b5b2ac;
+
+		a,
+		.yclinks a {
+			color: #ac9d84;
+		}
 	}
 }
 

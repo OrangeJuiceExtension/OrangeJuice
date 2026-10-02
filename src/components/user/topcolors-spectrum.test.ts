@@ -60,24 +60,25 @@ describe('arrangeSpectrum', () => {
 		expect(color.neutral).toBe(neutral);
 	});
 
-	it.each(
-		Object.entries(SPECTRUM_COLUMNS)
-	)('builds unique positions with light-to-dark columns at %s size', (size, columns) => {
-		const hexes = Array.from(
-			{ length: 101 },
-			(_, index) => `#${(50 + index * 2).toString(16).padStart(2, '0')}0000`
-		);
-		const colors = arrangeSpectrum(hexes);
-		const getOrder = (color: (typeof colors)[number]): number =>
-			color.orders[size as keyof typeof SPECTRUM_COLUMNS];
-		expect(new Set(colors.map(getOrder)).size).toBe(hexes.length);
-		for (let column = 0; column < columns; column += 1) {
-			const shades = colors
-				.filter((color) => getOrder(color) % columns === column)
-				.sort((a, b) => getOrder(a) - getOrder(b));
-			expect(shades.map(({ lightness }) => lightness)).toEqual(
-				shades.map(({ lightness }) => lightness).sort((a, b) => b - a)
+	it.each(Object.entries(SPECTRUM_COLUMNS))(
+		'builds unique positions with light-to-dark columns at %s size',
+		(size, columns) => {
+			const hexes = Array.from(
+				{ length: 101 },
+				(_, index) => `#${(50 + index * 2).toString(16).padStart(2, '0')}0000`
 			);
+			const colors = arrangeSpectrum(hexes);
+			const getOrder = (color: (typeof colors)[number]): number =>
+				color.orders[size as keyof typeof SPECTRUM_COLUMNS];
+			expect(new Set(colors.map(getOrder)).size).toBe(hexes.length);
+			for (let column = 0; column < columns; column += 1) {
+				const shades = colors
+					.filter((color) => getOrder(color) % columns === column)
+					.sort((a, b) => getOrder(a) - getOrder(b));
+				expect(shades.map(({ lightness }) => lightness)).toEqual(
+					shades.map(({ lightness }) => lightness).sort((a, b) => b - a)
+				);
+			}
 		}
-	});
+	);
 });

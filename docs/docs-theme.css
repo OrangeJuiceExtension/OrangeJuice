@@ -930,15 +930,6 @@ body.oj-docs-lightbox-open {
 	margin: 0;
 }
 
-.installation .section-title a {
-	display: inline-block;
-	font-size: clamp(2rem, 4.2vw, 2.8rem);
-	font-weight: 800;
-	line-height: 1.05;
-	color: var(--text);
-	text-decoration: none;
-}
-
 .install-browsers {
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
@@ -1148,6 +1139,15 @@ footer {
 .footer-note {
 	font-size: 0.9rem;
 	color: var(--text-light);
+}
+
+.installation .section-title a {
+	display: inline-block;
+	font-size: clamp(2rem, 4.2vw, 2.8rem);
+	font-weight: 800;
+	line-height: 1.05;
+	color: var(--text);
+	text-decoration: none;
 }
 
 @media (max-width: 768px) {
