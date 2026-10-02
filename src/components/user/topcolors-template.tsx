@@ -5,6 +5,7 @@ import {
 	type SpectrumColor,
 } from '@/components/user/topcolors-spectrum.ts';
 import { dom } from '@/utils/dom.ts';
+import { previewTopbarColor } from '@/utils/topbar-color.ts';
 import './topcolors-template.css';
 
 const TOPCOLORS_ROOT_ID = 'oj-topcolors-root';
@@ -388,6 +389,7 @@ const createTopcolorsTemplate = (
 		selectedButton = button;
 		button.setAttribute('aria-pressed', 'true');
 		preview(color);
+		previewTopbarColor(doc, color.hex);
 		restoreHint();
 	};
 	const spectrum = arranged.filter(({ neutral }) => !neutral);

@@ -7,6 +7,8 @@ import lStorage from '@/utils/local-storage.ts';
 describe('topcolorsTemplate', () => {
 	beforeEach(async () => {
 		document.body.innerHTML = '';
+		document.documentElement.classList.remove('oj-dark-mode', 'oj-topbar-readable');
+		document.documentElement.style.removeProperty('--oj-topbar-fg');
 		await lStorage.setItem(USERNAME_STORAGE_KEY, null);
 		vi.clearAllMocks();
 	});
@@ -110,6 +112,43 @@ describe('topcolorsTemplate', () => {
 		expect(document.querySelectorAll('.oj-topcolors__swatch[tabindex="0"]')).toHaveLength(2);
 		blue?.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Home' }));
 		expect(document.activeElement).toBe(red);
+	});
+
+	it.each([
+		{ darkMode: false, foreground: '#f1efec', hex: '#00007f' },
+		{ darkMode: false, foreground: '#111111', hex: '#ffffff' },
+		{ darkMode: true, foreground: '#111111', hex: '#f6f6ef' },
+	])('previews selected $hex on the top bar with readable text', async ({
+		hex,
+		foreground,
+		darkMode,
+	}) => {
+		window.history.pushState({}, '', '/topcolors');
+		document.documentElement.classList.toggle('oj-dark-mode', darkMode);
+		document.body.innerHTML = `<table id="hnmain"><tbody>
+			<tr><td id="spacer" bgcolor="#000000"></td></tr>
+			<tr><td id="navbar" bgcolor="#ff6600" style="background-color: #ff6600"><table><tbody><tr><td>
+				<span class="pagetop">Custom Colors</span>
+			</td></tr></tbody></table></td></tr>
+			<tr id="bigbox"><td><table><tbody>
+				<tr><td>#ff6600</td></tr><tr><td>${hex}</td></tr>
+			</tbody></table></td></tr>
+		</tbody></table>`;
+		const fetchMock = vi.spyOn(globalThis, 'fetch');
+		await topcolorsTemplate(document);
+		const navbar = document.querySelector<HTMLTableCellElement>('#navbar');
+		const swatch = document.querySelector<HTMLButtonElement>(`[data-hex="${hex}"]`);
+		swatch?.dispatchEvent(new MouseEvent('pointerenter'));
+		expect(navbar?.getAttribute('bgcolor')).toBe('#ff6600');
+		swatch?.click();
+		expect(navbar?.getAttribute('bgcolor')).toBe(hex);
+		expect(navbar?.style.backgroundColor).toBe(hex);
+		expect(document.documentElement.style.getPropertyValue('--oj-topbar-fg')).toBe(foreground);
+		expect(document.querySelector('#spacer')?.getAttribute('bgcolor')).toBe('#000000');
+		expect(fetchMock).not.toHaveBeenCalled();
+		document.querySelector<HTMLButtonElement>('[data-hex="#ff6600"]')?.click();
+		expect(navbar?.getAttribute('bgcolor')).toBe('#ff6600');
+		expect(document.documentElement.style.getPropertyValue('--oj-topbar-fg')).toBe('#111111');
 	});
 
 	it.each([
