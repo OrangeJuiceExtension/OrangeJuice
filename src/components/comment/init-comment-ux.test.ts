@@ -148,7 +148,7 @@ describe('initCommentUX', () => {
 
 			const opComments = document.querySelectorAll('a.hnuser.oj_op');
 			expect(opComments.length).toBe(1);
-			expect(opComments[0].textContent).toContain('opauthor [op]');
+			expect(opComments[0]?.textContent).toContain('opauthor [op]');
 		});
 
 		it('should skip comments without author element', () => {

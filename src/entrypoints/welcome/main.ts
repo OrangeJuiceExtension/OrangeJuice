@@ -1,9 +1,7 @@
-import { browser } from '#imports';
 import './style.css';
 
 const STORAGE_KEY = 'oj_welcome_dark_mode';
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
-const LOGO_PATH = '/icon/orange_juice_icon_128x128.png';
 
 const createSvgIcon = (isDark: boolean): SVGSVGElement => {
 	const svg = document.createElementNS(SVG_NAMESPACE, 'svg');
@@ -36,7 +34,7 @@ const createSvgIcon = (isDark: boolean): SVGSVGElement => {
 
 const readStoredTheme = (): boolean | null => {
 	try {
-		const stored = localStorage.getItem(STORAGE_KEY);
+		const stored = window.localStorage.getItem(STORAGE_KEY);
 		if (stored === null) {
 			return null;
 		}
@@ -55,7 +53,7 @@ const applyThemeClass = (isDark: boolean): void => {
 
 const writeTheme = (isDark: boolean): void => {
 	try {
-		localStorage.setItem(STORAGE_KEY, isDark ? '1' : '0');
+		window.localStorage.setItem(STORAGE_KEY, isDark ? '1' : '0');
 	} catch {
 		// Ignore storage failures.
 	}
@@ -86,12 +84,4 @@ const initThemeToggle = (): void => {
 	});
 };
 
-const initLinks = (): void => {
-	const logo = document.getElementById('oj-welcome-logo');
-	if (logo instanceof HTMLImageElement) {
-		logo.src = browser.runtime.getURL(LOGO_PATH);
-	}
-};
-
 initThemeToggle();
-initLinks();

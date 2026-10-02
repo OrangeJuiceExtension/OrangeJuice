@@ -1,6 +1,13 @@
+import { beforeEach } from 'vitest';
+
 const NEWS_STYLESHEET_URL_PREFIX = 'http://localhost:3000/news.css';
 
 const originalFetch = globalThis.fetch.bind(globalThis);
+
+beforeEach(() => {
+	window.localStorage.clear();
+	window.sessionStorage.clear();
+});
 
 const getFetchUrl = (input: RequestInfo | URL): string => {
 	if (typeof input === 'string') {

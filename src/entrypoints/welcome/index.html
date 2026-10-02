@@ -6,107 +6,78 @@
 		<title>Welcome to Orange Juice</title>
 	</head>
 	<body class="oj-welcome-page">
-		<main class="oj-welcome-shell">
-			<section class="oj-welcome-hero">
+		<div class="oj-welcome-shell">
+			<header class="oj-welcome-header">
+				<p class="oj-welcome-installed">
+					<img
+						alt=""
+						height="40"
+						id="oj-welcome-logo"
+						src="/icon/orange_juice_icon_128x128.png"
+						width="40"
+					>
+					Installed. You're all set.
+				</p>
 				<button
 					aria-label="Toggle dark mode"
 					class="oj-welcome-theme-toggle"
 					type="button"
 				></button>
+			</header>
 
-				<div class="oj-welcome-brand">
-					<img
-						alt="Orange Juice logo"
-						class="oj-welcome-brand__logo"
-						height="96"
-						id="oj-welcome-logo"
-						width="96"
-					>
-					<div class="oj-welcome-brand__copy">
-						<p class="oj-welcome-eyebrow">Installed</p>
-						<h1 class="oj-welcome-title">Orange Juice is ready.</h1>
-						<p class="oj-welcome-subtitle">
-							A better Hacker News experience, without changing the shape of Hacker
-							News.
-						</p>
-					</div>
-				</div>
-
+			<main class="oj-welcome-main">
+				<h1 class="oj-welcome-title">Orange Juice<span aria-hidden="true">.</span></h1>
+				<p class="oj-welcome-subtitle">Hacker News, a little sweeter.</p>
 				<p class="oj-welcome-description">
-					You now have inline replies, unread comment highlighting, keyboard navigation,
-					following, favorites, and a pile of smaller fixes that make HN feel less
-					stubborn.
+					Reply inline, follow people, and pick up conversations where you left off.
 				</p>
+				<a
+					class="oj-welcome-open"
+					href="https://news.ycombinator.com"
+					rel="noopener noreferrer"
+					target="_blank"
+				>
+					Open Hacker News <span aria-hidden="true">↗</span>
+				</a>
+			</main>
 
-				<div class="oj-welcome-actions">
+			<footer class="oj-welcome-footer">
+				<div class="oj-welcome-note">
+					<h2>Thanks for giving it a try.</h2>
+					<p>Found a bug? Have an idea? We'd like to hear it.</p>
+				</div>
+				<nav aria-label="Orange Juice community" class="oj-welcome-links">
 					<a
-						class="oj-welcome-btn oj-welcome-btn--primary"
-						href="https://news.ycombinator.com"
+						href="https://github.com/OrangeJuiceExtension/OrangeJuice"
 						rel="noopener noreferrer"
 						target="_blank"
+						>GitHub <span aria-hidden="true">↗</span></a
 					>
-						Open Hacker News
-					</a>
-				</div>
-
-				<section aria-labelledby="oj-welcome-feedback" class="oj-welcome-feedback">
-					<h2 class="oj-welcome-section__title" id="oj-welcome-feedback">
-						Keep in touch
-					</h2>
-					<p class="oj-welcome-feedback__intro">
-						If Orange Juice helps, follow along on X / Twitter, star the project on
-						GitHub, or leave a review. Good or bad, detailed feedback is useful.
-					</p>
-					<div class="oj-welcome-feedback-grid">
-						<a
-							class="oj-welcome-feedback-card"
-							href="https://x.com/Orange_Juice_HN"
-							rel="noopener noreferrer"
-							target="_blank"
-						>
-							<p class="oj-welcome-feature-card__eyebrow">X / Twitter</p>
-							<h3>Follow Orange Juice</h3>
-							<p>
-								See updates, release notes, and the occasional request for feedback.
-							</p>
-						</a>
-						<a
-							class="oj-welcome-feedback-card"
-							href="https://github.com/OrangeJuiceExtension/OrangeJuice"
-							rel="noopener noreferrer"
-							target="_blank"
-						>
-							<p class="oj-welcome-feature-card__eyebrow">GitHub</p>
-							<h3>Star the project</h3>
-							<p>Use issues or discussions if something is broken or confusing.</p>
-						</a>
-						<article class="oj-welcome-feedback-card">
-							<p class="oj-welcome-feature-card__eyebrow">Reviews</p>
-							<h3>Leave a review</h3>
-							<p>
-								Reviews help other HN readers decide whether Orange Juice is useful.
-							</p>
-							<div class="oj-welcome-review-links">
-								<a
-									href="https://chromewebstore.google.com/detail/orange-juice/jojpnpkbdjfpjjgjhdccgpbifipacaii"
-									rel="noopener noreferrer"
-									target="_blank"
-								>
-									Chrome Web Store
-								</a>
-								<a
-									href="https://addons.mozilla.org/en-US/firefox/addon/orange-juice-hn/"
-									rel="noopener noreferrer"
-									target="_blank"
-								>
-									Firefox Add-ons
-								</a>
-							</div>
-						</article>
-					</div>
-				</section>
-			</section>
-		</main>
+					<a
+						href="https://x.com/Orange_Juice_HN"
+						rel="noopener noreferrer"
+						target="_blank"
+						>X / Twitter <span aria-hidden="true">↗</span></a
+					>
+				</nav>
+				<p class="oj-welcome-reviews">
+					Enjoying it? Leave a review on
+					<a
+						href="https://chromewebstore.google.com/detail/orange-juice/jojpnpkbdjfpjjgjhdccgpbifipacaii"
+						rel="noopener noreferrer"
+						target="_blank"
+						>Chrome</a
+					>
+					or
+					<a
+						href="https://addons.mozilla.org/en-US/firefox/addon/orange-juice-hn/"
+						rel="noopener noreferrer"
+						target="_blank"
+						>Firefox</a
+					>.
+				</p>
+			</footer>
+		</div>
 
 		<script src="main.ts" type="module"></script>
 	</body>

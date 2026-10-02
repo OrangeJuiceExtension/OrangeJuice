@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContentScriptContext } from '#imports';
 import { stripFixtureElements } from '@/test/fixture-html.ts';
+import { getRequiredItem } from '@/test/required-item.ts';
 import { remaining, updateCharacterCount } from './remaining';
 
 const fixtureHtml = stripFixtureElements(
@@ -120,9 +121,10 @@ describe('remaining', () => {
 
 			const removeEventListenerSpy = vi.spyOn(titleInput, 'removeEventListener');
 
-			const [[onInvalidatedCallback]] = (
-				mockContext.onInvalidated as ReturnType<typeof vi.fn>
-			).mock.calls;
+			const [onInvalidatedCallback] = getRequiredItem(
+				vi.mocked(mockContext.onInvalidated).mock.calls,
+				0
+			);
 			onInvalidatedCallback();
 
 			expect(removeEventListenerSpy).toHaveBeenCalledWith('input', expect.any(Function));

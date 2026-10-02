@@ -112,6 +112,9 @@ export const showUserInfoOnHover = (
 
 	const populateUserDiv = async (user: HTMLAnchorElement, userDivBox: HTMLDivElement) => {
 		const [userName] = user.innerText.trim().split(' ');
+		if (!userName) {
+			return;
+		}
 		const cachedUserDiv = cachedData.get(userName);
 		if (cachedUserDiv) {
 			cloneChildNodesInto(cachedUserDiv, userDivBox);

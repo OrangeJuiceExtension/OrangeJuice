@@ -1,9 +1,10 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
 	HighlightUnreadCommentsService,
 	ojReadCommentsKey,
 } from '@/services/highlight-unread-comments-service.ts';
 import { createClientServices, type ServicesManager } from '@/services/manager.ts';
+import { getRequiredItem } from '@/test/required-item.ts';
 import { dom } from '@/utils/dom.ts';
 import lStorage from '@/utils/local-storage.ts';
 import type { ReadCommentsList } from './highlight-unread-comments.ts';
@@ -301,11 +302,13 @@ describe('highlightUnreadComments', () => {
 
 			await highlightUnreadComments(mockDoc, comments, manager);
 
-			const savedData = setItemSpy.mock.calls[0][1] as ReadCommentsList;
-			const savedComments = savedData['123'].comments;
+			const savedData = getRequiredItem(setItemSpy.mock.calls, 0)[1] as ReadCommentsList;
+			const savedItem = savedData['123'];
+			assert.isDefined(savedItem);
+			const savedComments = savedItem.comments;
 
 			// Should not have duplicates
-			expect(savedComments.length).toBe(2);
+			expect(savedComments).toHaveLength(2);
 			expect(new Set(savedComments).size).toBe(2);
 		});
 
@@ -329,8 +332,10 @@ describe('highlightUnreadComments', () => {
 
 			await highlightUnreadComments(mockDoc, comments, manager);
 
-			const savedData = setItemSpy.mock.calls[0][1] as ReadCommentsList;
-			expect(savedData['123'].expiry).toBe(existingExpiry);
+			const savedData = getRequiredItem(setItemSpy.mock.calls, 0)[1] as ReadCommentsList;
+			const savedItem = savedData['123'];
+			assert.isDefined(savedItem);
+			expect(savedItem.expiry).toBe(existingExpiry);
 		});
 
 		it('should create new expiry for new items', async () => {
@@ -352,8 +357,10 @@ describe('highlightUnreadComments', () => {
 
 			await highlightUnreadComments(mockDoc, comments, manager);
 
-			const savedData = setItemSpy.mock.calls[0][1] as ReadCommentsList;
-			expect(savedData['123'].expiry).toBe(now + THREE_DAYS_IN_MS);
+			const savedData = getRequiredItem(setItemSpy.mock.calls, 0)[1] as ReadCommentsList;
+			const savedItem = savedData['123'];
+			assert.isDefined(savedItem);
+			expect(savedItem.expiry).toBe(now + THREE_DAYS_IN_MS);
 
 			vi.useRealTimers();
 		});
@@ -439,9 +446,11 @@ describe('highlightUnreadComments', () => {
 
 			await highlightUnreadComments(mockDoc, comments, manager);
 
-			const savedData = setItemSpy.mock.calls[0][1] as ReadCommentsList;
+			const savedData = getRequiredItem(setItemSpy.mock.calls, 0)[1] as ReadCommentsList;
+			const savedItem = savedData['123'];
+			assert.isDefined(savedItem);
 			expect(savedData['123']).toBeTruthy();
-			expect(savedData['123'].comments).toEqual(['comment1']);
+			expect(savedItem.comments).toEqual(['comment1']);
 		});
 	});
 });

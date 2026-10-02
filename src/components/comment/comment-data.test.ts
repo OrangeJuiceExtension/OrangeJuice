@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CommentData } from '@/components/comment/comment-data.ts';
 import { addIndentation, createCommentRow } from '@/components/comment/constants.ts';
 import { HNComment } from '@/components/comment/hn-comment.ts';
+import { getRequiredItem } from '@/test/required-item.ts';
 import { dom } from '@/utils/dom.ts';
 import lStorage from '@/utils/local-storage.ts';
 
@@ -47,7 +48,7 @@ describe('CommentData', () => {
 		const comments = createComments(doc, 2);
 		const data = new CommentData(comments);
 
-		await data.activate(comments[0]);
+		await data.activate(getRequiredItem(comments, 0));
 		expect(data.getActiveComment()?.id).toBe('comment-1');
 
 		await data.deactivate();
@@ -57,18 +58,18 @@ describe('CommentData', () => {
 	it('should not deactivate and reactivate an already active comment', async () => {
 		const comments = createComments(doc, 1);
 		const data = new CommentData(comments);
-		const activateSpy = vi.spyOn(comments[0], 'activate');
-		const deactivateSpy = vi.spyOn(comments[0], 'deactivate');
+		const activateSpy = vi.spyOn(getRequiredItem(comments, 0), 'activate');
+		const deactivateSpy = vi.spyOn(getRequiredItem(comments, 0), 'deactivate');
 		const storeSpy = vi.spyOn(data, 'storeActiveCommentId');
 
-		await data.activate(comments[0]);
+		await data.activate(getRequiredItem(comments, 0));
 		activateSpy.mockClear();
 		deactivateSpy.mockClear();
 		storeSpy.mockClear();
 
-		await data.activate(comments[0]);
+		await data.activate(getRequiredItem(comments, 0));
 
-		expect(data.getActiveComment()).toBe(comments[0]);
+		expect(data.getActiveComment()).toBe(getRequiredItem(comments, 0));
 		expect(activateSpy).not.toHaveBeenCalled();
 		expect(deactivateSpy).not.toHaveBeenCalled();
 		expect(storeSpy).not.toHaveBeenCalled();
@@ -78,7 +79,7 @@ describe('CommentData', () => {
 		const comments = createComments(doc, 3, { collapsedIds: [2] });
 		const data = new CommentData(comments);
 
-		const next = data.getNext(comments[0]);
+		const next = data.getNext(getRequiredItem(comments, 0));
 
 		expect(next?.id).toBe('comment-3');
 	});
@@ -87,7 +88,7 @@ describe('CommentData', () => {
 		const comments = createComments(doc, 3, { collapsedIds: [2] });
 		const data = new CommentData(comments);
 
-		const next = data.getNext(comments[0], false);
+		const next = data.getNext(getRequiredItem(comments, 0), false);
 
 		expect(next?.id).toBe('comment-2');
 	});
@@ -96,36 +97,36 @@ describe('CommentData', () => {
 		const comments = createComments(doc, 3, { collapsedIds: [2] });
 		const data = new CommentData(comments);
 
-		const prev = data.getPrevious(comments[2]);
+		const prev = data.getPrevious(getRequiredItem(comments, 2));
 
 		expect(prev?.id).toBe('comment-1');
 	});
 
 	it('should skip collapsed subtree with mixed indent levels', () => {
 		const comments = createComments(doc, 6, { collapsedIds: [2] });
-		addIndentation(doc, comments[0].commentRow, 0);
-		addIndentation(doc, comments[1].commentRow, 0);
-		addIndentation(doc, comments[2].commentRow, 2);
-		addIndentation(doc, comments[3].commentRow, 3);
-		addIndentation(doc, comments[4].commentRow, 1);
-		addIndentation(doc, comments[5].commentRow, 0);
+		addIndentation(doc, getRequiredItem(comments, 0).commentRow, 0);
+		addIndentation(doc, getRequiredItem(comments, 1).commentRow, 0);
+		addIndentation(doc, getRequiredItem(comments, 2).commentRow, 2);
+		addIndentation(doc, getRequiredItem(comments, 3).commentRow, 3);
+		addIndentation(doc, getRequiredItem(comments, 4).commentRow, 1);
+		addIndentation(doc, getRequiredItem(comments, 5).commentRow, 0);
 		const data = new CommentData(comments);
 
-		const next = data.getNext(comments[0]);
+		const next = data.getNext(getRequiredItem(comments, 0));
 
 		expect(next?.id).toBe('comment-6');
 	});
 
 	it('should return immediate previous comment when skipHidden is false', () => {
 		const comments = createComments(doc, 3);
-		comments[0]?.commentRow.classList.add('coll');
-		comments[1]?.commentRow.classList.add('noshow');
-		addIndentation(doc, comments[0].commentRow, 0);
-		addIndentation(doc, comments[1].commentRow, 1);
-		addIndentation(doc, comments[2].commentRow, 0);
+		getRequiredItem(comments, 0).commentRow.classList.add('coll');
+		getRequiredItem(comments, 1).commentRow.classList.add('noshow');
+		addIndentation(doc, getRequiredItem(comments, 0).commentRow, 0);
+		addIndentation(doc, getRequiredItem(comments, 1).commentRow, 1);
+		addIndentation(doc, getRequiredItem(comments, 2).commentRow, 0);
 		const data = new CommentData(comments);
 
-		const prev = data.getPrevious(comments[2], false);
+		const prev = data.getPrevious(getRequiredItem(comments, 2), false);
 
 		expect(prev?.id).toBe('comment-2');
 	});
@@ -133,7 +134,7 @@ describe('CommentData', () => {
 	it('should find closest collapsed comments from active', async () => {
 		const comments = createComments(doc, 4, { collapsedIds: [2, 4] });
 		const data = new CommentData(comments);
-		await data.activate(comments[2]);
+		await data.activate(getRequiredItem(comments, 2));
 
 		expect(data.closestCollapsedUp()?.id).toBe('comment-2');
 		expect(data.closestCollapsedDown()?.id).toBe('comment-4');
@@ -148,70 +149,70 @@ describe('CommentData', () => {
 
 	it('should find next comment at same indent level when moving down', () => {
 		const comments = createComments(doc, 6);
-		addIndentation(doc, comments[0].commentRow, 0);
-		addIndentation(doc, comments[1].commentRow, 1);
-		addIndentation(doc, comments[2].commentRow, 2);
-		addIndentation(doc, comments[3].commentRow, 1);
-		addIndentation(doc, comments[4].commentRow, 2);
-		addIndentation(doc, comments[5].commentRow, 0);
+		addIndentation(doc, getRequiredItem(comments, 0).commentRow, 0);
+		addIndentation(doc, getRequiredItem(comments, 1).commentRow, 1);
+		addIndentation(doc, getRequiredItem(comments, 2).commentRow, 2);
+		addIndentation(doc, getRequiredItem(comments, 3).commentRow, 1);
+		addIndentation(doc, getRequiredItem(comments, 4).commentRow, 2);
+		addIndentation(doc, getRequiredItem(comments, 5).commentRow, 0);
 		const data = new CommentData(comments);
 
-		const next = data.getNextAtSameIndent(comments[1], 'down');
+		const next = data.getNextAtSameIndent(getRequiredItem(comments, 1), 'down');
 
 		expect(next?.id).toBe('comment-4');
 	});
 
 	it('should find previous comment at same indent level when moving up', () => {
 		const comments = createComments(doc, 6);
-		addIndentation(doc, comments[0].commentRow, 0);
-		addIndentation(doc, comments[1].commentRow, 1);
-		addIndentation(doc, comments[2].commentRow, 2);
-		addIndentation(doc, comments[3].commentRow, 1);
-		addIndentation(doc, comments[4].commentRow, 2);
-		addIndentation(doc, comments[5].commentRow, 0);
+		addIndentation(doc, getRequiredItem(comments, 0).commentRow, 0);
+		addIndentation(doc, getRequiredItem(comments, 1).commentRow, 1);
+		addIndentation(doc, getRequiredItem(comments, 2).commentRow, 2);
+		addIndentation(doc, getRequiredItem(comments, 3).commentRow, 1);
+		addIndentation(doc, getRequiredItem(comments, 4).commentRow, 2);
+		addIndentation(doc, getRequiredItem(comments, 5).commentRow, 0);
 		const data = new CommentData(comments);
 
-		const prev = data.getNextAtSameIndent(comments[3], 'up');
+		const prev = data.getNextAtSameIndent(getRequiredItem(comments, 3), 'up');
 
 		expect(prev?.id).toBe('comment-2');
 	});
 
 	it('should stop at end when no lower same-indent comment exists', () => {
 		const comments = createComments(doc, 4);
-		addIndentation(doc, comments[0].commentRow, 0);
-		addIndentation(doc, comments[1].commentRow, 1);
-		addIndentation(doc, comments[2].commentRow, 2);
-		addIndentation(doc, comments[3].commentRow, 1);
+		addIndentation(doc, getRequiredItem(comments, 0).commentRow, 0);
+		addIndentation(doc, getRequiredItem(comments, 1).commentRow, 1);
+		addIndentation(doc, getRequiredItem(comments, 2).commentRow, 2);
+		addIndentation(doc, getRequiredItem(comments, 3).commentRow, 1);
 		const data = new CommentData(comments);
 
-		const next = data.getNextAtSameIndent(comments[3], 'down');
+		const next = data.getNextAtSameIndent(getRequiredItem(comments, 3), 'down');
 
 		expect(next).toBeUndefined();
 	});
 
 	it('should stop at start when no upper same-indent comment exists', () => {
 		const comments = createComments(doc, 4);
-		addIndentation(doc, comments[0].commentRow, 0);
-		addIndentation(doc, comments[1].commentRow, 1);
-		addIndentation(doc, comments[2].commentRow, 2);
-		addIndentation(doc, comments[3].commentRow, 1);
+		addIndentation(doc, getRequiredItem(comments, 0).commentRow, 0);
+		addIndentation(doc, getRequiredItem(comments, 1).commentRow, 1);
+		addIndentation(doc, getRequiredItem(comments, 2).commentRow, 2);
+		addIndentation(doc, getRequiredItem(comments, 3).commentRow, 1);
 		const data = new CommentData(comments);
 
-		const previous = data.getNextAtSameIndent(comments[1], 'up');
+		const previous = data.getNextAtSameIndent(getRequiredItem(comments, 1), 'up');
 
 		expect(previous).toBeUndefined();
 	});
 
 	it('should include collapsed top-level comments when moving down at the same indent', () => {
 		const comments = createComments(doc, 5, { collapsedIds: [3] });
-		addIndentation(doc, comments[0].commentRow, 0);
-		addIndentation(doc, comments[1].commentRow, 1);
-		addIndentation(doc, comments[2].commentRow, 0);
-		addIndentation(doc, comments[3].commentRow, 1);
-		addIndentation(doc, comments[4].commentRow, 0);
+		addIndentation(doc, getRequiredItem(comments, 0).commentRow, 0);
+		addIndentation(doc, getRequiredItem(comments, 1).commentRow, 1);
+		addIndentation(doc, getRequiredItem(comments, 2).commentRow, 0);
+		addIndentation(doc, getRequiredItem(comments, 3).commentRow, 1);
+		addIndentation(doc, getRequiredItem(comments, 4).commentRow, 0);
 		const data = new CommentData(comments);
 
-		const next = data.getNextAtSameIndent(comments[0], 'down', false);
+		const next = data.getNextAtSameIndent(getRequiredItem(comments, 0), 'down', false);
 
 		expect(next?.id).toBe('comment-3');
 	});
@@ -219,12 +220,12 @@ describe('CommentData', () => {
 	it('should proxy actions to active comment', async () => {
 		const comments = createComments(doc, 1);
 		const data = new CommentData(comments);
-		await data.activate(comments[0]);
-		const favoriteSpy = vi.spyOn(comments[0], 'favorite');
-		const flagSpy = vi.spyOn(comments[0], 'flag');
-		const voteSpy = vi.spyOn(comments[0], 'toggleVote');
-		const replySpy = vi.spyOn(comments[0], 'reply');
-		const collapseSpy = vi.spyOn(comments[0], 'collapseToggle');
+		await data.activate(getRequiredItem(comments, 0));
+		const favoriteSpy = vi.spyOn(getRequiredItem(comments, 0), 'favorite');
+		const flagSpy = vi.spyOn(getRequiredItem(comments, 0), 'flag');
+		const voteSpy = vi.spyOn(getRequiredItem(comments, 0), 'toggleVote');
+		const replySpy = vi.spyOn(getRequiredItem(comments, 0), 'reply');
+		const collapseSpy = vi.spyOn(getRequiredItem(comments, 0), 'collapseToggle');
 
 		data.favorite();
 		data.flag();
@@ -243,10 +244,10 @@ describe('CommentData', () => {
 		const comments = createComments(doc, 2);
 		const data = new CommentData(comments);
 		const handler = vi.fn();
-		const addSpy = vi.spyOn(comments[0], 'addEventListener');
-		const addSpy2 = vi.spyOn(comments[1], 'addEventListener');
-		const removeSpy = vi.spyOn(comments[0], 'removeEventListener');
-		const removeSpy2 = vi.spyOn(comments[1], 'removeEventListener');
+		const addSpy = vi.spyOn(getRequiredItem(comments, 0), 'addEventListener');
+		const addSpy2 = vi.spyOn(getRequiredItem(comments, 1), 'addEventListener');
+		const removeSpy = vi.spyOn(getRequiredItem(comments, 0), 'removeEventListener');
+		const removeSpy2 = vi.spyOn(getRequiredItem(comments, 1), 'removeEventListener');
 
 		data.addEventListener('click', handler);
 		data.removeEventListener('click', handler);

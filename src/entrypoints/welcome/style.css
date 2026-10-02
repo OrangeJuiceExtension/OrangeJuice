@@ -1,328 +1,271 @@
 :root {
-	--primary: #ff6600;
-	--primary-dark: #e55600;
-	--bg: #ffffff;
-	--bg-alt: #fafafa;
-	--text: #1a1a1a;
-	--text-light: #6b6b6b;
-	--border: #e5e5e5;
-	--shadow: rgba(0, 0, 0, 0.1);
+	--welcome-paper: #f7f4eb;
+	--welcome-ink: #292c24;
+	--welcome-muted: #706f64;
+	--welcome-orange: #c84b12;
+	--welcome-action: #ee6525;
+	--welcome-rule: #d8d6c8;
+	--welcome-grain: #62593705;
+	--welcome-serif:
+		"Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+	color-scheme: light;
 }
 
 html.oj-dark-mode {
-	--primary: #ff6600;
-	--primary-dark: #ff7a29;
-	--bg: rgb(41, 40, 35);
-	--bg-alt: #302921;
-	--text: #f1efec;
-	--text-light: #c7c4be;
-	--border: #3a3f41;
-	--shadow: rgba(0, 0, 0, 0.45);
+	--welcome-paper: #262720;
+	--welcome-ink: #f3efe2;
+	--welcome-muted: #b5b5a7;
+	--welcome-orange: #ff955f;
+	--welcome-action: #f78040;
+	--welcome-rule: #47483d;
+	--welcome-grain: #f5e6b206;
 	color-scheme: dark;
 }
 
 * {
 	box-sizing: border-box;
-	padding: 0;
-	margin: 0;
 }
 
 body.oj-welcome-page {
-	min-height: 100vh;
-	font-family:
-		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-		Cantarell, sans-serif;
+	min-width: 280px;
+	min-height: 100svh;
+	margin: 0;
+	font-family: "Avenir Next", Avenir, "Trebuchet MS", sans-serif;
 	line-height: 1.6;
-	color: var(--text);
+	color: var(--welcome-ink);
 	background:
-		radial-gradient(
-			circle at top right,
-			rgba(255, 102, 0, 0.14),
-			transparent 35%
+		repeating-linear-gradient(
+			0deg,
+			var(--welcome-grain) 0 1px,
+			transparent 1px 4px
 		),
-		linear-gradient(180deg, var(--bg-alt) 0%, var(--bg) 100%);
+		var(--welcome-paper);
+	border-top: 5px solid var(--welcome-action);
+}
+
+button,
+a {
+	-webkit-tap-highlight-color: transparent;
+}
+
+a {
+	color: inherit;
+	text-underline-offset: 4px;
+}
+
+a:focus-visible,
+button:focus-visible {
+	outline: 2px solid var(--welcome-orange);
+	outline-offset: 6px;
+}
+
+.oj-welcome-shell {
+	width: min(100% - 96px, 960px);
+	margin-inline: auto;
+}
+
+.oj-welcome-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-top: 32px;
+}
+
+.oj-welcome-installed {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	margin: 0;
+	font-size: 13px;
+	color: var(--welcome-muted);
+}
+
+.oj-welcome-installed img {
+	width: 40px;
+	height: 40px;
 }
 
 .oj-welcome-theme-toggle {
-	font-weight: 600;
-	color: var(--text-light);
-	text-decoration: none;
-	background: var(--bg-alt);
-	border: 1px solid var(--border);
-	border-radius: 999px;
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	padding: 10px;
+	color: var(--welcome-muted);
+	cursor: pointer;
+	background: transparent;
+	border: 0;
+	border-radius: 50%;
+	transition: color 160ms ease;
 }
 
 .oj-welcome-theme-toggle:hover {
-	color: var(--primary);
-	border-color: var(--primary);
+	color: var(--welcome-orange);
 }
 
-.oj-welcome-theme-toggle {
-	position: absolute;
-	top: 1rem;
-	right: 2rem;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 0.35rem 0.75rem;
-	cursor: pointer;
-}
-
-.oj-welcome-theme-toggle .oj-dark-mode-icon {
-	display: inline-block;
-	width: 32px;
-	height: 32px;
-}
-
-.oj-welcome-theme-toggle .oj-dark-mode-icon--sun {
+.oj-dark-mode-icon {
+	width: 22px;
+	height: 22px;
 	fill: currentColor;
+}
+
+.oj-dark-mode-icon--sun {
 	stroke: currentColor;
 	stroke-width: 1.6;
 }
 
-.oj-welcome-theme-toggle .oj-dark-mode-icon--moon {
-	fill: #111;
-	stroke: none;
-}
-
-html.oj-dark-mode .oj-welcome-theme-toggle .oj-dark-mode-icon--moon {
-	fill: #ffffff;
-}
-
-.oj-welcome-shell {
-	display: grid;
-	gap: 2rem;
-	max-width: 1100px;
-	padding: 2rem 1.5rem 3rem;
-	margin: 0 auto;
-}
-
-.oj-welcome-hero {
-	padding: 2rem;
-	background:
-		radial-gradient(
-			circle at top left,
-			rgba(255, 102, 0, 0.1) 0,
-			transparent 35%
-		),
-		linear-gradient(135deg, var(--bg-alt) 0%, var(--bg) 100%);
-	border: 1px solid var(--border);
-	border-radius: 24px;
-	box-shadow: 0 20px 48px var(--shadow);
-}
-
-.oj-welcome-hero {
-	position: relative;
-	padding-top: 2.5rem;
-	padding-right: 2rem;
-}
-
-.oj-welcome-brand {
-	display: grid;
-	grid-template-columns: auto 1fr;
-	gap: 1.25rem;
-	align-items: center;
-	margin-bottom: 1rem;
-}
-
-.oj-welcome-brand__logo {
-	width: 96px;
-	height: 96px;
-	border-radius: 22px;
-	box-shadow: 0 14px 34px rgba(255, 102, 0, 0.22);
-}
-
-.oj-welcome-eyebrow {
-	margin-bottom: 0.3rem;
-	font-size: 0.82rem;
-	font-weight: 800;
-	color: var(--primary);
-	text-transform: uppercase;
-	letter-spacing: 0.09em;
+.oj-welcome-main {
+	padding-block: clamp(64px, 11vh, 112px) clamp(72px, 12vh, 120px);
+	animation: welcome-arrive 450ms ease-out both;
 }
 
 .oj-welcome-title {
-	font-size: clamp(2.5rem, 5vw, 4rem);
+	margin: 0 0 24px -0.045em;
+	font-family: var(--welcome-serif);
+	font-size: clamp(68px, 10vw, 124px);
+	font-weight: 500;
 	line-height: 1;
-	color: var(--primary);
+	color: var(--welcome-orange);
+	letter-spacing: -0.065em;
 }
 
 .oj-welcome-subtitle {
-	max-width: 40rem;
-	margin-top: 0.55rem;
-	font-size: clamp(1.1rem, 2vw, 1.45rem);
-	font-weight: 600;
-	color: var(--text);
+	margin: 0 0 16px;
+	font-family: var(--welcome-serif);
+	font-size: clamp(25px, 3vw, 34px);
+	line-height: 1.3;
+	letter-spacing: -0.025em;
 }
 
 .oj-welcome-description {
-	margin: 0 0 1.75rem;
-	font-size: 1.05rem;
-	color: var(--text-light);
-	white-space: nowrap;
+	max-width: 430px;
+	margin: 0;
+	font-size: 16px;
+	color: var(--welcome-muted);
 }
 
-.oj-welcome-actions {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.85rem;
-}
-
-.oj-welcome-btn {
+.oj-welcome-open {
 	display: inline-flex;
+	gap: 32px;
 	align-items: center;
-	justify-content: center;
-	padding: 0.95rem 1.35rem;
-	font-size: 1rem;
-	font-weight: 700;
+	min-height: 52px;
+	padding: 12px 22px;
+	margin-top: 32px;
+	font-size: 14px;
+	font-weight: 600;
+	color: #251c12;
 	text-decoration: none;
+	background: var(--welcome-action);
 	border: 1px solid transparent;
-	border-radius: 12px;
-	transition:
-		transform 0.2s ease,
-		box-shadow 0.2s ease,
-		border-color 0.2s ease,
-		background-color 0.2s ease;
+	border-radius: 3px;
+	transition: background-color 160ms ease;
 }
 
-.oj-welcome-btn:hover {
-	transform: translateY(-2px);
+.oj-welcome-open:hover {
+	background: color-mix(
+		in srgb,
+		var(--welcome-action),
+		var(--welcome-paper) 16%
+	);
 }
 
-.oj-welcome-btn--primary {
-	color: #ffffff;
-	background: var(--primary);
+.oj-welcome-open span {
+	font-size: 21px;
+	transition: transform 160ms ease;
 }
 
-.oj-welcome-btn--primary:hover {
-	background: var(--primary-dark);
-	box-shadow: 0 8px 24px rgba(255, 96, 0, 0.24);
+.oj-welcome-open:hover span {
+	transform: translate(2px, -2px);
 }
 
-.oj-welcome-btn--secondary {
-	color: var(--text);
-	background: var(--bg);
-	border-color: var(--border);
-}
-
-.oj-welcome-btn--secondary:hover {
-	color: var(--primary);
-	border-color: var(--primary);
-}
-
-.oj-welcome-section__title {
-	margin-bottom: 1rem;
-	font-size: 1.9rem;
-	color: var(--text);
-}
-
-.oj-welcome-feedback {
-	padding-top: 1.75rem;
-	margin-top: 1.75rem;
-	border-top: 1px solid var(--border);
-}
-
-.oj-welcome-feature-card__eyebrow {
-	margin-bottom: 0.45rem;
-	font-size: 0.74rem;
-	font-weight: 800;
-	color: var(--primary);
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
-}
-
-.oj-welcome-feedback__intro {
-	margin: 0 0 1.25rem;
-	font-size: 1.05rem;
-	color: var(--text-light);
-	white-space: nowrap;
-}
-
-.oj-welcome-feedback-grid {
+.oj-welcome-footer {
 	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 1rem;
+	grid-template-columns: 1fr auto;
+	gap: 24px 40px;
+	padding-block: 28px 40px;
+	border-top: 1px solid var(--welcome-rule);
 }
 
-.oj-welcome-feedback-card {
-	display: block;
-	padding: 1.25rem;
-	color: inherit;
-	text-decoration: none;
-	background: var(--bg);
-	border: 1px solid var(--border);
-	border-radius: 16px;
-	box-shadow: 0 10px 24px var(--shadow);
-	transition:
-		transform 0.2s ease,
-		border-color 0.2s ease,
-		box-shadow 0.2s ease;
+.oj-welcome-note h2 {
+	margin: 0 0 4px;
+	font-size: 15px;
+	font-weight: 600;
 }
 
-.oj-welcome-feedback-card:hover {
-	border-color: var(--primary);
-	box-shadow: 0 16px 34px var(--shadow);
-	transform: translateY(-2px);
+.oj-welcome-note p,
+.oj-welcome-reviews {
+	margin: 0;
+	font-size: 13px;
+	color: var(--welcome-muted);
 }
 
-.oj-welcome-feedback-card h3 {
-	margin-bottom: 0.45rem;
-	font-size: 1.22rem;
-	color: var(--text);
-}
-
-.oj-welcome-feedback-card > p:not(.oj-welcome-feature-card__eyebrow) {
-	color: var(--text-light);
-}
-
-.oj-welcome-review-links {
+.oj-welcome-links {
 	display: flex;
-	flex-wrap: wrap;
-	gap: 0.6rem;
-	margin-top: 1rem;
+	gap: 28px;
+	align-items: start;
+	font-size: 13px;
 }
 
-.oj-welcome-review-links a {
-	font-size: 0.92rem;
-	font-weight: 700;
-	color: var(--primary);
-	text-decoration: underline;
-	text-underline-offset: 0.18em;
+.oj-welcome-links a {
+	display: inline-flex;
+	gap: 10px;
+	align-items: center;
+	min-height: 32px;
+	text-decoration: none;
 }
 
-.oj-welcome-review-links a:hover {
-	color: var(--primary-dark);
+.oj-welcome-links a:hover,
+.oj-welcome-reviews a:hover {
+	color: var(--welcome-orange);
 }
 
-@media (max-width: 820px) {
-	.oj-welcome-brand {
-		grid-template-columns: 1fr;
+.oj-welcome-reviews {
+	grid-column: 1 / -1;
+}
+
+@keyframes welcome-arrive {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
 	}
 
-	.oj-welcome-feedback-grid {
-		grid-template-columns: 1fr;
-	}
-
-	.oj-welcome-feedback__intro {
-		white-space: normal;
-	}
-
-	.oj-welcome-description {
-		white-space: normal;
+	to {
+		opacity: 1;
+		transform: translateY(0);
 	}
 }
 
 @media (max-width: 640px) {
 	.oj-welcome-shell {
-		padding: 1.5rem 1rem 2rem;
+		width: calc(100% - 40px);
 	}
 
-	.oj-welcome-hero {
-		padding: 1.5rem;
-		border-radius: 20px;
+	.oj-welcome-header {
+		padding-top: 20px;
 	}
 
-	.oj-welcome-hero {
-		padding-top: 4rem;
+	.oj-welcome-main {
+		padding-block: 64px 72px;
+	}
+
+	.oj-welcome-title {
+		font-size: clamp(54px, 12vw, 76px);
+	}
+
+	.oj-welcome-footer {
+		grid-template-columns: 1fr;
+		gap: 20px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.oj-welcome-main {
+		animation: none;
+	}
+
+	.oj-welcome-open,
+	.oj-welcome-open span,
+	.oj-welcome-theme-toggle {
+		transition: none;
 	}
 }

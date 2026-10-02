@@ -44,8 +44,8 @@ export const updateMonthAndDayOptions = (
 };
 
 export const chooseDate = (ctx: ContentScriptContext, doc: Document) => {
-	const navigator = doc.querySelectorAll('#bigbox > td > div');
-	if (!navigator.length) {
+	const navigator = doc.querySelector('#bigbox > td > div');
+	if (!navigator) {
 		return;
 	}
 
@@ -95,7 +95,7 @@ export const chooseDate = (ctx: ContentScriptContext, doc: Document) => {
 	goForm.style.margin = '0px';
 	goForm.append(yearSelect, '-', monthSelect, '-', daySelect);
 
-	navigator[0].firstElementChild?.append(goForm);
+	navigator.firstElementChild?.append(goForm);
 
 	ctx.onInvalidated(() => {
 		yearSelect.removeEventListener('change', yearChangeHandler);

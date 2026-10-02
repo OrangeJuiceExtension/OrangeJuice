@@ -21,6 +21,9 @@ export const parseDate = (dateString: string): Date | null => {
 		return null;
 	}
 	const [, year, month, dayOfMonth] = match;
+	if (!(year && month && dayOfMonth)) {
+		return null;
+	}
 	return new Date(
 		Number.parseInt(year, 10),
 		Number.parseInt(month, 10) - 1,

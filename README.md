@@ -1,8 +1,8 @@
 <meta name="google-site-verification" content="hdHpuNQq_ujr4eHU5wdi7yjcxFPPmoLAg3CQuxAJP4E" />
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/og-card-dark-1200x630.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/assets/og-card-1200x630.png">
-  <img src="docs/assets/og-card-1200x630.png" alt="Orange Juice banner" width="1200">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/og-card-dark-1200x630.png?v=2026-10-02">
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/og-card-1200x630.png?v=2026-10-02">
+  <img src="docs/assets/og-card-1200x630.png?v=2026-10-02" alt="Orange Juice — Hacker News, a little sweeter." width="1200">
 </picture>
 
 # Orange Juice makes Hacker News sweeter
@@ -162,6 +162,12 @@ Note: Temporary extensions in Firefox are removed when you restart the browser. 
    ```
 
 This should automatically open a Chrome window with the extension loaded. If you'd like to add it to your own browser, `bun run build`, then drop the .output/chrome-mv3 folder onto the Extensions tab of your browser.
+
+## Social preview images
+
+Run `bun run social-images` to regenerate the light and dark 1200×630 social cards and the 1280×800 banner in `docs/assets/`.
+
+The generator reads the color palette from `docs/home.css`. The outlined `docs/assets/wordmark.svg` matches the homepage’s Iowan Old Style Bold lettering and keeps it consistent across renderers. Supporting text uses the homepage’s Avenir font stack.
 
 # Tests
 

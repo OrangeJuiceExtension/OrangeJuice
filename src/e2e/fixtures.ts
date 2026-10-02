@@ -20,7 +20,7 @@ export const test = base.extend<{
 		await context.close();
 	},
 	extensionId: async ({ context }, use) => {
-		let background: { url: () => string };
+		let background: { url: () => string } | undefined;
 		if (pathToExtension.endsWith('-mv3')) {
 			[background] = context.serviceWorkers();
 			if (!background) {
@@ -33,7 +33,7 @@ export const test = base.extend<{
 			}
 		}
 
-		const [, , extensionId] = background.url().split('/');
+		const extensionId = new URL(background.url()).hostname;
 		await use(extensionId);
 	},
 });

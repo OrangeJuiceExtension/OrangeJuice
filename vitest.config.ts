@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config';
-import { WxtVitest } from 'wxt/testing';
+import { WxtVitest } from 'wxt/testing/vitest-plugin';
 
 // https://github.com/wxt-dev/examples/blob/main/examples/vitest-unit-testing/vitest.config.ts
 
@@ -11,6 +11,6 @@ export default defineConfig({
 		globals: true,
 		mockReset: true,
 		restoreMocks: true,
-		setupFiles: ['vitest-localstorage-mock', './src/test/vitest.setup.ts'],
+		setupFiles: ['./src/test/vitest.setup.ts'],
 	},
 });

@@ -1,4 +1,5 @@
 import { ActivityId, type ActivityType } from '@/utils/activity-trail.ts';
+import { getRelativeLuminance } from '@/utils/color-luminance.ts';
 import lStorage from '@/utils/local-storage.ts';
 import { paths } from '@/utils/paths';
 
@@ -185,9 +186,11 @@ const parseRgbChannel = (value: string): number => Number.parseInt(value, 16);
 
 const parseColorToRgb = (value: string): { r: number; g: number; b: number } | undefined => {
 	const color = value.trim();
-	const shortHexMatch = color.match(SHORT_HEX_COLOR_PATTERN);
-	if (shortHexMatch) {
-		const [r, g, b] = shortHexMatch[1].split('');
+	const shortHex = color.match(SHORT_HEX_COLOR_PATTERN)?.[1];
+	if (shortHex) {
+		const r = shortHex.charAt(0);
+		const g = shortHex.charAt(1);
+		const b = shortHex.charAt(2);
 		return {
 			b: parseRgbChannel(`${b}${b}`),
 			g: parseRgbChannel(`${g}${g}`),
@@ -195,22 +198,14 @@ const parseColorToRgb = (value: string): { r: number; g: number; b: number } | u
 		};
 	}
 
-	const hexMatch = color.match(HEX_COLOR_PATTERN);
-	if (hexMatch) {
+	const hex = color.match(HEX_COLOR_PATTERN)?.[1];
+	if (hex) {
 		return {
-			b: parseRgbChannel(hexMatch[1].slice(4, 6)),
-			g: parseRgbChannel(hexMatch[1].slice(2, 4)),
-			r: parseRgbChannel(hexMatch[1].slice(0, 2)),
+			b: parseRgbChannel(hex.slice(4, 6)),
+			g: parseRgbChannel(hex.slice(2, 4)),
+			r: parseRgbChannel(hex.slice(0, 2)),
 		};
 	}
-};
-
-const srgbToLinear = (channel: number): number => {
-	const normalized = channel / 255;
-	if (normalized <= 0.040_45) {
-		return normalized / 12.92;
-	}
-	return ((normalized + 0.055) / 1.055) ** 2.4;
 };
 
 const isDarkColor = (value: string): boolean => {
@@ -218,9 +213,7 @@ const isDarkColor = (value: string): boolean => {
 	if (!rgb) {
 		return false;
 	}
-	const luminance =
-		0.2126 * srgbToLinear(rgb.r) + 0.7152 * srgbToLinear(rgb.g) + 0.0722 * srgbToLinear(rgb.b);
-	return luminance < DARK_COLOR_LUMINANCE_THRESHOLD;
+	return getRelativeLuminance(rgb.r, rgb.g, rgb.b) < DARK_COLOR_LUMINANCE_THRESHOLD;
 };
 
 const getTopBarCell = (doc: Document): HTMLTableCellElement | undefined => {

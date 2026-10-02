@@ -50,12 +50,10 @@ export const collapseRoot = (
 			comhead.append(toggle);
 
 			// Add a bit of space to the right of the navs element to give the [collapse root] button some breathing room
-			const navs = comhead.getElementsByClassName(
-				'navs'
-			) as HTMLCollectionOf<HTMLSpanElement>;
+			const navs = comhead.querySelector<HTMLSpanElement>('.navs');
 
-			if (navs.length) {
-				navs[0].style.marginRight = '4px';
+			if (navs) {
+				navs.style.marginRight = '4px';
 			}
 		}
 

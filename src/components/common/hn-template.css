@@ -24,10 +24,6 @@ body {
 		color: #000;
 		text-decoration: none;
 	}
-
-	.hnname a {
-		font-weight: bold;
-	}
 }
 
 .oj-hn-nav-table {
@@ -71,4 +67,8 @@ body {
 
 .oj-hn-footer-center {
 	text-align: center;
+}
+
+.oj-hn-nav .hnname a {
+	font-weight: bold;
 }

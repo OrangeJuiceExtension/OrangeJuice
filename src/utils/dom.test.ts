@@ -390,37 +390,37 @@ describe('dom', () => {
 		it('should create option elements with positive step', () => {
 			const result = dom.createOptions(1, 3, 1, 2);
 			expect(result).toHaveLength(3);
-			expect(result[0].textContent).toBe('01');
-			expect(result[0].value).toBe('1');
-			expect(result[0].selected).toBe(false);
-			expect(result[1].textContent).toBe('02');
-			expect(result[1].value).toBe('2');
-			expect(result[1].selected).toBe(true);
-			expect(result[2].textContent).toBe('03');
-			expect(result[2].value).toBe('3');
-			expect(result[2].selected).toBe(false);
+			expect(result[0]?.textContent).toBe('01');
+			expect(result[0]?.value).toBe('1');
+			expect(result[0]?.selected).toBe(false);
+			expect(result[1]?.textContent).toBe('02');
+			expect(result[1]?.value).toBe('2');
+			expect(result[1]?.selected).toBe(true);
+			expect(result[2]?.textContent).toBe('03');
+			expect(result[2]?.value).toBe('3');
+			expect(result[2]?.selected).toBe(false);
 		});
 
 		it('should create option elements with negative step', () => {
 			const result = dom.createOptions(2026, 2024, -1, 2025);
 			expect(result).toHaveLength(3);
-			expect(result[0].value).toBe('2026');
-			expect(result[1].value).toBe('2025');
-			expect(result[1].selected).toBe(true);
-			expect(result[2].value).toBe('2024');
+			expect(result[0]?.value).toBe('2026');
+			expect(result[1]?.value).toBe('2025');
+			expect(result[1]?.selected).toBe(true);
+			expect(result[2]?.value).toBe('2024');
 		});
 
 		it('should pad values with zeros', () => {
 			const result = dom.createOptions(1, 12, 1, 5);
-			expect(result[0].value).toBe('1');
-			expect(result[4].value).toBe('5');
-			expect(result[4].selected).toBe(true);
+			expect(result[0]?.value).toBe('1');
+			expect(result[4]?.value).toBe('5');
+			expect(result[4]?.selected).toBe(true);
 		});
 
 		it('should not pad values with 4 digits', () => {
 			const result = dom.createOptions(2024, 2024, 1, 2024);
-			expect(result[0].value).toBe('2024');
-			expect(result[0].selected).toBe(true);
+			expect(result[0]?.value).toBe('2024');
+			expect(result[0]?.selected).toBe(true);
 		});
 	});
 

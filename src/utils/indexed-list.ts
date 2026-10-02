@@ -8,8 +8,8 @@ export class IndexedList<T> implements Iterable<T> {
 		this.keyFn = keyFn;
 		this.indexMap = new Map();
 
-		for (let i = 0; i < items.length; i += 1) {
-			const key = keyFn(items[i]);
+		for (const [i, item] of items.entries()) {
+			const key = keyFn(item);
 			this.indexMap.set(key, i);
 		}
 	}
@@ -52,18 +52,6 @@ export class IndexedList<T> implements Iterable<T> {
 	}
 
 	[Symbol.iterator](): Iterator<T> {
-		let index = 0;
-		const { items } = this;
-
-		return {
-			next(): IteratorResult<T> {
-				if (index < items.length) {
-					const value = items[index];
-					index += 1;
-					return { done: false, value };
-				}
-				return { done: true, value: undefined };
-			},
-		};
+		return this.items[Symbol.iterator]();
 	}
 }

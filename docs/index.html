@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8">
 		<meta content="width=device-width, initial-scale=1.0" name="viewport">
 		<meta content="#ff6600" name="theme-color">
 		<meta
-			content="Orange Juice makes Hacker News sweeter with better reading and replying tools. Follow along on X, star the project on GitHub, or leave a review."
+			content="A browser extension for the Hacker News you read every day. Inline replies, unread tracking, keyboard shortcuts, and a few other useful additions."
 			name="description"
 		>
 		<meta content="en_US" property="og:locale">
@@ -13,28 +13,34 @@
 		<meta content="Orange Juice" property="og:site_name">
 		<meta content="Orange Juice - Make Hacker News Sweeter" property="og:title">
 		<meta
-			content="A browser extension for Hacker News with inline replies, unread tracking, keyboard shortcuts, following feeds, and other small UX fixes that add up. Follow on X, star on GitHub, or leave a review."
+			content="Inline replies, unread tracking, keyboard shortcuts, and a few other useful additions to your daily Hacker News habit."
 			property="og:description"
 		>
 		<meta content="https://oj-hn.com/" property="og:url">
-		<meta content="https://oj-hn.com/assets/og-card-1200x630.png" property="og:image">
+		<meta
+			content="https://oj-hn.com/assets/og-card-1200x630.png?v=2026-10-02"
+			property="og:image"
+		>
 		<meta content="image/png" property="og:image:type">
 		<meta content="1200" property="og:image:width">
 		<meta content="630" property="og:image:height">
 		<meta
-			content="Orange Juice logo floating in a bright sky with fluffy clouds"
+			content="Orange Juice — Hacker News, a little sweeter. Hide read stories, reply inline, and pick up where you left off."
 			property="og:image:alt"
 		>
 		<meta content="summary_large_image" name="twitter:card">
 		<meta content="@Orange_Juice_HN" name="twitter:site">
 		<meta content="Orange Juice - Make Hacker News Sweeter" name="twitter:title">
 		<meta
-			content="A browser extension for Hacker News with inline replies, unread tracking, keyboard shortcuts, following feeds, and other small UX fixes that add up. Follow on X, star on GitHub, or leave a review."
+			content="Inline replies, unread tracking, keyboard shortcuts, and a few other useful additions to your daily Hacker News habit."
 			name="twitter:description"
 		>
-		<meta content="https://oj-hn.com/assets/og-card-1200x630.png" name="twitter:image">
 		<meta
-			content="Orange Juice logo floating in a bright sky with fluffy clouds"
+			content="https://oj-hn.com/assets/og-card-1200x630.png?v=2026-10-02"
+			name="twitter:image"
+		>
+		<meta
+			content="Orange Juice — Hacker News, a little sweeter. Hide read stories, reply inline, and pick up where you left off."
 			name="twitter:image:alt"
 		>
 		<meta content="CmxV6rHmyoN5YY4hFv4rROt6EBC_peWcItWWbfljyLo" name="google-site-verification">
@@ -42,7 +48,8 @@
 		<link href="https://oj-hn.com" rel="canonical">
 		<link href="./assets/image-128.png" rel="icon" type="image/png">
 		<link href="./assets/image-128.png" rel="apple-touch-icon">
-		<link href="./docs-theme.css?v=2026-07-09" rel="stylesheet">
+		<link href="./docs-theme.css?v=2026-10-02-6" rel="stylesheet">
+		<link href="./home.css?v=2026-10-02-4" rel="stylesheet">
 		<link href="./sitemap.xml" rel="sitemap" type="application/xml">
 		<script defer src="./docs-theme.js?v=2026-02-09"></script>
 		<script type="application/ld+json">
@@ -55,7 +62,7 @@
 				"operatingSystem": "Chrome, Firefox",
 				"description": "Orange Juice is a browser extension for Hacker News with inline replies, unread tracking, keyboard shortcuts, following feeds, and other small UX fixes.",
 				"url": "https://oj-hn.com/",
-				"image": "https://oj-hn.com/assets/og-card-1200x630.png",
+				"image": "https://oj-hn.com/assets/og-card-1200x630.png?v=2026-10-02",
 				"downloadUrl": "https://github.com/OrangeJuiceExtension/OrangeJuice/releases/latest",
 				"sameAs": [
 					"https://github.com/OrangeJuiceExtension/OrangeJuice",
@@ -65,595 +72,414 @@
 			}
 		</script>
 	</head>
-	<body class="oj-docs-page">
-		<div class="oj-docs-topbar">
-			<nav aria-label="Docs navigation" class="oj-docs-nav">
-				<a class="oj-docs-nav__link is-active" href="./index.html">Home</a>
-				<a class="oj-docs-nav__link" href="./privacy.html">Privacy</a>
-				<a class="oj-docs-nav__link" href="./terms.html">Terms</a>
-				<a
-					aria-label="Open GitHub repository in a new tab"
-					class="oj-docs-nav__link oj-docs-nav__link--github"
+	<body class="oj-docs-page oj-home-page">
+		<a class="oj-home-skip" href="#main">Skip to content</a>
+		<header class="oj-home-topbar oj-home-width">
+			<a aria-label="Orange Juice home" class="oj-home-home" href="./index.html"
+				><img alt="" height="30" src="./assets/image-128.png" width="30">
+				<span>A browser extension for Hacker News</span></a
+			>
+			<nav aria-label="Main navigation" class="oj-home-nav">
+				<a href="#features">The details</a
+				><a
 					href="https://github.com/OrangeJuiceExtension/OrangeJuice"
 					rel="noopener noreferrer"
 					target="_blank"
-				>
-					<svg
-						aria-hidden="true"
-						class="oj-docs-github-icon"
-						focusable="false"
-						viewBox="0 0 16 16"
-					>
-						<path
-							d="M8 0a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.39v-1.36c-2.23.48-2.7-.95-2.7-.95-.36-.92-.9-1.16-.9-1.16-.73-.5.06-.49.06-.49.81.06 1.24.84 1.24.84.71 1.22 1.88.87 2.34.66.07-.53.28-.88.5-1.08-1.78-.2-3.64-.89-3.64-3.95 0-.87.3-1.58.82-2.14-.08-.2-.36-1.01.08-2.1 0 0 .67-.22 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.09.16 1.9.08 2.1.51.56.82 1.27.82 2.14 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.47v2.17c0 .22.14.47.55.39A8 8 0 0 0 8 0Z"
-						/>
-					</svg>
-					<span>GitHub</span>
-				</a>
+					>GitHub <span aria-hidden="true">↗</span></a
+				><button
+					aria-label="Toggle dark mode"
+					class="oj-docs-theme-toggle"
+					type="button"
+				></button>
 			</nav>
-			<button
-				aria-label="Toggle dark mode"
-				class="oj-docs-theme-toggle"
-				type="button"
-			></button>
-		</div>
-		<div class="container">
-			<header class="oj-home-hero">
-				<div class="oj-home-hero__copy">
-					<p class="oj-home-hero__eyebrow">Hacker News browser extension</p>
-					<h1>Orange Juice</h1>
-					<p class="oj-home-hero__headline">
-						Spend your time reading, not re-finding your place.
+		</header>
+		<main id="main">
+			<header class="oj-home-masthead">
+				<div class="oj-home-width">
+					<h1>Orange Juice<span aria-hidden="true">.</span></h1>
+					<p class="oj-home-headline">Hacker News, a little sweeter.</p>
+					<p class="oj-home-summary">
+						Inline replies, unread tracking, and keyboard shortcuts for the site you
+						keep coming back to.
 					</p>
-					<p class="oj-home-hero__summary">
-						Hide stories you have already read, reply inside a thread, keep track of new
-						comments, and move through Hacker News without breaking your flow.
-					</p>
-					<div class="cta-group oj-home-hero__actions">
-						<a class="btn btn-primary" href="#installation">Install Orange Juice</a>
-						<a class="btn btn-secondary" href="#features">See features</a>
-					</div>
-				</div>
-				<div class="oj-home-hero__product">
-					<a
-						aria-label="Open full-size hide read stories screenshot"
-						class="oj-home-hero__shot oj-home-hero__shot--light screenshot-link"
-						href="./assets/hide-read-light.png"
-					>
-						<img
-							alt="Hacker News with Orange Juice hiding stories that have already been read"
-							height="741"
-							src="./assets/hide-read-light.png"
-							width="700"
+					<div class="oj-home-actions">
+						<a
+							class="oj-home-install"
+							href="https://chromewebstore.google.com/detail/orange-juice/jojpnpkbdjfpjjgjhdccgpbifipacaii"
+							rel="noopener noreferrer"
+							target="_blank"
+							><img alt="" height="20" src="./assets/chrome-logo.svg" width="20">Add
+							to Chrome<span aria-hidden="true">↗</span></a
 						>
-					</a>
-					<a
-						aria-label="Open full-size hide read stories screenshot"
-						class="oj-home-hero__shot oj-home-hero__shot--dark screenshot-link"
-						href="./assets/hide-read-dark.png"
-					>
-						<img
-							alt="Hacker News in dark mode with Orange Juice hiding stories that have already been read"
-							height="741"
-							src="./assets/hide-read-dark.png"
-							width="700"
+						<a
+							class="oj-home-install oj-home-install--secondary"
+							href="https://addons.mozilla.org/en-US/firefox/addon/orange-juice-hn/"
+							rel="noopener noreferrer"
+							target="_blank"
+							><img alt="" height="20" src="./assets/firefox-logo.svg" width="20">Add
+							to Firefox<span aria-hidden="true">↗</span></a
 						>
-					</a>
-				</div>
-			</header>
-
-			<main>
-				<section aria-labelledby="praise" class="section praise-section">
-					<div class="praise-copy">
-						<h2 class="section-title" id="praise">People notice the difference</h2>
-						<p class="section-intro">
-							Orange Juice is built around small improvements that compound for people
-							who actually spend time on Hacker News. This note from GitHub user
-							<strong>regions99rockery</strong>
-							gets to the point faster than any feature checklist.
-						</p>
 					</div>
-					<blockquote class="praise-quote">
-						<p>
+					<figure class="oj-home-quote">
+						<blockquote>
 							“Ty for this extension, it greatly improves HN for me. I can't imagine
 							using HN without orangejuice now.”
-						</p>
-						<cite>regions99rockery on GitHub</cite>
-					</blockquote>
-				</section>
-
-				<section class="section why-install" id="why-install">
-					<h2 class="section-title">Why Install Orange Juice?</h2>
-					<p class="section-intro">
-						If you already use Hacker News every day, Orange Juice gives you better ways
-						to read and respond without changing the site you know. The value is simple:
-						fewer extra clicks, clearer unread state, and faster replies when a thread
-						is worth your time.
-					</p>
-					<div class="why-grid">
-						<article class="why-card">
-							<p class="why-badge">In-Thread Replies</p>
-							<h3 class="feature-title">Stay in the thread</h3>
-							<p class="feature-desc">
-								Inline reply and quote selection let you respond in place instead of
-								jumping across pages.
-							</p>
-						</article>
-						<article class="why-card">
-							<p class="why-badge">Unread Tracking</p>
-							<h3 class="feature-title">Keep context between visits</h3>
-							<p class="feature-desc">
-								Unread comment highlighting and hide-read controls make it obvious
-								what is new and what you already covered.
-							</p>
-						</article>
-						<article class="why-card">
-							<p class="why-badge">Favorites</p>
-							<h3 class="feature-title">Save what matters</h3>
-							<p class="feature-desc">
-								Use keyboard commands to favorite stories and comments while reading
-								so you can quickly find them again later.
-							</p>
-						</article>
-						<article class="why-card">
-							<p class="why-badge">Keyboard Flow</p>
-							<h3 class="feature-title">Move faster without the mouse</h3>
-							<p class="feature-desc">
-								Keyboard navigation and shortcuts help you scan stories, open
-								threads, and act on content without breaking reading flow.
-							</p>
-						</article>
-						<article class="why-card">
-							<p class="why-badge">Readability</p>
-							<h3 class="feature-title">Make long threads easier to parse</h3>
-							<p class="feature-desc">
-								Dark mode, better code styling, and cleaner comment structure reduce
-								friction when threads get deep or technical.
-							</p>
-						</article>
-						<article class="why-card">
-							<p class="why-badge">Following</p>
-							<h3 class="feature-title">Track people, not just threads</h3>
-							<p class="feature-desc">
-								Follow HN users, open a combined activity feed, and mute noisy users
-								so their comments fade into the background.
-							</p>
-						</article>
+						</blockquote>
+						<figcaption>— regions99rockery, on GitHub</figcaption>
+					</figure>
+					<div class="oj-home-product">
+						<a
+							aria-label="Enlarge screenshot: Hacker News before and after hiding read stories (light mode)"
+							class="oj-home-shot oj-home-shot--light screenshot-link"
+							href="./assets/hide-read-light.png"
+							><img
+								alt="Hacker News before and after hiding read stories"
+								fetchpriority="high"
+								height="740"
+								src="./assets/hide-read-light.png"
+								width="700"
+							></a
+						>
+						<a
+							aria-label="Enlarge screenshot: Hacker News before and after hiding read stories (dark mode)"
+							class="oj-home-shot oj-home-shot--dark screenshot-link"
+							href="./assets/hide-read-dark.png"
+							><img
+								alt="Hacker News before and after hiding read stories"
+								fetchpriority="high"
+								height="740"
+								src="./assets/hide-read-dark.png"
+								width="700"
+							></a
+						>
 					</div>
-					<p class="why-install-cta">
-						<a class="btn btn-primary" href="#installation">Install Now</a>
+				</div>
+			</header>
+			<div class="oj-home-width">
+				<section aria-labelledby="hide-read-heading" class="oj-home-introduction">
+					<h2 id="hide-read-heading">Hide the stories you’ve already read.</h2>
+					<p>
+						Clear read stories from the front page, or keep them visible with dimming or
+						strikethrough.
 					</p>
 				</section>
-
-				<section class="section feature-showcase" id="features">
-					<h2 class="section-title">Feature Screenshots</h2>
-					<p class="section-intro">
-						This is not a complete list of features, but it shows what we’re actively
-						building and already delivering. Even this subset should make a strong case
-						for installing Orange Juice.
-					</p>
-					<div class="showcase-grid">
-						<article class="showcase-card">
-							<h3 class="feature-title">Inline Reply + Quote Selection</h3>
-							<p class="feature-desc">
-								Reply directly inside comment threads and quote selected text with
-								one action.
-							</p>
-							<div class="screenshot-pair">
-								<figure class="shot">
+				<section aria-labelledby="features-heading" class="oj-home-features" id="features">
+					<div class="oj-home-section-heading">
+						<h2 id="features-heading">The useful bits.</h2>
+						<p>Small additions for the way you already use Hacker News.</p>
+					</div>
+					<div class="oj-home-feature-list">
+						<details class="oj-home-feature" open>
+							<summary>
+								<span class="oj-home-feature-title">Stay in the conversation</span
+								><span aria-hidden="true" class="oj-home-feature-toggle"></span>
+							</summary>
+							<div class="oj-home-feature-content">
+								<p>
+									Read a comment. Select a line. Reply right there. Orange Juice
+									keeps the thread in view while you write.
+								</p>
+								<div class="oj-home-feature-media">
 									<a
-										aria-label="Open full-size inline reply screenshot in light mode"
-										class="screenshot-link"
+										aria-label="Enlarge screenshot: Replying to a comment without leaving the Hacker News thread (light mode)"
+										class="oj-home-shot oj-home-shot--light screenshot-link"
 										href="./assets/inline-reply-light.png"
-									>
-										<img
-											alt="Inline reply in light mode"
-											class="screenshot-image"
+										><img
+											alt="Replying to a comment without leaving the Hacker News thread"
 											height="537"
 											loading="lazy"
 											src="./assets/inline-reply-light.png"
 											width="1383"
-										>
-									</a>
-									<figcaption>Light mode</figcaption>
-								</figure>
-								<figure class="shot">
-									<a
-										aria-label="Open full-size inline reply screenshot in dark mode"
-										class="screenshot-link"
-										href="./assets/inline-reply-dark.png"
+										></a
 									>
-										<img
-											alt="Inline reply in dark mode"
-											class="screenshot-image"
+									<a
+										aria-label="Enlarge screenshot: Replying to a comment without leaving the Hacker News thread (dark mode)"
+										class="oj-home-shot oj-home-shot--dark screenshot-link"
+										href="./assets/inline-reply-dark.png"
+										><img
+											alt="Replying to a comment without leaving the Hacker News thread"
 											height="537"
 											loading="lazy"
 											src="./assets/inline-reply-dark.png"
 											width="1383"
-										>
-									</a>
-									<figcaption>Dark mode</figcaption>
-								</figure>
-							</div>
-						</article>
-
-						<article class="showcase-card">
-							<h3 class="feature-title">Unread Comment Highlighting</h3>
-							<p class="feature-desc">
-								Quickly spot what changed since your last visit without rescanning
-								the entire thread.
-							</p>
-							<div class="screenshot-pair">
-								<figure class="shot">
-									<a
-										aria-label="Open full-size unread comments screenshot in light mode"
-										class="screenshot-link"
-										href="./assets/unread-light.png"
+										></a
 									>
-										<img
-											alt="Unread comment highlighting in light mode"
-											class="screenshot-image"
+								</div>
+							</div>
+						</details>
+						<details class="oj-home-feature">
+							<summary>
+								<span class="oj-home-feature-title">Find the new comments</span
+								><span aria-hidden="true" class="oj-home-feature-toggle"></span>
+							</summary>
+							<div class="oj-home-feature-content">
+								<p>
+									Come back to a thread and see which comments arrived while you
+									were away.
+								</p>
+								<div class="oj-home-feature-media">
+									<a
+										aria-label="Enlarge screenshot: New comments marked with an orange line (light mode)"
+										class="oj-home-shot oj-home-shot--light screenshot-link"
+										href="./assets/unread-light.png"
+										><img
+											alt="New comments marked with an orange line"
 											height="653"
 											loading="lazy"
 											src="./assets/unread-light.png"
 											width="1436"
-										>
-									</a>
-									<figcaption>Light mode</figcaption>
-								</figure>
-								<figure class="shot">
-									<a
-										aria-label="Open full-size unread comments screenshot in dark mode"
-										class="screenshot-link"
-										href="./assets/unread-dark.png"
+										></a
 									>
-										<img
-											alt="Unread comment highlighting in dark mode"
-											class="screenshot-image"
+									<a
+										aria-label="Enlarge screenshot: New comments marked with an orange line (dark mode)"
+										class="oj-home-shot oj-home-shot--dark screenshot-link"
+										href="./assets/unread-dark.png"
+										><img
+											alt="New comments marked with an orange line"
 											height="653"
 											loading="lazy"
 											src="./assets/unread-dark.png"
 											width="1436"
-										>
-									</a>
-									<figcaption>Dark mode</figcaption>
-								</figure>
-							</div>
-						</article>
-
-						<article class="showcase-card">
-							<h3 class="feature-title">Hover User Details</h3>
-							<p class="feature-desc">
-								Hover usernames to quickly preview profile details and context
-								without leaving the thread.
-							</p>
-							<div class="screenshot-pair">
-								<figure class="shot">
-									<a
-										aria-label="Open full-size hover user details screenshot in light mode"
-										class="screenshot-link"
-										href="./assets/user-info-hover-light.png"
+										></a
 									>
-										<img
-											alt="User info hover card in light mode"
-											class="screenshot-image"
-											height="205"
-											loading="lazy"
-											src="./assets/user-info-hover-light.png"
-											width="412"
-										>
-									</a>
-									<figcaption>Light mode</figcaption>
-								</figure>
-								<figure class="shot">
-									<a
-										aria-label="Open full-size hover user details screenshot in dark mode"
-										class="screenshot-link"
-										href="./assets/user-info-hover-dark.png"
-									>
-										<img
-											alt="User info hover card in dark mode"
-											class="screenshot-image"
-											height="204"
-											loading="lazy"
-											src="./assets/user-info-hover-dark.png"
-											width="412"
-										>
-									</a>
-									<figcaption>Dark mode</figcaption>
-								</figure>
+								</div>
 							</div>
-						</article>
-
-						<article class="showcase-card">
-							<h3 class="feature-title">Keyboard Navigation</h3>
-							<p class="feature-desc">
-								Move through stories and comments faster with keyboard shortcuts, so
-								you can browse without constant mouse movement.
-							</p>
-							<div class="screenshot-pair">
-								<figure class="shot">
+						</details>
+						<details class="oj-home-feature">
+							<summary>
+								<span class="oj-home-feature-title">Give your mouse a break</span
+								><span aria-hidden="true" class="oj-home-feature-toggle"></span>
+							</summary>
+							<div class="oj-home-feature-content">
+								<p>
+									Move with j and k, reply with r, or save a favorite with f.
+									Press ? to see the shortcuts and change the bindings.
+								</p>
+								<div class="oj-home-feature-media">
 									<a
-										aria-label="Open full-size keyboard navigation screenshot in light mode"
-										class="screenshot-link"
+										aria-label="Enlarge screenshot: Orange Juice keyboard shortcuts (light mode)"
+										class="oj-home-shot oj-home-shot--light screenshot-link"
 										href="./assets/screenshot-help-light.png"
-									>
-										<img
-											alt="Keyboard navigation help in light mode"
-											class="screenshot-image screenshot-image--keyboard"
+										><img
+											alt="Orange Juice keyboard shortcuts"
 											height="1774"
 											loading="lazy"
 											src="./assets/screenshot-help-light.png"
 											width="1865"
-										>
-									</a>
-									<figcaption>Light mode</figcaption>
-								</figure>
-								<figure class="shot">
-									<a
-										aria-label="Open full-size keyboard navigation screenshot in dark mode"
-										class="screenshot-link"
-										href="./assets/screenshot-help-dark.png"
+										></a
 									>
-										<img
-											alt="Keyboard navigation help in dark mode"
-											class="screenshot-image screenshot-image--keyboard"
+									<a
+										aria-label="Enlarge screenshot: Orange Juice keyboard shortcuts (dark mode)"
+										class="oj-home-shot oj-home-shot--dark screenshot-link"
+										href="./assets/screenshot-help-dark.png"
+										><img
+											alt="Orange Juice keyboard shortcuts"
 											height="1774"
 											loading="lazy"
 											src="./assets/screenshot-help-dark.png"
 											width="1865"
-										>
-									</a>
-									<figcaption>Dark mode</figcaption>
-								</figure>
-							</div>
-						</article>
-
-						<article class="showcase-card">
-							<h3 class="feature-title">Copy HN Link</h3>
-							<p class="feature-desc">
-								Press <code>y</code> on an active story or comment to copy its
-								Hacker News permalink, then keep moving with a subtle confirmation
-								that stays out of the page flow.
-							</p>
-							<div class="screenshot-pair">
-								<figure class="shot">
-									<a
-										aria-label="Open full-size copy HN link screenshot in light mode"
-										class="screenshot-link"
-										href="./assets/link-copied-light.png"
+										></a
 									>
-										<img
-											alt="Copy HN link confirmation in light mode"
-											class="screenshot-image"
+								</div>
+							</div>
+						</details>
+						<details class="oj-home-feature">
+							<summary>
+								<span class="oj-home-feature-title"
+									>Get to know the person behind a comment</span
+								><span aria-hidden="true" class="oj-home-feature-toggle"></span>
+							</summary>
+							<div class="oj-home-feature-content">
+								<p>
+									Hover over a name to see their profile. Follow people you want
+									to hear from, or mute the ones you don’t.
+								</p>
+								<div class="oj-home-feature-media">
+									<a
+										aria-label="Enlarge screenshot: A Hacker News profile shown beside a comment (light mode)"
+										class="oj-home-shot oj-home-shot--light screenshot-link"
+										href="./assets/user-info-hover-light.png"
+										><img
+											alt="A Hacker News profile shown beside a comment"
+											height="205"
+											loading="lazy"
+											src="./assets/user-info-hover-light.png"
+											width="412"
+										></a
+									>
+									<a
+										aria-label="Enlarge screenshot: A Hacker News profile shown beside a comment (dark mode)"
+										class="oj-home-shot oj-home-shot--dark screenshot-link"
+										href="./assets/user-info-hover-dark.png"
+										><img
+											alt="A Hacker News profile shown beside a comment"
+											height="204"
+											loading="lazy"
+											src="./assets/user-info-hover-dark.png"
+											width="412"
+										></a
+									>
+								</div>
+							</div>
+						</details>
+						<details class="oj-home-feature">
+							<summary>
+								<span class="oj-home-feature-title"
+									>Share a link to the conversation</span
+								><span aria-hidden="true" class="oj-home-feature-toggle"></span>
+							</summary>
+							<div class="oj-home-feature-content">
+								<p>
+									Copy a story or comment’s Hacker News URL with a keyboard
+									shortcut.
+								</p>
+								<div class="oj-home-feature-media">
+									<a
+										aria-label="Enlarge screenshot: Confirmation that a Hacker News link was copied (light mode)"
+										class="oj-home-shot oj-home-shot--light screenshot-link"
+										href="./assets/link-copied-light.png"
+										><img
+											alt="Confirmation that a Hacker News link was copied"
 											height="644"
 											loading="lazy"
 											src="./assets/link-copied-light.png"
 											width="1224"
-										>
-									</a>
-									<figcaption>Light mode</figcaption>
-								</figure>
-								<figure class="shot">
-									<a
-										aria-label="Open full-size copy HN link screenshot in dark mode"
-										class="screenshot-link"
-										href="./assets/link-copied-dark.png"
+										></a
 									>
-										<img
-											alt="Copy HN link confirmation in dark mode"
-											class="screenshot-image"
+									<a
+										aria-label="Enlarge screenshot: Confirmation that a Hacker News link was copied (dark mode)"
+										class="oj-home-shot oj-home-shot--dark screenshot-link"
+										href="./assets/link-copied-dark.png"
+										><img
+											alt="Confirmation that a Hacker News link was copied"
 											height="644"
 											loading="lazy"
 											src="./assets/link-copied-dark.png"
 											width="1215"
-										>
-									</a>
-									<figcaption>Dark mode</figcaption>
-								</figure>
-							</div>
-						</article>
-
-						<article class="showcase-card">
-							<h3 class="feature-title">Mermaid Diagram Rendering</h3>
-							<p class="feature-desc">
-								Render Mermaid code blocks into readable diagrams directly in
-								threads.
-							</p>
-							<div class="screenshot-pair">
-								<figure class="shot">
-									<a
-										aria-label="Open full-size Mermaid rendering screenshot in light mode"
-										class="screenshot-link"
-										href="./assets/mermaid-light.png"
+										></a
 									>
-										<img
-											alt="Mermaid diagram rendering in light mode"
-											class="screenshot-image"
+								</div>
+							</div>
+						</details>
+						<details class="oj-home-feature">
+							<summary>
+								<span class="oj-home-feature-title"
+									>Read the code. See the diagram.</span
+								><span aria-hidden="true" class="oj-home-feature-toggle"></span>
+							</summary>
+							<div class="oj-home-feature-content">
+								<p>
+									Code is easier to read, and Mermaid diagrams render right inside
+									comments. Emoji shortcodes work, too.
+								</p>
+								<div class="oj-home-feature-media">
+									<a
+										aria-label="Enlarge screenshot: A Mermaid diagram rendered in a Hacker News comment (light mode)"
+										class="oj-home-shot oj-home-shot--light screenshot-link"
+										href="./assets/mermaid-light.png"
+										><img
+											alt="A Mermaid diagram rendered in a Hacker News comment"
 											height="1200"
 											loading="lazy"
 											src="./assets/mermaid-light.png"
 											width="1223"
-										>
-									</a>
-									<figcaption>Light mode</figcaption>
-								</figure>
-								<figure class="shot">
-									<a
-										aria-label="Open full-size Mermaid rendering screenshot in dark mode"
-										class="screenshot-link"
-										href="./assets/mermaid-dark.png"
+										></a
 									>
-										<img
-											alt="Mermaid diagram rendering in dark mode"
-											class="screenshot-image"
+									<a
+										aria-label="Enlarge screenshot: A Mermaid diagram rendered in a Hacker News comment (dark mode)"
+										class="oj-home-shot oj-home-shot--dark screenshot-link"
+										href="./assets/mermaid-dark.png"
+										><img
+											alt="A Mermaid diagram rendered in a Hacker News comment"
 											height="1201"
 											loading="lazy"
 											src="./assets/mermaid-dark.png"
 											width="1223"
-										>
-									</a>
-									<figcaption>Dark mode</figcaption>
-								</figure>
+										></a
+									>
+								</div>
 							</div>
-						</article>
-
-						<article class="showcase-card">
-							<h3 class="feature-title">GitHub Emoji Shortcodes</h3>
-							<p class="feature-desc">
-								Render comment shortcodes like <code>:heart:</code>
-								<span aria-hidden="true">→</span>
-								<span aria-label="red heart" role="img">❤️</span>
-								and
-								<code>:+1:</code>
-								<span aria-hidden="true">→</span>
-								<span aria-label="thumbs up" role="img">👍</span>
-								while leaving code examples untouched.
-							</p>
-						</article>
-
-						<article class="showcase-card">
-							<h3 class="feature-title">Following Feed</h3>
-							<p class="feature-desc">
-								Follow users from anywhere on HN and open a dedicated feed of their
-								recent comments and submissions. Reorder users by dragging, collapse
-								sections you do not want open by default, and refresh one person at
-								a time without reloading everything else.
-							</p>
-							<div class="showcase-text-list">
-								<p class="feature-desc">
-									Small follow buttons appear next to usernames across Hacker
-									News.
-								</p>
-								<p class="feature-desc">
-									The <code>/following</code> page keeps the normal HN look
-									instead of inventing a separate UI.
-								</p>
-								<p class="feature-desc">
-									Recent fetched activity is cached locally to keep the page fast,
-									with per-user refresh controls when you want a fresh pull.
+						</details>
+						<details class="oj-home-feature">
+							<summary>
+								<span class="oj-home-feature-title">Keep up with your people</span
+								><span aria-hidden="true" class="oj-home-feature-toggle"></span>
+							</summary>
+							<div class="oj-home-feature-content">
+								<p>
+									A following feed collects recent comments and submissions from
+									the HN users you follow. Reorder the list and refresh each
+									person when you want.
 								</p>
 							</div>
-						</article>
-
-						<article class="showcase-card showcase-card--more">
-							<p class="showcase-more">And too many other features to list.</p>
-						</article>
+						</details>
 					</div>
 				</section>
-
-				<section class="section trust-section" id="trust">
-					<h2 class="section-title">Safe, Open, and Engineered</h2>
-					<p class="section-intro">
-						Orange Juice is designed to be trustworthy by default:
-						<br>
-						transparent code, clear licensing, and disciplined development.
-					</p>
-					<div class="trust-grid">
-						<article class="trust-card">
-							<h3 class="feature-title">Fully open source</h3>
-							<p class="feature-desc">
-								The full source code is public under the GPLv3 license, so anyone
-								can inspect how it works, verify behavior, and contribute
-								improvements.
-							</p>
-						</article>
-						<article class="trust-card">
-							<h3 class="feature-title">AI-assisted, not AI-slop</h3>
-							<p class="feature-desc">
-								AI is used as a pair programmer to speed up implementation and
-								review, but architecture and final decisions are human.
-							</p>
-						</article>
-						<article class="trust-card">
-							<h3 class="feature-title">Tested, not vibe coded</h3>
-							<p class="feature-desc">
-								The extension has extensive unit test coverage, quality checks, and
-								automation through CI/CD. This project is intentionally not vibe
-								coded.
-							</p>
-						</article>
-					</div>
-				</section>
-
-				<section class="installation">
-					<div class="install-hero">
-						<h2 class="section-title" id="installation">Installation</h2>
-					</div>
-					<div class="install-browsers">
-						<div class="install-browser-card">
-							<div class="install-browser-header">
-								<img
-									alt=""
-									class="install-browser-logo"
-									height="48"
-									src="assets/chrome-logo.svg"
-									width="48"
-								>
-							</div>
-							<h3 class="install-browser-name">Chrome</h3>
-							<p class="install-browser-desc">
-								Installs from the Chrome Web Store with automatic updates.
-							</p>
+			</div>
+			<section aria-labelledby="install-heading" class="oj-home-bottom" id="installation">
+				<div class="oj-home-width oj-home-bottom-inner">
+					<div>
+						<h2 id="install-heading">Add a little<br>Orange Juice.</h2>
+						<p>Install it, open Hacker News, and make yourself at home.</p>
+						<div class="oj-home-actions">
 							<a
-								class="btn btn-secondary install-browser-btn"
+								class="oj-home-install"
 								href="https://chromewebstore.google.com/detail/orange-juice/jojpnpkbdjfpjjgjhdccgpbifipacaii"
 								rel="noopener noreferrer"
 								target="_blank"
-							>
-								Install for Chrome
-							</a>
-						</div>
-						<div class="install-browser-card">
-							<div class="install-browser-header">
-								<img
+								><img
 									alt=""
-									class="install-browser-logo"
-									height="48"
-									src="assets/firefox-logo.svg"
-									width="48"
-								>
-							</div>
-							<h3 class="install-browser-name">Firefox</h3>
-							<p class="install-browser-desc">
-								Available on Firefox Add-ons for a permanent, auto-updating
-								installation.
-							</p>
+									height="20"
+									src="./assets/chrome-logo.svg"
+									width="20"
+								>Add to Chrome<span aria-hidden="true">↗</span></a
+							>
 							<a
-								class="btn btn-secondary install-browser-btn"
+								class="oj-home-install oj-home-install--secondary"
 								href="https://addons.mozilla.org/en-US/firefox/addon/orange-juice-hn/"
 								rel="noopener noreferrer"
 								target="_blank"
+								><img
+									alt=""
+									height="20"
+									src="./assets/firefox-logo.svg"
+									width="20"
+								>Add to Firefox<span aria-hidden="true">↗</span></a
 							>
-								Install for Firefox
-							</a>
 						</div>
 					</div>
-				</section>
-			</main>
-
-			<footer>
-				<div class="footer-links">
-					<a
-						href="https://github.com/OrangeJuiceExtension/OrangeJuice"
-						rel="noopener noreferrer"
-						target="_blank"
-						>GitHub</a
-					>
-					<a href="./privacy.html" rel="noopener noreferrer">Privacy Policy</a>
-					<a href="./terms.html" rel="noopener noreferrer">Terms of Service</a>
-					<a
-						href="https://github.com/OrangeJuiceExtension/OrangeJuice/issues"
-						rel="noopener noreferrer"
-						target="_blank"
-						>Report an Issue</a
-					>
+					<div class="oj-home-project">
+						<h3>Out in the open.</h3>
+						<p>
+							Orange Juice is open source under the GPLv3 license. Read the code,
+							report a bug, or help build the next feature.
+						</p>
+						<a
+							href="https://github.com/OrangeJuiceExtension/OrangeJuice"
+							rel="noopener noreferrer"
+							target="_blank"
+							>Visit the project <span aria-hidden="true">↗</span></a
+						><a href="./privacy.html"
+							>Read the privacy policy <span aria-hidden="true">→</span></a
+						>
+					</div>
 				</div>
-				<p class="footer-note">
-					&copy; <span class="oj-docs-copyright-year"></span> Orange Juice Extension. All
-					rights reserved.
-				</p>
-			</footer>
-		</div>
+			</section>
+		</main>
+		<footer class="oj-home-footer oj-home-width">
+			<span class="oj-home-footer-brand">Orange Juice.</span>
+			<nav aria-label="Footer navigation">
+				<a href="./privacy.html">Privacy</a><a href="./terms.html">Terms</a
+				><a
+					href="https://github.com/OrangeJuiceExtension/OrangeJuice/issues"
+					rel="noopener noreferrer"
+					target="_blank"
+					>Report a bug</a
+				><a href="https://x.com/Orange_Juice_HN" rel="noopener noreferrer" target="_blank"
+					>Follow along ↗</a
+				>
+			</nav>
+			<p>© <span class="oj-docs-copyright-year"></span> Orange Juice Extension</p>
+		</footer>
 	</body>
 </html>

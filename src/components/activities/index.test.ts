@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContentScriptContext } from '#imports';
 import { activities } from '@/components/activities/index.ts';
 import { initActivityButtons } from '@/components/common/activity-buttons.ts';
+import { getRequiredItem } from '@/test/required-item.ts';
 import { type ActivityTrail, newActivityTrail } from '@/utils/activity-trail';
 
 vi.mock('@/components/common/activity-buttons', () => ({
@@ -131,7 +132,8 @@ describe('activities component', () => {
 			await activities.main(mockCtx);
 
 			// Get the activity trail listeners that were added
-			const [[favoriteListener], [flagListener]] = mockActivityTrail.addListener.mock.calls;
+			const [favoriteListener] = getRequiredItem(mockActivityTrail.addListener.mock.calls, 0);
+			const [flagListener] = getRequiredItem(mockActivityTrail.addListener.mock.calls, 1);
 
 			// Reset call counts
 			vi.mocked(initActivityButtons).mockClear();

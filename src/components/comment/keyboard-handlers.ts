@@ -210,6 +210,9 @@ export class KeyboardHandlers {
 		if (link) {
 			link.click();
 			const [, targetId] = link.href.split('#');
+			if (!targetId) {
+				return;
+			}
 			const targetComment = commentData.get(targetId);
 			if (targetComment) {
 				await commentData.deactivate();

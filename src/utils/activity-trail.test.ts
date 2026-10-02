@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DAYS_1, DAYS_30 } from '@/utils/constants.ts';
 import lStorage from '@/utils/local-storage.ts';
 import { type ActivityDetail, ActivityId, ActivityTrail } from './activity-trail.ts';
@@ -302,9 +302,10 @@ describe('ActivityTrail', () => {
 
 	describe('persistence', () => {
 		it('should load data from localStorage', async () => {
+			const expiry = Date.now() + DAYS_30;
 			const storedData = {
 				items: {
-					[ActivityId.Comments]: [{ exp: Date.now() + DAYS_30, id: '900' }],
+					[ActivityId.Comments]: [{ exp: expiry, id: '900' }],
 				},
 				lastSync: Date.now(),
 			};
@@ -315,7 +316,7 @@ describe('ActivityTrail', () => {
 			const result = await trail.get({ id: '900', type: ActivityId.Comments });
 
 			expect(result).toEqual({
-				exp: storedData.items[ActivityId.Comments][0].exp,
+				exp: expiry,
 				id: '900',
 				type: ActivityId.Comments,
 			});
@@ -332,6 +333,7 @@ describe('ActivityTrail', () => {
 
 			expect(lStorage.setItem).toHaveBeenCalled();
 			const [callArgs] = vi.mocked(lStorage.setItem).mock.calls;
+			assert.isDefined(callArgs);
 			expect(callArgs[0]).toBe('oj_activity_trail');
 			expect(callArgs[1]).toHaveProperty('items');
 			expect(callArgs[1]).toHaveProperty('lastSync');
@@ -350,6 +352,7 @@ describe('ActivityTrail', () => {
 
 			const afterTime = Date.now();
 			const [callArgs] = vi.mocked(lStorage.setItem).mock.calls;
+			assert.isDefined(callArgs);
 			const savedData = callArgs[1] as { lastSync: number };
 
 			expect(savedData.lastSync).toBeGreaterThanOrEqual(beforeTime);
