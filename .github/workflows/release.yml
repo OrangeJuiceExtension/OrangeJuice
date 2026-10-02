@@ -20,9 +20,10 @@ jobs:
     steps:
       - name: Guard against release loop
         shell: bash
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message || '' }}
         run: |
-          message="${{ github.event.head_commit.message || '' }}"
-          if echo "$message" | grep -qiE '\[skip ci\]'; then
+          if echo "$COMMIT_MESSAGE" | grep -qiE '\[skip ci\]'; then
               echo 'Automated version bump commit detected; exiting.'
               exit 0
           fi
@@ -70,7 +71,7 @@ jobs:
           if [ -z "$LAST_TAG" ]; then
             COMMITS=$(git log --pretty=format:"%s")
           else
-            COMMITS=$(git log ${LAST_TAG}..HEAD --pretty=format:"%s")
+            COMMITS=$(git log "${LAST_TAG}..HEAD" --pretty=format:"%s")
           fi
 
           # Start at patch; bump to major if any commit is a breaking change (type with ! or "breaking change"),
@@ -83,7 +84,7 @@ jobs:
             BUMP="minor"
           fi
 
-          echo "bump=$BUMP" >> $GITHUB_OUTPUT
+          echo "bump=$BUMP" >> "$GITHUB_OUTPUT"
           echo "Detected bump type: $BUMP"
 
       - name: Bump version
