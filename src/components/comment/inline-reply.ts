@@ -3,6 +3,8 @@ import { createGuidelinesNote } from '@/components/comment/init-comment-ux.ts';
 import { dom } from '@/utils/dom.ts';
 import { paths } from '@/utils/paths.ts';
 
+const pendingReplies = new WeakMap<HTMLAnchorElement, symbol>();
+
 /*
  * TODO: We're going to need an API in here where text can be substituted and buttons can be added
  * that implement further functionality (like the AI button). Maybe convert handleReplyClick
@@ -15,29 +17,38 @@ export const handleReplyClick = async (link: HTMLAnchorElement) => {
 		return;
 	}
 
-	if (toggleExistingForm(link)) {
+	if (closeInlineReply(link)) {
 		return;
 	}
 
-	const replyParams = await getReplyParams(href);
-	if (!replyParams) {
-		return;
-	}
+	const request = Symbol('inline reply request');
+	pendingReplies.set(link, request);
+	try {
+		const replyParams = await getReplyParams(href);
+		if (!replyParams || pendingReplies.get(link) !== request) {
+			return;
+		}
 
-	const form = createReplyForm(replyParams);
-	link.parentElement?.insertAdjacentElement('afterend', form);
-	form.querySelector<HTMLTextAreaElement>('textarea')?.focus();
-	link.textContent = 'hide reply';
+		const form = createReplyForm(replyParams);
+		link.parentElement?.insertAdjacentElement('afterend', form);
+		form.querySelector<HTMLTextAreaElement>('textarea')?.focus();
+		link.textContent = 'hide reply';
+	} finally {
+		if (pendingReplies.get(link) === request) {
+			pendingReplies.delete(link);
+		}
+	}
 };
 
-const toggleExistingForm = (link: HTMLAnchorElement): boolean => {
+export const closeInlineReply = (link: HTMLAnchorElement): boolean => {
+	const wasLoading = pendingReplies.delete(link);
 	const existingForm = link.parentElement?.nextElementSibling;
 	if (existingForm?.tagName === 'FORM') {
 		existingForm.remove();
 		link.textContent = 'reply';
 		return true;
 	}
-	return false;
+	return wasLoading;
 };
 
 const getReplyParams = async (
@@ -161,6 +172,7 @@ export const inlineReply = (ctx: ContentScriptContext, doc: Document) => {
 	ctx.onInvalidated(() => {
 		for (const [link, handler] of listeners) {
 			link.removeEventListener('click', handler);
+			pendingReplies.delete(link);
 		}
 		listeners.clear();
 	});
