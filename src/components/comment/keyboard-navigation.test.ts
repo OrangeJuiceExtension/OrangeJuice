@@ -6,6 +6,7 @@ import { addIndentation, createCommentRow } from '@/components/comment/constants
 import { focusClass, focusClassDefault, HNComment } from '@/components/comment/hn-comment.ts';
 import { KeyboardHandlers } from '@/components/comment/keyboard-handlers.ts';
 import { keyboardNavigation } from '@/components/comment/keyboard-navigation.ts';
+import { getRequiredItem } from '@/test/required-item.ts';
 import lStorage from '@/utils/local-storage.ts';
 import { getEnableFocusBoxPreference } from '@/utils/preferences.ts';
 
@@ -659,6 +660,27 @@ describe('keyboardNavigation', () => {
 	});
 
 	describe('prevent() method', () => {
+		it.each([0, 1])(
+			'ignores navigation while textarea %i is focused beside another form',
+			async (activeIndex) => {
+				const { doc, comments, ctx, commentData, invalidate } = createTestContext();
+				const row = getComment(comments, 0);
+				const cell = doc.createElement('td');
+				row.append(cell);
+				const textareas = [doc.createElement('textarea'), doc.createElement('textarea')];
+				for (const textarea of textareas) {
+					const form = doc.createElement('form');
+					form.append(textarea);
+					cell.append(form);
+				}
+				setActiveElement(doc, getRequiredItem(textareas, activeIndex));
+				await keyboardNavigation(ctx, doc, comments, commentData);
+				dispatchKeydown(doc, 'j');
+				expect(KeyboardHandlers.prototype.move).not.toHaveBeenCalled();
+				invalidate();
+			}
+		);
+
 		it('should trigger handlers when a non-reply textarea is focused', async () => {
 			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 			const textarea = doc.createElement('textarea');

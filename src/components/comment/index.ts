@@ -10,6 +10,7 @@ import { highlightUnreadComments } from '@/components/comment/highlight-unread-c
 import { HNComment } from '@/components/comment/hn-comment.ts';
 import { indentToggle } from '@/components/comment/indent-toggle.ts';
 import { initCommentUX } from '@/components/comment/init-comment-ux.ts';
+import { inlineEdit } from '@/components/comment/inline-edit.ts';
 import { inlineReply } from '@/components/comment/inline-reply.ts';
 import { keyboardNavigation } from '@/components/comment/keyboard-navigation.ts';
 import { applyMutedComments } from '@/components/comment/muted-comments.ts';
@@ -54,6 +55,7 @@ export const comments: ComponentFeature = {
 				keyboardNavigation(ctx, document, allComments, commentData, getNavState())
 			),
 			Promise.resolve().then(() => inlineReply(ctx, document)),
+			Promise.resolve().then(() => inlineEdit(ctx, document)),
 			Promise.resolve().then(() => replyFocusTextarea(document)),
 		]);
 	},

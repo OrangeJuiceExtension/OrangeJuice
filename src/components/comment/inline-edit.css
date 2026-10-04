@@ -1,0 +1,73 @@
+.oj-inline-edit {
+	max-width: 100%;
+	margin-block: 8px;
+}
+
+.oj-inline-edit textarea {
+	box-sizing: border-box;
+	width: min(80ch, 100%);
+	max-width: 100%;
+}
+
+.oj-inline-edit ~ .reply {
+	display: none;
+}
+
+.oj-inline-edit-actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin-top: 10px;
+}
+
+.oj-inline-edit :is(button, input[type="submit"]) {
+	box-sizing: border-box;
+	min-height: 30px;
+	padding: 5px 12px;
+	font: inherit;
+	font-size: 12px;
+	line-height: 18px;
+	color: var(--oj-text, #34342e) !important;
+	cursor: pointer;
+	background: transparent !important;
+	border: 1px solid var(--oj-border, #d2d0c5) !important;
+	border-radius: 4px;
+}
+
+.oj-inline-edit input[type="submit"] {
+	font-weight: 600;
+}
+
+.oj-inline-edit input[type="submit"]:enabled {
+	color: #291607 !important;
+	background: #ff6600 !important;
+	border-color: #ff6600 !important;
+}
+
+.oj-inline-edit input[type="submit"]:enabled:hover {
+	background: #ff812e !important;
+	border-color: #ff812e !important;
+}
+
+.oj-inline-edit button:enabled:hover {
+	background: var(--oj-surface-2, #eeede5) !important;
+}
+
+.oj-inline-edit :is(button, input[type="submit"]):disabled {
+	cursor: default;
+	opacity: 0.45;
+}
+
+.oj-inline-edit :is(button, input[type="submit"]):focus-visible {
+	outline: 2px solid #ff6600;
+	outline-offset: 2px;
+}
+
+.oj-inline-edit [role="alert"] {
+	margin-top: 8px;
+}
+
+.oj-inline-edit > a {
+	margin-right: 8px;
+	text-decoration: underline;
+}

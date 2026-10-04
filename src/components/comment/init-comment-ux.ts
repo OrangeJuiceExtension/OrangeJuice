@@ -4,29 +4,33 @@ import { OJ_NEW_COMMENT_INDENT } from './constants.ts';
 // TODO: make this configurable in a popup menu
 const customWidth = 40;
 
-export const createGuidelinesNote = (options?: { marginBottom?: string }): HTMLDivElement => {
-	const guidelinesNote = document.createElement('div');
+export const createGuidelinesNote = (options?: {
+	doc?: Document;
+	marginBottom?: string;
+}): HTMLDivElement => {
+	const doc = options?.doc ?? document;
+	const guidelinesNote = doc.createElement('div');
 	guidelinesNote.style.marginTop = '4px';
 	guidelinesNote.style.fontSize = '8px';
 	if (options?.marginBottom) {
 		guidelinesNote.style.marginBottom = options.marginBottom;
 	}
 
-	const commentsLink = document.createElement('a');
+	const commentsLink = doc.createElement('a');
 	commentsLink.href = 'newswelcome.html';
 	commentsLink.target = '_blank';
 	commentsLink.rel = 'noopener noreferrer';
 	commentsLink.tabIndex = -1;
-	const commentsUnderline = document.createElement('u');
+	const commentsUnderline = doc.createElement('u');
 	commentsUnderline.textContent = 'comments';
 	commentsLink.append(commentsUnderline);
 
-	const guidelinesLink = document.createElement('a');
+	const guidelinesLink = doc.createElement('a');
 	guidelinesLink.href = 'newsguidelines.html#comments';
 	guidelinesLink.target = '_blank';
 	guidelinesLink.rel = 'noopener noreferrer';
 	guidelinesLink.tabIndex = -1;
-	const guidelinesUnderline = document.createElement('u');
+	const guidelinesUnderline = doc.createElement('u');
 	guidelinesUnderline.textContent = 'guidelines';
 	guidelinesLink.append(guidelinesUnderline);
 
