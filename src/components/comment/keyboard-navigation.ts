@@ -71,11 +71,11 @@ export const keyboardNavigation = async (
 
 		if (activeDoc.activeElement.tagName === 'TEXTAREA') {
 			const textarea = activeDoc.activeElement as HTMLTextAreaElement;
-			const isReplyTextarea = textarea.closest('tr')?.querySelector('textarea') === textarea;
-			if (isReplyTextarea && e?.key === 'Escape') {
+			const isCommentTextarea = textarea.closest('tr') !== null;
+			if (isCommentTextarea && e?.key === 'Escape') {
 				return false;
 			}
-			return isReplyTextarea;
+			return isCommentTextarea;
 		}
 
 		if (activeDoc.activeElement.tagName === 'INPUT') {
