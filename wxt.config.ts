@@ -65,6 +65,7 @@ export default defineConfig({
 			'--password-store=basic',
 			'--use-mock-keychain',
 		],
+		disabled: process.env.OJ_MANUAL_BROWSER === '1',
 		openConsole: true,
 		openDevtools: true,
 		startUrls: ['https://news.ycombinator.com/'],

@@ -16,6 +16,7 @@
 		"compile": "tsc --noEmit",
 		"dev": "wxt",
 		"dev:firefox": "wxt -b firefox",
+		"dev:manual": "OJ_MANUAL_BROWSER=1 wxt",
 		"fix": "bun ./node_modules/ultracite/dist/index.js fix",
 		"icons": "bun run scripts/generate-icons.ts",
 		"postinstall": "wxt prepare",
