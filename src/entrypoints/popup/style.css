@@ -1,5 +1,8 @@
+html,
 body {
-	min-width: 320px;
+	/* Chrome sizes the popup from this document, so avoid viewport-relative caps. */
+	width: 420px;
+	min-width: 420px;
 	margin: 0;
 }
 

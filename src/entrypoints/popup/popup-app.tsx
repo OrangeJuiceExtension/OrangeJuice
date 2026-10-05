@@ -19,10 +19,7 @@ import {
 import { PREFERENCES_UPDATED_MESSAGE_TYPE } from '@/utils/preferences-live.ts';
 import './App.css';
 
-const LOGO_PATH = '/icon/orange_juice_icon_128x128.png';
 const WELCOME_PATH = '/welcome.html';
-
-const getLogoUrl = (): string => browser.runtime?.getURL?.(LOGO_PATH) ?? LOGO_PATH;
 
 interface ToggleDefinition {
 	description: string;
@@ -38,11 +35,6 @@ interface SelectDefinition {
 		label: string;
 		value: ReadStoriesVisibilityPreference;
 	}>;
-}
-
-interface SettingsGroupDefinition {
-	description: string;
-	title: string;
 }
 
 const READ_STORIES_VISIBILITY_OPTIONS = [
@@ -83,10 +75,12 @@ const createToggle = (doc: Document, toggle: ToggleDefinition): HTMLLabelElement
 
 	const labelText = doc.createElement('span');
 	labelText.className = 'oj-popup__toggle-title';
+	labelText.id = `${toggle.id}-label`;
 	labelText.textContent = toggle.label;
 
 	const hintText = doc.createElement('span');
 	hintText.className = 'oj-popup__toggle-hint';
+	hintText.id = `${toggle.id}-hint`;
 	hintText.textContent = toggle.description;
 
 	copy.append(labelText, hintText);
@@ -96,6 +90,8 @@ const createToggle = (doc: Document, toggle: ToggleDefinition): HTMLLabelElement
 	checkbox.id = toggle.id;
 	checkbox.name = toggle.id;
 	checkbox.type = 'checkbox';
+	checkbox.setAttribute('aria-labelledby', labelText.id);
+	checkbox.setAttribute('aria-describedby', hintText.id);
 
 	label.append(copy, checkbox);
 	return label;
@@ -111,10 +107,12 @@ const createSelectSetting = (doc: Document, setting: SelectDefinition): HTMLLabe
 
 	const labelText = doc.createElement('span');
 	labelText.className = 'oj-popup__toggle-title';
+	labelText.id = `${setting.id}-label`;
 	labelText.textContent = setting.label;
 
 	const hintText = doc.createElement('span');
 	hintText.className = 'oj-popup__toggle-hint';
+	hintText.id = `${setting.id}-hint`;
 	hintText.textContent = setting.description;
 
 	copy.append(labelText, hintText);
@@ -123,6 +121,8 @@ const createSelectSetting = (doc: Document, setting: SelectDefinition): HTMLLabe
 	select.className = 'oj-popup__select';
 	select.id = setting.id;
 	select.name = setting.id;
+	select.setAttribute('aria-labelledby', labelText.id);
+	select.setAttribute('aria-describedby', hintText.id);
 
 	for (const optionDefinition of setting.options) {
 		const option = doc.createElement('option');
@@ -137,7 +137,7 @@ const createSelectSetting = (doc: Document, setting: SelectDefinition): HTMLLabe
 
 const createSettingsGroup = (
 	doc: Document,
-	group: SettingsGroupDefinition
+	title: string
 ): {
 	container: HTMLElement;
 	settings: HTMLElement;
@@ -147,16 +147,12 @@ const createSettingsGroup = (
 
 	const heading = doc.createElement('h2');
 	heading.className = 'oj-popup__group-title';
-	heading.textContent = group.title;
-
-	const description = doc.createElement('p');
-	description.className = 'oj-popup__group-description';
-	description.textContent = group.description;
+	heading.textContent = title;
 
 	const settings = doc.createElement('div');
 	settings.className = 'oj-popup__group-settings';
 
-	container.append(heading, description, settings);
+	container.append(heading, settings);
 	return { container, settings };
 };
 
@@ -164,76 +160,69 @@ const createPopupContent = (doc: Document): HTMLElement => {
 	const main = doc.createElement('main');
 	main.className = 'oj-popup oj-popup--light';
 
-	const card = doc.createElement('section');
-	card.className = 'oj-popup__card';
-
-	const header = doc.createElement('div');
+	const header = doc.createElement('header');
 	header.className = 'oj-popup__header';
 
-	const logoLink = doc.createElement('a');
-	logoLink.href = 'https://oj-hn.com';
-	logoLink.rel = 'noopener';
-	logoLink.target = '_blank';
-
-	const logo = doc.createElement('img');
-	logo.alt = 'Orange Juice logo';
-	logo.className = 'oj-popup__logo';
-	logo.height = 64;
-	logo.src = getLogoUrl();
-	logo.width = 64;
-	logoLink.append(logo);
-
-	const titleGroup = doc.createElement('div');
+	const brand = doc.createElement('a');
+	brand.className = 'oj-popup__brand';
+	brand.href = 'https://oj-hn.com';
+	brand.rel = 'noopener';
+	brand.target = '_blank';
+	brand.append('Orange ');
+	const brandSuffix = doc.createElement('span');
+	brandSuffix.textContent = 'Juice';
+	brand.append(brandSuffix);
 
 	const title = doc.createElement('h1');
 	title.className = 'oj-popup__title';
 	title.textContent = 'Preferences';
+	header.append(brand, title);
+
+	const footer = doc.createElement('footer');
+	footer.className = 'oj-popup__footer';
+	const saveNote = doc.createElement('span');
+	saveNote.textContent = 'Changes save automatically.';
 
 	const welcomeLink = doc.createElement('a');
 	welcomeLink.className = 'oj-popup__welcome-link';
 	welcomeLink.href = browser.runtime.getURL(WELCOME_PATH);
 	welcomeLink.rel = 'noopener';
 	welcomeLink.target = '_blank';
-	welcomeLink.textContent = 'Open initial welcome page';
-
-	titleGroup.append(title, welcomeLink);
-	header.append(logoLink, titleGroup);
+	welcomeLink.textContent = 'Welcome guide';
+	footer.append(saveNote, welcomeLink);
 
 	const settingsList = doc.createElement('div');
 	settingsList.className = 'oj-popup__settings';
 
-	const readStoriesGroup = createSettingsGroup(doc, {
-		description:
-			'Control whether read stories are affected on story pages and how they appear.',
-		title: 'Read stories',
-	});
+	const readStoriesGroup = createSettingsGroup(doc, 'Read stories');
+	const navigationGroup = createSettingsGroup(doc, 'Browsing');
 
 	const showHiddenStoriesOptionLabel = createToggle(doc, {
-		description: 'Show the hide read stories checkbox on story pages.',
+		description: 'Turn off to always apply the style below.',
 		id: SHOW_HIDDEN_STORIES_OPTION_STORAGE_KEY,
-		label: 'Show hide read stories option',
+		label: 'Show read stories checkbox',
 	});
 	const readStoriesVisibilityLabel = createSelectSetting(doc, {
-		description: 'Choose how visited stories appear on story pages.',
+		description: 'How visited stories are displayed.',
 		id: READ_STORIES_VISIBILITY_STORAGE_KEY,
-		label: 'Read stories',
+		label: 'Appearance',
 		options: READ_STORIES_VISIBILITY_OPTIONS,
 	});
 	const focusBoxLabel = createToggle(doc, {
-		description: 'Display the orange selection box around stories and comments.',
+		description: 'Outline the selected story or comment.',
 		id: ENABLE_FOCUS_BOX_STORAGE_KEY,
 		label: 'Show focus box',
 	});
 	const openStoryNewTabLabel = createToggle(doc, {
-		description: 'Open story title links in a new tab.',
+		description: 'Keep your place on Hacker News.',
 		id: OPEN_STORY_NEW_TAB_STORAGE_KEY,
-		label: 'Open stories in new tab',
+		label: 'Open stories in a new tab',
 	});
 
 	readStoriesGroup.settings.append(showHiddenStoriesOptionLabel, readStoriesVisibilityLabel);
-	settingsList.append(readStoriesGroup.container, focusBoxLabel, openStoryNewTabLabel);
-	card.append(header, settingsList);
-	main.append(card);
+	navigationGroup.settings.append(focusBoxLabel, openStoryNewTabLabel);
+	settingsList.append(readStoriesGroup.container, navigationGroup.container);
+	main.append(header, settingsList, footer);
 	return main;
 };
 
