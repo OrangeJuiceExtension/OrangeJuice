@@ -353,6 +353,64 @@ describe('activity-buttons', () => {
 			expect(buttons.length).toBe(3); // 2 sublines + 1 comhead all get favorite buttons
 		});
 
+		it.each([
+			{ config: favoriteConfig, type: ActivityId.FavoriteSubmissions },
+			{ config: flagConfig, type: ActivityId.FlagsSubmissions },
+		])(
+			'creates one $config.componentType button for nested story metadata',
+			async ({ config, type }) => {
+				doc.body.innerHTML = `
+				<table><tbody><tr><td class="subtext"><span class="subline">
+					<span id="unv_12345"></span> | <a href="item?id=12345">comments</a>
+				</span></td></tr></tbody></table>
+			`;
+
+				const cleanup = await initActivityButtons(
+					doc,
+					'/',
+					mockActivityTrail as unknown as ActivityTrail,
+					config
+				);
+
+				expect(doc.querySelectorAll(`.${config.buttonClass}`)).toHaveLength(1);
+				expect(mockActivityTrail.get).toHaveBeenCalledExactlyOnceWith({
+					id: '12345',
+					type,
+				});
+				cleanup();
+				expect(doc.querySelectorAll(`.${config.buttonClass}`)).toHaveLength(0);
+			}
+		);
+
+		it('does not duplicate buttons when initializations overlap', async () => {
+			createSubline('12345');
+			const lookup = createDeferred<undefined>();
+			mockActivityTrail.get.mockReturnValue(lookup.promise);
+			const initializations = [
+				initActivityButtons(
+					doc,
+					'/',
+					mockActivityTrail as unknown as ActivityTrail,
+					favoriteConfig
+				),
+				initActivityButtons(
+					doc,
+					'/',
+					mockActivityTrail as unknown as ActivityTrail,
+					favoriteConfig
+				),
+			];
+
+			lookup.resolve(undefined);
+			const cleanups = await Promise.all(initializations);
+
+			expect(doc.querySelectorAll('.oj_favorite_link')).toHaveLength(1);
+			for (const cleanup of cleanups) {
+				cleanup();
+			}
+			expect(doc.querySelectorAll('.oj_favorite_link')).toHaveLength(0);
+		});
+
 		it('should keep each button state attached to the correct nav when activity lookups resolve out of order', async () => {
 			const firstSubline = createSubline('11111');
 			const secondSubline = createSubline('22222');
