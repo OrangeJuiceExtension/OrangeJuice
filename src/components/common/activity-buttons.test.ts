@@ -447,6 +447,55 @@ describe('activity-buttons', () => {
 		});
 
 		describe('button click behavior', () => {
+			it.each([
+				{ expectedLabel: 'unfavorite', name: 'saves a favorite', saved: true, status: 302 },
+				{
+					expectedLabel: 'favorite',
+					name: 'keeps an expired-link response inactive',
+					saved: false,
+					status: 200,
+				},
+			])('$name using the real request helpers', async ({ status, expectedLabel, saved }) => {
+				const { dom: realDom } =
+					await vi.importActual<typeof import('@/utils/dom.ts')>('@/utils/dom.ts');
+				vi.mocked(dom.getAuthToken).mockImplementation(realDom.getAuthToken);
+				vi.mocked(dom.toggleActivityState).mockImplementation(realDom.toggleActivityState);
+				const fetchSpy = vi
+					.spyOn(globalThis, 'fetch')
+					.mockResolvedValueOnce(
+						new Response(`
+						<form action="comment"><input type="hidden" name="hmac" value="reply-token"></form>
+						<a href="fave?id=12345&amp;auth=favorite-token">favorite</a>
+					`)
+					)
+					.mockResolvedValueOnce(
+						new Response(status === 200 ? 'Unknown or expired link.' : null, { status })
+					);
+				createSubline('12345');
+				await initActivityButtons(
+					doc,
+					'/',
+					mockActivityTrail as unknown as ActivityTrail,
+					favoriteConfig
+				);
+				const button = doc.querySelector<HTMLButtonElement>('.oj_favorite_link');
+				if (!button) {
+					throw new Error('Expected a favorite button');
+				}
+
+				button.click();
+				await vi.waitFor(() => {
+					expect(fetchSpy).toHaveBeenCalledTimes(2);
+					expect(button.disabled).toBe(false);
+				});
+
+				const actionUrl = new URL(String(fetchSpy.mock.calls[1]?.[0]));
+				expect(actionUrl.pathname).toBe('/fave');
+				expect(actionUrl.searchParams.get('auth')).toBe('favorite-token');
+				expect(button.textContent).toBe(expectedLabel);
+				expect(mockActivityTrail.set).toHaveBeenCalledTimes(saved ? 1 : 0);
+			});
+
 			it('should toggle inactive to active on click', async () => {
 				createSubline('12345');
 				vi.mocked(dom.getAuthToken).mockResolvedValueOnce('auth123');

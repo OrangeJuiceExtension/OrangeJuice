@@ -12,6 +12,7 @@ const TOP_BAR_DARK_TEXT_COLOR = '#111111';
 const TOP_BAR_LIGHT_TEXT_COLOR = '#f1efec';
 const SHORT_HEX_COLOR_PATTERN = /^#?([a-f0-9]{3})$/i;
 const HEX_COLOR_PATTERN = /^#?([a-f0-9]{6})$/i;
+const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
 const NON_TEXT_INPUT_TYPES = new Set([
 	'button',
 	'checkbox',
@@ -283,7 +284,11 @@ const toggleActivityState = async (
 		redirect: 'manual',
 	});
 
-	if (!response.ok && response.status !== 302 && response.status !== 0) {
+	if (response.type === 'opaqueredirect' || REDIRECT_STATUS_CODES.has(response.status)) {
+		return true;
+	}
+
+	if (!response.ok) {
 		console.log({
 			actionName,
 			commentId,
@@ -291,9 +296,20 @@ const toggleActivityState = async (
 			status: response.status,
 			statusText: response.statusText,
 		});
+		return false;
 	}
 
-	return true;
+	// HN can return an error page with HTTP 200. Only accept a page that shows
+	// the reverse action for this item, confirming that its state changed.
+	const html = await response.text();
+	const doc = new DOMParser().parseFromString(html, 'text/html');
+	const actionLink = findActivityLink(doc, actionName, commentId);
+	const href = actionLink?.getAttribute('href');
+	if (!href) {
+		return false;
+	}
+	const nowActive = getHrefQueryParam(href, 'un') === 't';
+	return nowActive !== isActive;
 };
 
 const getAllComments = (doc: Document): HTMLElement[] => [

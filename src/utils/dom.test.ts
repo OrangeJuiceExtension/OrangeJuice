@@ -413,6 +413,84 @@ describe('dom', () => {
 
 	describe('toggleActivityState', () => {
 		it.each([
+			{ body: '', expected: true, name: 'HTTP redirect', responseType: 'basic', status: 302 },
+			{
+				body: '',
+				expected: true,
+				name: 'manual redirect in a browser',
+				responseType: 'opaqueredirect',
+				status: 0,
+			},
+			{
+				body: '',
+				expected: false,
+				name: 'network error response',
+				responseType: 'error',
+				status: 0,
+			},
+			{
+				body: 'Forbidden',
+				expected: false,
+				name: 'HTTP error',
+				responseType: 'basic',
+				status: 403,
+			},
+			{
+				body: 'Unknown or expired link.',
+				expected: false,
+				name: 'expired link page',
+				responseType: 'basic',
+				status: 200,
+			},
+			{
+				body: '<form action="login"></form>',
+				expected: false,
+				name: 'login page',
+				responseType: 'basic',
+				status: 200,
+			},
+			{
+				body: '<a href="fave?id=123&amp;auth=token">favorite</a>',
+				expected: false,
+				name: 'unchanged favorite link',
+				responseType: 'basic',
+				status: 200,
+			},
+			{
+				body: '<a href="fave?id=123&amp;un=t&amp;auth=token">unfavorite</a>',
+				expected: true,
+				name: 'updated favorite link',
+				responseType: 'basic',
+				status: 200,
+			},
+			{
+				body: '<a href="fave?id=999&amp;un=t&amp;auth=token">unfavorite</a>',
+				expected: false,
+				name: 'another item favorite link',
+				responseType: 'basic',
+				status: 200,
+			},
+		])('handles $name', async ({ status, responseType, body, expected }) => {
+			vi.spyOn(console, 'log').mockImplementation(() => {});
+			vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+				ok: status >= 200 && status < 300,
+				status,
+				statusText: '',
+				text: async () => body,
+				type: responseType,
+			} as Response);
+
+			const result = await dom.toggleActivityState(
+				'123',
+				false,
+				'token',
+				ActivityId.FavoriteSubmissions
+			);
+
+			expect(result).toBe(expected);
+		});
+
+		it.each([
 			{ action: 'fave', isActive: false, type: ActivityId.FavoriteSubmissions },
 			{ action: 'fave', isActive: true, type: ActivityId.FavoriteComments },
 			{ action: 'flag', isActive: false, type: ActivityId.FlagsSubmissions },
