@@ -12,6 +12,7 @@ const TOP_BAR_DARK_TEXT_COLOR = '#111111';
 const TOP_BAR_LIGHT_TEXT_COLOR = '#f1efec';
 const SHORT_HEX_COLOR_PATTERN = /^#?([a-f0-9]{3})$/i;
 const HEX_COLOR_PATTERN = /^#?([a-f0-9]{6})$/i;
+const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
 const NON_TEXT_INPUT_TYPES = new Set([
 	'button',
 	'checkbox',
@@ -64,7 +65,6 @@ const fetchHmacFromPage = async (url: string): Promise<string> => {
 	return '';
 };
 
-const authMatchPattern = /auth=([^&]+)/;
 const getHrefQueryParam = (
 	href: string,
 	param: string,
@@ -105,6 +105,19 @@ const findLinkByPathnameAndQueryParam = (
 const findUserLink = (root: ParentNode): HTMLAnchorElement | undefined =>
 	findLinkByPathnameAndQueryParam(root, 'span.pagetop a', '/user', 'id');
 
+const findActivityLink = (
+	root: ParentNode,
+	actionName: string,
+	itemId: string
+): HTMLAnchorElement | undefined =>
+	findLinkByPathnameAndQueryParam(
+		root,
+		`a[href*="${actionName}?"]`,
+		`/${actionName}`,
+		'id',
+		itemId
+	);
+
 const getAuthToken = async (
 	commentId: string,
 	activityType: ActivityType
@@ -113,40 +126,19 @@ const getAuthToken = async (
 	if (!actionName) {
 		return;
 	}
-	const itemPageUrl = `${paths.base}/item?id=${commentId}`;
-	const itemDiv = await dom.getPageDom(itemPageUrl);
+	const itemPageUrl = `${paths.base}/item?id=${encodeURIComponent(commentId)}`;
+	const itemDiv = await dom.getPageDom(itemPageUrl, 'no-store');
 	if (!itemDiv) {
 		return;
 	}
 
-	let token: string | undefined;
-
-	const hmacInput = itemDiv.querySelector<HTMLInputElement>('input[type="hidden"][name="hmac"]');
-	token = hmacInput?.value;
-
-	if (!token) {
-		let actionLink = findLinkByPathnameAndQueryParam(
-			itemDiv,
-			`a[href*="${actionName}?"]`,
-			`/${actionName}`,
-			'id',
-			commentId
-		);
-		if (!actionLink) {
-			// fall back to looking at the hide link. a job item only has that.
-			// ie: https://news.ycombinator.com/item?id=46840801
-			actionLink = findLinkByPathnameAndQueryParam(
-				itemDiv,
-				'a[href*="hide?"]',
-				'/hide',
-				'id',
-				commentId
-			);
-		}
-		token = actionLink?.href.match(authMatchPattern)?.[1];
-	}
-
-	return token;
+	// The reply form's hmac authorizes comments, not favorite/flag actions.
+	// Job items may only expose the item's action token in their hide link.
+	const actionLink =
+		findActivityLink(itemDiv, actionName, commentId) ??
+		findActivityLink(itemDiv, 'hide', commentId);
+	const href = actionLink?.getAttribute('href');
+	return href ? getHrefQueryParam(href, 'auth') : undefined;
 };
 
 const getStoredUsername = async (): Promise<string | undefined> => {
@@ -278,17 +270,25 @@ const toggleActivityState = async (
 		return;
 	}
 
-	const url = isActive
-		? `${paths.base}/${actionName}?id=${commentId}&un=t&auth=${authToken}`
-		: `${paths.base}/${actionName}?id=${commentId}&auth=${authToken}`;
+	const url = new URL(`/${actionName}`, paths.base);
+	url.searchParams.set('id', commentId);
+	url.searchParams.set('auth', authToken);
+	if (isActive) {
+		url.searchParams.set('un', 't');
+	}
 
-	const response = await fetch(url, {
+	const response = await fetch(url.href, {
+		cache: 'no-store',
 		credentials: 'include',
 		method: 'GET',
 		redirect: 'manual',
 	});
 
-	if (!response.ok && response.status !== 302 && response.status !== 0) {
+	if (response.type === 'opaqueredirect' || REDIRECT_STATUS_CODES.has(response.status)) {
+		return true;
+	}
+
+	if (!response.ok) {
 		console.log({
 			actionName,
 			commentId,
@@ -296,9 +296,20 @@ const toggleActivityState = async (
 			status: response.status,
 			statusText: response.statusText,
 		});
+		return false;
 	}
 
-	return true;
+	// HN can return an error page with HTTP 200. Only accept a page that shows
+	// the reverse action for this item, confirming that its state changed.
+	const html = await response.text();
+	const doc = new DOMParser().parseFromString(html, 'text/html');
+	const actionLink = findActivityLink(doc, actionName, commentId);
+	const href = actionLink?.getAttribute('href');
+	if (!href) {
+		return false;
+	}
+	const nowActive = getHrefQueryParam(href, 'un') === 't';
+	return nowActive !== isActive;
 };
 
 const getAllComments = (doc: Document): HTMLElement[] => [

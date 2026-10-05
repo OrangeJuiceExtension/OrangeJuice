@@ -4,6 +4,7 @@ import { dom } from '@/utils/dom.ts';
 
 const unvPrefixPattern = /^unv_/;
 const labelSeparatorPattern = /[\s-]+/g;
+const ACTIVITY_NAV_SELECTOR = '.comhead, .subline, .subtext';
 
 export const idExtractors = new Map<
 	string,
@@ -115,7 +116,10 @@ export const initActivityButtons = async (
 	activityTrail: ActivityTrail,
 	config: ActivityButtonConfig
 ): Promise<() => void> => {
-	const navs = [...doc.querySelectorAll('.comhead, .subline, .subtext')] as HTMLElement[];
+	// Story lists nest .subline inside .subtext; only initialize the inner nav.
+	const navs = [...doc.querySelectorAll<HTMLElement>(ACTIVITY_NAV_SELECTOR)].filter(
+		(nav) => !nav.querySelector(ACTIVITY_NAV_SELECTOR)
+	);
 	const extractId = idExtractors.get(pathname) || idExtractors.get('default');
 	if (!extractId) {
 		// biome-ignore lint/suspicious/noEmptyBlockStatements: nothing to do
@@ -147,8 +151,12 @@ export const initActivityButtons = async (
 				id: commentId,
 				type: activityType,
 			});
+			if (hasButtonAlready(nav, config)) {
+				return;
+			}
 
 			const button = doc.createElement('button');
+			button.type = 'button';
 			button.textContent = activityDetail
 				? config.buttonLabels.active
 				: config.buttonLabels.inactive;
@@ -165,10 +173,7 @@ export const initActivityButtons = async (
 						type: activityType,
 					});
 
-					let authToken: string | undefined = latestActivityDetail?.auth;
-					if (!latestActivityDetail) {
-						authToken = await dom.getAuthToken(commentId, activityType);
-					}
+					const authToken = await dom.getAuthToken(commentId, activityType);
 					if (!authToken) {
 						console.log({
 							activityType,

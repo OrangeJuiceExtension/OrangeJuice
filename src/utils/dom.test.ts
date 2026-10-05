@@ -302,7 +302,7 @@ describe('dom', () => {
 			getPageDomSpy.mockRestore();
 		});
 
-		it('should return hmac token from item page', async () => {
+		it('does not use the reply form hmac as an action token', async () => {
 			const itemDiv = document.createElement('body');
 			itemDiv.innerHTML =
 				'<input type="hidden" name="hmac" value="537dd5ac8147db54ef6be4639acd3dd861b20549" />';
@@ -310,10 +310,35 @@ describe('dom', () => {
 
 			const token = await dom.getAuthToken('123', ActivityId.FavoriteComments);
 
-			expect(getPageDomSpy).toHaveBeenCalledWith('https://news.ycombinator.com/item?id=123');
-			expect(token).toBe('537dd5ac8147db54ef6be4639acd3dd861b20549');
+			expect(token).toBeUndefined();
 			getPageDomSpy.mockRestore();
 		});
+
+		it.each([
+			{ action: 'fave', type: ActivityId.FavoriteSubmissions },
+			{ action: 'fave', type: ActivityId.FavoriteComments },
+			{ action: 'flag', type: ActivityId.FlagsSubmissions },
+			{ action: 'flag', type: ActivityId.FlagsComments },
+		])(
+			'uses the matching $action link token for activity $type even when a reply form exists',
+			async ({ action, type }) => {
+				const itemDiv = document.createElement('body');
+				itemDiv.innerHTML = `
+				<a href="${action}?id=999&amp;auth=other-item-auth">${action}</a>
+				<a href="${action}?auth=action%2Btoken%26value&amp;id=123">${action}</a>
+				<form action="comment"><input type="hidden" name="hmac" value="reply-form-token"></form>
+			`;
+				const getPageDomSpy = vi.spyOn(dom, 'getPageDom').mockResolvedValue(itemDiv);
+
+				const token = await dom.getAuthToken('123', type);
+
+				expect(token).toBe('action+token&value');
+				expect(getPageDomSpy).toHaveBeenCalledWith(
+					'https://news.ycombinator.com/item?id=123',
+					'no-store'
+				);
+			}
+		);
 
 		it('should return undefined when item page cannot be fetched', async () => {
 			const getPageDomSpy = vi.spyOn(dom, 'getPageDom').mockResolvedValue(undefined);
@@ -384,6 +409,116 @@ describe('dom', () => {
 			expect(token).toBe('comment-hide-auth');
 			getPageDomSpy.mockRestore();
 		});
+	});
+
+	describe('toggleActivityState', () => {
+		it.each([
+			{ body: '', expected: true, name: 'HTTP redirect', responseType: 'basic', status: 302 },
+			{
+				body: '',
+				expected: true,
+				name: 'manual redirect in a browser',
+				responseType: 'opaqueredirect',
+				status: 0,
+			},
+			{
+				body: '',
+				expected: false,
+				name: 'network error response',
+				responseType: 'error',
+				status: 0,
+			},
+			{
+				body: 'Forbidden',
+				expected: false,
+				name: 'HTTP error',
+				responseType: 'basic',
+				status: 403,
+			},
+			{
+				body: 'Unknown or expired link.',
+				expected: false,
+				name: 'expired link page',
+				responseType: 'basic',
+				status: 200,
+			},
+			{
+				body: '<form action="login"></form>',
+				expected: false,
+				name: 'login page',
+				responseType: 'basic',
+				status: 200,
+			},
+			{
+				body: '<a href="fave?id=123&amp;auth=token">favorite</a>',
+				expected: false,
+				name: 'unchanged favorite link',
+				responseType: 'basic',
+				status: 200,
+			},
+			{
+				body: '<a href="fave?id=123&amp;un=t&amp;auth=token">unfavorite</a>',
+				expected: true,
+				name: 'updated favorite link',
+				responseType: 'basic',
+				status: 200,
+			},
+			{
+				body: '<a href="fave?id=999&amp;un=t&amp;auth=token">unfavorite</a>',
+				expected: false,
+				name: 'another item favorite link',
+				responseType: 'basic',
+				status: 200,
+			},
+		])('handles $name', async ({ status, responseType, body, expected }) => {
+			vi.spyOn(console, 'log').mockImplementation(() => {});
+			vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+				ok: status >= 200 && status < 300,
+				status,
+				statusText: '',
+				text: async () => body,
+				type: responseType,
+			} as Response);
+
+			const result = await dom.toggleActivityState(
+				'123',
+				false,
+				'token',
+				ActivityId.FavoriteSubmissions
+			);
+
+			expect(result).toBe(expected);
+		});
+
+		it.each([
+			{ action: 'fave', isActive: false, type: ActivityId.FavoriteSubmissions },
+			{ action: 'fave', isActive: true, type: ActivityId.FavoriteComments },
+			{ action: 'flag', isActive: false, type: ActivityId.FlagsSubmissions },
+			{ action: 'flag', isActive: true, type: ActivityId.FlagsComments },
+		])(
+			'sends an encoded $action request with active=$isActive',
+			async ({ isActive, type, action }) => {
+				const fetchSpy = vi
+					.spyOn(globalThis, 'fetch')
+					.mockResolvedValue(new Response(null, { status: 302 }));
+
+				await dom.toggleActivityState('123', isActive, 'token+value&extra', type);
+
+				const requestUrl = String(fetchSpy.mock.calls[0]?.[0]);
+				const url = new URL(requestUrl);
+				expect(url.origin).toBe('https://news.ycombinator.com');
+				expect(url.pathname).toBe(`/${action}`);
+				expect(url.searchParams.get('id')).toBe('123');
+				expect(url.searchParams.get('auth')).toBe('token+value&extra');
+				expect(url.searchParams.get('un')).toBe(isActive ? 't' : null);
+				expect(fetchSpy).toHaveBeenCalledWith(requestUrl, {
+					cache: 'no-store',
+					credentials: 'include',
+					method: 'GET',
+					redirect: 'manual',
+				});
+			}
+		);
 	});
 
 	describe('createOptions', () => {
