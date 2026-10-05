@@ -173,10 +173,7 @@ export const initActivityButtons = async (
 						type: activityType,
 					});
 
-					let authToken: string | undefined = latestActivityDetail?.auth;
-					if (!latestActivityDetail) {
-						authToken = await dom.getAuthToken(commentId, activityType);
-					}
+					const authToken = await dom.getAuthToken(commentId, activityType);
 					if (!authToken) {
 						console.log({
 							activityType,

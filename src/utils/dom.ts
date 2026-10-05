@@ -64,7 +64,6 @@ const fetchHmacFromPage = async (url: string): Promise<string> => {
 	return '';
 };
 
-const authMatchPattern = /auth=([^&]+)/;
 const getHrefQueryParam = (
 	href: string,
 	param: string,
@@ -105,6 +104,19 @@ const findLinkByPathnameAndQueryParam = (
 const findUserLink = (root: ParentNode): HTMLAnchorElement | undefined =>
 	findLinkByPathnameAndQueryParam(root, 'span.pagetop a', '/user', 'id');
 
+const findActivityLink = (
+	root: ParentNode,
+	actionName: string,
+	itemId: string
+): HTMLAnchorElement | undefined =>
+	findLinkByPathnameAndQueryParam(
+		root,
+		`a[href*="${actionName}?"]`,
+		`/${actionName}`,
+		'id',
+		itemId
+	);
+
 const getAuthToken = async (
 	commentId: string,
 	activityType: ActivityType
@@ -113,40 +125,19 @@ const getAuthToken = async (
 	if (!actionName) {
 		return;
 	}
-	const itemPageUrl = `${paths.base}/item?id=${commentId}`;
-	const itemDiv = await dom.getPageDom(itemPageUrl);
+	const itemPageUrl = `${paths.base}/item?id=${encodeURIComponent(commentId)}`;
+	const itemDiv = await dom.getPageDom(itemPageUrl, 'no-store');
 	if (!itemDiv) {
 		return;
 	}
 
-	let token: string | undefined;
-
-	const hmacInput = itemDiv.querySelector<HTMLInputElement>('input[type="hidden"][name="hmac"]');
-	token = hmacInput?.value;
-
-	if (!token) {
-		let actionLink = findLinkByPathnameAndQueryParam(
-			itemDiv,
-			`a[href*="${actionName}?"]`,
-			`/${actionName}`,
-			'id',
-			commentId
-		);
-		if (!actionLink) {
-			// fall back to looking at the hide link. a job item only has that.
-			// ie: https://news.ycombinator.com/item?id=46840801
-			actionLink = findLinkByPathnameAndQueryParam(
-				itemDiv,
-				'a[href*="hide?"]',
-				'/hide',
-				'id',
-				commentId
-			);
-		}
-		token = actionLink?.href.match(authMatchPattern)?.[1];
-	}
-
-	return token;
+	// The reply form's hmac authorizes comments, not favorite/flag actions.
+	// Job items may only expose the item's action token in their hide link.
+	const actionLink =
+		findActivityLink(itemDiv, actionName, commentId) ??
+		findActivityLink(itemDiv, 'hide', commentId);
+	const href = actionLink?.getAttribute('href');
+	return href ? getHrefQueryParam(href, 'auth') : undefined;
 };
 
 const getStoredUsername = async (): Promise<string | undefined> => {
@@ -278,11 +269,15 @@ const toggleActivityState = async (
 		return;
 	}
 
-	const url = isActive
-		? `${paths.base}/${actionName}?id=${commentId}&un=t&auth=${authToken}`
-		: `${paths.base}/${actionName}?id=${commentId}&auth=${authToken}`;
+	const url = new URL(`/${actionName}`, paths.base);
+	url.searchParams.set('id', commentId);
+	url.searchParams.set('auth', authToken);
+	if (isActive) {
+		url.searchParams.set('un', 't');
+	}
 
-	const response = await fetch(url, {
+	const response = await fetch(url.href, {
+		cache: 'no-store',
 		credentials: 'include',
 		method: 'GET',
 		redirect: 'manual',

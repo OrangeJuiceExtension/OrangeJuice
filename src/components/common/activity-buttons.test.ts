@@ -483,6 +483,7 @@ describe('activity-buttons', () => {
 					id: '12345',
 					type: ActivityId.FavoriteSubmissions,
 				});
+				vi.mocked(dom.getAuthToken).mockResolvedValueOnce('auth123');
 				vi.mocked(dom.toggleActivityState).mockResolvedValueOnce(true);
 
 				await initActivityButtons(
@@ -578,7 +579,7 @@ describe('activity-buttons', () => {
 				expect(mockActivityTrail.set).not.toHaveBeenCalled();
 			});
 
-			it('should use existing auth from activity detail', async () => {
+			it('refreshes the action token instead of reusing cached auth', async () => {
 				createSubline('12345');
 				mockActivityTrail.get.mockResolvedValue({
 					auth: 'existing_auth',
@@ -586,6 +587,7 @@ describe('activity-buttons', () => {
 					id: '12345',
 					type: ActivityId.FavoriteSubmissions,
 				});
+				vi.mocked(dom.getAuthToken).mockResolvedValueOnce('fresh_action_auth');
 				vi.mocked(dom.toggleActivityState).mockResolvedValueOnce(true);
 
 				await initActivityButtons(
@@ -602,12 +604,15 @@ describe('activity-buttons', () => {
 					expect(dom.toggleActivityState).toHaveBeenCalledWith(
 						'12345',
 						true,
-						'existing_auth',
+						'fresh_action_auth',
 						ActivityId.FavoriteSubmissions
 					);
 				});
 
-				expect(dom.getAuthToken).not.toHaveBeenCalled();
+				expect(dom.getAuthToken).toHaveBeenCalledWith(
+					'12345',
+					ActivityId.FavoriteSubmissions
+				);
 			});
 
 			it('should stop propagation and prevent default on click', async () => {
