@@ -28,7 +28,7 @@
 		"zip:firefox": "wxt zip -b firefox"
 	},
 	"dependencies": {
-		"@wxt-dev/storage": "^1.2.9",
+		"@wxt-dev/storage": "^1.3.0",
 		"beautiful-mermaid": "^1.1.3",
 		"comctx": "^1.7.5",
 		"fit-textarea": "^3.0.0",
