@@ -60,7 +60,7 @@
 		"playwright": "^1.63.0",
 		"postcss": "^8.5.28",
 		"postcss-preset-env": "^11.6.0",
-		"publish-browser-extension": "6.1.1",
+		"publish-browser-extension": "6.2.0",
 		"sharp": "^0.35.5",
 		"typescript": "^7.0.2",
 		"ultracite": "7.12.2",
