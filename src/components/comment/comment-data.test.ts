@@ -289,4 +289,79 @@ describe('CommentData', () => {
 		expect(setItemSpy).toHaveBeenNthCalledWith(1, 'oj_comment_nav_state', 'next');
 		expect(setItemSpy).toHaveBeenNthCalledWith(2, 'oj_comment_nav_state', null);
 	});
+	it('updates focus synchronously before storage finishes', async () => {
+		const comments = createComments(doc, 1);
+		const data = new CommentData(comments);
+		let finish!: () => void;
+		vi.spyOn(data, 'storeActiveCommentId').mockReturnValue(
+			new Promise<void>((resolve) => {
+				finish = resolve;
+			})
+		);
+		const activation = data.activate(getRequiredItem(comments, 0));
+		expect(data.getActiveComment()).toBe(comments[0]);
+		finish();
+		await activation;
+	});
+
+	it('replaces the stored selection without a clear write', async () => {
+		vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+		const comments = createComments(doc, 2);
+		const data = new CommentData(comments);
+		await data.activate(getRequiredItem(comments, 0));
+		const read = vi.spyOn(lStorage, 'getItem');
+		const write = vi.spyOn(lStorage, 'setItem');
+		await data.activate(getRequiredItem(comments, 1));
+		expect(read).toHaveBeenCalledTimes(1);
+		expect(write).toHaveBeenCalledTimes(1);
+		expect(write).toHaveBeenCalledWith('oj_active_comment_id', {
+			'123': { commentId: 'comment-2' },
+		});
+	});
+
+	it('coalesces rapid selection changes and preserves other threads', async () => {
+		vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+		await lStorage.setItem('oj_active_comment_id', { '456': { commentId: 'other' } });
+		const read = vi.spyOn(lStorage, 'getItem');
+		const write = vi.spyOn(lStorage, 'setItem');
+		const comments = createComments(doc, 3);
+		const data = new CommentData(comments);
+		await Promise.all(comments.map((comment) => data.activate(comment)));
+		expect(data.getActiveComment()).toBe(comments[2]);
+		expect(read).toHaveBeenCalledTimes(1);
+		expect(write).toHaveBeenCalledTimes(1);
+		expect(write).toHaveBeenLastCalledWith('oj_active_comment_id', {
+			'123': { commentId: 'comment-3' },
+			'456': { commentId: 'other' },
+		});
+	});
+
+	it('restores the selection without rewriting it', async () => {
+		vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+		await lStorage.setItem('oj_active_comment_id', { '123': { commentId: 'comment-1' } });
+		const write = vi.spyOn(lStorage, 'setItem');
+		await expect(new CommentData([]).getStoredActiveCommentId()).resolves.toBe('comment-1');
+		expect(write).not.toHaveBeenCalled();
+	});
+	it('serializes a clear behind an in-flight selection write', async () => {
+		await lStorage.clear();
+		vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+		let finish: (() => void) | undefined;
+		const originalSetItem = lStorage.setItem;
+		vi.spyOn(lStorage, 'setItem').mockImplementationOnce(async (key, value) => {
+			await new Promise<void>((resolve) => {
+				finish = resolve;
+			});
+			await originalSetItem(key, value);
+		});
+		const comments = createComments(doc, 1);
+		const data = new CommentData(comments);
+		const activation = data.activate(getRequiredItem(comments, 0));
+		await vi.waitFor(() => expect(finish).toBeDefined());
+		const clear = data.deactivate();
+		finish?.();
+		await Promise.all([activation, clear]);
+		await expect(lStorage.getItem('oj_active_comment_id')).resolves.toEqual({});
+		expect(data.getActiveComment()).toBeUndefined();
+	});
 });
