@@ -632,4 +632,18 @@ describe('HNComment', () => {
 			expect(link?.textContent).toBe('[1 more]');
 		});
 	});
+	it.each([
+		{ dataset: undefined, expected: 2 },
+		{ dataset: '3', expected: 3 },
+	])('reads indentation without layout when dataset=$dataset', ({ dataset, expected }) => {
+		const row = document.createElement('tr');
+		row.innerHTML = '<td class="ind"><img width="80" alt=""></td>';
+		const image = row.querySelector('img');
+		if (dataset && image) {
+			image.dataset.indentLevel = dataset;
+		}
+		const read = vi.spyOn(HTMLImageElement.prototype, 'width', 'get');
+		expect(new HNComment(row).getIndentLevel()).toBe(expected);
+		expect(read).not.toHaveBeenCalled();
+	});
 });

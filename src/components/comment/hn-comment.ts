@@ -292,7 +292,7 @@ export class HNComment {
 			}
 		}
 
-		return indentImage.width / 40;
+		return dom.getCommentIndentation(this.commentRow).width ?? 0;
 	}
 
 	static getCommentIdFromElement(element: HTMLElement): string | null {

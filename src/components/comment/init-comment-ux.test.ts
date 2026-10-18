@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { stripFixtureElements } from '@/test/fixture-html.ts';
 import { dom } from '@/utils/dom.ts';
 import { initCommentUX } from './init-comment-ux.ts';
@@ -286,4 +286,19 @@ describe('initCommentUX', () => {
 			expect(authorLink?.innerText).not.toContain('[op]');
 		});
 	});
+	it.each(['dimensions', 'rendered text'] as const)(
+		'initializes comments without reading layout-dependent %s',
+		(source) => {
+			const read =
+				source === 'dimensions'
+					? vi.spyOn(HTMLImageElement.prototype, 'width', 'get')
+					: vi.spyOn(HTMLElement.prototype, 'innerText', 'get');
+			initCommentUX(document, comments, 'opauthor');
+			expect(read).not.toHaveBeenCalled();
+			expect(document.querySelector('#comment3 td.ind img')?.getAttribute('width')).toBe(
+				'80'
+			);
+			expect(document.querySelector('#comment1 a.hnuser')?.textContent).toBe('opauthor [op]');
+		}
+	);
 });
