@@ -4,6 +4,7 @@ import lStorage from '@/utils/local-storage.ts';
 import { paths } from '@/utils/paths';
 
 export const USERNAME_STORAGE_KEY = 'oj_username';
+const HN_COMMENT_INDENT_WIDTH = 40;
 const TOP_BAR_READABLE_CLASS = 'oj-topbar-readable';
 const TOP_BAR_COLOR_VARIABLE = '--oj-topbar-fg';
 const TOP_BAR_CELL_CLASS = 'oj-topbar-cell';
@@ -395,16 +396,13 @@ function getCommentIndentation(element: HTMLElement): {
 	element?: HTMLImageElement;
 	width?: number;
 } {
-	const img = element?.querySelector('.ind img') as HTMLImageElement | undefined;
-	return img
-		? {
-				element: img,
-				width: img.width / 40,
-			}
-		: {
-				element: undefined,
-				width: undefined,
-			};
+	const img = element.querySelector<HTMLImageElement>('.ind img');
+	if (!img) {
+		return { element: undefined, width: undefined };
+	}
+	const declaredWidth = Number.parseInt(img.getAttribute('width') ?? '0', 10);
+	const width = Number.isFinite(declaredWidth) ? Math.max(0, declaredWidth) : 0;
+	return { element: img, width: width / HN_COMMENT_INDENT_WIDTH };
 }
 
 function newReplyTextareasObserver(callback: (e: KeyboardEvent) => void) {

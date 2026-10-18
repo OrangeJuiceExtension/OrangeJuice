@@ -12,6 +12,8 @@ type ActiveCommentMap = Record<string, { commentId: string }>;
 export class CommentData {
 	private readonly comments: IndexedList<HNComment>;
 	private activeComment?: HNComment;
+	private pendingSelections = new Map<string, string | undefined>();
+	private selectionPersistence?: Promise<void>;
 	replyButton?: HTMLElement;
 
 	constructor(comments: HNComment[]) {
@@ -38,7 +40,7 @@ export class CommentData {
 		if (this.activeComment === comment) {
 			return;
 		}
-		await this.deactivate();
+		this.deactivateActiveComment();
 		this.activeComment = comment;
 		comment.activate();
 		await this.storeActiveCommentId(comment.id);
@@ -214,36 +216,56 @@ export class CommentData {
 			return;
 		}
 		const stored = await lStorage.getItem<ActiveCommentMap>(ACTIVE_COMMENT_KEY);
-		const commentId = stored?.[itemId]?.commentId;
-		if (commentId) {
-			const nextStored: ActiveCommentMap = { ...(stored ?? {}), [itemId]: { commentId } };
-			await lStorage.setItem(ACTIVE_COMMENT_KEY, nextStored);
-			return commentId;
-		}
+		return stored?.[itemId]?.commentId;
 	}
 
 	async storeActiveCommentId(commentId: string): Promise<void> {
-		const itemId = this.getItemId();
-		if (!itemId) {
-			return;
-		}
-		const stored = await lStorage.getItem<ActiveCommentMap>(ACTIVE_COMMENT_KEY);
-		const nextStored: ActiveCommentMap = { ...(stored ?? {}), [itemId]: { commentId } };
-		await lStorage.setItem(ACTIVE_COMMENT_KEY, nextStored);
+		await this.persistSelection(commentId);
 	}
 
 	async clearStoredActiveCommentId(): Promise<void> {
+		await this.persistSelection();
+	}
+
+	private async persistSelection(commentId?: string): Promise<void> {
 		const itemId = this.getItemId();
 		if (!itemId) {
 			return;
 		}
-		const stored = await lStorage.getItem<ActiveCommentMap>(ACTIVE_COMMENT_KEY);
-		if (!stored?.[itemId]) {
-			return;
+		this.pendingSelections.set(itemId, commentId);
+		this.selectionPersistence ??= this.flushSelection();
+		await this.selectionPersistence;
+	}
+
+	private async flushSelection(): Promise<void> {
+		try {
+			// Coalesce focus changes in the same turn before touching extension storage.
+			await Promise.resolve();
+			while (this.pendingSelections.size > 0) {
+				// biome-ignore lint/performance/noAwaitInLoops: serialize writes so stale selections cannot win
+				const stored = await lStorage.getItem<ActiveCommentMap>(ACTIVE_COMMENT_KEY);
+				const pending = this.pendingSelections;
+				this.pendingSelections = new Map();
+				const nextStored = { ...stored };
+				let changed = false;
+				for (const [itemId, commentId] of pending) {
+					if (stored?.[itemId]?.commentId === commentId) {
+						continue;
+					}
+					changed = true;
+					if (commentId) {
+						nextStored[itemId] = { commentId };
+					} else {
+						delete nextStored[itemId];
+					}
+				}
+				if (changed) {
+					await lStorage.setItem(ACTIVE_COMMENT_KEY, nextStored);
+				}
+			}
+		} finally {
+			this.selectionPersistence = undefined;
 		}
-		const nextStored: ActiveCommentMap = { ...stored };
-		delete nextStored[itemId];
-		await lStorage.setItem(ACTIVE_COMMENT_KEY, nextStored);
 	}
 
 	async getNavState(): Promise<NavDirection | null> {

@@ -161,24 +161,20 @@ Note: Temporary extensions in Firefox are removed when you restart the browser. 
    bun run dev
    ```
 
-This opens a separate Chrome window with the extension loaded.
+This starts WXT with automatic reload enabled and uses your existing Chrome window. It does not launch another browser process.
 
 ## Develop in your regular Chrome profile
 
-Use WXT's development build in your usual Chrome window to keep your existing logins and extensions:
+The default `bun run dev` command uses your regular Chrome profile so your existing logins and the OpenAI extension remain available. `bun run dev:manual` provides the same behavior. Only one WXT development server needs to be running.
 
-```bash
-bun run dev:manual
-```
-
-This starts WXT with automatic reload enabled, without launching another browser. Run it instead of `bun run dev`; only one WXT development server needs to be running.
+Load the development extension once in that Chrome profile:
 
 1. Open `chrome://extensions` in your regular Chrome window and enable **Developer mode**.
 2. Disable any other copy of Orange Juice in that profile so only one copy runs on Hacker News.
 3. Click **Load unpacked** and select this repository's `.output/chrome-mv3-dev` directory.
 4. Open or refresh Hacker News once to load the development extension.
 
-Keep WXT running while you edit. It rebuilds and reloads the development extension as needed, including refreshing Hacker News tabs for content-script changes. The one-time unpacked installation also works with an already-running `bun run dev` server.
+Keep WXT running while you edit. It rebuilds and reloads the development extension as needed, including refreshing Hacker News tabs for content-script changes. You can load the unpacked extension into your regular Chrome profile while the current WXT server is already running.
 
 Use `.output/chrome-mv3-dev` for automatic reload. The production build in `.output/chrome-mv3` does not connect to WXT's development server.
 

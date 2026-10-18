@@ -79,9 +79,11 @@ export const initCommentUX = (
 		// Custom indent width
 		const { element: indentImage, width: indentLevel } = dom.getCommentIndentation(comment);
 		if (indentImage && indentLevel !== undefined) {
-			const computedIndentLevel = indentImage.width / 40;
-			indentImage.width = computedIndentLevel * customWidth;
-			indentImage.dataset.indentLevel = `${computedIndentLevel}`;
+			const width = `${indentLevel * customWidth}`;
+			if (indentImage.getAttribute('width') !== width) {
+				indentImage.setAttribute('width', width);
+			}
+			indentImage.dataset.indentLevel = `${indentLevel}`;
 		}
 
 		const commentAuthor = comment.querySelector<HTMLAnchorElement>('a.hnuser');
@@ -89,8 +91,8 @@ export const initCommentUX = (
 			continue;
 		}
 
-		if (itemAuthor && itemAuthor === commentAuthor.innerText) {
-			commentAuthor.innerText += ' [op]';
+		if (itemAuthor && itemAuthor === commentAuthor.textContent) {
+			commentAuthor.textContent += ' [op]';
 			commentAuthor.classList.add('oj_op');
 		}
 	}

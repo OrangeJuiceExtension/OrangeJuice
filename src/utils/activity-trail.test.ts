@@ -1,7 +1,13 @@
 import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DAYS_1, DAYS_30 } from '@/utils/constants.ts';
+import { dom } from '@/utils/dom.ts';
 import lStorage from '@/utils/local-storage.ts';
-import { type ActivityDetail, ActivityId, ActivityTrail } from './activity-trail.ts';
+import {
+	type ActivityDetail,
+	ActivityFetcher,
+	ActivityId,
+	ActivityTrail,
+} from './activity-trail.ts';
 
 const FIXED_NOW = new Date('2023-01-01T00:00:00.000Z').getTime();
 
@@ -124,6 +130,28 @@ describe('ActivityTrail', () => {
 	});
 
 	describe('addActivities', () => {
+		it('deduplicates repeated syncs and prunes expired records', async () => {
+			const fresh = {
+				auth: 'fresh',
+				exp: Date.now() + DAYS_30,
+				id: '1',
+				type: ActivityId.FavoriteComments,
+			};
+			await activityTrail.addActivities([
+				{ ...fresh, auth: 'old' },
+				{ ...fresh, exp: Date.now() - 1, id: 'expired' },
+			]);
+			await activityTrail.addActivities([fresh]);
+			expect(lStorage.setItem).toHaveBeenLastCalledWith(
+				'oj_activity_trail',
+				expect.objectContaining({
+					items: {
+						[ActivityId.FavoriteComments]: [{ auth: 'fresh', exp: fresh.exp, id: '1' }],
+					},
+				})
+			);
+			await expect(activityTrail.get({ id: 'expired' })).resolves.toBeUndefined();
+		});
 		it('should add multiple activities at once', async () => {
 			const activities: ActivityDetail[] = [
 				{ exp: Date.now() + DAYS_30, id: '1', type: ActivityId.Comments },
@@ -515,5 +543,75 @@ describe('ActivityTrail', () => {
 			expect(result1).toBeUndefined();
 			expect(result2).toEqual(activity2);
 		});
+	});
+});
+
+describe('ActivityFetcher', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it('coalesces starts, skips unused categories and persists the complete sync once', async () => {
+		const trail = new ActivityTrail();
+		vi.spyOn(trail, 'isExpired').mockResolvedValue(true);
+		const fetcher = new ActivityFetcher('alice', trail);
+		const fetchType = vi.spyOn(fetcher, 'fetchAllByType').mockResolvedValue([]);
+		await Promise.all([fetcher.start(), fetcher.start()]);
+		expect(fetchType.mock.calls.map(([type]) => type)).toEqual([
+			ActivityId.FlagsSubmissions,
+			ActivityId.FlagsComments,
+			ActivityId.FavoriteSubmissions,
+			ActivityId.FavoriteComments,
+		]);
+		expect(lStorage.setItem).toHaveBeenCalledTimes(1);
+	});
+
+	it('does not persist a partial sync and allows retry after failure', async () => {
+		const trail = new ActivityTrail();
+		vi.spyOn(trail, 'isExpired').mockResolvedValue(true);
+		const fetcher = new ActivityFetcher('alice', trail);
+		const fetchType = vi.spyOn(fetcher, 'fetchAllByType').mockResolvedValue([]);
+		fetchType.mockRejectedValueOnce(new Error('offline'));
+		await expect(fetcher.start()).rejects.toThrow('offline');
+		expect(lStorage.setItem).not.toHaveBeenCalled();
+		await fetcher.start();
+		expect(lStorage.setItem).toHaveBeenCalledTimes(1);
+	});
+
+	it('skips syncing fresh activity history', async () => {
+		const trail = new ActivityTrail();
+		vi.spyOn(trail, 'isExpired').mockResolvedValue(false);
+		const fetcher = new ActivityFetcher('alice', trail);
+		const fetchType = vi.spyOn(fetcher, 'fetchAllByType');
+		await fetcher.start();
+		expect(fetchType).not.toHaveBeenCalled();
+	});
+	it('continues pagination for older favorites and bounds retries on failed pages', async () => {
+		vi.useFakeTimers();
+		try {
+			const fetcher = new ActivityFetcher('alice', new ActivityTrail());
+			const firstPage = document.createElement('div');
+			firstPage.innerHTML =
+				'<a href="fave?id=1&auth=a">unfavorite</a><a class="morelink" href="favorites?p=2">more</a>';
+			const lastPage = document.createElement('div');
+			lastPage.innerHTML = '<a href="fave?id=2&auth=b">unfavorite</a>';
+			const getPage = vi
+				.spyOn(dom, 'getPageDom')
+				.mockResolvedValueOnce(firstPage)
+				.mockResolvedValueOnce(lastPage);
+			const items = fetcher.fetchAllByType(ActivityId.FavoriteSubmissions);
+			await vi.runAllTimersAsync();
+			expect((await items).map(({ id }) => id)).toEqual(['1', '2']);
+			expect(getPage).toHaveBeenCalledTimes(2);
+			getPage.mockReset().mockResolvedValue(undefined);
+			const failed = expect(
+				fetcher.fetchAllByType(ActivityId.FavoriteSubmissions)
+			).rejects.toThrow('could not be loaded');
+			await vi.runAllTimersAsync();
+			await failed;
+			expect(getPage).toHaveBeenCalledTimes(4);
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 });

@@ -10,6 +10,8 @@ import lStorage from '@/utils/local-storage.ts';
 import type { ReadCommentsList } from './highlight-unread-comments.ts';
 import { highlightUnreadComments } from './highlight-unread-comments.ts';
 
+const ARRAY_INDEX_PATTERN = /^\d+$/;
+
 describe('highlightUnreadComments', () => {
 	let mockDoc: Document;
 	let manager: ServicesManager;
@@ -452,6 +454,46 @@ describe('highlightUnreadComments', () => {
 			expect(savedData['123']).toBeTruthy();
 			expect(savedItem.comments).toEqual(['comment1']);
 		});
+	});
+	it('classifies large threads with a linear number of stored-ID reads', async () => {
+		const size = 500;
+		let reads = 0;
+		const storedIds = new Proxy(
+			Array.from({ length: size }, (_, index) => `comment-${index}`),
+			{
+				get(target, key, receiver) {
+					if (typeof key === 'string' && ARRAY_INDEX_PATTERN.test(key)) {
+						reads += 1;
+					}
+					return Reflect.get(target, key, receiver);
+				},
+			}
+		);
+		vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+		vi.spyOn(lStorage, 'getItem').mockResolvedValue({
+			'123': { comments: storedIds, expiry: Date.now() + 60_000 },
+		});
+		vi.spyOn(service, 'expireOldComments').mockResolvedValue();
+		const write = vi.spyOn(lStorage, 'setItem').mockResolvedValue();
+		mockDoc.body.innerHTML =
+			'<table class="fatitem"><tbody><tr><td><form></form></td></tr></tbody></table><table id="comments"><tbody></tbody></table>';
+		const tbody = mockDoc.querySelector('#comments tbody');
+		const comments = Array.from({ length: size + 1 }, (_, index) =>
+			createComment(mockDoc, `comment-${index}`)
+		);
+		tbody?.append(...comments);
+		await highlightUnreadComments(mockDoc, comments, manager);
+		expect(mockDoc.querySelectorAll('.oj_new_comment_indent')).toHaveLength(1);
+		expect(
+			mockDoc
+				.querySelector('#comment-500 td.ind')
+				?.classList.contains('oj_new_comment_indent')
+		).toBe(true);
+		expect(reads).toBeLessThanOrEqual(size * 3);
+		const saved = write.mock.calls.at(-1)?.[1] as ReadCommentsList;
+		const savedItem = saved['123'];
+		assert.isDefined(savedItem);
+		expect(savedItem.comments).toHaveLength(size + 1);
 	});
 });
 

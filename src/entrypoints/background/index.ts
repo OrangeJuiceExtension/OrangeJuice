@@ -3,7 +3,7 @@ import {
 	createWelcomeInstallApi,
 	registerWelcomePageOnInstall,
 } from '@/entrypoints/background/welcome-on-install.ts';
-import { createBackgroundServices } from '@/services/manager.ts';
+import { createBackgroundServices } from '@/services/background-services.ts';
 
 export const main = () => {
 	// This allows the service-worker to remain resident in the background

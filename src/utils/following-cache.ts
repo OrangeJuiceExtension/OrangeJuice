@@ -4,6 +4,10 @@ import lStorage from '@/utils/local-storage.ts';
 const FOLLOWING_CACHE_STORAGE_KEY = 'oj_following_cache';
 const FOLLOWING_CACHE_TTL_MS = 60 * 60 * 1000;
 const UI_STATE_KEY = '__ui';
+const sectionKey = (username: string): string =>
+	`${FOLLOWING_CACHE_STORAGE_KEY}:section:${username}`;
+const expandedKey = (username: string): string =>
+	`${FOLLOWING_CACHE_STORAGE_KEY}:expanded:${username}`;
 
 type CachedFollowingItemStorage = Omit<HNItemInfo, 'by'> & {
 	storyTitle?: string;
@@ -74,77 +78,76 @@ const normalizeStoredCache = (stored: unknown): FollowingCacheStore => {
 	return { sections };
 };
 
-const getStoredCache = async (): Promise<FollowingCacheStore> =>
-	normalizeStoredCache(await lStorage.getItem<unknown>(FOLLOWING_CACHE_STORAGE_KEY));
+let legacyCachePromise: Promise<FollowingCacheStore> | undefined;
+const getLegacyCache = (): Promise<FollowingCacheStore> => {
+	legacyCachePromise ??= loadLegacyCache();
+	return legacyCachePromise;
+};
+const loadLegacyCache = async (): Promise<FollowingCacheStore> => {
+	try {
+		return normalizeStoredCache(await lStorage.getItem<unknown>(FOLLOWING_CACHE_STORAGE_KEY));
+	} catch (error) {
+		legacyCachePromise = undefined;
+		throw error;
+	}
+};
 
-const setStoredCache = async (cache: FollowingCacheStore): Promise<void> => {
-	await lStorage.setItem(FOLLOWING_CACHE_STORAGE_KEY, cache);
+// Separate keys prevent concurrent users and UI updates from overwriting each other.
+// Keep an empty wrapper when clearing a section so legacy data cannot reappear.
+interface StoredSectionEntry {
+	section?: StoredFollowingSection;
+}
+
+const getStoredSection = async (username: string): Promise<StoredFollowingSection | undefined> => {
+	const entry = await lStorage.getItem<StoredSectionEntry>(sectionKey(username));
+	if (entry !== null) {
+		return entry.section;
+	}
+	const legacy = await getLegacyCache();
+	return legacy.sections[username];
 };
 
 export const getCachedFollowingSection = async (
 	username: string
 ): Promise<CachedFollowingSection | undefined> => {
-	const cache = await getStoredCache();
-	const entry = cache.sections[username];
-	if (!entry) {
+	const entry = await getStoredSection(username);
+	if (!entry || entry.expiresAt <= Date.now()) {
 		return;
 	}
-
-	if (entry.expiresAt <= Date.now()) {
-		delete cache.sections[username];
-		await setStoredCache(cache);
-		return;
-	}
-
 	const { expiresAt: _expiresAt, user, ...section } = entry;
-	return {
-		...section,
-		user: user ? { ...user, id: username } : undefined,
-		username,
-	};
+	return { ...section, user: user ? { ...user, id: username } : undefined, username };
 };
 
 export const setCachedFollowingSection = async (
 	section: FollowingCacheInputSection
 ): Promise<void> => {
-	const cache = await getStoredCache();
 	const { username, user, items } = section;
 	const storedUser = user ? (({ id: _id, ...rest }) => rest)(user) : undefined;
-	cache.sections[username] = {
-		expiresAt: Date.now() + FOLLOWING_CACHE_TTL_MS,
-		items: items.map(({ by: _by, ...item }) => item),
-		user: storedUser,
-	};
-	await setStoredCache(cache);
+	await lStorage.setItem<StoredSectionEntry>(sectionKey(username), {
+		section: {
+			expiresAt: Date.now() + FOLLOWING_CACHE_TTL_MS,
+			items: items.map(({ by: _by, ...item }) => item),
+			user: storedUser,
+		},
+	});
 };
 
 export const clearCachedFollowingSection = async (username: string): Promise<void> => {
-	const cache = await getStoredCache();
-	if (!(username in cache.sections)) {
-		return;
-	}
-
-	delete cache.sections[username];
-	await setStoredCache(cache);
+	await lStorage.setItem<StoredSectionEntry>(sectionKey(username), {});
 };
 
 export const isFollowingSectionExpanded = async (username: string): Promise<boolean> => {
-	const cache = await getStoredCache();
-	return cache[UI_STATE_KEY]?.expandedByUsername?.[username] ?? false;
+	const expanded = await lStorage.getItem<boolean>(expandedKey(username));
+	if (expanded !== null) {
+		return expanded;
+	}
+	const legacy = await getLegacyCache();
+	return legacy[UI_STATE_KEY]?.expandedByUsername?.[username] ?? false;
 };
 
 export const setFollowingSectionExpanded = async (
 	username: string,
 	isExpanded: boolean
 ): Promise<void> => {
-	const cache = await getStoredCache();
-	const expandedByUsername = {
-		...(cache[UI_STATE_KEY]?.expandedByUsername ?? {}),
-		[username]: isExpanded,
-	};
-	cache[UI_STATE_KEY] = {
-		...(cache[UI_STATE_KEY] ?? {}),
-		expandedByUsername,
-	};
-	await setStoredCache(cache);
+	await lStorage.setItem(expandedKey(username), isExpanded);
 };

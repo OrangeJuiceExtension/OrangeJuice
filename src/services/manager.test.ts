@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createClientServices, type ServicesManager } from './manager.ts';
 
+vi.mock('beautiful-mermaid', () => {
+	throw new Error('Content clients must not load the diagram renderer');
+});
+
 describe('createClientServices', () => {
 	let manager: ServicesManager;
 
@@ -10,6 +14,7 @@ describe('createClientServices', () => {
 	});
 
 	it('should create getter methods for each service', () => {
+		expect(typeof manager.getMermaidService).toBe('function');
 		expect(typeof manager.getHighlightService).toBe('function');
 		expect(typeof manager.getReadStoriesService).toBe('function');
 		expect(typeof manager.getFetchRemoteService).toBe('function');

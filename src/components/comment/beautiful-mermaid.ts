@@ -13,6 +13,7 @@ import {
 const MERMAID_PREVIEW_CLASS = `oj-comment-${MERMAID}-preview`;
 const MERMAID_PREVIEW_STYLE_ID = `oj-comment-${MERMAID}-preview-style`;
 const COMMENT_TEXTAREA_SELECTOR = 'textarea[name="text"]';
+const PREVIEW_DEBOUNCE_MS = 150;
 const MERMAID_PREVIEW_ERROR_CLASS = `oj-comment-${MERMAID}-preview-error`;
 
 const ensurePreviewStyles = (doc: Document): void => {
@@ -61,19 +62,11 @@ const setupTextareaPreview = (
 ): void => {
 	const preview = ensurePreviewElement(textarea);
 	let latestRunId = 0;
+	let requestedKey: string | undefined;
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	let disposed = false;
 
-	const updatePreview = async (): Promise<void> => {
-		const mermaids = extractMermaidFromText(textarea.value);
-		if (mermaids.length === 0) {
-			preview.replaceChildren();
-			return;
-		}
-
-		// It’s a simple stale-result guard. updatePreview() is async and can overlap on rapid input; latestRunId/runId
-		// ensures only the most recent invocation is allowed to update the preview. If an older run finishes after a
-		// newer one, it exits early so stale SVGs or error text don’t overwrite the latest render.
-		const runId = latestRunId + 1;
-		latestRunId = runId;
+	const renderPreview = async (mermaids: string[], runId: number): Promise<void> => {
 		try {
 			const svgNodes = (
 				await Promise.all(
@@ -81,14 +74,14 @@ const setupTextareaPreview = (
 						createMermaidSvgNodeFromMarkup(mermaid, textarea.ownerDocument)
 					)
 				)
-			).filter((svgNode): svgNode is SVGElement => Boolean(svgNode));
-			if (runId !== latestRunId) {
+			).filter((node): node is SVGElement => Boolean(node));
+			if (disposed || runId !== latestRunId) {
 				return;
 			}
 			preview.classList.remove(MERMAID_PREVIEW_ERROR_CLASS);
 			preview.replaceChildren(...svgNodes);
 		} catch (error: unknown) {
-			if (runId !== latestRunId) {
+			if (disposed || runId !== latestRunId) {
 				return;
 			}
 			console.error('Failed to render Mermaid preview:', error);
@@ -97,26 +90,47 @@ const setupTextareaPreview = (
 		}
 	};
 
-	const triggerUpdate = (): void => {
-		updatePreview().catch((error: unknown) => {
-			console.error({ error, msg: 'Failed to update Mermaid preview:' });
-		});
+	const updatePreview = (immediate: boolean): void => {
+		if (disposed) {
+			return;
+		}
+		const mermaids = extractMermaidFromText(textarea.value);
+		const dark = textarea.ownerDocument.documentElement.classList.contains('oj-dark-mode');
+		const key = JSON.stringify([dark, mermaids]);
+		if (key === requestedKey) {
+			return;
+		}
+		requestedKey = key;
+		latestRunId += 1;
+		const runId = latestRunId;
+		clearTimeout(timer);
+		if (mermaids.length === 0) {
+			preview.replaceChildren();
+			preview.classList.remove(MERMAID_PREVIEW_ERROR_CLASS);
+			return;
+		}
+		const render = () => {
+			renderPreview(mermaids, runId).catch((error: unknown) => {
+				console.error({ error, msg: 'Failed to update Mermaid preview' });
+			});
+		};
+		if (immediate) {
+			render();
+		} else {
+			timer = setTimeout(render, PREVIEW_DEBOUNCE_MS);
+		}
 	};
-
-	textarea.addEventListener('input', triggerUpdate);
+	const onInput = () => updatePreview(false);
+	textarea.addEventListener('input', onInput);
 	cleanupCallbacks.push(() => {
-		textarea.removeEventListener('input', triggerUpdate);
+		disposed = true;
+		clearTimeout(timer);
+		textarea.removeEventListener('input', onInput);
 	});
-	previewRerenderCallbacks.push(triggerUpdate);
-	triggerUpdate();
+	previewRerenderCallbacks.push(() => updatePreview(true));
+	updatePreview(true);
 };
 
-/**
- * To be honest, I'm not sure if this is the best way to do this. Right now, we listen to
- * all the changes to the textarea and rerender the preview with MutationObservers, but
- * it might just be better to set up and tear things down each time. All of this feels a bit
- * more complicated than it needs to be.
- */
 export const commentBeautifulMermaid = async (
 	ctx: ContentScriptContext,
 	doc: Document,
@@ -175,10 +189,18 @@ export const commentBeautifulMermaid = async (
 	});
 	bodyObserver.observe(doc.body, { childList: true, subtree: true });
 
+	let darkMode = doc.documentElement.classList.contains('oj-dark-mode');
 	const themeObserver = new MutationObserver(() => {
-		rerenderMermaidBlocksInElement(doc, doc).catch((error: unknown) => {
-			console.error('Failed to rerender mermaid blocks after theme change:', error);
-		});
+		const nextDarkMode = doc.documentElement.classList.contains('oj-dark-mode');
+		if (nextDarkMode === darkMode) {
+			return;
+		}
+		darkMode = nextDarkMode;
+		rerenderMermaidBlocksInElement(doc, doc, `.${MERMAID_PREVIEW_CLASS}`).catch(
+			(error: unknown) => {
+				console.error('Failed to rerender mermaid blocks after theme change:', error);
+			}
+		);
 		for (const rerender of previewRerenderCallbacks) {
 			rerender();
 		}

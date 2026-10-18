@@ -1214,4 +1214,22 @@ describe('dom', () => {
 			expect(comments.map((c) => c.id)).toEqual(['collapsed-1', 'hidden-1', 'visible-1']);
 		});
 	});
+	it.each([
+		{ expected: 2, value: '80' },
+		{ expected: 0, value: '0' },
+		{ expected: 0, value: '-40' },
+		{ expected: 0, value: 'invalid' },
+		{ expected: 0, value: '' },
+	])(
+		'uses the indentation width attribute $value without consulting layout',
+		({ value, expected }) => {
+			const comment = document.createElement('div');
+			comment.innerHTML = '<div class="ind"><img alt=""></div>';
+			const image = comment.querySelector('img');
+			image?.setAttribute('width', value);
+			const read = vi.spyOn(HTMLImageElement.prototype, 'width', 'get').mockReturnValue(400);
+			expect(dom.getCommentIndentation(comment).width).toBe(expected);
+			expect(read).not.toHaveBeenCalled();
+		}
+	);
 });

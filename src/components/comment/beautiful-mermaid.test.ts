@@ -1,15 +1,20 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContentScriptContext } from '#imports';
 import { commentBeautifulMermaid } from '@/components/comment/beautiful-mermaid.ts';
 
 const renderMermaidMock = vi.fn();
+const invalidations: (() => void)[] = [];
 
-vi.mock('beautiful-mermaid', () => ({
-	renderMermaid: (code: string, options?: unknown) => renderMermaidMock(code, options),
-	THEMES: {
-		'github-dark': { bg: '#0d1117', fg: '#e6edf3' },
-		'github-light': { bg: '#ffffff', fg: '#111111' },
-	},
+vi.mock('@/services/manager.ts', () => ({
+	createClientServices: () => ({
+		getMermaidService: () => ({
+			render: (code: string, dark: boolean) =>
+				renderMermaidMock(
+					code,
+					dark ? { bg: '#0d1117', fg: '#e6edf3' } : { bg: '#ffffff', fg: '#111111' }
+				),
+		}),
+	}),
 }));
 
 const flush = async (): Promise<void> => {
@@ -23,6 +28,11 @@ interface TestCtx {
 
 const createCtx = (): TestCtx => {
 	const callbacks: Array<() => void> = [];
+	invalidations.push(() => {
+		for (const callback of callbacks) {
+			callback();
+		}
+	});
 	return {
 		ctx: {
 			onInvalidated: (callback: () => void) => {
@@ -59,6 +69,12 @@ const createComment = (codeText: string): MockComment => ({
 });
 
 describe('commentBeautifulMermaid', () => {
+	afterEach(() => {
+		for (const invalidate of invalidations.splice(0)) {
+			invalidate();
+		}
+		vi.useRealTimers();
+	});
 	beforeEach(() => {
 		document.body.innerHTML = '';
 		document.documentElement.classList.remove('oj-dark-mode');
@@ -153,7 +169,7 @@ describe('commentBeautifulMermaid', () => {
 			await flush();
 
 			preview = document.querySelector<HTMLDivElement>('.oj-comment-mermaid-preview');
-			expect(preview?.innerHTML).toContain('X --> Y');
+			await vi.waitFor(() => expect(preview?.innerHTML).toContain('X --> Y'));
 			invalidate();
 		});
 
@@ -245,5 +261,87 @@ describe('commentBeautifulMermaid', () => {
 			);
 			invalidate();
 		});
+	});
+	it.each([
+		{
+			calls: 1,
+			name: 'rapid edits',
+			values: ['<mermaid>graph TD; A-->C</mermaid>', '<mermaid>graph TD; A-->D</mermaid>'],
+		},
+		{
+			calls: 0,
+			name: 'surrounding prose',
+			values: ['prose <mermaid>graph TD; A-->B</mermaid>'],
+		},
+	])('debounces $name and skips unchanged diagram code', async ({ values, calls }) => {
+		vi.useFakeTimers();
+		window.history.pushState({}, '', '/item?id=1');
+		const textarea = document.createElement('textarea');
+		textarea.name = 'text';
+		textarea.value = '<mermaid>graph TD; A-->B</mermaid>';
+		document.body.append(textarea);
+		renderMermaidMock.mockResolvedValue('<svg></svg>');
+		const { ctx, invalidate } = createCtx();
+		await commentBeautifulMermaid(ctx, document, []);
+		await vi.advanceTimersByTimeAsync(0);
+		renderMermaidMock.mockClear();
+		for (const value of values) {
+			textarea.value = value;
+			textarea.dispatchEvent(new Event('input'));
+		}
+		expect(renderMermaidMock).not.toHaveBeenCalled();
+		await vi.advanceTimersByTimeAsync(200);
+		expect(renderMermaidMock).toHaveBeenCalledTimes(calls);
+		invalidate();
+	});
+
+	it('discards in-flight output after diagram removal and cancels pending renders on invalidation', async () => {
+		vi.useFakeTimers();
+		window.history.pushState({}, '', '/item?id=1');
+		const textarea = document.createElement('textarea');
+		textarea.name = 'text';
+		textarea.value = '<mermaid>graph TD; A-->B</mermaid>';
+		document.body.append(textarea);
+		let finish!: (svg: string) => void;
+		renderMermaidMock.mockReturnValue(
+			new Promise<string>((resolve) => {
+				finish = resolve;
+			})
+		);
+		const { ctx, invalidate } = createCtx();
+		await commentBeautifulMermaid(ctx, document, []);
+		await vi.advanceTimersByTimeAsync(0);
+		textarea.value = '';
+		textarea.dispatchEvent(new Event('input'));
+		finish('<svg id="stale"></svg>');
+		await vi.advanceTimersByTimeAsync(200);
+		expect(document.querySelector('#stale')).toBeNull();
+		renderMermaidMock.mockClear();
+		textarea.value = '<mermaid>graph TD; C-->D</mermaid>';
+		textarea.dispatchEvent(new Event('input'));
+		invalidate();
+		await vi.advanceTimersByTimeAsync(200);
+		expect(renderMermaidMock).not.toHaveBeenCalled();
+	});
+
+	it('ignores unrelated root classes and renders previews only once per theme change', async () => {
+		window.history.pushState({}, '', '/item?id=1');
+		const textarea = document.createElement('textarea');
+		textarea.name = 'text';
+		textarea.value = '<mermaid>graph TD; A-->B</mermaid>';
+		document.body.append(textarea);
+		renderMermaidMock.mockResolvedValue('<svg></svg>');
+		const { ctx, invalidate } = createCtx();
+		await commentBeautifulMermaid(ctx, document, []);
+		await flush();
+		renderMermaidMock.mockClear();
+		document.documentElement.classList.add('unrelated');
+		await flush();
+		expect(renderMermaidMock).not.toHaveBeenCalled();
+		document.documentElement.classList.add('oj-dark-mode');
+		await flush();
+		expect(renderMermaidMock).toHaveBeenCalledTimes(1);
+		invalidate();
+		document.documentElement.classList.remove('unrelated');
 	});
 });
