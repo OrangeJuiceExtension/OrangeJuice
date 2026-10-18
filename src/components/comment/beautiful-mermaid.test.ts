@@ -4,12 +4,16 @@ import { commentBeautifulMermaid } from '@/components/comment/beautiful-mermaid.
 
 const renderMermaidMock = vi.fn();
 
-vi.mock('beautiful-mermaid', () => ({
-	renderMermaid: (code: string, options?: unknown) => renderMermaidMock(code, options),
-	THEMES: {
-		'github-dark': { bg: '#0d1117', fg: '#e6edf3' },
-		'github-light': { bg: '#ffffff', fg: '#111111' },
-	},
+vi.mock('@/services/manager.ts', () => ({
+	createClientServices: () => ({
+		getMermaidService: () => ({
+			render: (code: string, dark: boolean) =>
+				renderMermaidMock(
+					code,
+					dark ? { bg: '#0d1117', fg: '#e6edf3' } : { bg: '#ffffff', fg: '#111111' }
+				),
+		}),
+	}),
 }));
 
 const flush = async (): Promise<void> => {

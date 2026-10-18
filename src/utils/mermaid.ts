@@ -1,4 +1,4 @@
-import { renderMermaid, THEMES } from 'beautiful-mermaid';
+import { createClientServices } from '@/services/manager.ts';
 
 export const MERMAID = 'mermaid';
 const MERMAID_OPEN_TAG = `<${MERMAID}>`;
@@ -10,9 +10,6 @@ const MERMAID_STYLE_ID = `oj-${MERMAID}-style`;
 const MERMAID_SVG_CLASS = `oj-${MERMAID}-svg`;
 const MERMAID_SVG_CLICK_BOUND_ATTRIBUTE = `data-oj-${MERMAID}-click-bound`;
 
-const LIGHT_THEME_NAME = 'github-light';
-const DARK_THEME_NAME = 'github-dark';
-
 export const MERMAID_CODE_ATTRIBUTE = `data-oj-${MERMAID}-code`;
 
 const decodeEscapes = (value: string): string =>
@@ -20,11 +17,6 @@ const decodeEscapes = (value: string): string =>
 		.replace(ESCAPED_NEWLINE_PATTERN, '\n')
 		.replace(ESCAPED_TAB_PATTERN, '\t')
 		.replace(ESCAPED_QUOTE_PATTERN, '"');
-
-const getRenderTheme = (doc: Document) => {
-	const isDarkMode = doc.documentElement.classList.contains('oj-dark-mode');
-	return isDarkMode ? THEMES[DARK_THEME_NAME] : THEMES[LIGHT_THEME_NAME];
-};
 
 export const ensureMermaidStyles = (doc: Document): void => {
 	if (doc.getElementById(MERMAID_STYLE_ID)) {
@@ -70,7 +62,9 @@ export const createMermaidSvgNodeFromMarkup = async (
 	mermaid: string,
 	doc: Document
 ): Promise<SVGElement | undefined> => {
-	const result = await renderMermaid(mermaid, getRenderTheme(doc));
+	const result = await createClientServices()
+		.getMermaidService()
+		.render(mermaid, doc.documentElement.classList.contains('oj-dark-mode'));
 	if (!result) {
 		return;
 	}
