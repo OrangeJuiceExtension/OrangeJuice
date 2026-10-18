@@ -34,6 +34,14 @@ export const ActivityTypes: ActivityType[] = [
 	ActivityId.FavoriteComments,
 ];
 
+// Only favorite and flag buttons consume synced activity state.
+const SYNC_ACTIVITY_TYPES = [
+	ActivityId.FlagsSubmissions,
+	ActivityId.FlagsComments,
+	ActivityId.FavoriteSubmissions,
+	ActivityId.FavoriteComments,
+] as const;
+
 type HNItemId = string;
 
 export interface ActivityDetail {
@@ -131,7 +139,7 @@ export class ActivityTrail {
 		const stored = await this.getStored();
 		for (const [typeStr, list] of Object.entries(stored.items)) {
 			const type = Number(typeStr) as ActivityType;
-			const found = list?.find((d) => d.id === detail.id);
+			const found = list?.find((d) => d.id === detail.id && d.exp > Date.now());
 			if (found) {
 				return { ...found, type };
 			}
@@ -149,16 +157,14 @@ export class ActivityTrail {
 	}
 
 	async addActivities(activities: ActivityDetail[]): Promise<void> {
-		const stored = await this.getStored();
-
+		const indexed = await this.getIndexed();
 		for (const activity of activities) {
-			const { id, auth, exp } = activity;
-			// biome-ignore lint/suspicious/noAssignInExpressions: it is ok
-			(stored.items[activity.type] ??= []).push({ auth, exp, id });
+			const bucket = indexed[activity.type] ?? {};
+			bucket[activity.id] = activity;
+			indexed[activity.type] = bucket;
 		}
-
-		await this.save(stored);
-		this.indexedData = undefined; // invalidate index
+		await this.save(await this.toStored());
+		this.indexedData = undefined;
 	}
 
 	async remove(detail: ActivityDetail): Promise<boolean> {
@@ -185,6 +191,9 @@ export class ActivityTrail {
 			const byId: Record<HNItemId, ActivityDetail> = {};
 
 			for (const storedDetail of list ?? []) {
+				if (storedDetail.exp <= Date.now()) {
+					continue;
+				}
 				const detail: ActivityDetail = { ...storedDetail, type };
 				byId[detail.id] = detail;
 			}
@@ -202,7 +211,7 @@ export class ActivityTrail {
 
 		for (const [typeStr, byId] of Object.entries(indexed)) {
 			const type = Number(typeStr) as ActivityType;
-			const details = Object.values(byId ?? {});
+			const details = Object.values(byId ?? {}).filter(({ exp }) => exp > Date.now());
 			items[type] = details.map(({ id, auth, exp }) => ({ auth, exp, id }));
 		}
 
@@ -214,6 +223,7 @@ export class ActivityTrail {
 
 	async isExpired(): Promise<boolean> {
 		this.storedData = await this.load();
+		this.indexedData = undefined;
 
 		const { lastSync } = this.storedData;
 		if (lastSync === 0) {
@@ -248,7 +258,8 @@ export class ActivityTrail {
 		await lStorage.setItem<StoredData>(STORAGE_KEY, next);
 	}
 }
-class ActivityFetcher {
+export class ActivityFetcher {
+	private syncPromise?: Promise<void>;
 	private readonly username: string;
 	private readonly activityTrail: ActivityTrail;
 
@@ -257,19 +268,28 @@ class ActivityFetcher {
 		this.activityTrail = activityTrail;
 	}
 
-	async start() {
-		const isExpired = await this.activityTrail.isExpired();
-		if (isExpired) {
-			const syncActivityType = async (index: number): Promise<void> => {
-				const activityType = ActivityTypes[index];
-				if (activityType === undefined) {
-					return;
+	start(): Promise<void> {
+		this.syncPromise ??= this.sync();
+		return this.syncPromise;
+	}
+
+	private async sync(): Promise<void> {
+		try {
+			if (!(await this.activityTrail.isExpired())) {
+				return;
+			}
+			const activities: ActivityDetail[] = [];
+			// Keep requests sequential to respect HN's rate limits.
+			for (const type of SYNC_ACTIVITY_TYPES) {
+				// biome-ignore lint/performance/noAwaitInLoops: remote pages must be fetched sequentially
+				const items = await this.fetchAllByType(type);
+				for (const item of items) {
+					activities.push(item);
 				}
-				const activities = await this.fetchAllByType(activityType);
-				await this.activityTrail.addActivities(activities);
-				await syncActivityType(index + 1);
-			};
-			await syncActivityType(0);
+			}
+			await this.activityTrail.addActivities(activities);
+		} finally {
+			this.syncPromise = undefined;
 		}
 	}
 
@@ -282,7 +302,7 @@ class ActivityFetcher {
 				if (page === undefined) {
 					return;
 				}
-				await withBackoff(() => work(page));
+				await withBackoff(() => work(page), { retries: 3 });
 				await runPage(index + 1);
 			};
 			await runPage(0);
@@ -299,7 +319,7 @@ class ActivityFetcher {
 
 			const doc = await dom.getPageDom(url, cache);
 			if (!doc) {
-				return;
+				throw new Error('Activity page could not be loaded');
 			}
 
 			for (const item of this.extractItemsFromPage(doc, type)) {
