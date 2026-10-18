@@ -140,11 +140,15 @@ export const renderMermaidsInPreCodeElements = async (
 
 export const rerenderMermaidBlocksInElement = async (
 	container: ParentNode,
-	doc: Document
+	doc: Document,
+	excludeWithin?: string
 ): Promise<SVGElement[]> => {
 	const blocks = container.querySelectorAll<HTMLElement>(`.${MERMAID_SVG_CLASS}`);
 	const results = await Promise.all(
 		[...blocks].map(async (block): Promise<SVGElement | undefined> => {
+			if (excludeWithin && block.closest(excludeWithin)) {
+				return;
+			}
 			const mermaid = block.getAttribute(MERMAID_CODE_ATTRIBUTE);
 			if (!mermaid) {
 				return;
