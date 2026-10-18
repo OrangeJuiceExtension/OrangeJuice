@@ -915,9 +915,24 @@ const createItemRows = (doc: Document, item: FollowedDisplayItem): HTMLTableRowE
 const sortItemsByRecentActivity = (items: readonly FollowedDisplayItem[]): FollowedDisplayItem[] =>
 	[...items].sort((left, right) => right.time - left.time);
 
+type ItemLoader = (id: number) => ReturnType<typeof apiModule.getItemInfo>;
+
+const createItemLoader = (): ItemLoader => {
+	const requests = new Map<number, ReturnType<typeof apiModule.getItemInfo>>();
+	return (id) => {
+		let request = requests.get(id);
+		if (!request) {
+			request = apiModule.getItemInfo(`${id}`);
+			requests.set(id, request);
+		}
+		return request;
+	};
+};
+
 const loadSection = async (
 	username: string,
-	options: FollowingRenderOptions = {}
+	options: FollowingRenderOptions,
+	getItem: ItemLoader
 ): Promise<FollowedUserSection> => {
 	const { currentUsername } = options;
 	const cachedSection = await getCachedFollowingSection(username);
@@ -934,7 +949,7 @@ const loadSection = async (
 	}
 
 	const recentItemIds = user.submitted.slice(0, MAX_ACTIVITY_ITEMS_PER_USER);
-	const items = await Promise.all(recentItemIds.map((id) => apiModule.getItemInfo(`${id}`)));
+	const items = await Promise.all(recentItemIds.map((id) => getItem(id)));
 	const visibleItems = items.filter((item): item is HNItemInfo =>
 		Boolean(
 			item &&
@@ -947,11 +962,6 @@ const loadSection = async (
 		)
 	);
 
-	const itemInfoById = new Map<number, HNItemInfo>();
-	for (const item of visibleItems) {
-		itemInfoById.set(item.id, item);
-	}
-
 	const resolveStory = (
 		item: HNItemInfo
 	): Promise<Pick<FollowedDisplayItem, 'storyId' | 'storyTitle' | 'storyUrl'>> => {
@@ -962,13 +972,9 @@ const loadSection = async (
 				return {};
 			}
 
-			let parentItem = itemInfoById.get(parentId);
+			const parentItem = await getItem(parentId);
 			if (!parentItem) {
-				parentItem = (await apiModule.getItemInfo(`${parentId}`)) ?? undefined;
-				if (!parentItem) {
-					return {};
-				}
-				itemInfoById.set(parentId, parentItem);
+				return {};
 			}
 
 			if (parentItem.title) {
@@ -1127,8 +1133,9 @@ const renderFollowingSections = async (
 		return;
 	}
 
+	const getItem = createItemLoader();
 	const sections = await Promise.all(
-		followedUsers.map((username) => loadSection(username, options))
+		followedUsers.map((username) => loadSection(username, options, getItem))
 	);
 	const list = doc.createElement('div');
 	list.className = 'oj-following__sections';

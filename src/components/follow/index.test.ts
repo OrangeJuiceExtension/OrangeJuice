@@ -1,9 +1,10 @@
 import { waitFor } from '@testing-library/dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { follow } from '@/components/follow/index.ts';
-import { apiModule, type HNUser } from '@/utils/api.ts';
+import { apiModule, type HNItemInfo, type HNUser } from '@/utils/api.ts';
 import { getFollowedUsers, setFollowedUsers } from '@/utils/followed-users.ts';
 import {
+	clearCachedFollowingSection,
 	isFollowingSectionExpanded,
 	setCachedFollowingSection,
 	setFollowingSectionExpanded,
@@ -585,4 +586,68 @@ describe('follow component', () => {
 			await expect(getFollowedUsers()).resolves.toEqual(['bob', 'alice']);
 		});
 	});
+	it.each([
+		{ missing: false, name: 'shared parent', nested: false },
+		{ missing: false, name: 'shared ancestor', nested: true },
+		{ missing: true, name: 'missing parent', nested: false },
+	])(
+		'deduplicates concurrent $name lookups across users and refreshes',
+		async ({ nested, missing }) => {
+			window.history.pushState({}, '', '/following');
+			await setFollowedUsers(['alice', 'bob']);
+			vi.mocked(apiModule.getUserInfo).mockImplementation(async (username) => ({
+				created: 1,
+				id: username,
+				karma: 1,
+				submitted: username === 'alice' ? [1, 2] : [3],
+			}));
+			let title = 'Shared story';
+			vi.mocked(apiModule.getItemInfo).mockImplementation(
+				async (id): Promise<HNItemInfo | null> => {
+					await Promise.resolve();
+					const itemId = Number(id);
+					if (itemId < 4) {
+						return {
+							id: itemId,
+							parent: nested ? 10 : 20,
+							text: 'reply',
+							time: 1,
+							type: 'comment',
+						};
+					}
+					if (itemId === 10) {
+						return {
+							id: 10,
+							parent: 20,
+							text: 'parent reply',
+							time: 1,
+							type: 'comment',
+						};
+					}
+					return missing ? null : { id: 20, time: 1, title, type: 'story' };
+				}
+			);
+			await follow.main(mockContext);
+			const itemCalls = vi.mocked(apiModule.getItemInfo).mock.calls.map(([id]) => id);
+			expect(itemCalls.filter((id) => id === '20')).toHaveLength(1);
+			if (nested) {
+				expect(itemCalls.filter((id) => id === '10')).toHaveLength(1);
+			}
+			if (!missing) {
+				expect(document.body.textContent).toContain(title);
+			}
+			await Promise.all(
+				['alice', 'bob'].map((username) => clearCachedFollowingSection(username))
+			);
+			title = 'Updated story';
+			vi.mocked(apiModule.getItemInfo).mockClear();
+			await follow.main(mockContext);
+			expect(
+				vi.mocked(apiModule.getItemInfo).mock.calls.filter(([id]) => id === '20')
+			).toHaveLength(1);
+			if (!missing) {
+				expect(document.body.textContent).toContain(title);
+			}
+		}
+	);
 });
