@@ -71,10 +71,10 @@ export const highlightUnreadComments = async (
 	}
 
 	const itemData = readCommentsList[itemId];
-	const readComments = itemData?.comments ?? [];
+	const readComments = new Set(itemData?.comments ?? []);
 
-	if (readComments.length > 0) {
-		const newComments = currentComments.filter((id) => !readComments.includes(id));
+	if (readComments.size > 0) {
+		const newComments = currentComments.filter((id) => !readComments.has(id));
 
 		for (const commentId of newComments) {
 			const commentElement = doc.getElementById(commentId);
