@@ -11,7 +11,7 @@
         "fit-textarea": "^3.0.0",
         "hast-util-from-html": "^2.0.3",
         "hast-util-sanitize": "^5.0.2",
-        "linkify-html": "^4.3.3",
+        "linkify-html": "^4.4.0",
         "linkifyjs": "^4.3.3",
         "node-emoji": "^2.2.0",
         "property-information": "^7.2.0",
@@ -1000,7 +1000,7 @@
 
     "linkedom": ["linkedom@0.18.13", "", { "dependencies": { "css-select": "^7.0.0", "cssom": "^0.5.0", "html-escaper": "^3.0.3", "htmlparser2": "^10.1.0", "uhyphen": "^0.2.0" }, "peerDependencies": { "canvas": ">= 2" }, "optionalPeers": ["canvas"] }, "sha512-ES/o9qotMpzpN2MHs+Iq/JcVoOj8Fa5wiQYrTdFpvAnwXL0g66XHHUc9WUMk6nAlBtGsFQ24ne+SYnvnaQ2FSw=="],
 
-    "linkify-html": ["linkify-html@4.3.3", "", { "peerDependencies": { "linkifyjs": "==4.3.3" } }, "sha512-VQH0xk8QilyWvRNQqyervP/zfe/KqE1bXB5NcwWoz8Oj9Yz5hWM0VvXs9vkLy7NlTao1jrmM1cqQv8rTmerctg=="],
+    "linkify-html": ["linkify-html@4.4.0", "", { "peerDependencies": { "linkifyjs": "4.4.0" } }, "sha512-qjcJ0gcY0JDfasIf6tlcla/M367wOKuYS6Yyq2WZejY6Un8ABRWZmypmecFUAFlPxmiMtQLGrFZJY9I/6+f3mg=="],
 
     "linkifyjs": ["linkifyjs@4.3.3", "", {}, "sha512-P8aEP5U/D1/IlTY2OeYsErdwh9bGuLE30NcXtKEjgdHcahveQoQwM2yZNsioQHsWFz0P7KKudisbrzCgR0sDHg=="],
 
