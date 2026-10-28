@@ -34,7 +34,7 @@
 		"fit-textarea": "^3.0.0",
 		"hast-util-from-html": "^2.0.3",
 		"hast-util-sanitize": "^5.0.2",
-		"linkify-html": "^4.3.3",
+		"linkify-html": "^4.4.0",
 		"linkifyjs": "^4.3.3",
 		"node-emoji": "^2.2.0",
 		"property-information": "^7.2.0",
