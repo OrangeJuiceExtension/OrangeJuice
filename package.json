@@ -64,7 +64,7 @@
 		"publish-browser-extension": "6.2.0",
 		"sharp": "^0.35.5",
 		"typescript": "^7.0.2",
-		"ultracite": "8.0.1",
+		"ultracite": "8.0.2",
 		"vite": "^8.3.4",
 		"vitest": "^5.0.5",
 		"web-ext": "^10.8.0",
