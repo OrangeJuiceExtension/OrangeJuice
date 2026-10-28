@@ -117,7 +117,7 @@ jobs:
           sed -i 's/"version": *"[^"]*"/"version": "'"$new_version"'"/' package.json
 
       - name: Commit version bump
-        uses: iarekylew00t/verified-bot-commit@42a042b0407248f3c0acac00c389e729e3476e86 # v2.3.5
+        uses: iarekylew00t/verified-bot-commit@1ee4374942e5c5f814e9b3121d766cbe45cea360 # v2.3.6
         env:
           LEFTHOOK: 0
         with:
