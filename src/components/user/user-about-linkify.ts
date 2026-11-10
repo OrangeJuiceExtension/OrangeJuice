@@ -10,14 +10,11 @@ export const userAboutLinkify = (_ctx: ContentScriptContext, doc: Document) => {
 	if (!infoTable) {
 		return;
 	}
-	const tds = infoTable.getElementsByTagName('td');
-	if (!tds) {
-		return;
-	}
+	const tds = infoTable.querySelectorAll('td');
 
 	for (const row of tds) {
-		if (row?.nextElementSibling && row.innerText === 'about:' && row.nextElementSibling) {
-			if (row.nextElementSibling.getElementsByTagName('textarea').length) {
+		if (row.nextElementSibling && row.textContent === 'about:') {
+			if (row.nextElementSibling.querySelector('textarea')) {
 				break;
 			}
 			linkifyTextNodes(row.nextElementSibling, { openInNewTab: true });

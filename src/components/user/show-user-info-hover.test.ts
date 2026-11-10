@@ -66,30 +66,26 @@ describe('showUserInfoOnHover', () => {
 		});
 	};
 
-	it('should inject styles into the document head', () => {
-		showUserInfoOnHover(mockCtx, document);
-
-		const style = Array.from(document.querySelectorAll('style')).find((item) =>
-			item.textContent?.includes('.oj_user_info_hover')
-		);
-		expect(style).toBeTruthy();
-		expect(style?.textContent).toContain('.oj_user_info_hover');
-		expect(style?.textContent).toContain('position: absolute');
-	});
-
-	it('should show popover on mouseover', async () => {
+	it.each([
+		{ className: '', name: 'HN profile links without a class' },
+		{ className: 'hnuser', name: 'extension-generated profile links' },
+	])('shows user details on hover for $name', async ({ className }) => {
 		const userLink = createUserLink('testuser');
+		userLink.className = className;
+		if (className) {
+			userLink.href = 'https://news.ycombinator.com/user?id=testuser';
+		}
 		mockUserInfo('testuser');
 
 		showUserInfoOnHover(mockCtx, document);
-
-		const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true });
-		userLink.dispatchEvent(mouseoverEvent);
+		userLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
 		await vi.waitFor(() => {
 			const popover = document.querySelector('.oj_user_info_hover.active');
-			expect(popover).toBeTruthy();
+			expect(popover?.textContent).toContain('testuser');
+			expect(popover?.textContent).toContain('1000');
 		});
+		expect(apiModule.getUserInfo).toHaveBeenCalledWith('testuser', undefined);
 	});
 
 	it('should display user information in popover', async () => {

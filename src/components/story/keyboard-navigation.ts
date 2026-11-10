@@ -19,7 +19,7 @@ import { registerPreferencesUpdateHandler } from '@/utils/preferences-live.ts';
 const STORY_FOCUS_STYLE_ID = 'oj-story-focus-style';
 
 const syncFocusBoxStyle = async (doc: Document): Promise<void> => {
-	const existingStyle = doc.getElementById(STORY_FOCUS_STYLE_ID);
+	const existingStyle = doc.querySelector(`#${CSS.escape(STORY_FOCUS_STYLE_ID)}`);
 	if (!(await getEnableFocusBoxPreference())) {
 		existingStyle?.remove();
 		return;

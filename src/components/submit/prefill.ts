@@ -26,6 +26,7 @@ const findSubmitLink = (doc: Document): HTMLAnchorElement | null => {
 	}
 
 	for (const link of pagetop.querySelectorAll<HTMLAnchorElement>('a')) {
+		// biome-ignore lint/performance/useDomNodeTextContent: Match the rendered navigation label, excluding hidden descendant text.
 		if (link.innerText.trim().toLowerCase() === SUBMIT_LINK_TEXT) {
 			return link;
 		}

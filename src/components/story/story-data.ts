@@ -42,7 +42,7 @@ export class StoryData {
 
 	getNext(current: HNStory, skipHidden = true): HNStory | undefined {
 		let next = this.storiesList.getNext(current);
-		while (next && skipHidden && this.shouldSkipForNavigation(next)) {
+		while (next && skipHidden && StoryData.shouldSkipForNavigation(next)) {
 			next = this.storiesList.getNext(next);
 		}
 		return next;
@@ -50,7 +50,7 @@ export class StoryData {
 
 	getPrevious(current: HNStory, skipHidden = true): HNStory | undefined {
 		let prev = this.storiesList.getPrevious(current);
-		while (prev && skipHidden && this.shouldSkipForNavigation(prev)) {
+		while (prev && skipHidden && StoryData.shouldSkipForNavigation(prev)) {
 			prev = this.storiesList.getPrevious(prev);
 		}
 		return prev;
@@ -62,7 +62,7 @@ export class StoryData {
 		if (!first) {
 			return;
 		}
-		if (!this.shouldSkipForNavigation(first)) {
+		if (!StoryData.shouldSkipForNavigation(first)) {
 			return first;
 		}
 		return this.getNext(first, true);
@@ -74,13 +74,13 @@ export class StoryData {
 		if (!last) {
 			return;
 		}
-		if (!this.shouldSkipForNavigation(last)) {
+		if (!StoryData.shouldSkipForNavigation(last)) {
 			return last;
 		}
 		return this.getPrevious(last, true);
 	}
 
-	private shouldSkipForNavigation(story: HNStory): boolean {
+	private static shouldSkipForNavigation(story: HNStory): boolean {
 		if (story.hidden()) {
 			return true;
 		}
@@ -125,10 +125,12 @@ export class StoryData {
 		}
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the StoryData instance API for story visibility operations.
 	hideStory(hnStory: HNStory) {
 		hnStory.hide();
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the StoryData instance API for story visibility operations.
 	showStory(hnStory: HNStory) {
 		hnStory.show();
 	}

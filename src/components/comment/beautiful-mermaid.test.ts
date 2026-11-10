@@ -57,7 +57,7 @@ const createCommentRow = (codeText: string): HTMLElement => {
 	commtext.className = 'commtext';
 	const pre = document.createElement('pre');
 	const code = document.createElement('code');
-	code.innerText = codeText;
+	code.textContent = codeText;
 	pre.appendChild(code);
 	commtext.appendChild(pre);
 	row.appendChild(commtext);
@@ -91,7 +91,7 @@ describe('commentBeautifulMermaid', () => {
 			await flush();
 
 			expect(renderMermaidMock).not.toHaveBeenCalled();
-			expect(document.getElementById('oj-mermaid-style')).toBeNull();
+			expect(document.querySelector('#oj-mermaid-style')).toBeNull();
 			expect(document.querySelector('.oj-comment-mermaid-preview')).toBeNull();
 		});
 

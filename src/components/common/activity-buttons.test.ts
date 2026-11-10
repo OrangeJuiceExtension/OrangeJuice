@@ -796,8 +796,9 @@ describe('activity-buttons', () => {
 				},
 			];
 
-			for (const { name, createNav, config, expectedType } of tests) {
-				it(`should use correct activity type for ${name}`, async () => {
+			it.each(tests)(
+				'should use correct activity type for $name',
+				async ({ createNav, config, expectedType }) => {
 					createNav('12345');
 
 					await initActivityButtons(
@@ -811,8 +812,8 @@ describe('activity-buttons', () => {
 						id: '12345',
 						type: expectedType,
 					});
-				});
-			}
+				}
+			);
 		});
 	});
 });

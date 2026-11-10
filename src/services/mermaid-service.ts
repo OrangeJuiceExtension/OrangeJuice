@@ -20,6 +20,7 @@ const withRendererGlobal = (render: () => string): string => {
 };
 
 export class MermaidService {
+	// biome-ignore lint/style/useThisInClassMethods: comctx exposes this operation through the service instance.
 	async render(code: string, dark: boolean): Promise<string> {
 		const { renderMermaidSVG, THEMES } = await import('beautiful-mermaid');
 		return withRendererGlobal(() =>

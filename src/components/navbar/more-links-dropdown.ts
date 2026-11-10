@@ -80,7 +80,7 @@ const linkDetails = [
 ];
 
 const COMPONENT_NAME = 'oj_more_links_dropdown';
-const TRAILING_SLASHES_PATTERN = /\/+$/;
+const TRAILING_SLASHES_PATTERN = /\/+$/u;
 const normalizePathname = (value: string): string =>
 	value.replace(TRAILING_SLASHES_PATTERN, '') || '/';
 const isSameOriginLink = (url: URL): boolean => url.origin === window.location.origin;

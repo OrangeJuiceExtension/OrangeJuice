@@ -59,7 +59,10 @@
 		font-size: 22px;
 		font-weight: 600;
 		letter-spacing: -0.05em;
-		user-select: all;
+
+		@supports (user-select: all) {
+			user-select: all;
+		}
 	}
 
 	.oj-topcolors__rank {

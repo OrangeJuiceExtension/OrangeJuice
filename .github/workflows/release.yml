@@ -1,202 +1,202 @@
 name: Release
 
 on:
-  workflow_call:
-  workflow_dispatch:
+    workflow_call:
+    workflow_dispatch:
 
 permissions:
-  contents: write
-  id-token: write
+    contents: write
+    id-token: write
 
 concurrency:
-  group: release-main
-  cancel-in-progress: false
+    group: release-main
+    cancel-in-progress: false
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    environment: production
+    release:
+        runs-on: ubuntu-latest
+        environment: production
 
-    steps:
-      - name: Guard against release loop
-        shell: bash
-        env:
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message || '' }}
-        run: |
-          if echo "$COMMIT_MESSAGE" | grep -qiE '\[skip ci\]'; then
-              echo 'Automated version bump commit detected; exiting.'
-              exit 0
-          fi
+        steps:
+            - name: Guard against release loop
+              shell: bash
+              env:
+                  COMMIT_MESSAGE: ${{ github.event.head_commit.message || '' }}
+              run: |
+                  if echo "$COMMIT_MESSAGE" | grep -qiE '\[skip ci\]'; then
+                      echo 'Automated version bump commit detected; exiting.'
+                      exit 0
+                  fi
 
-      - name: Create GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          app-id: ${{ vars.RELEASE_APP_ID }}
-          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+            - name: Create GitHub App token
+              id: app-token
+              uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+              with:
+                  app-id: ${{ vars.RELEASE_APP_ID }}
+                  private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
 
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          ref: ${{ github.sha }}
-          token: ${{ steps.app-token.outputs.token }}
-          persist-credentials: false
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  fetch-depth: 0
+                  ref: ${{ github.sha }}
+                  token: ${{ steps.app-token.outputs.token }}
+                  persist-credentials: false
 
-      - name: Configure Git
-        run: |
-          git config user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
-          git config user.email '${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
-          git remote set-url origin "https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}.git"
+            - name: Configure Git
+              run: |
+                  git config user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+                  git config user.email '${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+                  git remote set-url origin "https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}.git"
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-        with:
-          bun-version-file: package.json
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+              with:
+                  bun-version-file: package.json
 
-      - name: Setup cache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+            - name: Setup cache
+              uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: ~/.bun/install/cache
+                  key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-bun-
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-      - name: Determine version bump
-        id: version
-        run: |
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          if [ -z "$LAST_TAG" ]; then
-            COMMITS=$(git log --pretty=format:"%s")
-          else
-            COMMITS=$(git log "${LAST_TAG}..HEAD" --pretty=format:"%s")
-          fi
+            - name: Determine version bump
+              id: version
+              run: |
+                  LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+                  if [ -z "$LAST_TAG" ]; then
+                    COMMITS=$(git log --pretty=format:"%s")
+                  else
+                    COMMITS=$(git log "${LAST_TAG}..HEAD" --pretty=format:"%s")
+                  fi
 
-          # Start at patch; bump to major if any commit is a breaking change (type with ! or "breaking change"),
-          # else bump to minor if any commit is a feature; otherwise keep patch. The higher the minor number, 
-          # the more featureful the app.
-          BUMP="patch"
-          if echo "$COMMITS" | grep -qiE "^(feat|feature)(\(.*\))?!:|^[a-z]+(\(.*\))?!:|(breaking change|BREAKING CHANGE):"; then
-            BUMP="major"
-          elif echo "$COMMITS" | grep -qiE "^(feat|feature)(\(.*\))?:"; then
-            BUMP="minor"
-          fi
+                  # Start at patch; bump to major if any commit is a breaking change (type with ! or "breaking change"),
+                  # else bump to minor if any commit is a feature; otherwise keep patch. The higher the minor number, 
+                  # the more featureful the app.
+                  BUMP="patch"
+                  if echo "$COMMITS" | grep -qiE "^(feat|feature)(\(.*\))?!:|^[a-z]+(\(.*\))?!:|(breaking change|BREAKING CHANGE):"; then
+                    BUMP="major"
+                  elif echo "$COMMITS" | grep -qiE "^(feat|feature)(\(.*\))?:"; then
+                    BUMP="minor"
+                  fi
 
-          echo "bump=$BUMP" >> "$GITHUB_OUTPUT"
-          echo "Detected bump type: $BUMP"
+                  echo "bump=$BUMP" >> "$GITHUB_OUTPUT"
+                  echo "Detected bump type: $BUMP"
 
-      - name: Bump version
-        id: bump
-        shell: bash
-        run: |
-          current_version="$(jq -r '.version' package.json)"
-          bump_type="${{ steps.version.outputs.bump }}"
+            - name: Bump version
+              id: bump
+              shell: bash
+              run: |
+                  current_version="$(jq -r '.version' package.json)"
+                  bump_type="${{ steps.version.outputs.bump }}"
 
-          IFS='.' read -r major minor patch <<< "$current_version"
+                  IFS='.' read -r major minor patch <<< "$current_version"
 
-          case "$bump_type" in
-              major)
-                  major=$((major + 1))
-                  minor=0
-                  patch=0
-                  ;;
-              minor)
-                  minor=$((minor + 1))
-                  patch=0
-                  ;;
-              patch)
-                  patch=$((patch + 1))
-                  ;;
-          esac
+                  case "$bump_type" in
+                      major)
+                          major=$((major + 1))
+                          minor=0
+                          patch=0
+                          ;;
+                      minor)
+                          minor=$((minor + 1))
+                          patch=0
+                          ;;
+                      patch)
+                          patch=$((patch + 1))
+                          ;;
+                  esac
 
-          new_version="$major.$minor.$patch"
-          echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
+                  new_version="$major.$minor.$patch"
+                  echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
 
-          sed -i 's/"version": *"[^"]*"/"version": "'"$new_version"'"/' package.json
+                  sed -i 's/"version": *"[^"]*"/"version": "'"$new_version"'"/' package.json
 
-      - name: Commit version bump
-        uses: iarekylew00t/verified-bot-commit@42a042b0407248f3c0acac00c389e729e3476e86 # v2.3.5
-        env:
-          LEFTHOOK: 0
-        with:
-          message: "chore: bump version to ${{ steps.bump.outputs.new_version }} [skip ci]"
-          token: ${{ steps.app-token.outputs.token }}
-          files: package.json
+            - name: Commit version bump
+              uses: iarekylew00t/verified-bot-commit@42a042b0407248f3c0acac00c389e729e3476e86 # v2.3.5
+              env:
+                  LEFTHOOK: 0
+              with:
+                  message: "chore: bump version to ${{ steps.bump.outputs.new_version }} [skip ci]"
+                  token: ${{ steps.app-token.outputs.token }}
+                  files: package.json
 
-      - name: Push version tag
-        env:
-          LEFTHOOK: 0
-        run: |
-          git tag "v${{ steps.bump.outputs.new_version }}"
-          git push origin "v${{ steps.bump.outputs.new_version }}"
+            - name: Push version tag
+              env:
+                  LEFTHOOK: 0
+              run: |
+                  git tag "v${{ steps.bump.outputs.new_version }}"
+                  git push origin "v${{ steps.bump.outputs.new_version }}"
 
-      - name: Run zip chrome
-        run: bun run zip
+            - name: Run zip chrome
+              run: bun run zip
 
-      - name: Run zip firefox
-        run: bun run zip:firefox
+            - name: Run zip firefox
+              run: bun run zip:firefox
 
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          gh release create "v${{ steps.bump.outputs.new_version }}" \
-            --title "v${{ steps.bump.outputs.new_version }}" \
-            --generate-notes \
-            .output/orangejuice-*.zip
+            - name: Create GitHub Release
+              env:
+                  GH_TOKEN: ${{ steps.app-token.outputs.token }}
+              run: |
+                  gh release create "v${{ steps.bump.outputs.new_version }}" \
+                    --title "v${{ steps.bump.outputs.new_version }}" \
+                    --generate-notes \
+                    .output/orangejuice-*.zip
 
-      - name: Trigger pages workflow in orangejuiceextension.github.io
-        env:
-          GH_TOKEN: ${{ secrets.PAGES_REPO_DISPATCH_TOKEN }}
-        run: |
-          curl -L \
-            -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer $GH_TOKEN" \
-            https://api.github.com/repos/OrangeJuiceExtension/orangejuiceextension.github.io/actions/workflows/pages.yml/dispatches \
-            -d '{"ref":"main"}'
+            - name: Trigger pages workflow in orangejuiceextension.github.io
+              env:
+                  GH_TOKEN: ${{ secrets.PAGES_REPO_DISPATCH_TOKEN }}
+              run: |
+                  curl -L \
+                    -X POST \
+                    -H "Accept: application/vnd.github+json" \
+                    -H "Authorization: Bearer $GH_TOKEN" \
+                    https://api.github.com/repos/OrangeJuiceExtension/orangejuiceextension.github.io/actions/workflows/pages.yml/dispatches \
+                    -d '{"ref":"main"}'
 
-      - name: Publish to Chrome Web Store
-        continue-on-error: true
-        env:
-          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
-          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
-          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
-          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
-        run: ./node_modules/.bin/publish-extension --chrome-zip .output/orangejuice-${{ steps.bump.outputs.new_version }}-chrome.zip
+            - name: Publish to Chrome Web Store
+              continue-on-error: true
+              env:
+                  CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+                  CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+                  CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+                  CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+              run: ./node_modules/.bin/publish-extension --chrome-zip .output/orangejuice-${{ steps.bump.outputs.new_version }}-chrome.zip
 
-      - name: Publish to Firefox Web Store
-        continue-on-error: true
-        timeout-minutes: 2
-        env:
-          FIREFOX_SOURCES_ZIP: .output/orangejuice-${{ steps.bump.outputs.new_version }}-sources.zip
-          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
-          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
-          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
-          FIREFOX_CHANNEL: listed
-        run: ./node_modules/.bin/publish-extension --firefox-zip .output/orangejuice-${{ steps.bump.outputs.new_version }}-firefox.zip
+            - name: Publish to Firefox Web Store
+              continue-on-error: true
+              timeout-minutes: 2
+              env:
+                  FIREFOX_SOURCES_ZIP: .output/orangejuice-${{ steps.bump.outputs.new_version }}-sources.zip
+                  FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+                  FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+                  FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+                  FIREFOX_CHANNEL: listed
+              run: ./node_modules/.bin/publish-extension --firefox-zip .output/orangejuice-${{ steps.bump.outputs.new_version }}-firefox.zip
 
-      - name: Prune old releases and tags
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          REPO="${{ github.repository }}"
-          KEEP_COUNT=10
+            - name: Prune old releases and tags
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  REPO="${{ github.repository }}"
+                  KEEP_COUNT=10
 
-          RELEASES_JSON=$(gh api "repos/$REPO/releases?per_page=100")
-          echo "Current releases (newest first):"
-          echo "$RELEASES_JSON" | jq -r '.[] | "\(.created_at)\t\(.tag_name)\t\(.name // "")"'
+                  RELEASES_JSON=$(gh api "repos/$REPO/releases?per_page=100")
+                  echo "Current releases (newest first):"
+                  echo "$RELEASES_JSON" | jq -r '.[] | "\(.created_at)\t\(.tag_name)\t\(.name // "")"'
 
-          echo "$RELEASES_JSON" \
-            | jq -r --argjson keep "$KEEP_COUNT" 'sort_by(.created_at) | reverse | .[$keep:][] | .tag_name' \
-            | xargs -r -I{} sh -c 'echo "Deleting old release and tag: {}"; gh release delete "{}" --cleanup-tag --yes'
+                  echo "$RELEASES_JSON" \
+                    | jq -r --argjson keep "$KEEP_COUNT" 'sort_by(.created_at) | reverse | .[$keep:][] | .tag_name' \
+                    | xargs -r -I{} sh -c 'echo "Deleting old release and tag: {}"; gh release delete "{}" --cleanup-tag --yes'
 
-          TAGS_JSON=$(gh api "repos/$REPO/tags?per_page=100")
-          echo "Current tags (newest first):"
-          echo "$TAGS_JSON" | jq -r '.[] | .name'
+                  TAGS_JSON=$(gh api "repos/$REPO/tags?per_page=100")
+                  echo "Current tags (newest first):"
+                  echo "$TAGS_JSON" | jq -r '.[] | .name'
 
-          echo "$TAGS_JSON" \
-            | jq -r --argjson keep "$KEEP_COUNT" '.[ $keep: ][] | .name | @uri' \
-            | xargs -r -I{} sh -c 'echo "Deleting extra tag ref: {}"; gh api -X DELETE "repos/'"$REPO"'/git/refs/tags/{}"'
+                  echo "$TAGS_JSON" \
+                    | jq -r --argjson keep "$KEEP_COUNT" '.[ $keep: ][] | .name | @uri' \
+                    | xargs -r -I{} sh -c 'echo "Deleting extra tag ref: {}"; gh api -X DELETE "repos/'"$REPO"'/git/refs/tags/{}"'

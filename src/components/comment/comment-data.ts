@@ -206,12 +206,9 @@ export class CommentData {
 		}
 	}
 
-	private getItemId(): string | null {
-		return dom.getItemIdFromLocation();
-	}
-
+	// biome-ignore lint/style/useThisInClassMethods: selection persistence is part of the CommentData instance API.
 	async getStoredActiveCommentId(): Promise<string | undefined> {
-		const itemId = this.getItemId();
+		const itemId = dom.getItemIdFromLocation();
 		if (!itemId) {
 			return;
 		}
@@ -228,7 +225,7 @@ export class CommentData {
 	}
 
 	private async persistSelection(commentId?: string): Promise<void> {
-		const itemId = this.getItemId();
+		const itemId = dom.getItemIdFromLocation();
 		if (!itemId) {
 			return;
 		}
@@ -268,14 +265,17 @@ export class CommentData {
 		}
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: navigation persistence is part of the CommentData instance API.
 	async getNavState(): Promise<NavDirection | null> {
 		return (await lStorage.getItem<NavDirection>(NAV_STATE_KEY)) ?? null;
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: navigation persistence is part of the CommentData instance API.
 	async setNavState(direction: NavDirection): Promise<void> {
 		await lStorage.setItem(NAV_STATE_KEY, direction);
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: navigation persistence is part of the CommentData instance API.
 	async clearNavState(): Promise<void> {
 		await lStorage.setItem(NAV_STATE_KEY, null);
 	}

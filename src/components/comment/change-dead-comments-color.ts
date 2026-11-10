@@ -16,7 +16,7 @@ export const changeDeadCommentsColor = (doc: Document, comments: HTMLElement[]):
 
 	for (const comment of comments) {
 		const commentHeadSpan = comment.querySelector<HTMLSpanElement>('span.comhead');
-		if (commentHeadSpan?.innerText.includes('[dead]')) {
+		if (commentHeadSpan?.textContent.includes('[dead]')) {
 			comment.querySelector('div.comment .commtext.cdd')?.classList.add(OJ_DEAD_COMMENT);
 		}
 	}

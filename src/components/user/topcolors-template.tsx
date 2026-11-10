@@ -20,7 +20,7 @@ interface TopColorSaveTarget {
 	submitMethod: string;
 }
 
-const HEX_REGEX = /#?([0-9a-f]{6})/i;
+const HEX_REGEX = /#?(?<hex>[0-9a-f]{6})/iu;
 const TOP_COLOR_FIELD_NAME = 'topc';
 const FORM_SKIP_INPUT_TYPES = new Set(['button', 'file', 'image', 'reset', 'submit']);
 const SWATCH_SELECTOR = '.oj-topcolors__swatch';
@@ -34,7 +34,7 @@ const KEYBOARD_DIRECTIONS = new Set([
 ]);
 
 const normalizeHex = (value: string): string | null => {
-	const hex = value.match(HEX_REGEX)?.[1];
+	const hex = value.match(HEX_REGEX)?.groups?.hex;
 	return hex ? `#${hex.toLowerCase()}` : null;
 };
 
@@ -400,6 +400,7 @@ const createTopcolorsTemplate = (
 		previewTopbarColor(doc, color.hex);
 		restoreHint();
 	};
+	const restorePreview = (): void => preview(selected);
 	const spectrum = arranged.filter(({ neutral }) => !neutral);
 	const neutrals = arranged
 		.filter(({ neutral }) => neutral)
@@ -419,7 +420,7 @@ const createTopcolorsTemplate = (
 		);
 		section.append(
 			heading,
-			createPalette(doc, paletteColors, neutral, preview, select, () => preview(selected))
+			createPalette(doc, paletteColors, neutral, preview, select, restorePreview)
 		);
 	}
 	selectedButton = section.querySelector<HTMLButtonElement>(`[data-hex="${selected.hex}"]`);
@@ -448,7 +449,7 @@ export const topcolorsTemplate = async (doc: Document): Promise<void> => {
 		return;
 	}
 
-	if (doc.getElementById(TOPCOLORS_ROOT_ID)) {
+	if (doc.querySelector(`#${CSS.escape(TOPCOLORS_ROOT_ID)}`)) {
 		return;
 	}
 

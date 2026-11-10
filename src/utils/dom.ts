@@ -11,8 +11,8 @@ const TOP_BAR_CELL_CLASS = 'oj-topbar-cell';
 const DARK_COLOR_LUMINANCE_THRESHOLD = 0.22;
 const TOP_BAR_DARK_TEXT_COLOR = '#111111';
 const TOP_BAR_LIGHT_TEXT_COLOR = '#f1efec';
-const SHORT_HEX_COLOR_PATTERN = /^#?([a-f0-9]{3})$/i;
-const HEX_COLOR_PATTERN = /^#?([a-f0-9]{6})$/i;
+const SHORT_HEX_COLOR_PATTERN = /^#?(?<hex>[a-f0-9]{3})$/iu;
+const HEX_COLOR_PATTERN = /^#?(?<hex>[a-f0-9]{6})$/iu;
 const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
 const NON_TEXT_INPUT_TYPES = new Set([
 	'button',
@@ -179,7 +179,7 @@ const parseRgbChannel = (value: string): number => Number.parseInt(value, 16);
 
 const parseColorToRgb = (value: string): { r: number; g: number; b: number } | undefined => {
 	const color = value.trim();
-	const shortHex = color.match(SHORT_HEX_COLOR_PATTERN)?.[1];
+	const shortHex = color.match(SHORT_HEX_COLOR_PATTERN)?.groups?.hex;
 	if (shortHex) {
 		const r = shortHex.charAt(0);
 		const g = shortHex.charAt(1);
@@ -191,7 +191,7 @@ const parseColorToRgb = (value: string): { r: number; g: number; b: number } | u
 		};
 	}
 
-	const hex = color.match(HEX_COLOR_PATTERN)?.[1];
+	const hex = color.match(HEX_COLOR_PATTERN)?.groups?.hex;
 	if (hex) {
 		return {
 			b: parseRgbChannel(hex.slice(4, 6)),

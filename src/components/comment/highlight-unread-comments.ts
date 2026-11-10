@@ -77,7 +77,8 @@ export const highlightUnreadComments = async (
 		const newComments = currentComments.filter((id) => !readComments.has(id));
 
 		for (const commentId of newComments) {
-			const commentElement = doc.getElementById(commentId);
+			// HN uses numeric IDs, which must be escaped in CSS selectors.
+			const commentElement = doc.querySelector(`[id="${CSS.escape(commentId)}"]`);
 			if (commentElement) {
 				commentElement.querySelector('td.ind')?.classList.add(OJ_NEW_COMMENT_INDENT);
 			}

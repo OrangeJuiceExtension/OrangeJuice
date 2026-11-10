@@ -165,7 +165,7 @@ describe('collapseRoot', () => {
 		expect(collapseLink).toBeNull();
 	});
 
-	it('should handle multiple root comments correctly', () => {
+	it('should activate the matching root when collapsing separate threads', async () => {
 		const root1 = createComment(document, 1, 0, {
 			withComhead: true,
 			withToggle: true,
@@ -195,9 +195,15 @@ describe('collapseRoot', () => {
 		link1?.click();
 		expect(toggle1Spy).toHaveBeenCalled();
 		expect(toggle2Spy).not.toHaveBeenCalled();
+		await vi.waitFor(() => {
+			expect(commentData.getActiveComment()?.id).toBe(root1.id);
+		});
 
 		link2?.click();
 		expect(toggle2Spy).toHaveBeenCalled();
+		await vi.waitFor(() => {
+			expect(commentData.getActiveComment()?.id).toBe(root2.id);
+		});
 	});
 
 	it('should remove event listeners when context is invalidated', () => {

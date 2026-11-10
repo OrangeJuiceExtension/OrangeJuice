@@ -1,4 +1,4 @@
-const REG = /\/+$/;
+const REG = /\/+$/u;
 const STORAGE_KEY = 'oj_docs_dark_mode';
 const LIGHTBOX_ID = 'oj-docs-lightbox';
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
@@ -123,7 +123,7 @@ const createSvgIcon = (isDark) => {
 	};
 
 	const createLightbox = () => {
-		const existing = document.getElementById(LIGHTBOX_ID);
+		const existing = document.querySelector(`#${LIGHTBOX_ID}`);
 		if (existing instanceof HTMLDivElement) {
 			return existing;
 		}
@@ -189,23 +189,28 @@ const createSvgIcon = (isDark) => {
 			}
 		};
 
+		const openLightbox = (event) => {
+			const node = event.currentTarget;
+			if (!(node instanceof HTMLAnchorElement)) {
+				return;
+			}
+			event.preventDefault();
+			const preview = node.querySelector('img');
+			previousFocus = node;
+			image.src = node.href;
+			image.alt = preview instanceof HTMLImageElement ? preview.alt : 'Full-size screenshot';
+			lightbox.classList.add('is-open');
+			lightbox.setAttribute('aria-hidden', 'false');
+			document.body.classList.add('oj-docs-lightbox-open');
+			closeButton.focus();
+		};
+
 		for (const node of links) {
 			if (!(node instanceof HTMLAnchorElement)) {
 				continue;
 			}
 
-			node.addEventListener('click', (event) => {
-				event.preventDefault();
-				const preview = node.querySelector('img');
-				previousFocus = node;
-				image.src = node.href;
-				image.alt =
-					preview instanceof HTMLImageElement ? preview.alt : 'Full-size screenshot';
-				lightbox.classList.add('is-open');
-				lightbox.setAttribute('aria-hidden', 'false');
-				document.body.classList.add('oj-docs-lightbox-open');
-				closeButton.focus();
-			});
+			node.addEventListener('click', openLightbox);
 		}
 
 		closeButton.addEventListener('click', closeLightbox);

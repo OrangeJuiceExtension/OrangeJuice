@@ -6,11 +6,11 @@ describe('hideBody', () => {
 		document.body.innerHTML = '';
 
 		hideBody(document);
-		const style = document.getElementById('oj-hide-body');
+		const style = document.querySelector('#oj-hide-body');
 		expect(style).toBeTruthy();
 
 		showBody(document);
-		expect(document.getElementById('oj-hide-body')).toBeNull();
+		expect(document.querySelector('#oj-hide-body')).toBeNull();
 	});
 
 	it('does not add duplicate styles', () => {

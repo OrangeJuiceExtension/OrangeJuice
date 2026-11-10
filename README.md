@@ -72,6 +72,7 @@ There are a number of urls which are not exposed in the regular HN ux. Add a 'mo
 
 ## Enhanced User/Profile UX
 - **User Info on Hover**: Hover over any username to see a popup with user details including account creation date, karma, number of submissions, and their about section. New users (less than 1 month old) are highlighted in green. The popup stays open when you move your mouse over it, making it easy to click links in the about section.
+- **HN markup compatibility**: Username hover cards recognize HN profile links even without the `hnuser` class, while retaining support for links in the Following feed.
 - **Mute users from hover cards**: The user hover popup now includes a mute toggle. Muted usernames are stored locally as an array in local storage, and their comments are styled like dead comments on thread pages so noisy users fade into the background without altering the underlying page data.
 - **Profile Links Dropdown**: Click on your username in the top navigation to reveal a dropdown menu with quick access to your profile, submissions, comments, hidden items, upvoted items, and favorites. The menu allows you to navigate to any of your profile pages without leaving the current page.
 - **Profile about clickable links**: In the about section for a user, if they have put links in, make them clickable.
@@ -177,6 +178,10 @@ Load the development extension once in that Chrome profile:
 Keep WXT running while you edit. It rebuilds and reloads the development extension as needed, including refreshing Hacker News tabs for content-script changes. You can load the unpacked extension into your regular Chrome profile while the current WXT server is already running.
 
 Use `.output/chrome-mv3-dev` for automatic reload. The production build in `.output/chrome-mv3` does not connect to WXT's development server.
+
+## Tooling compatibility
+
+CI checks both the locked dependencies and `bun update --latest`. Run `bun run check`, `bun run compile`, and `bun run test --run` after dependency upgrades. DOM ID selectors must escape dynamic IDs, and newer CSS enhancements must keep a fallback behind `@supports`. Keep narrow lint exceptions where rendered-text semantics or instance service contracts require them.
 
 ## Social preview images
 

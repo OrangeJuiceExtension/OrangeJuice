@@ -362,7 +362,7 @@ describe('story keyboard navigation', () => {
 			expect(writeText).toHaveBeenCalledWith(`${paths.base}/item?id=1`);
 		});
 		await vi.waitFor(() => {
-			expect(doc.getElementById('oj-copy-feedback')?.textContent).toBe('Copied HN link');
+			expect(doc.querySelector('#oj-copy-feedback')?.textContent).toBe('Copied HN link');
 		});
 	});
 

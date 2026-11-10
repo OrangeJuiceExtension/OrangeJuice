@@ -243,7 +243,12 @@ html.oj-dark-mode .oj-docs-theme-toggle .oj-dark-mode-icon--moon {
 	font-size: clamp(2.5rem, 7vw, 4.75rem);
 	line-height: 0.96;
 	color: var(--text);
-	text-wrap: balance;
+}
+
+@supports (text-wrap: balance) {
+	.error-title {
+		text-wrap: balance;
+	}
 }
 
 .error-summary {

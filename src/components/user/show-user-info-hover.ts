@@ -19,7 +19,7 @@ export const showUserInfoOnHover = (
 ) => {
 	hoverCleanupByDocument.get(doc)?.();
 
-	let style = doc.getElementById(USER_INFO_HOVER_STYLE_ID) as HTMLStyleElement | null;
+	let style = doc.querySelector<HTMLStyleElement>(`#${CSS.escape(USER_INFO_HOVER_STYLE_ID)}`);
 	if (!style) {
 		style = doc.createElement('style');
 		style.id = USER_INFO_HOVER_STYLE_ID;
@@ -73,7 +73,7 @@ export const showUserInfoOnHover = (
 		doc.head.appendChild(style);
 	}
 
-	const allUsers = doc.querySelectorAll('a.hnuser') as NodeListOf<HTMLAnchorElement>;
+	const allUsers = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser, a[href^="user?id="]');
 	if (!allUsers.length) {
 		hoverCleanupByDocument.delete(doc);
 		return;
@@ -111,7 +111,7 @@ export const showUserInfoOnHover = (
 	};
 
 	const populateUserDiv = async (user: HTMLAnchorElement, userDivBox: HTMLDivElement) => {
-		const [userName] = user.innerText.trim().split(' ');
+		const [userName] = user.textContent.trim().split(' ');
 		if (!userName) {
 			return;
 		}

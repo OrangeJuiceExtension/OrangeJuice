@@ -9,7 +9,7 @@ import { renderMermaidsInPreCodeElements } from '@/utils/mermaid.ts';
 import { paths } from '@/utils/paths.ts';
 import './inline-edit.css';
 
-const ITEM_ID_PATTERN = /^\d+$/;
+const ITEM_ID_PATTERN = /^\d+$/u;
 const EDIT_ACTION = `${paths.base}/xedit`;
 
 interface EditTarget {

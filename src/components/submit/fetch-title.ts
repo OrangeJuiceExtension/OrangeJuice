@@ -28,13 +28,13 @@ export const fetchTitle = (ctx: ContentScriptContext, doc: Document): void => {
 	const fetchTitleBtn = doc.createElement('button');
 	fetchTitleBtn.style.paddingLeft = '10px';
 	fetchTitleBtn.classList.add('oj_link_button');
-	fetchTitleBtn.innerText = FETCH_TITLE_LABEL;
+	fetchTitleBtn.textContent = FETCH_TITLE_LABEL;
 
 	const fetchTitleHandler = async (e: Event): Promise<void> => {
 		e.stopPropagation();
 		e.preventDefault();
 		fetchTitleBtn.disabled = true;
-		fetchTitleBtn.innerText = FETCHING_TITLE_LABEL;
+		fetchTitleBtn.textContent = FETCHING_TITLE_LABEL;
 
 		try {
 			let { value } = urlInput;
@@ -60,7 +60,7 @@ export const fetchTitle = (ctx: ContentScriptContext, doc: Document): void => {
 			console.error('Error fetching title:', error);
 		} finally {
 			fetchTitleBtn.disabled = false;
-			fetchTitleBtn.innerText = FETCH_TITLE_LABEL;
+			fetchTitleBtn.textContent = FETCH_TITLE_LABEL;
 		}
 	};
 	fetchTitleBtn.addEventListener('click', fetchTitleHandler);

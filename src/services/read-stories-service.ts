@@ -11,6 +11,7 @@ export interface ReadStoryVisit {
 }
 
 export class ReadStoriesService {
+	// biome-ignore lint/style/useThisInClassMethods: comctx exposes this operation through the service instance.
 	getVisits(stories: ReadStoryLookup[]): Promise<ReadStoryVisit[]> {
 		try {
 			const visitPromises = stories.map(async (story) => {

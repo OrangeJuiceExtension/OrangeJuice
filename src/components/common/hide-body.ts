@@ -1,7 +1,7 @@
 const HIDE_BODY_STYLE_ID = 'oj-hide-body';
 
 export const hideBody = (doc: Document) => {
-	if (doc.getElementById(HIDE_BODY_STYLE_ID)) {
+	if (doc.querySelector(`#${CSS.escape(HIDE_BODY_STYLE_ID)}`)) {
 		return;
 	}
 
@@ -12,5 +12,5 @@ export const hideBody = (doc: Document) => {
 };
 
 export const showBody = (doc: Document) => {
-	doc.getElementById(HIDE_BODY_STYLE_ID)?.remove();
+	doc.querySelector(`#${CSS.escape(HIDE_BODY_STYLE_ID)}`)?.remove();
 };

@@ -45,7 +45,7 @@ vi.mock('@/utils/preferences-live.ts', () => ({
 	registerPreferencesUpdateHandler: vi.fn(),
 }));
 
-const STORY_LIST_HTML_REGEX = /class="itemlist"/;
+const STORY_LIST_HTML_REGEX = /class="itemlist"/u;
 const homepageHtml = stripFixtureElements(
 	readFileSync(
 		join(import.meta.dirname, '..', '..', 'utils', '__fixtures__', 'hn-homepage.html'),
@@ -741,7 +741,7 @@ describe('hide_read_stories', () => {
 			div.innerHTML = storiesWithBigboxHtml;
 			document.body.appendChild(div);
 
-			const bigbox = document.getElementById('bigbox');
+			const bigbox = document.querySelector<HTMLElement>('#bigbox');
 			if (!bigbox) {
 				expect(bigbox).not.toBeNull();
 				return;
@@ -774,7 +774,7 @@ describe('hide_read_stories', () => {
 			div.innerHTML = homepageHtml;
 			document.body.appendChild(div);
 
-			const firstStory = document.getElementById('12345678');
+			const firstStory = document.querySelector('[id="12345678"]');
 			expect(firstStory).not.toBeNull();
 
 			document.body.removeChild(div);
@@ -812,9 +812,9 @@ describe('hide_read_stories', () => {
 			div.innerHTML = storiesWithBigboxHtml;
 			document.body.appendChild(div);
 
-			const story1 = document.getElementById('story1');
-			const story2 = document.getElementById('story2');
-			const story3 = document.getElementById('story3');
+			const story1 = document.querySelector('#story1');
+			const story2 = document.querySelector('#story2');
+			const story3 = document.querySelector('#story3');
 
 			expect(story1).not.toBeNull();
 			expect(story2).not.toBeNull();
@@ -828,9 +828,9 @@ describe('hide_read_stories', () => {
 			div.innerHTML = storiesWithBigboxHtml;
 			document.body.appendChild(div);
 
-			const story1El = document.getElementById('story1');
-			const story2El = document.getElementById('story2');
-			const story3El = document.getElementById('story3');
+			const story1El = document.querySelector<HTMLElement>('#story1');
+			const story2El = document.querySelector<HTMLElement>('#story2');
+			const story3El = document.querySelector<HTMLElement>('#story3');
 
 			expect(story1El?.style.display).toBe('');
 			expect(story2El?.style.display).toBe('');
@@ -851,7 +851,7 @@ describe('hide_read_stories', () => {
 			div.innerHTML = storiesWithBigboxHtml;
 			document.body.appendChild(div);
 
-			const bigbox = document.getElementById('bigbox');
+			const bigbox = document.querySelector('#bigbox');
 			expect(bigbox).not.toBeNull();
 			expect(bigbox?.parentElement).not.toBeNull();
 
@@ -896,7 +896,7 @@ describe('hide_read_stories', () => {
 			div.innerHTML = emptyPageHtml;
 			document.body.appendChild(div);
 
-			const bigbox = document.getElementById('bigbox');
+			const bigbox = document.querySelector<HTMLElement>('#bigbox');
 			expect(bigbox).not.toBeNull();
 			expect(bigbox?.parentElement).not.toBeNull();
 			if (!bigbox) {

@@ -21,7 +21,6 @@ const createDoc = (): Document => {
 	subline.className = 'subline';
 	const commentsLink = doc.createElement('a');
 	commentsLink.href = 'item?id=1';
-	commentsLink.innerText = '42 comments';
 	commentsLink.textContent = '42 comments';
 	subline.appendChild(commentsLink);
 

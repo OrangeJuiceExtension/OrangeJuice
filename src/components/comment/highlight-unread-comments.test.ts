@@ -10,7 +10,7 @@ import lStorage from '@/utils/local-storage.ts';
 import type { ReadCommentsList } from './highlight-unread-comments.ts';
 import { highlightUnreadComments } from './highlight-unread-comments.ts';
 
-const ARRAY_INDEX_PATTERN = /^\d+$/;
+const ARRAY_INDEX_PATTERN = /^\d+$/u;
 
 describe('highlightUnreadComments', () => {
 	let mockDoc: Document;
@@ -71,7 +71,7 @@ describe('highlightUnreadComments', () => {
 			const comments = [createComment(mockDoc, 'comment1')];
 			await highlightUnreadComments(mockDoc, comments, manager);
 
-			const commentElement = mockDoc.getElementById('comment1');
+			const commentElement = mockDoc.querySelector('#comment1');
 			const indentCell = commentElement?.querySelector('td.ind');
 			expect(indentCell?.classList.contains('oj_new_comment_indent')).toBe(false);
 		});
@@ -83,7 +83,7 @@ describe('highlightUnreadComments', () => {
 			const comments = [createComment(mockDoc, 'comment1')];
 			await highlightUnreadComments(mockDoc, comments, manager);
 
-			const commentElement = mockDoc.getElementById('comment1');
+			const commentElement = mockDoc.querySelector('#comment1');
 			const indentCell = commentElement?.querySelector('td.ind');
 			expect(indentCell?.classList.contains('oj_new_comment_indent')).toBe(false);
 		});
@@ -97,7 +97,7 @@ describe('highlightUnreadComments', () => {
 			const comments = [createComment(mockDoc, 'comment1')];
 			await highlightUnreadComments(mockDoc, comments, manager);
 
-			const commentElement = mockDoc.getElementById('comment1');
+			const commentElement = mockDoc.querySelector('#comment1');
 			const indentCell = commentElement?.querySelector('td.ind');
 			expect(indentCell?.classList.contains('oj_new_comment_indent')).toBe(false);
 		});
@@ -126,14 +126,39 @@ describe('highlightUnreadComments', () => {
 
 			await highlightUnreadComments(mockDoc, comments, manager);
 
-			const comment1 = mockDoc.getElementById('comment1');
-			const comment2 = mockDoc.getElementById('comment2');
+			const comment1 = mockDoc.querySelector('#comment1');
+			const comment2 = mockDoc.querySelector('#comment2');
 
 			expect(
 				comment1?.querySelector('td.ind')?.classList.contains('oj_new_comment_indent')
 			).toBe(false);
 			expect(
 				comment2?.querySelector('td.ind')?.classList.contains('oj_new_comment_indent')
+			).toBe(true);
+		});
+
+		it('should highlight numeric Hacker News comment IDs', async () => {
+			const readCommentsList: ReadCommentsList = {
+				'123': {
+					comments: ['49956120'],
+					expiry: Date.now() + 3 * 24 * 60 * 60 * 1000,
+				},
+			};
+			vi.spyOn(dom, 'getItemIdFromLocation').mockReturnValue('123');
+			vi.spyOn(lStorage, 'getItem').mockResolvedValue(readCommentsList);
+			vi.spyOn(service, 'expireOldComments').mockResolvedValue(undefined);
+			mockDoc.body.innerHTML =
+				'<table class="fatitem"><tr><td><form action=""></form></td></tr></table>';
+			const readComment = createComment(mockDoc, '49956120');
+			const newComment = createComment(mockDoc, '49956121');
+
+			await highlightUnreadComments(mockDoc, [readComment, newComment], manager);
+
+			expect(
+				readComment.querySelector('td.ind')?.classList.contains('oj_new_comment_indent')
+			).toBe(false);
+			expect(
+				newComment.querySelector('td.ind')?.classList.contains('oj_new_comment_indent')
 			).toBe(true);
 		});
 
@@ -154,7 +179,7 @@ describe('highlightUnreadComments', () => {
 
 			await highlightUnreadComments(mockDoc, comments, manager);
 
-			const comment1 = mockDoc.getElementById('comment1');
+			const comment1 = mockDoc.querySelector('#comment1');
 			expect(
 				comment1?.querySelector('td.ind')?.classList.contains('oj_new_comment_indent')
 			).toBe(false);
@@ -182,9 +207,9 @@ describe('highlightUnreadComments', () => {
 
 			await highlightUnreadComments(mockDoc, comments, manager);
 
-			const comment1 = mockDoc.getElementById('comment1');
-			const comment2 = mockDoc.getElementById('comment2');
-			const comment3 = mockDoc.getElementById('comment3');
+			const comment1 = mockDoc.querySelector('#comment1');
+			const comment2 = mockDoc.querySelector('#comment2');
+			const comment3 = mockDoc.querySelector('#comment3');
 
 			expect(
 				comment1?.querySelector('td.ind')?.classList.contains('oj_new_comment_indent')
@@ -218,7 +243,7 @@ describe('highlightUnreadComments', () => {
 			await highlightUnreadComments(mockDoc, [comment], manager);
 
 			// Should not throw error
-			expect(mockDoc.getElementById('comment2')).toBeNull();
+			expect(mockDoc.querySelector('#comment2')).toBeNull();
 		});
 	});
 

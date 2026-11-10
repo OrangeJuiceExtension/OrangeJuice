@@ -41,7 +41,7 @@ describe('fetchTitle', () => {
 		const button = urlInput?.parentElement?.querySelector('button');
 
 		expect(button).toBeTruthy();
-		expect(button?.innerText).toBe('fetch title');
+		expect(button?.textContent).toBe('fetch title');
 	});
 
 	it('should prepend https:// to URLs without http', () => {
@@ -130,14 +130,14 @@ describe('fetchTitle', () => {
 		button.click();
 
 		expect(button.disabled).toBe(true);
-		expect(button.innerText).toBe('fetching...');
+		expect(button.textContent).toBe('fetching...');
 
 		// @ts-expect-error promise resolver is initialized synchronously in this test
 		resolveFetch({ title: 'Loaded Title' });
 		await vi.waitFor(() => {
 			expect(button.disabled).toBe(false);
 		});
-		expect(button.innerText).toBe('fetch title');
+		expect(button.textContent).toBe('fetch title');
 	});
 
 	it('should dispatch an input event after populating the fetched title', async () => {

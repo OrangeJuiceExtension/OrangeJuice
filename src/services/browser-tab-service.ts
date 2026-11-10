@@ -1,6 +1,7 @@
 import { type Browser, browser } from '#imports';
 
 export class BrowserTabService {
+	// biome-ignore lint/style/useThisInClassMethods: comctx exposes this operation through the service instance.
 	async createTab(request: Browser.tabs.CreateProperties) {
 		const tabs = await browser.tabs.query({});
 

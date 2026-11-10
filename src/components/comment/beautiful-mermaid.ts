@@ -17,7 +17,7 @@ const PREVIEW_DEBOUNCE_MS = 150;
 const MERMAID_PREVIEW_ERROR_CLASS = `oj-comment-${MERMAID}-preview-error`;
 
 const ensurePreviewStyles = (doc: Document): void => {
-	if (doc.getElementById(MERMAID_PREVIEW_STYLE_ID)) {
+	if (doc.querySelector(`#${CSS.escape(MERMAID_PREVIEW_STYLE_ID)}`)) {
 		return;
 	}
 	const style = doc.createElement('style');

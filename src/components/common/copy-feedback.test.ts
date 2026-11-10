@@ -43,10 +43,10 @@ describe('copy feedback', () => {
 
 		showCopyFeedback(doc, 'Copied HN link');
 
-		const feedback = doc.getElementById('oj-copy-feedback');
+		const feedback = doc.querySelector('#oj-copy-feedback');
 		expect(feedback?.textContent).toBe('Copied HN link');
 		expect(feedback?.classList.contains('oj-copy-feedback--visible')).toBe(true);
-		expect(doc.getElementById('oj-copy-feedback-style')?.textContent).toContain(
+		expect(doc.querySelector('#oj-copy-feedback-style')?.textContent).toContain(
 			'position: fixed'
 		);
 

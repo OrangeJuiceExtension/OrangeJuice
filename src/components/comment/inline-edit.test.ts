@@ -74,8 +74,8 @@ describe('inline comment editing', () => {
 	it("closes the same comment's reply before opening edit and leaves other replies alone", async () => {
 		document.body.innerHTML += commentHtml('2', 'Another comment');
 		vi.spyOn(dom, 'fetchHmacFromPage').mockResolvedValue('reply-hmac');
-		const comment = document.getElementById(COMMENT_ID) as HTMLElement;
-		const otherComment = document.getElementById('2') as HTMLElement;
+		const comment = document.querySelector(`[id="${CSS.escape(COMMENT_ID)}"]`) as HTMLElement;
+		const otherComment = document.querySelector('[id="2"]') as HTMLElement;
 		const reply = getByRole<HTMLAnchorElement>(comment, 'link', { name: 'reply' });
 		const otherReply = getByRole<HTMLAnchorElement>(otherComment, 'link', { name: 'reply' });
 		await handleReplyClick(reply);

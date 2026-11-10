@@ -476,11 +476,11 @@ describe('keyboardNavigation', () => {
 			expect(activeComment?.id).not.toBe('story-123');
 
 			// Verify the story submission row was never selected
-			const storyRow = doc.getElementById('story-123');
+			const storyRow = doc.querySelector('#story-123');
 			expect(storyRow?.classList.contains(focusClass)).toBe(false);
 
 			// Verify the first comment row has the focus class
-			const firstCommentRow = doc.getElementById('comment-1');
+			const firstCommentRow = doc.querySelector('#comment-1');
 			expect(firstCommentRow?.classList.contains(focusClass)).toBe(true);
 
 			invalidate();

@@ -11,7 +11,7 @@ interface DropdownLink {
 	title: string;
 }
 
-const TRAILING_PIPE_REGEX = /\|\s*$/;
+const TRAILING_PIPE_REGEX = /\|\s*$/u;
 const SAFE_PROTOCOLS = new Set(['http:', 'https:']);
 
 const createUserPath = (
@@ -142,7 +142,7 @@ export const profileLinksDropdown = (ctx: ContentScriptContext, doc: Document) =
 		return false;
 	}
 
-	const userName = userLink.innerText.trim();
+	const userName = userLink.textContent.trim();
 	const logoutPath = removeTopLogoutLink(userPageTop);
 
 	const style = doc.createElement('style');

@@ -160,19 +160,17 @@ html.oj-topbar-readable {
 	}
 }
 
-html.oj-dark-mode {
-	.oj-nav-dropdown a,
-	.oj-nav-dropdown a:visited {
-		color: #fff2d4 !important;
-	}
+html.oj-dark-mode .oj-nav-dropdown a,
+html.oj-dark-mode .oj-nav-dropdown a:visited {
+	color: #fff2d4 !important;
+}
 
-	.oj-hn-footer {
-		color: #b5b2ac;
+html.oj-dark-mode .oj-hn-footer {
+	color: #b5b2ac;
 
-		a,
-		.yclinks a {
-			color: #ac9d84;
-		}
+	a,
+	.yclinks a {
+		color: #ac9d84;
 	}
 }
 

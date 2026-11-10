@@ -130,7 +130,7 @@ describe('initCommentUX', () => {
 			const authorLink = opComment?.querySelector<HTMLAnchorElement>('a.hnuser');
 
 			expect(authorLink?.classList.contains('oj_op')).toBe(true);
-			expect(authorLink?.innerText).toContain('[op]');
+			expect(authorLink?.textContent).toContain('[op]');
 		});
 
 		it('should not highlight non-OP usernames', () => {
@@ -140,7 +140,7 @@ describe('initCommentUX', () => {
 			const authorLink = nonOpComment?.querySelector<HTMLAnchorElement>('a.hnuser');
 
 			expect(authorLink?.classList.contains('oj_op')).toBe(false);
-			expect(authorLink?.innerText).not.toContain('[op]');
+			expect(authorLink?.textContent).not.toContain('[op]');
 		});
 
 		it('should handle multiple OP comments', () => {
@@ -220,9 +220,9 @@ describe('initCommentUX', () => {
 				document.querySelector<HTMLAnchorElement>('#comment2 a.hnuser');
 
 			expect(itemAuthorLink?.classList.contains('oj_op')).toBe(true);
-			expect(itemAuthorLink?.innerText).toContain('[op]');
+			expect(itemAuthorLink?.textContent).toContain('[op]');
 			expect(loggedInUserLink?.classList.contains('oj_op')).toBe(false);
-			expect(loggedInUserLink?.innerText).not.toContain('[op]');
+			expect(loggedInUserLink?.textContent).not.toContain('[op]');
 		});
 	});
 
@@ -283,7 +283,7 @@ describe('initCommentUX', () => {
 
 			const authorLink = document.querySelector<HTMLAnchorElement>('a.hnuser');
 			expect(authorLink?.classList.contains('oj_op')).toBe(false);
-			expect(authorLink?.innerText).not.toContain('[op]');
+			expect(authorLink?.textContent).not.toContain('[op]');
 		});
 	});
 	it.each(['dimensions', 'rendered text'] as const)(

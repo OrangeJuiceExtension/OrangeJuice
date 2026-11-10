@@ -1,4 +1,4 @@
-const DATE_REGEX = /^(\d{4})-(\d{1,2})-(\d{1,2})$/;
+const DATE_REGEX = /^(?<year>\d{4})-(?<month>\d{1,2})-(?<dayOfMonth>\d{1,2})$/u;
 
 export const months = [
 	'January',
@@ -17,10 +17,10 @@ export const months = [
 
 export const parseDate = (dateString: string): Date | null => {
 	const match = dateString.match(DATE_REGEX);
-	if (!match) {
+	if (!match?.groups) {
 		return null;
 	}
-	const [, year, month, dayOfMonth] = match;
+	const { year, month, dayOfMonth } = match.groups;
 	if (!(year && month && dayOfMonth)) {
 		return null;
 	}

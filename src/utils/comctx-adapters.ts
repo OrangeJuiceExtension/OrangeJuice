@@ -9,6 +9,7 @@ export interface MessageMeta {
 export const TAB_ID_NONE = -1;
 
 export class ProvideAdapter implements Adapter<MessageMeta> {
+	// biome-ignore lint/style/useThisInClassMethods: comctx requires an instance SendMessage callback.
 	sendMessage: SendMessage<MessageMeta> = async (message) => {
 		const injector: string | undefined = message.meta.injector;
 		switch (injector) {
@@ -56,6 +57,7 @@ export class ProvideAdapter implements Adapter<MessageMeta> {
 		}
 	};
 
+	// biome-ignore lint/style/useThisInClassMethods: comctx requires an instance OnMessage callback.
 	onMessage: OnMessage<MessageMeta> = (callback) => {
 		const handler = (
 			message: Partial<Message<MessageMeta>>
@@ -88,6 +90,7 @@ export class InjectAdapter implements Adapter<MessageMeta> {
 				url: document.location.href.split('#')[0],
 			},
 		});
+	// biome-ignore lint/style/useThisInClassMethods: comctx requires an instance OnMessage callback.
 	onMessage: OnMessage<MessageMeta> = (callback) => {
 		const handler = (
 			message: Partial<Message<MessageMeta>>

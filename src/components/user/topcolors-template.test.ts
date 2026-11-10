@@ -30,7 +30,7 @@ describe('topcolorsTemplate', () => {
 
 		await topcolorsTemplate(document);
 
-		expect(document.getElementById('oj-topcolors-root')).toBeNull();
+		expect(document.querySelector('#oj-topcolors-root')).toBeNull();
 	});
 
 	it('selects a color from the spectrum and copies its hex', async () => {
