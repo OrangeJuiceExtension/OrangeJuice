@@ -23,7 +23,7 @@ export const collapseRoot = (
 		}
 
 		const toggle = doc.createElement('a');
-		toggle.innerText = '[collapse root]';
+		toggle.textContent = '[collapse root]';
 		toggle.style.cursor = 'pointer';
 
 		const rootComment = currentRootComment;
@@ -32,11 +32,9 @@ export const collapseRoot = (
 			if (togg) {
 				togg.click();
 
-				if (currentRootComment) {
-					const comm = commentData.getCommentFromElement(currentRootComment);
-					if (comm) {
-						await commentData.activate(comm);
-					}
+				const comm = commentData.getCommentFromElement(rootComment);
+				if (comm) {
+					await commentData.activate(comm);
 				}
 
 				const { x, y } = dom.elementPosition(doc, rootComment);
