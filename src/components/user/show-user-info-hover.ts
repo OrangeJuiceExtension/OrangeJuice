@@ -73,7 +73,7 @@ export const showUserInfoOnHover = (
 		doc.head.appendChild(style);
 	}
 
-	const allUsers = doc.querySelectorAll('a.hnuser') as NodeListOf<HTMLAnchorElement>;
+	const allUsers = doc.querySelectorAll<HTMLAnchorElement>('a.hnuser, a[href^="user?id="]');
 	if (!allUsers.length) {
 		hoverCleanupByDocument.delete(doc);
 		return;
