@@ -179,6 +179,10 @@ Keep WXT running while you edit. It rebuilds and reloads the development extensi
 
 Use `.output/chrome-mv3-dev` for automatic reload. The production build in `.output/chrome-mv3` does not connect to WXT's development server.
 
+## Tooling compatibility
+
+CI checks both the locked dependencies and `bun update --latest`. Run `bun run check`, `bun run compile`, and `bun run test --run` after dependency upgrades. DOM ID selectors must escape dynamic IDs, and newer CSS enhancements must keep a fallback behind `@supports`. Keep narrow lint exceptions where rendered-text semantics or instance service contracts require them.
+
 ## Social preview images
 
 Run `bun run social-images` to regenerate the light and dark 1200×630 social cards and the 1280×800 banner in `docs/assets/`.

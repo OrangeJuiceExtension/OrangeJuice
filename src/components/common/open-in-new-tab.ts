@@ -18,7 +18,7 @@ const applyOpenInNewTabPreference = async (doc: Document): Promise<void> => {
 	}
 
 	for (const anchor of doc.querySelectorAll<HTMLAnchorElement>('.subline a')) {
-		if (anchor.innerText.includes('comment')) {
+		if (anchor.textContent.includes('comment')) {
 			anchor.target = '_blank';
 			anchor.rel = 'noopener noreferrer';
 		}

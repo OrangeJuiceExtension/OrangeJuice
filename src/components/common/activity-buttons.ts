@@ -2,8 +2,8 @@ import { ActivityId, type ActivityTrail } from '@/utils/activity-trail.ts';
 import { DAYS_30 } from '@/utils/constants.ts';
 import { dom } from '@/utils/dom.ts';
 
-const unvPrefixPattern = /^unv_/;
-const labelSeparatorPattern = /[\s-]+/g;
+const unvPrefixPattern = /^unv_/u;
+const labelSeparatorPattern = /[\s-]+/gu;
 const ACTIVITY_NAV_SELECTOR = '.comhead, .subline, .subtext';
 
 export const idExtractors = new Map<

@@ -1,6 +1,6 @@
 name: OJ CodeQL Config
 
 paths-ignore:
-  - '**/*.test.*'
-  - '**/*.spec.*'
-  - 'src/test/**'
+    - "**/*.test.*"
+    - "**/*.spec.*"
+    - "src/test/**"

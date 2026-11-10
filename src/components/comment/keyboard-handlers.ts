@@ -4,7 +4,7 @@ import { copyTextToClipboard, showCopyFeedback } from '@/components/common/copy-
 import { createClientServices } from '@/services/manager.ts';
 import { dom } from '@/utils/dom.ts';
 
-const NEXT_PARAM_REGEX = /[?&]next=/;
+const NEXT_PARAM_REGEX = /[?&]next=/u;
 
 export class KeyboardHandlers {
 	private readonly doc: Document;
@@ -30,7 +30,7 @@ export class KeyboardHandlers {
 			if (direction === 'down') {
 				await commentData.setNavState('next');
 				this.clickMore();
-			} else if (direction === 'up' && this.hasNextParam()) {
+			} else if (direction === 'up' && KeyboardHandlers.hasNextParam()) {
 				await commentData.setNavState('prev');
 				window.history.back();
 			}
@@ -38,7 +38,7 @@ export class KeyboardHandlers {
 		}
 
 		if (!skipHidden && nextItem.hidden()) {
-			this.expandParentIfNeeded(commentData, nextItem);
+			KeyboardHandlers.expandParentIfNeeded(commentData, nextItem);
 		}
 
 		await this.activateComment(commentData, nextItem);
@@ -64,6 +64,7 @@ export class KeyboardHandlers {
 		}
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: preserve the keyboard handler instance API.
 	getNextItem(commentData: CommentData, direction: 'up' | 'down', skipHidden: boolean) {
 		const activeComment = commentData.getActiveComment();
 		if (!activeComment) {
@@ -96,6 +97,7 @@ export class KeyboardHandlers {
 		await commentData.deactivate();
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: preserve the keyboard handler instance API.
 	async activateComment(commentData: CommentData, comment: HNComment) {
 		await commentData.activate(comment);
 	}
@@ -107,6 +109,7 @@ export class KeyboardHandlers {
 		}
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: keyboard navigation observes this handler through its prototype.
 	openReferenceLink(event: KeyboardEvent, commentData: CommentData) {
 		const activeComment = commentData.getActiveComment();
 		if (!activeComment) {
@@ -129,10 +132,12 @@ export class KeyboardHandlers {
 			.createTab({ active: dom.isComboKey(event), url: link.href });
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: keyboard navigation observes this handler through its prototype.
 	reply(commentData: CommentData) {
 		return commentData.reply();
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: keyboard navigation observes this handler through its prototype.
 	favorite(commentData: CommentData) {
 		commentData.favorite();
 	}
@@ -150,14 +155,17 @@ export class KeyboardHandlers {
 		return didCopy;
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: keyboard navigation observes this handler through its prototype.
 	flag(commentData: CommentData) {
 		commentData.flag();
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: keyboard navigation observes this handler through its prototype.
 	collapseToggle(commentData: CommentData) {
 		commentData.collapseToggle();
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: keyboard navigation observes this handler through its prototype.
 	scrollActiveCommentToTop(commentData: CommentData) {
 		const activeComment = commentData.getActiveComment();
 		if (!activeComment) {
@@ -187,7 +195,7 @@ export class KeyboardHandlers {
 
 			collapseRootLink.click();
 			await commentData.deactivate();
-			await commentData.activate(rootComment);
+			await this.activateComment(commentData, rootComment);
 		} else {
 			const expandRootLink = activeComment.getExpandRootLink();
 			if (expandRootLink) {
@@ -273,10 +281,12 @@ export class KeyboardHandlers {
 		}
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: keyboard navigation observes this handler through its prototype.
 	upvote(commentData: CommentData) {
 		commentData.toggleVote('upvote');
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: keyboard navigation observes this handler through its prototype.
 	downvote(commentData: CommentData) {
 		commentData.toggleVote('downvote');
 	}
@@ -291,7 +301,7 @@ export class KeyboardHandlers {
 				return;
 			}
 		} else if (navState === 'prev') {
-			const last = this.getLastVisible(commentData);
+			const last = KeyboardHandlers.getLastVisible(commentData);
 			if (last) {
 				await this.activateComment(commentData, last);
 				await commentData.clearNavState();
@@ -315,11 +325,11 @@ export class KeyboardHandlers {
 		}
 	}
 
-	private hasNextParam(): boolean {
+	private static hasNextParam(): boolean {
 		return NEXT_PARAM_REGEX.test(window.location.search);
 	}
 
-	private getLastVisible(commentData: CommentData): HNComment | undefined {
+	private static getLastVisible(commentData: CommentData): HNComment | undefined {
 		let current = commentData.last();
 		while (current) {
 			if (current.isVisibleInThread) {
@@ -329,7 +339,7 @@ export class KeyboardHandlers {
 		}
 	}
 
-	private expandParentIfNeeded(commentData: CommentData, target: HNComment): void {
+	private static expandParentIfNeeded(commentData: CommentData, target: HNComment): void {
 		let targetIndent = target.getIndentLevel();
 		let current = commentData.getPrevious(target, false);
 		while (current) {

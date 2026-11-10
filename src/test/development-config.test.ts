@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { scripts } from '../../package.json';
 
-const MANUAL_BROWSER_ENV_PATTERN = /(?:^|\s)OJ_MANUAL_BROWSER=(\S+)/;
+const MANUAL_BROWSER_ENV_PATTERN = /(?:^|\s)OJ_MANUAL_BROWSER=(?<value>\S+)/u;
 
 describe('Chrome development commands', () => {
 	afterEach(() => {
@@ -11,7 +11,8 @@ describe('Chrome development commands', () => {
 	it.each(['dev', 'dev:manual'] as const)(
 		'%s disables browser launching so the installed Chrome profile can be used',
 		async (command) => {
-			const manualBrowser = scripts[command].match(MANUAL_BROWSER_ENV_PATTERN)?.[1] ?? '';
+			const manualBrowser =
+				scripts[command].match(MANUAL_BROWSER_ENV_PATTERN)?.groups?.value ?? '';
 			vi.stubEnv('OJ_MANUAL_BROWSER', manualBrowser);
 			vi.resetModules();
 			const { default: config } = await import('../../wxt.config.ts');

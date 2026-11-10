@@ -8,8 +8,8 @@ import {
 	type ReadStoriesVisibilityPreference,
 } from '@/utils/preferences.ts';
 
-const POINTS_REGEX = /^(\d+)\s+points?$/;
-const COMMENTS_REGEX = /^(\d+)\s+comments?$/;
+const POINTS_REGEX = /^(?<points>\d+)\s+points?$/u;
+const COMMENTS_REGEX = /^(?<comments>\d+)\s+comments?$/u;
 const UNVOTE_LINK = 'a[id^="un_"]';
 const UPVOTE_ARROW = 'div.votearrow[title="upvote"]';
 const FAVORITE_LINK = 'button.oj_favorite_link';
@@ -69,11 +69,13 @@ export class HNStory {
 		this.commentsCount = this.parseComments(this.subtextRow);
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Keep parsing available on the HNStory prototype without allocating a function per story.
 	parsePosition(row: HTMLElement): number {
 		const rankText = row.querySelector('span.rank')?.textContent?.replace('.', '') || '0';
 		return Number.parseInt(rankText, 10);
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Keep parsing available on the HNStory prototype without allocating a function per story.
 	parseTitle(row: HTMLElement): { title: string; url: string } {
 		const titleLink = row.querySelector<HTMLAnchorElement>(TITLE_LINK_SELECTOR);
 		const href = titleLink?.getAttribute('href') || '';
@@ -84,15 +86,17 @@ export class HNStory {
 		};
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Keep parsing available on the HNStory prototype without allocating a function per story.
 	parsePoints(subtext?: HTMLElement): number | undefined {
 		if (!subtext) {
 			return;
 		}
 		const scoreText = subtext.querySelector('span.score')?.textContent;
-		const points = scoreText?.match(POINTS_REGEX)?.[1];
+		const points = scoreText?.match(POINTS_REGEX)?.groups?.points;
 		return points ? Number.parseInt(points, 10) : undefined;
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Keep parsing available on the HNStory prototype without allocating a function per story.
 	parseComments(subtext?: HTMLElement): number | undefined {
 		if (!subtext) {
 			return;
@@ -110,7 +114,7 @@ export class HNStory {
 				return 0;
 			}
 
-			const count = text?.match(COMMENTS_REGEX)?.[1];
+			const count = text?.match(COMMENTS_REGEX)?.groups?.comments;
 			if (count) {
 				return Number.parseInt(count, 10);
 			}

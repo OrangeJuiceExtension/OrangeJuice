@@ -34,7 +34,7 @@ describe('CommentData', () => {
 	it('should resolve comment from nested element', () => {
 		const comments = createComments(doc, 1);
 		const data = new CommentData(comments);
-		const row = doc.getElementById('comment-1');
+		const row = doc.querySelector('#comment-1');
 		if (!row) {
 			throw new Error('Expected comment row to exist');
 		}

@@ -1,4 +1,4 @@
-const backtickRegex = /(?<!\\)`([\s\S]*?)(?<!\\)`/g;
+const backtickRegex = /(?<!\\)`(?<code>[\s\S]*?)(?<!\\)`/gu;
 
 const replaceBackticksInTextNode = (doc: Document, textNode: Text): void => {
 	const sourceText = textNode.textContent ?? '';
@@ -14,7 +14,7 @@ const replaceBackticksInTextNode = (doc: Document, textNode: Text): void => {
 		fragment.append(sourceText.slice(lastIndex, matchIndex));
 
 		const code = doc.createElement('code');
-		code.textContent = match[1] ?? '';
+		code.textContent = match.groups?.code ?? '';
 		fragment.append(code);
 
 		lastIndex = matchIndex + match[0].length;

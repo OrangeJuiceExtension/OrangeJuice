@@ -3,9 +3,9 @@ import { createClientServices } from '@/services/manager.ts';
 export const MERMAID = 'mermaid';
 const MERMAID_OPEN_TAG = `<${MERMAID}>`;
 const MERMAID_CLOSE_TAG = `</${MERMAID}>`;
-const ESCAPED_NEWLINE_PATTERN = /\\n/g;
-const ESCAPED_TAB_PATTERN = /\\t/g;
-const ESCAPED_QUOTE_PATTERN = /\\"/g;
+const ESCAPED_NEWLINE_PATTERN = /\\n/gu;
+const ESCAPED_TAB_PATTERN = /\\t/gu;
+const ESCAPED_QUOTE_PATTERN = /\\"/gu;
 const MERMAID_STYLE_ID = `oj-${MERMAID}-style`;
 const MERMAID_SVG_CLASS = `oj-${MERMAID}-svg`;
 const MERMAID_SVG_CLICK_BOUND_ATTRIBUTE = `data-oj-${MERMAID}-click-bound`;
@@ -19,7 +19,7 @@ const decodeEscapes = (value: string): string =>
 		.replace(ESCAPED_QUOTE_PATTERN, '"');
 
 export const ensureMermaidStyles = (doc: Document): void => {
-	if (doc.getElementById(MERMAID_STYLE_ID)) {
+	if (doc.querySelector(`#${MERMAID_STYLE_ID}`)) {
 		return;
 	}
 	const style = doc.createElement('style');
@@ -107,6 +107,7 @@ export const renderMermaidsInPreCodeElements = async (
 				return;
 			}
 
+			// biome-ignore lint/performance/useDomNodeTextContent: Mermaid syntax needs rendered line breaks and must exclude hidden text.
 			const mermaids = extractMermaidFromText(preCodeNode.innerText);
 			if (mermaids.length === 0) {
 				return;

@@ -17,7 +17,7 @@ const MUTED_USERS_STYLE_ID = 'oj-muted-users-row-style';
 const MUTED_USERS_ACTION_ROW_CLASS = 'oj-muted-users-action-row';
 
 const ensureMutedUsersRowStyles = (doc: Document): void => {
-	if (doc.getElementById(MUTED_USERS_STYLE_ID)) {
+	if (doc.querySelector(`#${CSS.escape(MUTED_USERS_STYLE_ID)}`)) {
 		return;
 	}
 

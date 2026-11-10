@@ -103,15 +103,22 @@
 		width: 100%;
 		min-height: 52vh;
 		padding: 10px;
-		font-family:
-			ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 		font-size: 12px;
 		line-height: 1.45;
 		color: #242424;
-		resize: vertical;
 		background: #fff;
 		border: 1px solid #d5c6a6;
 		border-radius: 4px;
+
+		@supports (font-family: ui-monospace) {
+			font-family:
+				ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+		}
+
+		@supports (resize: vertical) {
+			resize: vertical;
+		}
 	}
 
 	.oj-shortcuts-editor__error {

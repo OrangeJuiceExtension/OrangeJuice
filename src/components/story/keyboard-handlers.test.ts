@@ -144,7 +144,7 @@ describe('Story KeyboardHandlers', () => {
 
 		expect(didCopy).toBe(true);
 		expect(writeText).toHaveBeenCalledWith(`${paths.base}/item?id=1`);
-		expect(doc.getElementById('oj-copy-feedback')?.textContent).toBe('Copied HN link');
+		expect(doc.querySelector('#oj-copy-feedback')?.textContent).toBe('Copied HN link');
 	});
 
 	it('should skip dead or hidden HN rows when activating from next-page nav state', async () => {

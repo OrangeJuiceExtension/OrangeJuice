@@ -114,8 +114,11 @@
 	width: 18px;
 	height: 18px;
 	margin: 0;
-	accent-color: var(--popup-accent);
 	cursor: pointer;
+
+	@supports (accent-color: auto) {
+		accent-color: var(--popup-accent);
+	}
 }
 
 .oj-popup__select {

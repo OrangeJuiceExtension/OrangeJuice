@@ -147,7 +147,7 @@ describe('commentKeyboardHandlers', () => {
 
 		expect(didCopy).toBe(true);
 		expect(writeText).toHaveBeenCalledWith(`${paths.base}/item?id=1#comment-1`);
-		expect(doc.getElementById('oj-copy-feedback')?.textContent).toBe('Copied HN link');
+		expect(doc.querySelector('#oj-copy-feedback')?.textContent).toBe('Copied HN link');
 	});
 
 	describe('move', () => {

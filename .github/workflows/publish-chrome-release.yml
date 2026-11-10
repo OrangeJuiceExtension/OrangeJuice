@@ -1,52 +1,52 @@
 name: Publish Chrome Release
 
 on:
-  workflow_dispatch:
+    workflow_dispatch:
 
 permissions:
-  contents: read
+    contents: read
 
 concurrency:
-  group: publish-chrome-release
-  cancel-in-progress: false
+    group: publish-chrome-release
+    cancel-in-progress: false
 
 jobs:
-  publish-chrome-release:
-    runs-on: ubuntu-latest
-    environment: production
+    publish-chrome-release:
+        runs-on: ubuntu-latest
+        environment: production
 
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-        with:
-          bun-version-file: package.json
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+              with:
+                  bun-version-file: package.json
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-      - name: Download Chrome release asset
-        id: release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          TAG="$(gh release view --json tagName --jq '.tagName')"
-          VERSION="${TAG#v}"
-          ASSET_NAME="orangejuice-${VERSION}-chrome.zip"
+            - name: Download Chrome release asset
+              id: release
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              shell: bash
+              run: |
+                  TAG="$(gh release view --json tagName --jq '.tagName')"
+                  VERSION="${TAG#v}"
+                  ASSET_NAME="orangejuice-${VERSION}-chrome.zip"
 
-          gh release download "${TAG}" \
-            --pattern "${ASSET_NAME}" \
-            --dir .
-          
-          echo "Asset: ${ASSET_NAME}"
-          echo "asset_name=${ASSET_NAME}" >> "$GITHUB_OUTPUT"
+                  gh release download "${TAG}" \
+                    --pattern "${ASSET_NAME}" \
+                    --dir .
 
-      - name: Publish to Chrome Web Store
-        env:
-          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
-          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
-          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
-          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
-        run: ./node_modules/.bin/publish-extension --chrome-zip "${{ steps.release.outputs.asset_name }}"
+                  echo "Asset: ${ASSET_NAME}"
+                  echo "asset_name=${ASSET_NAME}" >> "$GITHUB_OUTPUT"
+
+            - name: Publish to Chrome Web Store
+              env:
+                  CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+                  CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+                  CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+                  CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+              run: ./node_modules/.bin/publish-extension --chrome-zip "${{ steps.release.outputs.asset_name }}"

@@ -450,7 +450,7 @@ const FOLLOW_STYLES = `
 const isFollowingPage = (): boolean => window.location.pathname === FOLLOWING_PATH;
 
 const ensureStyles = (doc: Document): void => {
-	if (doc.getElementById(FOLLOW_STYLE_ID)) {
+	if (doc.querySelector(`#${CSS.escape(FOLLOW_STYLE_ID)}`)) {
 		return;
 	}
 
@@ -733,7 +733,7 @@ const reorderFollowingSections = (doc: Document, usernames: readonly string[]): 
 	}
 
 	for (const username of usernames) {
-		const section = doc.getElementById(createSectionId(username));
+		const section = doc.querySelector<HTMLElement>(`#${CSS.escape(createSectionId(username))}`);
 		if (!section) {
 			continue;
 		}

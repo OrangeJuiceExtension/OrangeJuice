@@ -6,8 +6,8 @@ import { dom } from '@/utils/dom.ts';
 import lStorage from '@/utils/local-storage.ts';
 import { navigateToSafeUrl, openSafeUrlInNewTab } from '@/utils/navigation.ts';
 
-const PAGE_PARAM_REGEX = /[?&]p=\d+/;
-const NEXT_PARAM_REGEX = /[?&]next=/;
+const PAGE_PARAM_REGEX = /[?&]p=\d+/u;
+const NEXT_PARAM_REGEX = /[?&]next=/u;
 const CHECKBOX_ID = 'oj-hide-read-stories';
 const NAV_STATE_KEY = 'oj_page_nav_state';
 const ACTIVE_STORY_KEY = 'oj_active_story_id2';
@@ -61,6 +61,7 @@ export class KeyboardHandlers {
 		}
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the keyboard handler instance API used by navigation.
 	getNextItem(storyData: StoryData, direction: 'up' | 'down') {
 		const activeStory = storyData.getActiveStory();
 		if (!activeStory) {
@@ -87,17 +88,18 @@ export class KeyboardHandlers {
 	async escape(storyData: StoryData) {
 		(this.doc.activeElement as HTMLElement)?.blur();
 		storyData.deactivate();
-		const activeStoryMap = await this.getActiveStoryMap();
-		const locationKey = this.getLocationKey();
+		const activeStoryMap = await KeyboardHandlers.getActiveStoryMap();
+		const locationKey = KeyboardHandlers.getLocationKey();
 		if (activeStoryMap[locationKey]) {
-			await this.clearStoredActiveStory(activeStoryMap, locationKey);
+			await KeyboardHandlers.clearStoredActiveStory(activeStoryMap, locationKey);
 		}
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the keyboard handler instance API used by navigation.
 	async activateStory(storyData: StoryData, story: HNStory) {
 		storyData.activate(story);
-		const activeStoryMap = await this.getActiveStoryMap();
-		activeStoryMap[this.getLocationKey()] = story.id;
+		const activeStoryMap = await KeyboardHandlers.getActiveStoryMap();
+		activeStoryMap[KeyboardHandlers.getLocationKey()] = story.id;
 		await lStorage.setItem(ACTIVE_STORY_KEY, activeStoryMap);
 	}
 
@@ -110,22 +112,27 @@ export class KeyboardHandlers {
 		await this.activateStory(storyData, story);
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the keyboard command instance API without allocating per-instance callbacks.
 	favorite(storyData: StoryData) {
 		storyData.favorite();
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the keyboard command instance API without allocating per-instance callbacks.
 	flag(storyData: StoryData) {
 		storyData.flag();
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the keyboard command instance API without allocating per-instance callbacks.
 	vote(storyData: StoryData) {
 		storyData.toggleVote();
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the keyboard command instance API without allocating per-instance callbacks.
 	reply(storyData: StoryData) {
 		storyData.reply();
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the keyboard command instance API without allocating per-instance callbacks.
 	open(storyData: StoryData) {
 		const activeStory = storyData.getActiveStory();
 		if (activeStory?.url) {
@@ -133,6 +140,7 @@ export class KeyboardHandlers {
 		}
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the keyboard command instance API without allocating per-instance callbacks.
 	openStoryUrl(storyData: StoryData, openInNewTab: boolean) {
 		const activeStory = storyData.getActiveStory();
 		if (activeStory?.url) {
@@ -144,6 +152,7 @@ export class KeyboardHandlers {
 		}
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the keyboard command instance API without allocating per-instance callbacks.
 	openComments(storyData: StoryData, openInNewTab: boolean) {
 		const activeStory = storyData.getActiveStory();
 		if (activeStory?.commentsUrl) {
@@ -155,6 +164,7 @@ export class KeyboardHandlers {
 		}
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the keyboard command instance API without allocating per-instance callbacks.
 	openWithComments(storyData: StoryData) {
 		const activeStory = storyData.getActiveStory();
 		if (activeStory?.url && activeStory.commentsUrl) {
@@ -176,6 +186,7 @@ export class KeyboardHandlers {
 		return didCopy;
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the keyboard command instance API without allocating per-instance callbacks.
 	openByPosition(storyData: StoryData, key: string) {
 		const position = key === '0' ? 10 : Number.parseInt(key, 10);
 		const story = storyData.getByPosition(position);
@@ -184,6 +195,7 @@ export class KeyboardHandlers {
 		}
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the keyboard command instance API and its explicit document argument.
 	clickMore(doc: Document) {
 		const MORE_LINK = 'a.morelink';
 		const moreLink = doc.querySelector<HTMLAnchorElement>(MORE_LINK);
@@ -192,6 +204,7 @@ export class KeyboardHandlers {
 		}
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the keyboard command instance API and global-window navigation behavior.
 	async goBack() {
 		if (PAGE_PARAM_REGEX.test(window.location.search)) {
 			const currentUrl = new URL(window.location.href);
@@ -213,8 +226,9 @@ export class KeyboardHandlers {
 		}
 	}
 
+	// biome-ignore lint/style/useThisInClassMethods: Preserve the keyboard command instance API and its explicit document argument.
 	toggleHideRead(doc: Document) {
-		const checkbox = doc.getElementById(CHECKBOX_ID) as HTMLInputElement;
+		const checkbox = doc.querySelector<HTMLInputElement>(`#${CSS.escape(CHECKBOX_ID)}`);
 		if (checkbox) {
 			checkbox.checked = !checkbox.checked;
 			checkbox.dispatchEvent(new Event('change'));
@@ -238,18 +252,18 @@ export class KeyboardHandlers {
 	}
 
 	async checkNavState(storyData: StoryData): Promise<void> {
-		const activeStoryMap = await this.getActiveStoryMap();
-		const locationKey = this.getLocationKey();
+		const activeStoryMap = await KeyboardHandlers.getActiveStoryMap();
+		const locationKey = KeyboardHandlers.getLocationKey();
 		const activeStoryId = activeStoryMap[locationKey];
 		const navState = await lStorage.getItem<NavDirection>(NAV_STATE_KEY);
 
 		const story = activeStoryId ? storyData.get(activeStoryId) : undefined;
 
 		if (!story && activeStoryId) {
-			await this.clearStoredActiveStory(activeStoryMap, locationKey);
+			await KeyboardHandlers.clearStoredActiveStory(activeStoryMap, locationKey);
 		}
 
-		const navTarget = navState ? this.getNavTarget(storyData, navState) : undefined;
+		const navTarget = navState ? KeyboardHandlers.getNavTarget(storyData, navState) : undefined;
 		if (!story) {
 			if (navTarget) {
 				await this.activateWithNavStateClear(storyData, navTarget);
@@ -258,10 +272,10 @@ export class KeyboardHandlers {
 		}
 
 		// Prioritize an active story if in the middle of a list
-		if (this.isStoryInMiddle(storyData, story) && !story.hidden()) {
+		if (KeyboardHandlers.isStoryInMiddle(storyData, story) && !story.hidden()) {
 			await this.activateStory(storyData, story);
 			if (navState) {
-				await this.clearNavState();
+				await KeyboardHandlers.clearNavState();
 			}
 			return;
 		}
@@ -280,24 +294,24 @@ export class KeyboardHandlers {
 
 	private async activateWithNavStateClear(storyData: StoryData, target: HNStory) {
 		await this.activateStory(storyData, target);
-		await this.clearNavState();
+		await KeyboardHandlers.clearNavState();
 	}
 
-	private async clearNavState() {
+	private static async clearNavState() {
 		await lStorage.setItem(NAV_STATE_KEY, null);
 	}
 
-	private getNavTarget(storyData: StoryData, navState: NavDirection) {
+	private static getNavTarget(storyData: StoryData, navState: NavDirection) {
 		return navState === 'next'
 			? storyData.firstTopDownVisible()
 			: storyData.firstBottomUpVisible();
 	}
 
-	private isStoryInMiddle(storyData: StoryData, story: HNStory): boolean {
+	private static isStoryInMiddle(storyData: StoryData, story: HNStory): boolean {
 		return story !== storyData.first() && story !== storyData.last();
 	}
 
-	private async clearStoredActiveStory(
+	private static async clearStoredActiveStory(
 		activeStoryMap: Record<string, string>,
 		locationKey: string
 	) {
@@ -305,11 +319,11 @@ export class KeyboardHandlers {
 		await lStorage.setItem(ACTIVE_STORY_KEY, activeStoryMap);
 	}
 
-	private getLocationKey(): string {
+	private static getLocationKey(): string {
 		return `${window.location.pathname}${window.location.search}`;
 	}
 
-	private async getActiveStoryMap(): Promise<Record<string, string>> {
+	private static async getActiveStoryMap(): Promise<Record<string, string>> {
 		const stored = await lStorage.getItem<Record<string, string>>(ACTIVE_STORY_KEY);
 		if (!stored || typeof stored !== 'object') {
 			return {};

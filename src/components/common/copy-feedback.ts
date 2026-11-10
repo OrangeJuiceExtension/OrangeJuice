@@ -8,7 +8,7 @@ const COPY_FEEDBACK_HIDE_DELAY_MS = 1400;
 let hideTimeout: number | undefined;
 
 const ensureCopyFeedbackStyle = (doc: Document): void => {
-	if (doc.getElementById(COPY_FEEDBACK_STYLE_ID)) {
+	if (doc.querySelector(`#${CSS.escape(COPY_FEEDBACK_STYLE_ID)}`)) {
 		return;
 	}
 
@@ -50,7 +50,7 @@ const ensureCopyFeedbackStyle = (doc: Document): void => {
 };
 
 const getCopyFeedback = (doc: Document): HTMLDivElement => {
-	let feedback = doc.getElementById(COPY_FEEDBACK_ID) as HTMLDivElement | null;
+	let feedback = doc.querySelector<HTMLDivElement>(`#${CSS.escape(COPY_FEEDBACK_ID)}`);
 	if (feedback) {
 		return feedback;
 	}

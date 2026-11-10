@@ -8,7 +8,7 @@ const MUTED_COMMENT_COLOR_LIGHT = '#8b8276';
 const MUTED_COMMENT_COLOR_DARK = '#9a9082';
 
 const ensureMutedCommentStyles = (doc: Document): void => {
-	if (doc.getElementById(MUTED_COMMENT_STYLE_ID)) {
+	if (doc.querySelector(`#${CSS.escape(MUTED_COMMENT_STYLE_ID)}`)) {
 		return;
 	}
 

@@ -39,11 +39,11 @@ const components: ComponentFeature[] = [
 const urlMatchesPattern = (url: string, pattern: string): boolean => {
 	// Convert glob pattern to regex
 	const regexPattern = pattern
-		.replace(/[.+^${}()|[\]\\]/g, '\\$&') // Escape special regex chars
-		.replace(/\*/g, '.*') // Convert * to .*
-		.replace(/\?/g, '.'); // Convert ? to '.'
+		.replace(/[.+^${}()|[\]\\]/gu, '\\$&') // Escape special regex chars
+		.replace(/\*/gu, '.*') // Convert * to .*
+		.replace(/\?/gu, '.'); // Convert ? to '.'
 
-	return new RegExp(`^${regexPattern}$`).test(url);
+	return new RegExp(`^${regexPattern}$`, 'u').test(url);
 };
 
 const startActivityFetcher = async (username: string | undefined): Promise<void> => {

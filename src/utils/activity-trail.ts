@@ -5,8 +5,8 @@ import lStorage from '@/utils/local-storage.ts';
 import { paths } from '@/utils/paths.ts';
 
 const STORAGE_KEY = 'oj_activity_trail';
-const idMatchPattern = /id=(\d+)/;
-const authMatchPattern = /auth=([^&]+)/;
+const idMatchPattern = /id=(?<id>\d+)/u;
+const authMatchPattern = /auth=(?<auth>[^&]+)/u;
 
 export const ActivityId = {
 	Comments: 0,
@@ -222,7 +222,7 @@ export class ActivityTrail {
 	}
 
 	async isExpired(): Promise<boolean> {
-		this.storedData = await this.load();
+		this.storedData = await ActivityTrail.load();
 		this.indexedData = undefined;
 
 		const { lastSync } = this.storedData;
@@ -235,7 +235,7 @@ export class ActivityTrail {
 
 	private async getStored(): Promise<StoredData> {
 		if (!this.storedData) {
-			this.storedData = await this.load();
+			this.storedData = await ActivityTrail.load();
 		}
 		return this.storedData;
 	}
@@ -247,7 +247,7 @@ export class ActivityTrail {
 		return this.indexedData;
 	}
 
-	private async load(): Promise<StoredData> {
+	private static async load(): Promise<StoredData> {
 		const stored = await lStorage.getItem<StoredData>(STORAGE_KEY);
 		return stored ?? { items: {}, lastSync: 0 };
 	}
@@ -322,13 +322,13 @@ export class ActivityFetcher {
 				throw new Error('Activity page could not be loaded');
 			}
 
-			for (const item of this.extractItemsFromPage(doc, type)) {
+			for (const item of ActivityFetcher.extractItemsFromPage(doc, type)) {
 				items.push({
 					...item,
 				});
 			}
 
-			if (this.hasMore(doc)) {
+			if (ActivityFetcher.hasMore(doc)) {
 				pagesToProcess.push(page + 1);
 			}
 		};
@@ -350,30 +350,30 @@ export class ActivityFetcher {
 		return items;
 	}
 
-	hasMore(doc: HTMLElement): boolean {
+	private static hasMore(doc: HTMLElement): boolean {
 		return !!doc.querySelector<HTMLAnchorElement>('a.morelink[href*="p="]');
 	}
 
-	extractItemsFromPage(doc: HTMLElement, type: ActivityType): ActivityDetail[] {
+	private static extractItemsFromPage(doc: HTMLElement, type: ActivityType): ActivityDetail[] {
 		const actionLink = actionFromType(type);
 		if (actionLink) {
-			return this.extractItemsWithAuth(doc, actionLink, type);
+			return ActivityFetcher.extractItemsWithAuth(doc, actionLink, type);
 		}
-		return this.extractItemsWithoutAuth(doc, type);
+		return ActivityFetcher.extractItemsWithoutAuth(doc, type);
 	}
 
-	extractItemsWithAuth = (
+	private static extractItemsWithAuth(
 		doc: HTMLElement,
 		actionLink: string,
 		type: ActivityType
-	): ActivityDetail[] => {
+	): ActivityDetail[] {
 		const items: ActivityDetail[] = [];
 		const links = doc.querySelectorAll<HTMLAnchorElement>(`a[href*="${actionLink}"]`);
 
 		for (const link of links) {
 			const href = link.getAttribute('href') || '';
-			const id = href.match(idMatchPattern)?.[1];
-			const auth = href.match(authMatchPattern)?.[1];
+			const id = href.match(idMatchPattern)?.groups?.id;
+			const auth = href.match(authMatchPattern)?.groups?.auth;
 
 			if (id && auth) {
 				items.push({
@@ -386,15 +386,15 @@ export class ActivityFetcher {
 		}
 
 		return items;
-	};
+	}
 
-	extractItemsWithoutAuth(doc: HTMLElement, type: ActivityType) {
+	private static extractItemsWithoutAuth(doc: HTMLElement, type: ActivityType) {
 		const items: ActivityDetail[] = [];
 		const links = doc.querySelectorAll<HTMLAnchorElement>('.age');
 
 		for (const link of links) {
 			const href = link.getAttribute('href') || '';
-			const id = href.match(idMatchPattern)?.[1];
+			const id = href.match(idMatchPattern)?.groups?.id;
 
 			if (id) {
 				items.push({

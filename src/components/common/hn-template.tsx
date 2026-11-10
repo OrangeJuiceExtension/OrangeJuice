@@ -116,7 +116,7 @@ export const wrapBodyWithHnTemplate = async (
 	doc: Document,
 	options: WrapOptions = {}
 ): Promise<void> => {
-	if (doc.getElementById(TEMPLATE_ROOT_ID)) {
+	if (doc.querySelector(`#${CSS.escape(TEMPLATE_ROOT_ID)}`)) {
 		return;
 	}
 

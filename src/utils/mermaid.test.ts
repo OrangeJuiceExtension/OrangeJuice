@@ -122,7 +122,7 @@ describe('mermaid utils', () => {
 			const container = document.createElement('div');
 			const pre = document.createElement('pre');
 			const code = document.createElement('code');
-			code.innerText = '<mermaid>graph TD\\nA --> B</mermaid>';
+			code.textContent = '<mermaid>graph TD\\nA --> B</mermaid>';
 			pre.appendChild(code);
 			container.appendChild(pre);
 			renderMermaidMock.mockResolvedValue('<svg id="single-mermaid"></svg>');
@@ -140,7 +140,7 @@ describe('mermaid utils', () => {
 			const container = document.createElement('div');
 			const pre = document.createElement('pre');
 			const code = document.createElement('code');
-			code.innerText =
+			code.textContent =
 				'<mermaid>graph TD\\nA --> B</mermaid><mermaid>graph TD\\nB --> C</mermaid>';
 			pre.appendChild(code);
 			container.appendChild(pre);
@@ -166,7 +166,7 @@ describe('mermaid utils', () => {
 			const container = document.createElement('div');
 			const pre = document.createElement('pre');
 			const code = document.createElement('code');
-			code.innerText =
+			code.textContent =
 				'<mermaid>graph TD\\nA --> B</mermaid><mermaid>graph TD\\nB --> C</mermaid>';
 			pre.appendChild(code);
 			container.appendChild(pre);
@@ -204,7 +204,7 @@ describe('mermaid utils', () => {
 			const container = document.createElement('div');
 			const pre = document.createElement('pre');
 			const code = document.createElement('code');
-			code.innerText = '<mermaid>graph TD\\nA --> B</mermaid>';
+			code.textContent = '<mermaid>graph TD\\nA --> B</mermaid>';
 			pre.appendChild(code);
 			container.appendChild(pre);
 			renderMermaidMock.mockResolvedValue('');

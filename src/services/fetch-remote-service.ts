@@ -1,6 +1,7 @@
 import { dom } from '@/utils/dom.ts';
 
 export class FetchRemoteService {
+	// biome-ignore lint/style/useThisInClassMethods: comctx exposes this operation through the service instance.
 	getPageDom(url: string): Promise<HTMLElement | undefined> | undefined {
 		try {
 			return dom.getPageDom(url);
@@ -8,6 +9,7 @@ export class FetchRemoteService {
 			console.error('Error in FetchRemoteService:', e);
 		}
 	}
+	// biome-ignore lint/style/useThisInClassMethods: comctx exposes this operation through the service instance.
 	async fetchJson<T>(url: string): Promise<T | undefined> {
 		try {
 			const response = await fetch(url, { cache: 'force-cache' });

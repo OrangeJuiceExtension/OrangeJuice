@@ -1,6 +1,6 @@
 import { find } from 'node-emoji';
 
-const SHORTCODE_REGEX = /:([a-z0-9_+-]+):/gi;
+const SHORTCODE_REGEX = /:(?<shortcode>[a-z0-9_+-]+):/giu;
 const SKIP_TAGS = new Set(['CODE', 'PRE']);
 
 const replaceEmojiInTextNode = (doc: Document, textNode: Text): void => {
@@ -12,7 +12,7 @@ const replaceEmojiInTextNode = (doc: Document, textNode: Text): void => {
 	const fragment = doc.createDocumentFragment();
 
 	for (const match of sourceText.matchAll(SHORTCODE_REGEX)) {
-		const shortcode = match[1]?.toLowerCase();
+		const shortcode = match.groups?.shortcode?.toLowerCase();
 		if (!shortcode) {
 			continue;
 		}

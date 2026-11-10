@@ -2,8 +2,8 @@ import { resolveHnUrl } from '@/components/common/copy-feedback.ts';
 import { dom } from '@/utils/dom.ts';
 import { parseReferenceLinks } from '@/utils/parse-reference-links.ts';
 
-const COMMENTS_REGEX = /\[\s*(\d+)\s*more\s*]/;
-const COLLAPSE_LABEL_REGEX = /^\[–]$/;
+const COMMENTS_REGEX = /\[\s*\d+\s*more\s*\]/u;
+const COLLAPSE_LABEL_REGEX = /^\[–\]$/u;
 const VOTE_SELECTORS = {
 	DOWNVOTE_ARROW: 'div.votearrow[title="downvote"]',
 	UNVOTE_LINK: 'a[id^="un_"]',
@@ -42,7 +42,7 @@ export class HNComment {
 		this.author = this.commentRow.querySelector('a.hnuser')?.textContent || undefined;
 		this.postedDate =
 			this.commentRow.querySelector('span.age')?.getAttribute('title') || undefined;
-		this.ensureMutedMarkerStyle();
+		HNComment.ensureMutedMarkerStyle();
 	}
 
 	get commentHead(): HTMLElement | null {
@@ -75,8 +75,8 @@ export class HNComment {
 		}
 	}
 
-	private ensureMutedMarkerStyle(): void {
-		if (document.getElementById(MUTED_MARKER_STYLE_ID)) {
+	private static ensureMutedMarkerStyle(): void {
+		if (document.querySelector(`#${CSS.escape(MUTED_MARKER_STYLE_ID)}`)) {
 			return;
 		}
 		const style = document.createElement('style');

@@ -126,7 +126,7 @@ describe('follow component', () => {
 			});
 		await follow.main(mockContext);
 
-		expect(document.getElementById('oj-following-root')).toBeTruthy();
+		expect(document.querySelector('#oj-following-root')).toBeTruthy();
 		expect(document.body.textContent).toContain('Following');
 		expect(document.body.textContent).toContain('alice');
 		expect(document.body.textContent).toContain('An external post');
@@ -203,7 +203,7 @@ describe('follow component', () => {
 		});
 
 		await follow.main(mockContext);
-		const rootBeforeToggle = document.getElementById('oj-following-root');
+		const rootBeforeToggle = document.querySelector('#oj-following-root');
 
 		const closedToggle = document.querySelector<HTMLButtonElement>(
 			'button[aria-label="Expand alice activity"]'
@@ -222,7 +222,7 @@ describe('follow component', () => {
 		await waitFor(async () => {
 			await expect(isFollowingSectionExpanded('alice')).resolves.toBe(true);
 		});
-		expect(document.getElementById('oj-following-root')).toBe(rootBeforeToggle);
+		expect(document.querySelector('#oj-following-root')).toBe(rootBeforeToggle);
 
 		const openToggle = document.querySelector<HTMLButtonElement>(
 			'button[aria-label="Collapse alice activity"]'

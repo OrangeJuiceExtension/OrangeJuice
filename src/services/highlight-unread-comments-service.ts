@@ -4,6 +4,7 @@ import lStorage from '@/utils/local-storage.ts';
 export const ojReadCommentsKey = 'oj_read_comments';
 
 export class HighlightUnreadCommentsService {
+	// biome-ignore lint/style/useThisInClassMethods: comctx exposes this operation through the service instance.
 	async expireOldComments(readCommentsList: ReadCommentsList) {
 		try {
 			const currentMilliseconds = Date.now();
