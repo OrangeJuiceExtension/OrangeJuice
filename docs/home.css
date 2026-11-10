@@ -137,7 +137,6 @@ html.oj-dark-mode .oj-home-page {
 	margin: 0.75rem auto 0;
 	font-size: 1rem;
 	color: var(--text-light);
-	text-wrap: pretty;
 }
 
 .oj-home-actions {
@@ -339,7 +338,13 @@ html.oj-dark-mode .oj-home-shot--dark {
 	font-size: clamp(1.125rem, 2vw, 1.375rem);
 	line-height: 1.4;
 	letter-spacing: -0.015em;
-	text-wrap: pretty;
+}
+
+@supports (text-wrap: pretty) {
+	.oj-home-summary,
+	.oj-home-quote blockquote {
+		text-wrap: pretty;
+	}
 }
 
 .oj-home-quote figcaption {

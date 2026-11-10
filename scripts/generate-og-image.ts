@@ -6,9 +6,9 @@ const PROJECT_ROOT = path.resolve(import.meta.dirname, '..');
 const ASSETS_DIRECTORY = path.join(PROJECT_ROOT, 'docs', 'assets');
 const HOME_STYLES_PATH = path.join(PROJECT_ROOT, 'docs', 'home.css');
 const WORDMARK_PATH = path.join(ASSETS_DIRECTORY, 'wordmark.svg');
-const LIGHT_THEME_PATTERN = /body\.oj-home-page\s*\{([^}]+)\}/;
-const DARK_THEME_PATTERN = /html\.oj-dark-mode\s+\.oj-home-page\s*\{([^}]+)\}/;
-const COLOR_VARIABLE_PATTERN = /--([\w-]+):\s*(#[\da-f]{6}(?:[\da-f]{2})?);/gi;
+const LIGHT_THEME_PATTERN = /body\.oj-home-page\s*\{(?<theme>[^}]+)\}/u;
+const DARK_THEME_PATTERN = /html\.oj-dark-mode\s+\.oj-home-page\s*\{(?<theme>[^}]+)\}/u;
+const COLOR_VARIABLE_PATTERN = /--(?<name>[\w-]+):\s*(?<value>#[\da-f]{6}(?:[\da-f]{2})?);/giu;
 const DESIGN_WIDTH = 1200;
 const PAGE_MARGIN = 64;
 const SANS_FONTS = 'Avenir Next, Avenir, Trebuchet MS, sans-serif';
@@ -36,13 +36,13 @@ const OUTPUTS = [
 type ImageOutput = (typeof OUTPUTS)[number];
 
 const readTheme = (styles: string, themePattern: RegExp): ImageTheme => {
-	const themeBlock = styles.match(themePattern)?.[1];
+	const themeBlock = styles.match(themePattern)?.groups?.theme;
 	if (!themeBlock) {
 		throw new Error(`Missing homepage theme matching ${themePattern.source}`);
 	}
 	const colors = new Map<string, string>();
 	for (const match of themeBlock.matchAll(COLOR_VARIABLE_PATTERN)) {
-		const [, name, value] = match;
+		const { name, value } = match.groups ?? {};
 		if (name && value) {
 			colors.set(name, value);
 		}

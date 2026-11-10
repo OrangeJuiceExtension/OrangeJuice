@@ -39,14 +39,14 @@ function inferSizeFromFilename(filename: string): number | null {
 	// Common patterns:
 	// icon-16.png, icon16.png, 16.png, icon_16x16.png, icon-128x128.png
 	const m =
-		base.match(/(?:^|[^0-9])(\d{2,4})x\1(?:[^0-9]|$)/) || // 128x128
-		base.match(/(?:^|[^0-9])(\d{2,4})(?:[^0-9]|$)/); // 128
+		base.match(/(?:^|[^0-9])(?<size>\d{2,4})x\k<size>(?:[^0-9]|$)/u) || // 128x128
+		base.match(/(?:^|[^0-9])(?<size>\d{2,4})(?:[^0-9]|$)/u); // 128
 
 	if (!m) {
 		return null;
 	}
 
-	const n = Number(m[1]);
+	const n = Number(m.groups?.size);
 	if (!Number.isFinite(n)) {
 		return null;
 	}
