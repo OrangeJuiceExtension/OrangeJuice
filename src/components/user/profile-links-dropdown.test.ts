@@ -1,10 +1,11 @@
 import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ContentScriptContext } from '#imports';
 import { getRequiredItem } from '@/test/required-item.ts';
 import { profileLinksDropdown } from './profile-links-dropdown.ts';
 
 const MOCK_CONTEXT = {
 	onInvalidated: vi.fn(),
-} as any;
+} as unknown as ContentScriptContext;
 
 const createPageTop = (doc: Document, username: string): HTMLElement => {
 	const table = doc.createElement('table');
@@ -323,7 +324,10 @@ describe('profileLinksDropdown', () => {
 		const userLink = getRequiredItem(pagetops, 1).querySelector<HTMLAnchorElement>('a#me');
 		const userLinkSpy = vi.spyOn(userLink as HTMLAnchorElement, 'removeEventListener');
 
-		const [[onInvalidatedCallback]] = MOCK_CONTEXT.onInvalidated.mock.calls;
+		const [onInvalidatedCallback] = getRequiredItem(
+			vi.mocked(MOCK_CONTEXT.onInvalidated).mock.calls,
+			0
+		);
 		onInvalidatedCallback();
 
 		expect(userLinkSpy).toHaveBeenCalledWith('click', expect.any(Function));

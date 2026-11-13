@@ -326,9 +326,8 @@ describe('keyboardNavigation', () => {
 		it('k should keep top comment active and not navigate back', async () => {
 			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 			const backSpy = vi.spyOn(window.history, 'back');
-			const locationSpy = vi
-				.spyOn(window, 'location', 'get')
-				.mockReturnValue(new URL('https://news.ycombinator.com/item?id=1&next=2') as any);
+			const originalUrl = window.location.href;
+			window.history.replaceState({}, '', '/item?id=1&next=2');
 
 			await keyboardNavigation(ctx, doc, comments, commentData);
 			await activateFirstComment(commentData, comments);
@@ -337,7 +336,7 @@ describe('keyboardNavigation', () => {
 			expect(commentData.getActiveComment()?.id).toBe('item-1');
 			expect(backSpy).not.toHaveBeenCalled();
 
-			locationSpy.mockRestore();
+			window.history.replaceState({}, '', originalUrl);
 			invalidate();
 		});
 
@@ -500,16 +499,15 @@ describe('keyboardNavigation', () => {
 		it('b should go back when paginated', async () => {
 			const { doc, comments, ctx, commentData, invalidate } = createTestContext();
 			const backSpy = vi.spyOn(window.history, 'back');
-			const locationSpy = vi
-				.spyOn(window, 'location', 'get')
-				.mockReturnValue(new URL('https://news.ycombinator.com/item?id=1&p=2') as any);
+			const originalUrl = window.location.href;
+			window.history.replaceState({}, '', '/item?id=1&p=2');
 
 			await keyboardNavigation(ctx, doc, comments, commentData);
 			dispatchKeydown(doc, 'b');
 
 			expect(backSpy).toHaveBeenCalled();
 
-			locationSpy.mockRestore();
+			window.history.replaceState({}, '', originalUrl);
 			invalidate();
 		});
 

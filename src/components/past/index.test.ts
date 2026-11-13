@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ContentScriptContext } from '#imports';
+import { getRequiredItem } from '@/test/required-item.ts';
 import { dom } from '@/utils/dom';
 import { chooseDate, updateMonthAndDayOptions } from './index';
 
 const MOCK_CONTEXT = {
 	onInvalidated: vi.fn(),
-} as any;
+} as unknown as ContentScriptContext;
 
 describe('past', () => {
 	describe('updateMonthAndDayOptions', () => {
@@ -87,6 +89,7 @@ describe('past', () => {
 	describe('chooseDate', () => {
 		beforeEach(() => {
 			vi.clearAllMocks();
+			window.history.replaceState({}, '', '/front');
 			document.body.innerHTML = `
 				<table>
 					<tbody>
@@ -126,11 +129,6 @@ describe('past', () => {
 		});
 
 		it('should default to yesterday when no day parameter', () => {
-			Object.defineProperty(window, 'location', {
-				value: { search: '' },
-				writable: true,
-			});
-
 			chooseDate(MOCK_CONTEXT, document);
 
 			const yesterday = new Date();
@@ -146,10 +144,7 @@ describe('past', () => {
 		});
 
 		it('should parse day parameter from URL', () => {
-			Object.defineProperty(window, 'location', {
-				value: { search: '?day=2025-12-15' },
-				writable: true,
-			});
+			window.history.replaceState({}, '', '/front?day=2025-12-15');
 
 			chooseDate(MOCK_CONTEXT, document);
 
@@ -163,8 +158,6 @@ describe('past', () => {
 		});
 
 		it('should navigate when year changes', () => {
-			window.location = { href: '', search: '' } as any;
-
 			chooseDate(MOCK_CONTEXT, document);
 
 			const yearInput = document.querySelector('#oj-year-select') as HTMLSelectElement;
@@ -177,7 +170,6 @@ describe('past', () => {
 		it('should navigate when month changes, but sets month to 1 because 6 does not exist in the existing chooseDate', () => {
 			vi.useFakeTimers({ now: new Date(2026, 0, 25) });
 
-			window.location = { href: '', search: '' } as any;
 			chooseDate(MOCK_CONTEXT, document);
 			const yearInput = document.querySelector('#oj-year-select') as HTMLSelectElement;
 			yearInput.value = '2025';
@@ -193,7 +185,6 @@ describe('past', () => {
 		it('should navigate and default to current year/month on month change to the future', () => {
 			vi.useFakeTimers({ now: new Date(2026, 0, 25) });
 
-			window.location = { href: '', search: '' } as any;
 			chooseDate(MOCK_CONTEXT, document);
 
 			const monthInput = document.querySelector('#oj-month-select') as HTMLSelectElement;
@@ -210,8 +201,6 @@ describe('past', () => {
 		});
 
 		it('should navigate when day changes', () => {
-			window.location = { href: '', search: '' } as any;
-
 			chooseDate(MOCK_CONTEXT, document);
 
 			const dayInput = document.querySelector('#oj-day-select') as HTMLSelectElement;
@@ -238,7 +227,10 @@ describe('past', () => {
 			const monthSpy = vi.spyOn(monthInput, 'removeEventListener');
 			const daySpy = vi.spyOn(dayInput, 'removeEventListener');
 
-			const [[onInvalidatedCallback]] = MOCK_CONTEXT.onInvalidated.mock.calls;
+			const [onInvalidatedCallback] = getRequiredItem(
+				vi.mocked(MOCK_CONTEXT.onInvalidated).mock.calls,
+				0
+			);
 			onInvalidatedCallback();
 
 			expect(yearSpy).toHaveBeenCalledWith('change', expect.any(Function));

@@ -9,7 +9,7 @@ import { story } from '@/components/story/index.ts';
 import { submit } from '@/components/submit/index.ts';
 import { user } from '@/components/user/index.ts';
 import { createClientServices } from '@/services/manager.ts';
-import { newActivityFetcher } from '@/utils/activity-trail.ts';
+import { newActivityFetcher } from '@/utils/activity-fetcher.ts';
 import { enableDarkMode } from '@/utils/dark-mode.ts';
 import { dom } from '@/utils/dom.ts';
 import {

@@ -4,7 +4,7 @@ import type { FetchRemoteService } from '@/services/fetch-remote-service.ts';
 import type { HighlightUnreadCommentsService } from '@/services/highlight-unread-comments-service.ts';
 import type { MermaidService } from '@/services/mermaid-service.ts';
 import type { ReadStoriesService } from '@/services/read-stories-service.ts';
-import { InjectAdapter } from '@/utils/comctx-adapters.ts';
+import { InjectAdapter } from '@/utils/inject-adapter.ts';
 
 export const SERVICE_NAMESPACES = {
 	BrowserTab: 'oj_browser_tab_service',

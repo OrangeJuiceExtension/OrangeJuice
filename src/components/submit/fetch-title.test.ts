@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import type { ContentScriptContext } from '#imports';
+import type { FetchRemoteService } from '@/services/fetch-remote-service.ts';
 import { createClientServices } from '@/services/manager.ts';
 import { stripFixtureElements } from '@/test/fixture-html.ts';
 import { fetchTitle } from './fetch-title';
@@ -17,7 +18,7 @@ const fixtureHtml = stripFixtureElements(
 describe('fetchTitle', () => {
 	let mockContext: ContentScriptContext;
 	let mockDoc: Document;
-	let mockFetchJson: ReturnType<typeof vi.fn>;
+	let mockFetchJson: Mock<FetchRemoteService['fetchJson']>;
 
 	beforeEach(() => {
 		document.body.innerHTML = fixtureHtml;
@@ -26,12 +27,13 @@ describe('fetchTitle', () => {
 			onInvalidated: vi.fn(),
 		} as unknown as ContentScriptContext;
 
-		mockFetchJson = vi.fn();
-		vi.mocked(createClientServices).mockReturnValue({
+		mockFetchJson = vi.fn<FetchRemoteService['fetchJson']>();
+		vi.mocked(createClientServices, { partial: true }).mockReturnValue({
 			getFetchRemoteService: () => ({
-				fetchJson: mockFetchJson,
+				fetchJson: mockFetchJson as FetchRemoteService['fetchJson'],
+				getPageDom: vi.fn<FetchRemoteService['getPageDom']>(),
 			}),
-		} as any);
+		});
 	});
 
 	it('should create a fetch title button', () => {

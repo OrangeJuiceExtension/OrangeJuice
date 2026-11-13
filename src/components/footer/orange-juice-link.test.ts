@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ContentScriptContext } from '#imports';
 import { footer } from './index';
 
 describe('footer orange-juice-link', () => {
-	let mockContext: any;
+	let mockContext: ContentScriptContext;
 
 	beforeEach(() => {
 		mockContext = {
 			onInvalidated: vi.fn(),
-		};
+		} as unknown as ContentScriptContext;
 
 		vi.clearAllMocks();
 	});
