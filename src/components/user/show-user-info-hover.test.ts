@@ -88,6 +88,31 @@ describe('showUserInfoOnHover', () => {
 		expect(apiModule.getUserInfo).toHaveBeenCalledWith('testuser', undefined);
 	});
 
+	it.each(['', 'hnuser'])(
+		'ignores the account trigger with class "%s" but shows the same user elsewhere',
+		async (className) => {
+			const accountLink = createUserLink('testuser');
+			accountLink.id = 'me';
+			accountLink.className = className;
+			const authorLink = createUserLink('testuser');
+			mockUserInfo('testuser');
+
+			showUserInfoOnHover(mockCtx, document, 'testuser');
+			accountLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+			expect(document.querySelector('.oj_user_info_hover')).toBeNull();
+			expect(apiModule.getUserInfo).not.toHaveBeenCalled();
+
+			authorLink.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+			await vi.waitFor(() => {
+				expect(document.querySelector('.oj_user_info_hover.active')?.textContent).toContain(
+					'testuser'
+				);
+			});
+			expect(apiModule.getUserInfo).toHaveBeenCalledTimes(1);
+		}
+	);
+
 	it('should display user information in popover', async () => {
 		const userLink = createUserLink('testuser');
 		mockUserInfo('testuser', {
