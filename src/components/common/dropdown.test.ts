@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ContentScriptContext } from '#imports';
+import { getRequiredItem } from '@/test/required-item.ts';
 import { createDropdown, createDropdownStyle } from './dropdown';
 
 const MOCK_CONTEXT = {
 	onInvalidated: vi.fn(),
-} as any;
+} as unknown as ContentScriptContext;
 
 describe('createDropdown', () => {
 	let doc: Document;
@@ -296,7 +298,10 @@ describe('createDropdown', () => {
 		const windowRemoveSpy = vi.spyOn(window, 'removeEventListener');
 
 		expect(MOCK_CONTEXT.onInvalidated).toHaveBeenCalled();
-		const [[onInvalidatedCallback]] = MOCK_CONTEXT.onInvalidated.mock.calls;
+		const [onInvalidatedCallback] = getRequiredItem(
+			vi.mocked(MOCK_CONTEXT.onInvalidated).mock.calls,
+			0
+		);
 		onInvalidatedCallback();
 
 		expect(triggerRemoveSpy).toHaveBeenCalledWith('click', expect.any(Function));

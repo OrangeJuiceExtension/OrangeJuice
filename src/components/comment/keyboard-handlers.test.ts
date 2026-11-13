@@ -401,14 +401,14 @@ describe('commentKeyboardHandlers', () => {
 				}
 				await setup.commentData.activate(first);
 				const backSpy = vi.spyOn(window.history, 'back');
-				vi.spyOn(window, 'location', 'get').mockReturnValue(
-					new URL('https://news.ycombinator.com/item?id=1&next=2') as any
-				);
+				const originalUrl = window.location.href;
+				window.history.replaceState({}, '', '/item?id=1&next=2');
 
 				await keyboardHandlers.move(event, setup.commentData, 'up');
 
 				expect(backSpy).toHaveBeenCalled();
 				expect(lStorage.setItem).toHaveBeenCalledWith('oj_comment_nav_state', 'prev');
+				window.history.replaceState({}, '', originalUrl);
 			});
 
 			it('should expand collapsed parent when moving up with shift key', async () => {

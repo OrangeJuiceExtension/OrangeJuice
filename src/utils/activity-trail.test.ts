@@ -2,12 +2,8 @@ import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DAYS_1, DAYS_30 } from '@/utils/constants.ts';
 import { dom } from '@/utils/dom.ts';
 import lStorage from '@/utils/local-storage.ts';
-import {
-	type ActivityDetail,
-	ActivityFetcher,
-	ActivityId,
-	ActivityTrail,
-} from './activity-trail.ts';
+import { ActivityFetcher } from './activity-fetcher.ts';
+import { type ActivityDetail, ActivityId, ActivityTrail } from './activity-trail.ts';
 
 const FIXED_NOW = new Date('2023-01-01T00:00:00.000Z').getTime();
 

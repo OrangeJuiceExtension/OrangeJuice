@@ -183,6 +183,8 @@ Use `.output/chrome-mv3-dev` for automatic reload. The production build in `.out
 
 CI checks both the locked dependencies and `bun update --latest`. Run `bun run check`, `bun run compile`, and `bun run test --run` after dependency upgrades. DOM ID selectors must escape dynamic IDs, and newer CSS enhancements must keep a fallback behind `@supports`. Keep narrow lint exceptions where rendered-text semantics or instance service contracts require them.
 
+Test mocks use explicit service and browser types rather than `any`. Activity fetching and storage, and each messaging adapter, live in separate implementation modules to satisfy the latest lint rules without changing runtime behavior.
+
 ## Social preview images
 
 Run `bun run social-images` to regenerate the light and dark 1200×630 social cards and the 1280×800 banner in `docs/assets/`.

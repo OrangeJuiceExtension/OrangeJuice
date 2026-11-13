@@ -1,5 +1,6 @@
 import { waitFor } from '@testing-library/dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ContentScriptContext } from '#imports';
 import { follow } from '@/components/follow/index.ts';
 import { apiModule, type HNItemInfo, type HNUser } from '@/utils/api.ts';
 import { getFollowedUsers, setFollowedUsers } from '@/utils/followed-users.ts';
@@ -26,7 +27,7 @@ vi.mock('@/utils/api.ts', async () => {
 describe('follow component', () => {
 	const mockContext = {
 		onInvalidated: vi.fn(),
-	} as any;
+	} as unknown as ContentScriptContext;
 
 	beforeEach(async () => {
 		document.head.innerHTML = '';

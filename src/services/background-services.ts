@@ -5,7 +5,7 @@ import { HighlightUnreadCommentsService } from '@/services/highlight-unread-comm
 import { SERVICE_NAMESPACES, type ServiceMap } from '@/services/manager.ts';
 import { MermaidService } from '@/services/mermaid-service.ts';
 import { ReadStoriesService } from '@/services/read-stories-service.ts';
-import { ProvideAdapter } from '@/utils/comctx-adapters.ts';
+import { ProvideAdapter } from '@/utils/provide-adapter.ts';
 
 // Keep provider implementations out of the content-script dependency graph.
 const SERVICE_FACTORIES = {

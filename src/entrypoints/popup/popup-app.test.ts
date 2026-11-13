@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { browser } from '#imports';
+import { type Browser, browser } from '#imports';
 import type { DarkModePreference } from '@/utils/dark-mode.ts';
 import { getDarkModePreference } from '@/utils/dark-mode.ts';
 import {
@@ -39,24 +39,39 @@ vi.mock('@/utils/preferences.ts', () => ({
 	setShowHiddenStoriesOptionPreference: vi.fn(async () => {}),
 }));
 
+const tab: Browser.tabs.Tab = {
+	active: true,
+	autoDiscardable: true,
+	discarded: false,
+	frozen: false,
+	groupId: -1,
+	highlighted: true,
+	incognito: false,
+	index: 0,
+	lastAccessed: 0,
+	pinned: false,
+	selected: true,
+	windowId: 1,
+};
+
 describe('renderPopupApp', () => {
 	beforeEach(() => {
 		document.body.innerHTML = '';
 		vi.clearAllMocks();
-		vi.spyOn(browser.tabs, 'query').mockResolvedValue([{ id: 123 }] as any);
-		vi.spyOn(browser.tabs, 'sendMessage').mockResolvedValue(undefined as any);
+		vi.spyOn(browser.tabs, 'query').mockImplementation(async () => [{ ...tab, id: 123 }]);
+		vi.spyOn(browser.tabs, 'sendMessage').mockResolvedValue(undefined);
 	});
 
-	it.each([
+	it.each<{ expectedClass: string; name: string; storedTheme: DarkModePreference }>([
 		{
 			expectedClass: 'oj-popup oj-popup--light',
 			name: 'uses the default light theme when storage is empty',
-			storedTheme: 'light' as DarkModePreference,
+			storedTheme: 'light' satisfies DarkModePreference,
 		},
 		{
 			expectedClass: 'oj-popup oj-popup--dark',
 			name: 'uses the stored dark theme when available',
-			storedTheme: 'dark' as DarkModePreference,
+			storedTheme: 'dark' satisfies DarkModePreference,
 		},
 	])('$name', async ({ storedTheme, expectedClass }) => {
 		vi.mocked(getDarkModePreference).mockResolvedValueOnce(storedTheme);
@@ -225,7 +240,7 @@ describe('renderPopupApp', () => {
 	});
 
 	it('skips notifying the tab when there is no active tab id', async () => {
-		vi.mocked(browser.tabs.query).mockResolvedValueOnce([{}] as any);
+		vi.mocked(browser.tabs.query).mockImplementationOnce(async () => [tab]);
 		const root = document.createElement('div');
 		await renderPopupApp(document, root);
 

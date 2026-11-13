@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ContentScriptContext } from '#imports';
 import { stripFixtureElements } from '@/test/fixture-html.ts';
 import { navbar } from './index';
 
@@ -17,7 +18,7 @@ const loadFixture = (fixtureName: string): void => {
 };
 
 describe('navbar more-links', () => {
-	let mockContext: any;
+	let mockContext: ContentScriptContext;
 
 	beforeEach(() => {
 		document.body.innerHTML = `
@@ -36,7 +37,7 @@ describe('navbar more-links', () => {
 
 		mockContext = {
 			onInvalidated: vi.fn(),
-		};
+		} as unknown as ContentScriptContext;
 
 		window.history.pushState({}, '', '/news');
 		vi.clearAllMocks();
@@ -141,7 +142,7 @@ describe('navbar more-links', () => {
 		const windowRemoveEventListenerSpy = vi.spyOn(window, 'removeEventListener');
 
 		expect(mockContext.onInvalidated).toHaveBeenCalled();
-		for (const [cleanupFn] of mockContext.onInvalidated.mock.calls) {
+		for (const [cleanupFn] of vi.mocked(mockContext.onInvalidated).mock.calls) {
 			cleanupFn();
 		}
 
@@ -212,7 +213,7 @@ describe('navbar more-links', () => {
 		const documentRemoveEventListenerSpy = vi.spyOn(document, 'removeEventListener');
 
 		expect(mockContext.onInvalidated).toHaveBeenCalled();
-		for (const [cleanupFn] of mockContext.onInvalidated.mock.calls) {
+		for (const [cleanupFn] of vi.mocked(mockContext.onInvalidated).mock.calls) {
 			cleanupFn();
 		}
 
