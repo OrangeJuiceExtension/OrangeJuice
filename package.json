@@ -1,6 +1,6 @@
 {
 	"name": "orangejuice",
-	"version": "0.35.4",
+	"version": "0.35.5",
 	"private": true,
 	"description": "Orange Juice makes HackerNews sweeter",
 	"type": "module",
